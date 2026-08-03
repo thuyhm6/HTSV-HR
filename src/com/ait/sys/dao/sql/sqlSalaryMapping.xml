@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.salarymapping">
+	<!--工资基础 :基础项目,基础项目参数(添加) 公用 -->
+	<select id="getSalaryMappingList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			
+        SELECT     ITEM_TYPE,
+                   ITEM_NO,
+                   ITEM_ID,
+                   ITEM_NAME,
+                   DATA_TYPE,
+                   DESCR ,
+                   SUM(HTSV) HTSV,
+                   SUM(HAE) HAE
+      FROM(
+             SELECT PR.ITEM_TYPE,
+                    PR.ITEM_NO,
+                    PR.ITEM_ID,
+                    PR.ITEM_NAME,
+                    PR.DATA_TYPE,
+                    PR.DESCR,
+                    decode(cpny_id, 'HTSV', 1, null) HTSV,
+                    decode(cpny_id, 'HAE', 1, null) HAE
+               FROM (SELECT P.PARAM_ITEM_NO ITEM_NO,
+                            P.PARAM_ITEM_ID ITEM_ID,
+                            SY2.CONTENT ITEM_NAME,
+                            P.DATA_TYPE,
+                            P.DESCR ,
+                            P.ITEM_TYPE 
+                       FROM PA_PARAM_ITEM P,SY_GLOBAL_NAME SY2
+                      WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                      AND P.ACTIVITY=1
+                        AND SY2.LANGUAGE = #interLanguage:VARCHAR#) PR LEFT JOIN PA_PARAM_ITEM_PARAM PT
+               ON PR.ITEM_NO = PT.PARAM_ITEM_NO AND PT.ACTIVITY=1
+             UNION ALL
+             SELECT 6 ITEM_TYPE,
+                    PS.ITEM_NO, 
+                    PS.ITEM_ID, 
+                    PS.ITEM_NAME, 
+                    PS.DATA_TYPE,
+                    PS.DESCR,
+                    decode(cpny_id, 'HTSV', 1, null) HTSV,
+                    decode(cpny_id, 'HAE', 1, null) HAE
+               FROM (SELECT PA.ITEM_NO, 
+                            PA.ITEM_ID, 
+                            SY3.CONTENT ITEM_NAME, 
+                            PA.DATATYPE DATA_TYPE,
+                            PA.DESCR 
+                       FROM PA_ITEM PA,SY_GLOBAL_NAME SY3
+                      WHERE PA.ITEM_NO = SY3.NO(+)
+                       AND PA.ACTIVITY=1
+                        AND SY3.LANGUAGE = #interLanguage:VARCHAR#) PS LEFT JOIN PA_ITEM_PARAM PP
+                         ON PS.ITEM_NO = PP.ITEM_NO AND PP.ACTIVITY=1
+                 ) SD
+               
+                 
+			   ]]>
+			   <dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  ITEM_NO = #NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  ITEM_TYPE LIKE '%' || #TYPE:NUMERIC# || '%' 
+		    ]]>
+		</isNotEmpty>
+         <isNotEmpty prepend="AND" property='HTSV'>
+			<![CDATA[
+		 		 HTSV = 1
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="HAE">
+			<![CDATA[
+		 		 HAE = 1
+		    ]]>
+		</isNotEmpty>
+
+		
+		
+		
+		  
+		</dynamic>
+		<![CDATA[   
+						group by SD.ITEM_TYPE,
+                   SD.ITEM_NO,
+                   SD.ITEM_ID,
+                   SD.ITEM_NAME,
+                   SD.DATA_TYPE,
+                   SD.DESCR 
+		]]>
+		   
+	</select>
+
+	<select id="getSalaryMappingCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(*) FROM(SELECT     ITEM_TYPE,
+             ITEM_NO,
+                   ITEM_ID,
+                   ITEM_NAME,
+                   DATA_TYPE,
+                   DESCR ,
+                   SUM(TSTO) TSTO,
+                   SUM(SST) SST
+      FROM(
+              SELECT PR.ITEM_TYPE,
+                    PR.ITEM_NO,
+                    PR.ITEM_ID,
+                    PR.ITEM_NAME,
+                    PR.DATA_TYPE,
+                    PR.DESCR,
+                    decode(cpny_id, 'TSTO', 1, null) TSTO,
+                    decode(cpny_id, 'SST', 1, null) SST
+               FROM (SELECT P.PARAM_ITEM_NO ITEM_NO,
+                            P.PARAM_ITEM_ID ITEM_ID,
+                            SY2.CONTENT ITEM_NAME,
+                            P.DATA_TYPE,
+                            P.DESCR ,
+                            P.ITEM_TYPE 
+                       FROM PA_PARAM_ITEM P,SY_GLOBAL_NAME SY2
+                      WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                      AND P.ACTIVITY=1
+                        AND SY2.LANGUAGE = #interLanguage:VARCHAR#) PR LEFT JOIN PA_PARAM_ITEM_PARAM PT
+               ON PR.ITEM_NO = PT.PARAM_ITEM_NO AND PT.ACTIVITY=1
+             UNION ALL
+             SELECT 6 ITEM_TYPE,
+                    PS.ITEM_NO, 
+                    PS.ITEM_ID, 
+                    PS.ITEM_NAME, 
+                    PS.DATA_TYPE,
+                    PS.DESCR,
+                    decode(cpny_id, 'TSTO', 1, null) TSTO,
+                    decode(cpny_id, 'SST', 1, null) SST
+               FROM (SELECT PA.ITEM_NO, 
+                            PA.ITEM_ID, 
+                            SY3.CONTENT ITEM_NAME, 
+                            PA.DATATYPE DATA_TYPE,
+                            PA.DESCR 
+                       FROM PA_ITEM PA,SY_GLOBAL_NAME SY3
+                      WHERE PA.ITEM_NO = SY3.NO(+)
+                       AND PA.ACTIVITY=1
+                        AND SY3.LANGUAGE = #interLanguage:VARCHAR#) PS LEFT JOIN PA_ITEM_PARAM PP
+                         ON PS.ITEM_NO = PP.ITEM_NO AND PP.ACTIVITY=1
+                 ) SD group by SD.ITEM_TYPE,
+                   SD.ITEM_NO,
+                   SD.ITEM_ID,
+                   SD.ITEM_NAME,
+                   SD.DATA_TYPE,
+                   SD.DESCR ) MM
+               
+ 			  
+		]]>
+
+		 <dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  MM.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  MM.ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  MM.ITEM_NO = #NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  MM.ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  MM.ITEM_TYPE LIKE '%' || #TYPE:NUMERIC# || '%' 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property='TSTO'>
+			<![CDATA[
+		 		 MM.TSTO = 1
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="SST">
+			<![CDATA[
+		 		 SST = 1
+		    ]]>
+		</isNotEmpty>
+		
+		
+		</dynamic>
+	</select>
+	
+<!-- 	    工资代码申请 -->
+    <select id="getSalaryApplySeq" parameterClass="linkMap" resultClass="int">
+	    <![CDATA[				     
+			SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+	    ]]>
+	</select>
+
+		<insert id="addAffirmSalaryCodeInfo" parameterClass="linkMap">
+		<![CDATA[
+			 INSERT INTO PA_ITEM_AFFIRM (
+			        AFFIRM_ITEM_NO,
+			        ITEM_ID,
+			        ACTIVITY,
+			        CREATE_DATE,
+			        PROJECT_TYPE,
+			        AFFIRM_NAME,
+			        AFFIRM_REASON,
+			        ACTIVITY_TYPE,
+			        AFFIRM_CPNY_ID,
+			        CREATED_BY
+			      )
+			      VALUES(
+			        #NO:VARCHAR#,
+			        #ITEM_ID:VARCHAR#,
+			        #ACTIVITY:VARCHAR#,
+			        SYSDATE,
+			        #PROJECT_TYPE:NUMBER#,
+			        #AFFIRM_NAME:VARCHAR#,
+			        #AFFIRM_REASON:VARCHAR#,
+			        #ACTIVITY_TYPE:NUMBER#,
+			        #CPNY_ID:VARCHAR#,
+			        #CREATED_BY:VARCHAR#
+			      )
+		]]>
+	</insert>
+	
+	<insert id="addAffirmSalaryInfo" parameterClass="linkMap">
+		<![CDATA[
+			 INSERT INTO PA_ITEM_AFFIRM (
+			        AFFIRM_ITEM_NO,
+			        ITEM_ID,
+			        ACTIVITY,
+			        CREATE_DATE,
+			        PROJECT_TYPE,
+			        AFFIRM_NAME,
+			        AFFIRM_REASON,
+			        ACTIVITY_TYPE,
+			        AFFIRM_CPNY_ID,
+			        CREATED_BY
+			      )
+			      VALUES(
+			        #ITEM_NO:VARCHAR#,
+			        #ITEM_ID:VARCHAR#,
+			        #ACTIVITY:VARCHAR#,
+			        SYSDATE,
+			        #PROJECT_TYPE:NUMBER#,
+			        #AFFIRM_NAME:VARCHAR#,
+			        #AFFIRM_REASON:VARCHAR#,
+			        #ACTIVITY_TYPE:NUMBER#,
+			        #CPNY_ID:VARCHAR#,
+			        #CREATED_BY:VARCHAR#
+			      )
+		]]>
+	</insert>
+	
+	<!-- 	决裁 -->
+	<update id="updateAffirmSalaryInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_ITEM_AFFIRM
+			   SET 
+			       AFFIRM_DESCR      = #AFFIRM_DESCR:VARCHAR#,
+			       UPDATE_DATE        = SYSDATE,
+			       UPDATED_BY         = #UPDATED_BY:VARCHAR#,
+			       ACTIVITY           = #ACTIVITY:VARCHAR#
+			 WHERE AFFIRM_CPNY_ID = #interCpnyID:VARCHAR#
+			  AND  AFFIRM_ITEM_NO = #ITEM_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<delete id="deleteAffirmSalaryCodeInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_ITEM_AFFIRM WHERE AFFIRM_ITEM_NO = #NO:VARCHAR#  AND AFFIRM_CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	
+	<!--工资代码查看 :基础项目,基础项目参数(添加) 公用 -->
+	<select id="getSalaryItemCheckMapList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		SELECT     PROJECT_TYPE,
+                   ITEM_NO,
+                   ITEM_ID,
+                   ITEM_NAME,
+                   DATA_TYPE,
+                   DESCR ,
+                   CPNY_FLAG
+      FROM(
+			
+        SELECT '基础项目'  PROJECT_TYPE,       
+                   TT.ITEM_NO,
+                   TT.ITEM_ID,
+                   TT.ITEM_NAME,
+                   TT.DATA_TYPE,
+                   TT.DESCR,
+                   decode(cpny_id,#CPNY_ID:VARCHAR#, 1, 0) CPNY_FLAG
+              FROM (SELECT T.ITEM_NO,
+                           T.ITEM_ID,
+                           SY1.CONTENT ITEM_NAME,
+                           T.DATA_TYPE,
+                           T.DESCR 
+                      FROM PA_BASIC_ITEM T,SY_GLOBAL_NAME SY1
+                     WHERE T.ITEM_NO = SY1.NO(+)
+                     AND T.ACTIVITY=1
+                     
+                     AND   SY1.LANGUAGE = #interLanguage:VARCHAR#)TT LEFT JOIN PA_BASIC_ITEM_PARAM PM
+               ON  TT.ITEM_NO = PM.ITEM_NO AND PM.ACTIVITY=1 AND PM.CPNY_ID = #CPNY_ID:VARCHAR#
+             
+             UNION ALL
+             SELECT '输入项目'  PROJECT_TYPE,
+                    PR.ITEM_NO,
+                    PR.ITEM_ID,
+                    PR.ITEM_NAME,
+                    PR.DATA_TYPE,
+                    PR.DESCR,
+                     decode(cpny_id,#CPNY_ID:VARCHAR#, 1, 0) CPNY_FLAG
+               FROM (SELECT P.PARAM_ITEM_NO ITEM_NO,
+                            P.PARAM_ITEM_ID ITEM_ID,
+                            SY2.CONTENT ITEM_NAME,
+                            P.DATA_TYPE,
+                            P.DESCR 
+                       FROM PA_PARAM_ITEM P,SY_GLOBAL_NAME SY2
+                      WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                      AND P.ACTIVITY=1
+                        AND SY2.LANGUAGE = #interLanguage:VARCHAR#) PR LEFT JOIN PA_PARAM_ITEM_PARAM PT
+               ON PR.ITEM_NO = PT.PARAM_ITEM_NO AND PT.ACTIVITY=1 AND PT.CPNY_ID = #CPNY_ID:VARCHAR#
+             UNION ALL
+             SELECT '计算项目'  PROJECT_TYPE,
+                    PS.ITEM_NO, 
+                    PS.ITEM_ID, 
+                    PS.ITEM_NAME, 
+                    PS.DATA_TYPE,
+                    PS.DESCR,
+                     decode(cpny_id,#CPNY_ID:VARCHAR#, 1, 0) CPNY_FLAG
+               FROM (SELECT PA.ITEM_NO, 
+                            PA.ITEM_ID, 
+                            SY3.CONTENT ITEM_NAME, 
+                            PA.DATATYPE DATA_TYPE,
+                            PA.DESCR 
+                       FROM PA_ITEM PA,SY_GLOBAL_NAME SY3
+                      WHERE PA.ITEM_NO = SY3.NO(+)
+                       AND PA.ACTIVITY=1
+                        AND SY3.LANGUAGE = #interLanguage:VARCHAR#) PS LEFT JOIN PA_ITEM_PARAM PP
+                         ON PS.ITEM_NO = PP.ITEM_NO AND PP.ACTIVITY=1 AND PP.CPNY_ID = #CPNY_ID:VARCHAR#
+                         ) SD
+                 
+			   ]]>
+			   <dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  SD.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  SD.ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  SD.ITEM_NO = #NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  SD.ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  SD.PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="CPNY_FLAG">
+			<![CDATA[
+		 		  SD.CPNY_FLAG = #CPNY_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+			
+		</dynamic>
+		<![CDATA[
+		 		  ORDER BY SD.PROJECT_TYPE, SD.CPNY_FLAG DESC
+		    ]]>
+	</select>
+
+	<select id="getSalaryItemCheckMapCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(0) FROM(SELECT     PROJECT_TYPE,
+             ITEM_NO,
+                   ITEM_ID,
+                   ITEM_NAME,
+                   DATA_TYPE,
+                   DESCR ,
+                   CPNY_FLAG
+      FROM(
+			
+        SELECT '基础项目'  PROJECT_TYPE,       
+                   TT.ITEM_NO,
+                   TT.ITEM_ID,
+                   TT.ITEM_NAME,
+                   TT.DATA_TYPE,
+                   TT.DESCR,
+                   decode(cpny_id,#CPNY_ID:VARCHAR#, 1, 0) CPNY_FLAG
+              FROM (SELECT T.ITEM_NO,
+                           T.ITEM_ID,
+                           SY1.CONTENT ITEM_NAME,
+                           T.DATA_TYPE,
+                           T.DESCR 
+                      FROM PA_BASIC_ITEM T,SY_GLOBAL_NAME SY1
+                     WHERE T.ITEM_NO = SY1.NO(+)
+                     AND T.ACTIVITY=1
+                     
+                     AND   SY1.LANGUAGE = #interLanguage:VARCHAR#)TT LEFT JOIN PA_BASIC_ITEM_PARAM PM
+               ON  TT.ITEM_NO = PM.ITEM_NO AND PM.ACTIVITY=1 AND PM.CPNY_ID = #CPNY_ID:VARCHAR#
+             
+             UNION ALL
+             SELECT '输入项目'  PROJECT_TYPE,
+                    PR.ITEM_NO,
+                    PR.ITEM_ID,
+                    PR.ITEM_NAME,
+                    PR.DATA_TYPE,
+                    PR.DESCR,
+                     decode(cpny_id,#CPNY_ID:VARCHAR#, 1, 0) CPNY_FLAG
+               FROM (SELECT P.PARAM_ITEM_NO ITEM_NO,
+                            P.PARAM_ITEM_ID ITEM_ID,
+                            SY2.CONTENT ITEM_NAME,
+                            P.DATA_TYPE,
+                            P.DESCR 
+                       FROM PA_PARAM_ITEM P,SY_GLOBAL_NAME SY2
+                      WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                      AND P.ACTIVITY=1
+                        AND SY2.LANGUAGE = #interLanguage:VARCHAR#) PR LEFT JOIN PA_PARAM_ITEM_PARAM PT
+               ON PR.ITEM_NO = PT.PARAM_ITEM_NO AND PT.ACTIVITY=1 AND PT.CPNY_ID = #CPNY_ID:VARCHAR#
+             UNION ALL
+             SELECT '计算项目'  PROJECT_TYPE,
+                    PS.ITEM_NO, 
+                    PS.ITEM_ID, 
+                    PS.ITEM_NAME, 
+                    PS.DATA_TYPE,
+                    PS.DESCR,
+                     decode(cpny_id,#CPNY_ID:VARCHAR#, 1, 0) CPNY_FLAG
+               FROM (SELECT PA.ITEM_NO, 
+                            PA.ITEM_ID, 
+                            SY3.CONTENT ITEM_NAME, 
+                            PA.DATATYPE DATA_TYPE,
+                            PA.DESCR 
+                       FROM PA_ITEM PA,SY_GLOBAL_NAME SY3
+                      WHERE PA.ITEM_NO = SY3.NO(+)
+                       AND PA.ACTIVITY=1
+                        AND SY3.LANGUAGE = #interLanguage:VARCHAR#) PS LEFT JOIN PA_ITEM_PARAM PP
+                         ON PS.ITEM_NO = PP.ITEM_NO AND PP.ACTIVITY=1 AND PP.CPNY_ID = #CPNY_ID:VARCHAR#
+                         )) MM
+		]]>
+
+		 <dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  MM.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  MM.ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  MM.ITEM_NO = #NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  MM.ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  MM.PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_FLAG">
+			<![CDATA[
+		 		 MM.CPNY_FLAG = #CPNY_FLAG:VARCAHR#
+		    ]]>
+		</isNotEmpty>
+			
+		</dynamic>
+		
+	</select>
+
+</sqlMap>

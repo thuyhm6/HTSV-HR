@@ -1,0 +1,14 @@
+plsql链接数据库的路径D:\app\machao\product\11.2.0\dbhome_1\NETWORK\ADMIN
+
+https://106.3.40.155:8443/svn/hr/osstem/trunk/osstem
+https://106.3.40.155:8443/svn/hr/dymos/trunk
+
+EMAIL:bjait@ait.net.cn
+先工作地址:山东省日照市dymos
+户口所在地: 同现住址
+离职日期: null
+学历:null
+预转正日期和离职日期的读取关系
+清除所有的法令信息(清除有关发令信息的数据库表信息)
+
+账号信息以下 全部清除掉

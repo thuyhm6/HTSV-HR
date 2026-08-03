@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.essParam">
+	<select id="getEssParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT A.PARAM_NO, 
+					B.CONTENT AS PARAM_NAME,
+					A.MODULE
+			   FROM SY_PARAM_INFO A, 
+			  		SY_GLOBAL_NAME B
+			 WHERE A.PARAM_NO = B.NO(+)
+			   AND B.LANGUAGE(+) =#interLanguage:VARCHAR#	          		 
+		]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				PARAM_NO=#PARAM_NO:NUMERIC#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getCpnyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.PARAM_NO, 
+			       B.CONTENT AS PARAM_NAME
+			  FROM SY_PARAM_INFO A, 
+			  	   SY_GLOBAL_NAME B
+			 WHERE A.PARAM_NO = B.NO(+)
+			   AND B.LANGUAGE(+) =#interLanguage:VARCHAR#	          		 
+		]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				PARAM_NO=#PARAM_NO:NUMERIC#
+		</isNotEmpty>
+	</select>
+	
+	<select id="getEssCheckParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+  			SELECT A.PARAM_NO,
+	             B.CONTENT AS PARAM_NAME,
+	             A.CPNY_ID,
+	             A.PARAM_VALUE,
+	             C.MODULE
+			 FROM SY_PARAM_INFO_PARAM A, 
+			       SY_GLOBAL_NAME B,
+            	   SY_PARAM_INFO C
+			WHERE A.PARAM_NO=C.PARAM_NO
+			   AND  B.NO(+) = A.PARAM_NO
+			   AND B.LANGUAGE(+)= #interLanguage:VARCHAR#
+		]]>
+		<!-- 管理员付给法人时，会指定法人 -->
+		<isNotEmpty prepend="AND" property="PARAM_CPNY_ID">
+			A.CPNY_ID=#PARAM_CPNY_ID:VARCHAR#  
+		</isNotEmpty>
+		<isEmpty  prepend="AND" property="PARAM_CPNY_ID">
+			A.CPNY_ID=#interCpnyID:VARCHAR#  
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			A.PARAM_NO = #PARAM_NO:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY MODULE,B.CONTENT,A.ORDERNO
+		]]>
+	</select>
+	
+	<insert id="insertEssCheckParamList" parameterClass="linkMap">
+			INSERT INTO SY_PARAM_INFO_PARAM(
+			     PARAM_NO,
+			     CPNY_ID,
+			     CREATE_DATE,
+			     CREATED_BY,
+			     ACTIVITY,
+			     PARAM_VALUE 
+			)VALUES(
+			    #PARAM_NO:VARCHAR#,
+			    #PARAM_CPNY_ID:VARCHAR#,
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#,
+			    #ACTIVITY:NUMERIC#,
+			    #PARAM_VALUE:VARCHAR# 
+			)
+	</insert>
+	
+	<update id="updateEssCheckParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_PARAM_INFO_PARAM
+			   SET PARAM_VALUE = #PARAM_VALUE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:VARCHAR# and CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+	</update>
+
+	<select id="getOtConverParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PARAM_NO_SEQ,
+			       PARAM_NO,
+			       get_global_name(PARAM_NO, 'zh') PARAM_NAME,
+			       CPNY_ID,
+			       ACTIVITY,
+			       PARAM_VALUE,
+			       get_global_name(PARAM_VALUE, 'zh') PARAM_VALUE_NAME
+			  FROM SY_OT_INFO_PARAM
+			 WHERE 1 = 1          		 
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+				PARAM_NO = #PARAM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO_SEQ">
+			<![CDATA[
+				PARAM_NO_SEQ = #PARAM_NO_SEQ:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+				( 
+					get_global_name(PARAM_NO, 'zh') LIKE '%' || #PARAM_NAME:VARCHAR# || '%' OR 
+					PARAM_NO LIKE '%' || #PARAM_NAME:VARCHAR# || '%'
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_VALUE_NAME">
+			<![CDATA[
+				( 
+					get_global_name(PARAM_VALUE, 'zh') LIKE '%' || #PARAM_VALUE_NAME:VARCHAR# || '%' OR 
+					PARAM_VALUE LIKE '%' || #PARAM_VALUE_NAME:VARCHAR# || '%'
+				)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY CPNY_ID, PARAM_NO
+		]]>
+	</select>
+	
+	<select id="getOtConverParamCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM SY_OT_INFO_PARAM
+			 WHERE 1 = 1          		 
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+				PARAM_NO = #PARAM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO_SEQ">
+			<![CDATA[
+				PARAM_NO_SEQ = #PARAM_NO_SEQ:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+				( 
+					get_global_name(PARAM_NO, 'zh') LIKE '%' || #PARAM_NAME:VARCHAR# || '%' OR 
+					PARAM_NO LIKE '%' || #PARAM_NAME:VARCHAR# || '%'
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_VALUE_NAME">
+			<![CDATA[
+				( 
+					get_global_name(PARAM_VALUE, 'zh') LIKE '%' || #PARAM_VALUE_NAME:VARCHAR# || '%' OR 
+					PARAM_VALUE LIKE '%' || #PARAM_VALUE_NAME:VARCHAR# || '%'
+				)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="insertOtConverParam" parameterClass="linkMap">
+			INSERT INTO SY_OT_INFO_PARAM(
+			     PARAM_NO_SEQ,
+			     PARAM_NO,
+			     CPNY_ID,
+			     CREATE_DATE,
+			     CREATED_BY,
+			     ACTIVITY,
+			     PARAM_VALUE 
+			)VALUES(
+			    (select max(nvl(PARAM_NO_SEQ,0))+1 from SY_OT_INFO_PARAM),
+			    #PARAM_NO:VARCHAR#,
+			    #CPNY_ID:VARCHAR#,
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#,
+			    #ACTIVITY:VARCHAR#,
+			    #PARAM_VALUE:VARCHAR# 
+			)
+	</insert>
+	
+	<update id="updateOtConverParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_OT_INFO_PARAM
+			   SET PARAM_VALUE = #PARAM_VALUE:VARCHAR#,
+			       ACTIVITY = #ACTIVITY:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO_SEQ = #PARAM_NO_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<delete id="deleteOtConverParamByParamNo" parameterClass="linkMap">
+		<![CDATA[
+			 DELETE 
+				FROM SY_OT_INFO_PARAM 
+			   WHERE (PARAM_NO_SEQ = #PARAM_NO_SEQ:VARCHAR# OR 
+			     (CPNY_ID = #CPNY_ID:VARCHAR# AND PARAM_NO = #PARAM_NO:VARCHAR# AND PARAM_VALUE = #PARAM_VALUE:VARCHAR#))
+		]]>
+	</delete>
+	
+	<!-- 查询休假基准信息 -->
+	<select id="getVacationStandardManageList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT VSM.STANDARD_MANAGE_ID,
+       		VSM.WORK_AREA,
+       		GET_GLOBAL_NAME(VSM.WORK_AREA, #interLanguage:VARCHAR#) WORK_AREA_NAME,
+       		dbms_lob.substr(VSM.STANDARD_EXPLAIN)  STANDARD_EXPLAIN
+  			FROM ESS_VACATION_STANDARD_MANAGE VSM
+			WHERE VSM.CPNY_ID = #CPNY_ID:VARCHAR#      		 
+		]]>
+	</select>
+	<!-- 查询休假基准信息条数 -->
+	<select id="getVacationStandardManageCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			FROM ESS_VACATION_STANDARD_MANAGE
+			WHERE CPNY_ID = #CPNY_ID:VARCHAR#         		 
+		]]>
+	</select>
+	
+	<!--查找所有部门的工作地list 不显示已经添加完的地区名称 -->
+	<select id="getWorkAreaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[   
+			  SELECT DISTINCT A.WORK_AREA,
+			  GET_GLOBAL_NAME(A.WORK_AREA, #interLanguage:VARCHAR#) WORK_AREA_NAME
+			  FROM HR_DEPARTMENT A
+			  WHERE A.CPNY_ID = #CPNY_ID:VARCHAR# 
+			  AND A.WORK_AREA NOT IN (SELECT VSM.WORK_AREA
+			                           FROM ESS_VACATION_STANDARD_MANAGE VSM
+			                            WHERE VSM.CPNY_ID = #CPNY_ID:VARCHAR# )		 
+		]]>
+	</select>
+		
+	<!-- 添加休假基准信息 -->
+	<insert id="insertVacationStandardManage" parameterClass="linkMap">
+			INSERT INTO ESS_VACATION_STANDARD_MANAGE(
+			     STANDARD_MANAGE_ID,
+			     CPNY_ID,
+			     WORK_AREA,
+			     CREATE_DATE,
+			     CREATED_BY,
+			     ACTIVITY,
+			     STANDARD_EXPLAIN
+			)VALUES(
+			    STANDARD_MANAGE_ID_SEQ.NEXTVAL,
+			    #CPNY_ID:VARCHAR#,
+			    #WORK_AREA:VARCHAR#,
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#,
+			    1,
+			    #STANDARD_EXPLAIN,javaType=java.lang.String,jdbcType=CLOB#   
+			)
+	</insert>
+	<!-- 删除休假基准信息 -->
+	<delete id="deleteVacationStandardManage" parameterClass="linkMap">
+		<![CDATA[
+			 DELETE 
+				FROM ESS_VACATION_STANDARD_MANAGE 
+			   WHERE STANDARD_MANAGE_ID=#STANDARD_MANAGE_ID:VARCHAR#
+		]]>
+	</delete>
+	<!-- 根据id查询休假基准信息 -->
+	<select id="getManageList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT VSM.STANDARD_MANAGE_ID,
+       		VSM.WORK_AREA,
+       		GET_GLOBAL_NAME(VSM.WORK_AREA, #interLanguage:VARCHAR#) WORK_AREA_NAME,
+       		dbms_lob.substr(VSM.STANDARD_EXPLAIN)  STANDARD_EXPLAIN
+  			FROM ESS_VACATION_STANDARD_MANAGE VSM
+			WHERE VSM.CPNY_ID = #CPNY_ID:VARCHAR#
+			AND VSM.STANDARD_MANAGE_ID=#STANDARD_MANAGE_ID:VARCHAR#          		 
+		]]>
+	</select>
+	<!-- 修改休假信息 -->
+	<update id="updateVacationStandardManage" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_VACATION_STANDARD_MANAGE
+			   SET STANDARD_EXPLAIN = #STANDARD_EXPLAIN,javaType=java.lang.String,jdbcType=CLOB#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE STANDARD_MANAGE_ID = #STANDARD_MANAGE_ID:VARCHAR#
+		]]>
+	</update>
+</sqlMap>

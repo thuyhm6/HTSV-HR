@@ -1,0 +1,4 @@
+1.如何将一个节点对象的属性值获取到？
+ alert($("").attr("属性"))
+例如：alert($("#test").attr("a","我是jquery"))；
+      alert($("#test").attr("a"))弹出框打印我是jquery

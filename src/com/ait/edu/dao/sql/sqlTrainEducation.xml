@@ -1,0 +1,3586 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="edu.traineducation">
+
+
+		<insert id="addSystemManagerInfo" parameterClass="linkMap">
+			  <![CDATA[
+		        	insert into edu_system_manager
+					  (sysmana_no,
+					   train_diff_code,
+					   train_type_code,
+					   train_type_no,
+					   remark,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id)
+					values
+					   (edu_sys_mana_seq.nextval,
+					    #TRAIN_DIFF_CODE:VARCHAR#,
+					    #TRAIN_TYPE_CODE:VARCHAR#,
+					    #TRAIN_TYPE_NO:VARCHAR#,
+					    #REMARK:VARCHAR#,
+					    sysdate,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#)  
+			   ]]>
+		</insert>
+		
+		<insert id="addCourseManagerInfo" parameterClass="linkMap">
+			  <![CDATA[
+		        	insert into edu_course_manager
+					  (course_no,
+					   train_type_code,
+					   course_name_code,
+					   course_number,
+					   remark,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id,
+					   train_type_no,
+					   SYSMANA_NO)
+					values
+					   (EDU_COUR_MANA_SEQ.NEXTVAL,
+					    #TRAIN_TYPE_CODE:VARCHAR#,
+					    #COURSE_NAME_CODE:VARCHAR#,
+					    #COURSE_NUMBER:VARCHAR#,
+					    #REMARK:VARCHAR#,
+					    sysdate,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#,
+					    #TRAIN_TYPE_NO:VARCHAR#,
+					    #SYSMANA_NO:NUMBER#)  
+			   ]]>
+		</insert>
+         
+         <insert id="addPlanManagerInfo" parameterClass="linkMap">
+			  <![CDATA[
+			  insert into edu_plan_manager
+				  (plan_no,
+				   train_diff_code,
+				   train_type_code,
+				   course_name_code,
+				   plan_startdate,
+				   plan_enddate,
+				   class_hour,
+				   class_unit,
+				   period_time,
+				   train_form_code,
+				   isnot_test,
+				   isnot_apply,
+				   des_department,
+				   des_employee,
+				   budget,
+				   budget_show,
+				   depart_mana_code,
+				   teacher_name,
+				   create_date,
+				   created_by,
+				   created_ip,
+				   cpny_id,
+				   DES_EMPLOYEE_NAME,
+				   TEACHER_NAME_EMPID,
+				   TRAIN_ADDRESS,
+				   TRAIN_PERSON_COUNT,
+				   ISNOT_EVALUATE,
+				   ISNOT_REPORT,
+				   ISNOT_AGREEMENT,
+				   course_number,
+				   TRAIN_PERSON_REMARK,
+				   COURSE_NO)
+				values
+			       (#PLAN_NO:NUMBER#,
+			        #TRAIN_DIFF_CODE:VARCHAR#,
+			        #TRAIN_TYPE_CODE:VARCHAR#,
+			        #COURSE_NAME_CODE:VARCHAR#,
+			        to_date(#PLAN_STARTDATE:VARCHAR#,'DD/MM/YYYY'),
+			        to_date(#PLAN_ENDDATE:VARCHAR#,'DD/MM/YYYY'),
+			        #CLASS_HOUR:VARCHAR#,
+			        #CLASS_UNIT:VARCHAR#,
+			        #PERIOD_TIME:VARCHAR#,
+			        #TRAIN_FORM_CODE:VARCHAR#,
+			        #ISNOT_TEST:VARCHAR#,
+			        #ISNOT_APPLY:VARCHAR#,
+			        #DES_DEPARTMENT:VARCHAR#,
+			        #DES_EMPLOYEE:VARCHAR#,
+			        #BUDGET:VARCHAR#,
+			        #BUDGET_SHOW:VARCHAR#,
+			        #DEPART_MANA_CODE:VARCHAR#,
+			        #TEACHER_NAME:VARCHAR#,
+			        sysdate,
+			        #CREATED_BY:VARCHAR#,
+			        #CREATED_IP:VARCHAR#,
+			        #CPNY_ID:VARCHAR#,
+			        #DES_EMPLOYEE_NAME:VARCHAR#,
+			        #TEACHER_NAME_EMPID:VARCHAR#,
+			        #TRAIN_ADDRESS:VARCHAR#,
+			        #TRAIN_PERSON_COUNT:VARCHAR#,
+			        #ISNOT_EVALUATE:VARCHAR#,
+			        #ISNOT_REPORT:VARCHAR#,
+			        #ISNOT_AGREEMENT:VARCHAR#,
+			        #COURSE_NUMBER:VARCHAR#,
+			        #TRAIN_PERSON_REMARK:VARCHAR#,
+			        #COURSE_NO:NUMBER#)
+              ]]>
+		</insert>
+         
+          <insert id="addTeacherManagerInfo" parameterClass="linkMap">
+			  <![CDATA[
+			     insert into edu_teacher_manager
+				  (teacher_no,
+				   teach_field_code,
+				   teach_level_code,
+				   hire_time,
+				   firing_time,
+				   teach_status_code,
+				   business_act_time,
+				   remark,
+				   empid,
+				   create_date,
+				   created_by,
+				   created_ip,
+				   cpny_id,
+				   person_id,
+				   teacher_name)
+				values
+				   (#TEACHER_NO:VARCHAR#,
+				    #TEACH_FIELD_CODE:VARCHAR#,
+				    #TEACH_LEVEL_CODE:VARCHAR#,
+				    to_date(#HIRE_TIME:VARCHAR#,'DD/MM/YYYY'),
+				    to_date(#FIRING_TIME:VARCHAR#,'DD/MM/YYYY'),
+				    #TEACH_STATUS_CODE:VARCHAR#,
+				    #BUSINESS_ACT_TIME:VARCHAR#,
+				    #REMARK:VARCHAR#,
+				    #EMPID:VARCHAR#,
+				    sysdate,
+				    #CREATED_BY:VARCHAR#,
+				    #CREATED_IP:VARCHAR#,
+				    #CPNY_ID:VARCHAR#,
+				    #PERSON_ID:VARCHAR#,
+				    #TEACHER_NAME:VARCHAR#)
+              ]]>
+         </insert>
+         
+          <insert id="addTrainOrganInfo" parameterClass="linkMap">
+			  <![CDATA[
+			      insert into edu_train_organ
+					  (organ_no,
+					   organ_name,
+					   linkman,
+					   address,
+					   office_phone,
+					   cellphone,
+					   url_net,
+					   main_field,
+					   work_together,
+					   organ_abstract,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id)
+					values
+					   (edu_train_organ_seq.nextval,
+					    #ORGAN_NAME:VARCHAR#,
+					    #LINKMAN:VARCHAR#,
+					    #ADDRESS:VARCHAR#,
+					    #OFFICE_PHONE:VARCHAR#,
+					    #CELLPHONE:VARCHAR#,
+					    #URL_NET:VARCHAR#,
+					    #MAIN_FIELD:VARCHAR#,
+					    #WORK_TOGETHER:VARCHAR#,
+					    #ORGAN_ABSTRACT:VARCHAR#,
+					    sysdate,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#)
+               ]]>
+                <selectKey resultClass="string" keyProperty="id" >
+		    	SELECT edu_train_organ_seq.CURRVAL AS ID FROM DUAL
+		   	  </selectKey>
+         </insert>
+         
+         <insert id="addTrainAgreementInfo" parameterClass="linkMap">
+			  <![CDATA[
+			      insert into edu_train_agreement
+					  (agree_no,
+					   person_id,
+					   local_name,
+					   empid,
+					   agree_id,
+					   agree_name,
+					   ser_start_date,
+					   ser_end_date,
+					   total_fee,
+					   exchange_rate,
+					   hq_free,
+					   cgfy_free,
+					   jp_free,
+					   zfbz_free,
+					   cgbz_free,
+					   cgbz_free_fact,
+					   sybx_free,
+					   yx_pay,
+					   jt_free,
+					   tx_free,
+					   TRAINING_FEE,
+					   remark,
+					   fact_pay,
+					   left_date,
+					   agree_start_date,
+					   agree_end_date,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id,
+					   study_start_date,
+					   study_end_date,
+					   study_day,
+					   service_year,
+					   con_start_date,
+					   con_end_date)
+					values
+					  (edu_train_agree_seq.nextval,
+						#PERSON_ID:VARCHAR#,
+						#LOCAL_NAME:VARCHAR#,
+						#EMPID:VARCHAR#,
+						#AGREE_ID:VARCHAR#,
+						#AGREE_NAME:VARCHAR#,
+						to_date(#SER_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+						to_date(#SER_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+						#TOTAL_FEE:VARCHAR#,
+						#EXCHANGE_RATE:VARCHAR#,
+						#HQ_FREE:VARCHAR#,
+						#CGFY_FREE:VARCHAR#,
+						#JP_FREE:VARCHAR#,
+						#ZFBZ_FREE:VARCHAR#,
+						#CGBZ_FREE:VARCHAR#,
+						#CGBZ_FREE_FACT:VARCHAR#,
+						#SYBX_FREE:VARCHAR#,
+						#YX_PAY:VARCHAR#,
+						#JT_FREE:VARCHAR#,
+						#TX_FREE:VARCHAR#,
+						#TRAINING_FEE:VARCHAR#,
+						#REMARK:VARCHAR#,
+						#FACT_PAY:VARCHAR#,
+						to_date(#LEFT_DATE:VARCHAR#,'DD/MM/YYYY'),
+						to_date(#AGREE_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+						to_date(#AGREE_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+						sysdate,
+						#CREATED_BY:VARCHAR#,
+						#CREATED_IP:VARCHAR#,
+						#CPNY_ID:VARCHAR#,
+						to_date(#STUDY_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+						to_date(#STUDY_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+						#STUDY_DAY:VARCHAR#,
+						#SERVICE_YEAR:VARCHAR#,
+						to_date(#CON_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+						to_date(#CON_END_DATE:VARCHAR#,'DD/MM/YYYY'))
+			      
+               ]]>
+                <selectKey resultClass="string" keyProperty="id" >
+		    	SELECT edu_train_agree_seq.CURRVAL AS ID FROM DUAL
+		   	  </selectKey>
+         </insert>
+         
+          <insert id="addTeacherInformation" parameterClass="linkMap">
+			  <![CDATA[
+			    insert into edu_teacher_information
+				  (teach_infor_no,
+				   person_id,
+				   teach_status_code,
+				   teach_level_code,
+				   start_date,
+				   end_date,
+				   create_date,
+				   created_by,
+				   created_ip,
+				   cpny_id,
+				   teacher_no,
+				   teacher_name)
+				   values
+				   (edu_teacher_infor_seq.nextval,
+				    #PERSON_ID:VARCHAR#,
+				    #TEACH_STATUS_CODE:VARCHAR#,
+				    #TEACH_LEVEL_CODE:VARCHAR#,
+				    to_date(#HIRE_TIME:VARCHAR#,'DD/MM/YYYY'),
+				    to_date(#FIRING_TIME:VARCHAR#,'DD/MM/YYYY'),
+				    sysdate,
+				    #CREATED_BY:VARCHAR#,
+				    #CREATED_IP:VARCHAR#,
+				    #CPNY_ID:VARCHAR#,
+				    #TEACHER_NO:VARCHAR#,
+				    #TEACHER_NAME:VARCHAR#)
+			   ]]>
+         </insert>
+         
+         <insert id="addTrainBasicInformationInfo" parameterClass="linkMap">
+			  <![CDATA[
+			      insert into edu_basic_information
+						  (basic_no,                      	
+						   plan_no,
+						   train_type_code,
+						   course_name_code,
+						   train_form_code,
+						   train_address,
+						   imple_start_date,
+						   imple_end_date,
+						   imple_class_hour,
+						   imple_class_unit,
+						   train_content,
+						   com_teacher_empid,
+						   com_teacher_name,
+						   eva_teacher_empid,
+						   eva_teacher_name,
+						   plan_employee_empid,
+						   DES_DEPARTMENT,
+						   plan_employee_name,
+						   create_date,
+						   created_by,
+						   created_ip,
+						   cpny_id,
+						   PERIOD_TIME,
+						   APPLY_END_DATE)
+					values
+					    (#BASIC_NO:NUMBER#,
+					     #ALL_PLAN:NUMBER#,
+					     #TRAIN_TYPE_CODE:VARCHAR#,
+					     #COURSE_NAME_CODE:VARCHAR#,
+					     #TRAIN_FORM_CODE:VARCHAR#,
+					     #TRAIN_ADDRESS:VARCHAR#,
+					     to_date(#IMPLE_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+					     to_date(#IMPLE_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+					     #IMPLE_CLASS_HOUR:VARCHAR#,
+					     #IMPLE_CLASS_UNIT:VARCHAR#,
+					     #TRAIN_CONTENT:VARCHAR#,
+					     #COM_TEACHER_EMPID:VARCHAR#,
+					     #COM_TEACHER_NAME:VARCHAR#,
+					     #EVA_TEACHER_EMPID:VARCHAR#,
+					     #EVA_TEACHER_NAME:VARCHAR#,
+					     #PLAN_EMPLOYEE_EMPID:VARCHAR#,
+					     #DES_DEPARTMENT:VARCHAR#,
+					     #PLAN_EMPLOYEE_NAME:VARCHAR#,
+					     sysdate,
+					     #CREATED_BY:VARCHAR#,
+					     #CREATED_IP:VARCHAR#,
+					     #CPNY_ID:VARCHAR#,
+					     #PERIOD_TIME:VARCHAR#,
+					     to_date(#APPLY_END_DATE:VARCHAR#,'DD/MM/YYYY'))
+			      
+              ]]>
+         </insert>
+         
+         <insert id="finalEduFinalStudent" parameterClass="linkMap">
+			  <![CDATA[
+			    insert into edu_final_student
+				  (final_no,
+				   final_student_name,
+				   final_student_empid,
+				   basic_no,
+				   create_date,
+				   created_by,
+				   created_ip,
+				   cpny_id)
+				values
+				   (edu_final_student_seq.nextval,
+				    #FINAL_STUDENT_NAME:VARCHAR#,
+				    #FINAL_STUDENT_EMPID:VARCHAR#,
+				    #BASIC_NO:NUMBER#,
+				    SYSDATE,
+				    #CREATRD_BY:VARCHAR#,
+				    #CREATRD_IP:VARCHAR#,
+				    #CPNY_ID:VARCHAR#)
+			    
+			  ]]>
+         </insert>
+         <insert id="addCourseApply" parameterClass="linkMap">
+			  <![CDATA[
+			       insert into edu_student_apply
+					  (apply_no,
+					   basic_no,
+					   stu_person_id,
+					   stu_local_name,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id,
+					   apply_task)
+					values
+					   (#APPLY_NO:NUMBER#,
+					    #BASIC_NO:NUMBER#,
+					    #STU_PERSON_ID:VARCHAR#,
+					    #STU_LOCAL_NAME:VARCHAR#,
+					    SYSDATE,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#,
+					    #APPLY_TASK:VARCHAR#)
+			       
+			  ]]>
+         </insert>
+         
+         <insert id="addEduTrainMaker" parameterClass="linkMap">
+			  <![CDATA[
+			       insert into edu_train_maker
+					  (maker_no,
+					   apply_no,
+					   maker_person_id,
+					   maker_local_name,
+					   maker_level,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id)
+					values
+					   (edu_train_maker_seq.nextval,
+					    #APPLY_NO:NUMBER#,
+					    #MAKER_PERSON_ID:VARCHAR#,
+					    #MAKER_LOCAL_NAME:VARCHAR#,
+					    #MAKER_LEVEL:VARCHAR#,
+					    SYSDATE,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#)
+			  ]]>
+         </insert>
+         
+         
+          <insert id="insertEduFreeEmployee" parameterClass="linkMap">
+			  <![CDATA[
+			     insert into edu_free_employee
+					  (free_no,
+					   empid,
+					   local_name,
+					   basic_no,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id,
+					   FLAG)
+					values
+					   (edu_free_emp_seq.nextval,
+					    #EMPID:VARCHAR#,
+					    #LOCAL_NAME:VARCHAR#,
+					    #BASIC_NO:VARCHAR#,
+					    SYSDATE,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#,
+					    #FLAG:VARCHAR#)
+
+			   ]]>
+         </insert>
+         
+         
+          <insert id="updateEduFreeEmployee" parameterClass="linkMap">
+			  <![CDATA[
+			     insert into edu_free_employee
+					  (free_no,
+					   empid,
+					   local_name,
+					   basic_no,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id,
+					   FLAG)
+					values
+					   (edu_free_emp_seq.nextval,
+					    #EMPID:VARCHAR#,
+					    #LOCAL_NAME:VARCHAR#,
+					    #BASIC_NO:VARCHAR#,
+					    SYSDATE,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #CPNY_ID:VARCHAR#,
+					    #FLAG:VARCHAR#)
+
+			   ]]>
+         </insert>
+         
+         <insert id="insertEduTeacherCheck" parameterClass="linkMap">
+			  <![CDATA[
+			      insert into edu_teacher_check
+					  (check_no,
+					   tea_empid,
+					   tea_local_name,
+					   stu_empid,
+					   stu_local_name,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id,
+					   basic_no)
+					values
+					    (edu_teacher_check_seq.nextval,
+					     #TEA_EMPID:VARCHAR#,
+					     #TEA_LOCAL_NAME:VARCHAR#,
+					     #EMPID:VARCHAR#,
+					     #LOCAL_NAME:VARCHAR#,
+					     SYSDATE,
+					     #CREATED_BY:VARCHAR#,
+					     #CREATED_IP:VARCHAR#,
+					     #CPNY_ID:VARCHAR#,
+					     #BASIC_NO:VARCHAR#)
+
+			   ]]>
+         </insert>
+         
+          <insert id="insertEduCostManager" parameterClass="linkMap">
+			  <![CDATA[
+			    insert into edu_cost_manager
+				  (cost_no,
+				   basic_no,
+				   create_date,
+				   created_by,
+				   created_ip,
+				   cpny_id)
+				values
+				   (edu_cost_mana_seq.nextval,
+				    #BASIC_NO:VARCHAR#,
+				    SYSDATE,
+				    #CREATED_BY:VARCHAR#,
+				    #CREATED_IP:VARCHAR#,
+				    #CPNY_ID:VARCHAR#)
+			   ]]>
+         </insert>
+         
+         <insert id="insertEduTrainResult" parameterClass="linkMap">
+			  <![CDATA[
+			     insert into edu_train_result
+					  (result_no,
+					   basic_no,
+					   stu_empid,
+					   stu_local_name,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   cpny_id)
+					values
+			           (edu_train_result_seq.nextval,
+			             #BASIC_NO:VARCHAR#,
+			             #EMPID:VARCHAR#,
+			             #LOCAL_NAME:VARCHAR#,
+			             SYSDATE,
+			             #CREATED_BY#,
+			             #CREATED_IP#,
+			             #CPNY_ID#)
+			   ]]>
+         </insert>
+         
+         
+         <insert id="addStudentKaoping" parameterClass="linkMap">
+			  <![CDATA[
+			     insert into edu_student_check
+					  (check_no,
+					   stu_empid,
+					   stu_local_name,
+					   atten_rates,
+					   enthusiasm,
+					   course_crol,
+					   allscore,
+					   create_date,
+					   created_by,
+					   created_ip,
+					   tea_person_id,
+					   tea_local_name,
+					   other_advise,
+					   cpny_id,
+					   basic_no)
+					values
+					   (EDU_STUDENT_CHECK_SEQ.NEXTVAL,
+					    #STU_EMPID:VARCHAR#,
+					    #STU_LOCAL_NAME:VARCHAR#,
+					    #ATTEN_RATES:VARCHAR#,
+					    #ENTHUSIASM:VARCHAR#,
+					    #COURSE_CROL:VARCHAR#,
+					    #ALLSCORE:VARCHAR#,
+					    SYSDATE,
+					    #CREATED_BY:VARCHAR#,
+					    #CREATED_IP:VARCHAR#,
+					    #TEA_PERSON_ID:VARCHAR#,
+					    #TEA_LOCAL_NAME:VARCHAR#,
+					    #OTHER_ADVISE:VARCHAR#,
+					    #CPNY_ID:VARCHAR#,
+					    #BASIC_NO:VARCHAR#)
+			    ]]>
+         </insert>
+         
+         <update id="updateSystemManager" parameterClass="linkMap">
+			  <![CDATA[
+			  update edu_system_manager
+			   set remark = #REMARK:VARCHAR#,
+			       update_date = sysdate,
+			       updated_by = #UPDATED_BY:VARCHAR#,
+			       updated_ip = #UPDATED_IP:VARCHAR#
+			    where sysmana_no=#SYSMANA_NO:VARCHAR#   
+         ]]>
+         </update>
+         
+         <update id="changePlanManagerActivity" parameterClass="linkMap">
+			  <![CDATA[
+			     update edu_plan_manager set activity=2 
+			     where plan_no=#PLAN_NO:NUMBER#
+			       and activity=1
+			   ]]>
+         </update>
+         
+         <update id="changePlanManagerActivityDel" parameterClass="linkMap">
+			  <![CDATA[
+			     update edu_plan_manager p set p.activity=1
+			     where p.plan_no=(select b.plan_no from edu_basic_information b where b.basic_no=#BASIC_NO:VARCHAR#)
+			       and p.activity=2
+			   ]]>
+         </update>
+         
+         <update id="updateStudentKaoping" parameterClass="linkMap">
+			  <![CDATA[
+			    update edu_student_check
+				   set stu_empid = #STU_EMPID:VARCHAR#,
+				       stu_local_name = #STU_LOCAL_NAME:VARCHAR#,
+				       atten_rates = #ATTEN_RATES:VARCHAR#,
+				       enthusiasm = #ENTHUSIASM:VARCHAR#,
+				       course_crol = #COURSE_CROL:VARCHAR#,
+				       allscore = #ALLSCORE:VARCHAR#,
+				       update_date = SYSDATE,
+				       updated_by = #UPDATED_BY:VARCHAR#,
+				       updated_ip = #UPDATED_IP:VARCHAR#,
+				       tea_person_id = #TEA_PERSON_ID:VARCHAR#,
+				       tea_local_name = #TEA_LOCAL_NAME:VARCHAR#,
+				       other_advise = #OTHER_ADVISE:VARCHAR#
+				 where check_no = #CHECK_NO:VARCHAR#
+			       and activity = '1'
+			       and cpny_id=#CPNY_ID:VARCHAR#
+         ]]>
+         </update>
+         
+          <update id="updateTeacherKaoping" parameterClass="linkMap">
+			  	<![CDATA[
+			        update edu_teacher_check
+				   set tea_empid = #TEA_EMPID:VARCHAR#,
+				       tea_local_name = #TEA_LOCAL_NAME:VARCHAR#,
+				       stu_empid = #STU_EMPID:VARCHAR#,
+				       stu_local_name = #STU_LOCAL_NAME:VARCHAR#,
+				       allscore = #ALLSCORE:VARCHAR#,
+				       update_date = SYSDATE,
+				       updated_by = #UPDATED_BY:VARCHAR#,
+				       updated_ip = #UPDATED_IP:VARCHAR#,
+				       other_advise = #OTHER_ADVISE:VARCHAR#,
+				       grooming = #GROOMING:VARCHAR#,
+				       positive = #POSITIVE:VARCHAR#,
+				       course_enrich = #COURSE_ENRICH:VARCHAR#,
+				       interact = #INTERACT:VARCHAR#
+			        where check_no = #CHECK_NO:VARCHAR#
+			          and activity=1
+			          and cpny_id=#CPNY_ID:VARCHAR#
+			          and basic_no=#BASIC_NO:NUMBER#
+                 ]]>
+          </update>
+          
+          <update id="updateEduTrainResult" parameterClass="linkMap">
+			  	<![CDATA[
+			        update edu_train_result
+				   set difficulty = #DIFFICULTY:VARCHAR#,
+				       content_rich = #CONTENT_RICH:VARCHAR#,
+				       practicability = #PRACTICABILITY:VARCHAR#,
+				       time_moderate = #TIME_MODERATE:VARCHAR#,
+				       allscore = #ALLSCORE:VARCHAR#,
+				       other_advise = #OTHER_ADVISE:VARCHAR#,
+				       update_date = SYSDATE,
+				       updated_by = #UPDATED_BY:VARCHAR#,
+				       updated_ip = #CREATED_IP:VARCHAR#
+				 where result_no = #RESULT_NO:NUMBER#
+			          and activity=1
+			          and cpny_id=#CPNY_ID:VARCHAR#
+			          and basic_no=#BASIC_NO:NUMBER#
+                 ]]>
+          </update>
+         
+         <update id="updateCourseManager" parameterClass="linkMap">
+			  <![CDATA[
+			  update edu_course_manager
+			   set COURSE_NAME_CODE=#COURSE_NAME_CODE:VARCHAR#,
+			       remark = #REMARK:VARCHAR#,
+			       update_date = sysdate,
+			       updated_by = #UPDATED_BY:VARCHAR#,
+			       updated_ip = #UPDATED_IP:VARCHAR#
+			    where course_no=#COURSE_NO:VARCHAR#   
+         ]]>
+         </update>
+         
+         <update id="updatePlanManager_course" parameterClass="linkMap">
+			  <![CDATA[
+			  update edu_plan_manager
+			   set COURSE_NAME_CODE=#COURSE_NAME_CODE:VARCHAR#
+			    where course_no=#COURSE_NO:NUMBER#   
+         ]]>
+         </update>
+         
+         <update id="updateBasicInformation_course" parameterClass="linkMap">
+			  <![CDATA[
+			  update edu_basic_information b set b.course_name_code=#COURSE_NAME_CODE:VARCHAR#
+              where b.plan_no in (select p.plan_no from edu_plan_manager p where p.course_no=#COURSE_NO:NUMBER#)   
+         ]]>
+         </update>
+         
+         <update id="updatePlanManager" parameterClass="linkMap">
+			  <![CDATA[
+			  update edu_plan_manager
+			   set plan_startdate = to_date(#PLAN_STARTDATE:VARCHAR#,'DD/MM/YYYY'),
+			       plan_enddate = to_date(#PLAN_ENDDATE:VARCHAR#,'DD/MM/YYYY'),
+			       class_hour = #CLASS_HOUR:VARCHAR#,
+			       class_unit = #CLASS_UNIT:VARCHAR#,
+			       period_time = #PERIOD_TIME:VARCHAR#,
+			       train_form_code = #TRAIN_FORM_CODE:VARCHAR#,
+			       isnot_test = #ISNOT_TEST:VARCHAR#,
+			       isnot_apply = #ISNOT_APPLY:VARCHAR#,
+			       des_employee = #DES_EMPLOYEE:VARCHAR#,
+			       budget = #BUDGET:VARCHAR#,
+			       budget_show = #BUDGET_SHOW:VARCHAR#,
+			       depart_mana_code = #DEPART_MANA_CODE:VARCHAR#,
+			       create_date = sysdate,
+			       created_by = #UPDATED_BY:VARCHAR#,
+			       created_ip = #UPDATED_IP:VARCHAR#,
+			       des_department = #DES_DEPARTMENT:VARCHAR#,
+			       des_employee_name = #DES_EMPLOYEE_NAME:VARCHAR#,
+			       teacher_name = #TEACHER_NAME:VARCHAR#,
+			       teacher_name_empid = #TEACHER_NAME_EMPID:VARCHAR#,
+			       TRAIN_ADDRESS = #TRAIN_ADDRESS:VARCHAR#,
+				   TRAIN_PERSON_COUNT = #TRAIN_PERSON_COUNT:VARCHAR#,
+				   ISNOT_EVALUATE = #ISNOT_EVALUATE:VARCHAR#,
+				   ISNOT_REPORT = #ISNOT_REPORT:VARCHAR#,
+				   TRAIN_PERSON_REMARK = #TRAIN_PERSON_REMARK:VARCHAR#,
+				   ISNOT_AGREEMENT = #ISNOT_AGREEMENT:VARCHAR#
+			 where plan_no = #PLAN_NO:VARCHAR#
+         ]]>
+         </update>
+         <update id="updateBasicInformation" parameterClass="linkMap">
+			  <![CDATA[
+			  update EDU_BASIC_INFORMATION
+			   set IMPLE_START_DATE = to_date(#PLAN_STARTDATE:VARCHAR#,'DD/MM/YYYY'),
+			       IMPLE_END_DATE = to_date(#PLAN_ENDDATE:VARCHAR#,'DD/MM/YYYY'),
+			       TRAIN_FORM_CODE = #TRAIN_FORM_CODE:VARCHAR#,
+			       TRAIN_ADDRESS = #TRAIN_ADDRESS:VARCHAR#
+			 where PLAN_NO = #PLAN_NO:VARCHAR#
+         ]]>
+         </update>
+         
+          <update id="updateTeacherManager" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_teacher_manager
+			   set teach_field_code = #TEACH_FIELD_CODE:VARCHAR#,
+			       teach_level_code = #TEACH_LEVEL_CODE:VARCHAR#,
+			       hire_time = to_date(#HIRE_TIME:VARCHAR#,'DD/MM/YYYY'),
+			       firing_time = to_date(#FIRING_TIME:VARCHAR#,'DD/MM/YYYY'),
+			       teach_status_code = #TEACH_STATUS_CODE:VARCHAR#,
+			       business_act_time = #BUSINESS_ACT_TIME:VARCHAR#,
+			       remark = #REMARK:VARCHAR#,
+			       update_date = sysdate,
+			       updated_by = #UPDATED_BY:VARCHAR#,
+			       updated_ip = #UPDATED_IP:VARCHAR#
+			 where teacher_no = #TEACHER_NO:VARCHAR#
+              ]]>
+         </update>
+         
+          <update id="updateTrainOrgan" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_train_organ
+			   set organ_name = #ORGAN_NAME:VARCHAR#,
+			       linkman = #LINKMAN:VARCHAR#,
+			       address = #ADDRESS:VARCHAR#,
+			       office_phone = #OFFICE_PHONE:VARCHAR#,
+			       cellphone = #CELLPHONE:VARCHAR#,
+			       url_net = #URL_NET:VARCHAR#,
+			       main_field = #MAIN_FIELD:VARCHAR#,
+			       work_together = #WORK_TOGETHER:VARCHAR#,
+			       organ_abstract = #ORGAN_ABSTRACT:VARCHAR#,
+			       update_date = sysdate,
+			       updated_by = #UPDATED_BY:VARCHAR#,
+			       updated_ip = #UPDATED_IP:VARCHAR#
+			 where organ_no = #ORGAN_NO:VARCHAR#
+              ]]>
+         </update>
+         
+         <update id="updateTrainAgree" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_train_agreement set
+			       agree_name = #AGREE_NAME:VARCHAR#,
+			       ser_start_date = to_date(#SER_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       ser_end_date = to_date(#SER_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       total_fee = #TOTAL_FEE:VARCHAR#,
+			       exchange_rate = #EXCHANGE_RATE:VARCHAR#,
+			       hq_free = #HQ_FREE:VARCHAR#,
+			       cgfy_free = #CGFY_FREE:VARCHAR#,
+			       jp_free = #JP_FREE:VARCHAR#,
+			       zfbz_free = #ZFBZ_FREE:VARCHAR#,
+			       cgbz_free = #CGBZ_FREE:VARCHAR#,
+			       cgbz_free_fact = #CGBZ_FREE_FACT:VARCHAR#,
+			       sybx_free = #SYBX_FREE:VARCHAR#,
+			       yx_pay = #YX_PAY:VARCHAR#,
+			       jt_free = #JT_FREE:VARCHAR#,
+			       tx_free = #TX_FREE:VARCHAR#,
+			       TRAINING_FEE = #TRAINING_FEE:VARCHAR#,
+			       remark = #REMARK:VARCHAR#,
+			       fact_pay = #FACT_PAY:VARCHAR#,
+			       left_date = to_date(#LEFT_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       agree_start_date = to_date(#AGREE_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       agree_end_date = to_date(#AGREE_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       update_date = sysdate,
+			       updated_by = #UPDATED_BY:VARCHAR#,
+			       updated_ip = #UPDATED_IP:VARCHAR#,
+			       study_start_date = to_date(#STUDY_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       study_end_date = to_date(#STUDY_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       study_day = #STUDY_DAY:VARCHAR#,
+			       service_year = #SERVICE_YEAR:VARCHAR#,
+			       con_start_date = to_date(#CON_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+			       con_end_date = to_date(#CON_END_DATE:VARCHAR#,'DD/MM/YYYY')
+			 where agree_no = #AGREE_NO:VARCHAR#
+              ]]>
+         </update>
+         
+         
+          <update id="updateAgreeid" parameterClass="linkMap">
+			  <![CDATA[
+			      update edu_train_agreement set agree_id=#AGREE_ID:VARCHAR#
+			       where agree_no=#AGREE_NO:NUMBER#
+			       and activity=1
+			       and cpny_id=#CPNY_ID:VARCHAR#
+			   ]]>
+         </update>
+			  
+			  
+         <update id="updateTrainBasicInformationInfo" parameterClass="linkMap">
+			  <![CDATA[
+			      update edu_basic_information
+				   set imple_start_date = to_date(#IMPLE_START_DATE:VARCHAR#,'DD/MM/YYYY'),
+				       imple_end_date = to_date(#IMPLE_END_DATE:VARCHAR#,'DD/MM/YYYY'),
+				       imple_class_hour = #IMPLE_CLASS_HOUR:VARCHAR#,
+				       imple_class_unit = #IMPLE_CLASS_UNIT:VARCHAR#,
+				       train_content = #TRAIN_CONTENT:VARCHAR#,
+				       com_teacher_empid = #COM_TEACHER_EMPID:VARCHAR#,
+				       com_teacher_name = #COM_TEACHER_NAME:VARCHAR#,
+				       eva_teacher_empid = #EVA_TEACHER_EMPID:VARCHAR#,
+				       des_department = #DES_DEPARTMENT:VARCHAR#,
+				       eva_teacher_name = #EVA_TEACHER_NAME:VARCHAR#,
+				       plan_employee_empid = #PLAN_EMPLOYEE_EMPID:VARCHAR#,
+				       plan_employee_name = #PLAN_EMPLOYEE_NAME:VARCHAR#,
+				       update_date = sysdate,
+				       updated_by = #UPDATED_BY:VARCHAR#,
+				       updated_ip = #UPDATED_IP:VARCHAR#,
+				       APPLY_END_DATE=to_date(#APPLY_END_DATE:VARCHAR#,'DD/MM/YYYY')
+				 where basic_no = #BASIC_NO:VARCHAR#
+			   ]]>
+         </update>
+         
+         
+          <update id="updateTrainCostManagerInfo" parameterClass="linkMap">
+			  <![CDATA[
+			      update edu_cost_manager
+				   set teacher_cost = #TEACHER_COST:NUMBER#,
+				       material_cost = #MATERIAL_COST:NUMBER#,
+				       field_cost = #FIELD_COST:NUMBER#,
+				       food_cost = #FOOD_COST:NUMBER#,
+				       stay_cost = #STAY_COST:NUMBER#,
+				       traffic_cost = #TRAFFIC_COST:NUMBER#,
+				       visa_cost = #VISA_COST:NUMBER#,
+				       other_cost = #OTHER_COST:NUMBER#,
+				       remark = #REMARK:VARCHAR#,
+				       update_date = SYSDATE,
+				       updated_by = #UPDATED_BY:VARCHAR#,
+				       updated_ip = #UPDATED_IP:VARCHAR#
+				 where cost_no = #COST_NO:NUMBER#
+			  ]]>
+         </update>
+         
+         <update id="updateCourseMaker" parameterClass="linkMap">
+			  <![CDATA[
+			      update edu_train_maker
+				  set apply_flag = #APPLY_FLAG:NUMBER#,
+				      update_date = SYSDATE,
+				      updated_by = #UPDATED_BY:VARCHAR#,
+				      updated_ip = #UPDATED_IP:VARCHAR#
+				where apply_no = #APPLY_NO:VARCHAR#
+				  and activity = 1
+			  ]]>
+         </update>
+         
+         <update id="updateCourseConfirm" parameterClass="linkMap">
+			  <![CDATA[
+			      update edu_train_maker
+				  set confirm_flag = #CONFIRM_FLAG:NUMBER#,
+				      update_date = SYSDATE,
+				      updated_by = #UPDATED_BY:VARCHAR#,
+				      updated_ip = #UPDATED_IP:VARCHAR#
+				where apply_no = #APPLY_NO:VARCHAR#
+				  and activity = 1
+			  ]]>
+         </update>
+         
+         <update id="updateStudentEvaluateInfo" parameterClass="linkMap">
+			  <![CDATA[
+			     update edu_free_employee set 
+			     eva_result=#EVA_RESULT:VARCHAR#,
+			     update_date = sysdate,
+		         updated_by = #UPDATED_BY:VARCHAR#,
+		         updated_ip = #UPDATED_IP:VARCHAR#
+			     where free_no=#FREE_NO:VARCHAR#
+			       and activity='1'
+			   ]]>
+         </update>
+         
+          <update id="deletePlanManager" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_plan_manager set activity='0' where plan_no=#PLAN_NO:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduTrainSyllabus" parameterClass="linkMap">
+			  <![CDATA[
+			   delete from edu_train_syllabus 
+			  where plan_no=#PLAN_NO:NUMBER#
+			  and activity=1
+               ]]>
+         </update>
+         
+         <delete id="deleteCourseSyllabus" parameterClass="linkMap">
+			  <![CDATA[
+			   delete from edu_train_syllabus 
+			  where SYLL_NO=#syll_no:NUMBER#
+               ]]>
+         </delete>
+         
+         <update id="deleteTeacherManager" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_teacher_manager set activity='0' where teacher_no=#TEACHER_NO:VARCHAR#
+               ]]>
+         </update>
+         <update id="deleteSystemMan" parameterClass="linkMap">
+			  <![CDATA[
+			   update EDU_SYSTEM_MANAGER set activity='0' where SYSMANA_NO=#SYSMANA_NO:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteTrainOrgan" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_train_organ set activity='0' where organ_no=#ORGAN_NO:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteTrainAgreement" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_train_agreement set activity='0' where agree_no=#AGREE_NO:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteTrainBasicInformation" parameterClass="linkMap">
+			  <![CDATA[
+			   update edu_basic_information set activity='0' where BASIC_NO=#BASIC_NO:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduFreeEmployee" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from EDU_FREE_EMPLOYEE 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduFreeEmployee_empid" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from EDU_FREE_EMPLOYEE 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity=1
+			      and cpny_id=#CPNY_ID:VARCHAR#
+			      and flag='3'
+			      and empid=#EMPID:VARCHAR#
+               ]]>
+         </update>
+         <update id="deleteEduFreeEmployee_empid_more" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from EDU_FREE_EMPLOYEE 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity=1
+			      and cpny_id=#CPNY_ID:VARCHAR#
+			      and flag='1'
+			      and empid=#EMPID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteTrainCostManager" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from EDU_COST_MANAGER 
+			      where cost_no=#COST_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteTrainCostManager_basicno" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from EDU_COST_MANAGER 
+			      where basic_no=#BASIC_NO:NUMBER#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduFinalStudent_basicno" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from edu_final_student 
+			      where basic_no=#BASIC_NO:NUMBER#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         <delete id="deleteEduCheckTeachear_basicno" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from edu_teacher_check 
+			      where basic_no=#BASIC_NO:NUMBER#
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </delete>
+         <update id="deleteEduStudentApply" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from edu_student_apply 
+			      where basic_no=#BASIC_NO:NUMBER#
+               ]]>
+         </update>
+         
+         <update id="cancelApply" parameterClass="linkMap">
+			  <![CDATA[
+			      delete from edu_student_apply 
+			      where apply_no=#APPLY_NO:NUMBER#
+               ]]>
+         </update>
+         
+         <update id="deleteEduTrainMaker" parameterClass="linkMap">
+			  <![CDATA[
+			       delete from edu_train_maker 
+			      where apply_no=#APPLY_NO:NUMBER#
+               ]]>
+         </update>
+         
+         <update id="deleteEduStudentCheck" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from edu_student_check 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduTeacherCheck" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from edu_teacher_check 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduTrainResult" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from edu_train_result 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteEduTrainResult_stuempid" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from edu_train_result 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+			      and stu_empid=#EMPID:VARCHAR#
+               ]]>
+         </update>
+         <update id="deleteEduTrainResult_stuempid_more" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from edu_train_result t1
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+			      and stu_empid=#EMPID:VARCHAR#
+			      AND T1.RESULT_NO = (select min(RESULT_NO)
+                     from edu_train_result t2
+                    where t1.STU_EMPID = t2.STU_EMPID
+                     AND  T1.BASIC_NO = T2.BASIC_NO
+                    group by STU_EMPID
+                   having count(STU_EMPID) > 1)
+               ]]>
+         </update>
+         
+         <update id="deleteEduTeacherCheck_stuempid" parameterClass="linkMap">
+			  <![CDATA[
+			    delete from edu_teacher_check 
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+			      and stu_empid=#EMPID:VARCHAR#
+               ]]>
+         </update>
+         <update id="deleteEduTeacherCheck_stuempid_more" parameterClass="linkMap">
+			  <![CDATA[
+			    delete from edu_teacher_check t1
+			      where basic_no=#BASIC_NO:VARCHAR#
+			      and activity='1'
+			      and cpny_id=#CPNY_ID:VARCHAR#
+			      and stu_empid=#EMPID:VARCHAR#
+			      AND CHECK_NO = (select min(CHECK_NO)
+                     from edu_teacher_check t2
+                    where t1.STU_EMPID = t2.STU_EMPID
+                     AND  T1.BASIC_NO = T2.BASIC_NO
+                     AND T1.TEA_EMPID = T2.TEA_EMPID
+                    group by STU_EMPID
+                   having count(STU_EMPID) > 1)
+               ]]>
+         </update>
+         
+         <update id="deleteFreeEmployee" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from EDU_FREE_EMPLOYEE 
+			     where basic_no=#BASIC_NO:VARCHAR#
+			     and activity='1'
+			     and cpny_id=#CPNY_ID:VARCHAR#
+			     and empid=#EMPID:VARCHAR#
+               ]]>
+         </update>
+         
+         <update id="deleteSingleEduStudentCheck" parameterClass="linkMap">
+			  <![CDATA[
+			     delete from edu_student_check 
+			     where basic_no=#BASIC_NO:VARCHAR#
+			     and activity='1'
+			     and cpny_id=#CPNY_ID:VARCHAR#
+			     and stu_empid=#EMPID:VARCHAR#
+               ]]>
+         </update>
+         
+		<select id="systemManager" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select s.sysmana_no,
+				   s.train_diff_code,
+				   s.train_type_code,
+			       get_global_name(s.train_diff_code,#interLanguage:VARCHAR#) train_diff_code_name,
+			       get_global_name(s.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       s.train_type_no,
+			       s.remark
+			  from edu_system_manager s
+			  where s.cpny_id=#CPNY_ID:VARCHAR#
+			    and s.activity='1'
+			    
+				]]>
+		<isNotEmpty prepend="AND" property="TRAIN_DIFF_CODE" >
+			<![CDATA[
+    		   s.TRAIN_DIFF_CODE=#TRAIN_DIFF_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRAIN_TYPE_CODE" >
+			<![CDATA[
+    		   s.TRAIN_TYPE_CODE=#TRAIN_TYPE_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+			<![CDATA[
+			order by s.create_date desc
+			]]>
+		</select>
+		
+		<select id="planManager" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select plan_no,
+			       train_diff_code,
+			       get_global_name(train_diff_code,#interLanguage:VARCHAR#) train_diff_code_name,
+			       train_type_code,
+			       get_global_name(train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       course_name_code,
+			       get_global_name(course_name_code,#interLanguage:VARCHAR#) course_name_code_name,
+			       to_char(plan_startdate,'DD/MM/YYYY') plan_startdate,
+			       to_char(plan_enddate,'DD/MM/YYYY') plan_enddate,
+			       class_hour,
+			       class_unit,
+			       period_time,
+			       train_form_code,
+			       get_global_name(train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			       isnot_test,
+			       isnot_apply,
+			       des_department,
+			       des_employee,
+			       budget,
+			       budget_show,
+			       depart_mana_code,
+			       get_dept_name(depart_mana_code, #interLanguage:VARCHAR#) depart_mana_code_name,
+			       teacher_name,
+			       course_number
+			  from edu_plan_manager
+			  where cpny_id=#CPNY_ID:VARCHAR#
+			    and activity<>0
+				]]>
+			<isNotEmpty prepend="AND" property="TRAIN_TYPE_CODE" >
+				<![CDATA[
+	    		   TRAIN_TYPE_CODE=#TRAIN_TYPE_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="TRAIN_DIFF_NAME" >
+				<![CDATA[
+	    		   TRAIN_DIFF_CODE=#TRAIN_DIFF_NAME:VARCHAR#
+				]]>
+			</isNotEmpty>
+			    
+			<isEmpty  prepend="AND" property="TRAIN_DIFF_NAME">
+			    <![CDATA[
+	    		  
+				]]>
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="COURSE_NAME_CODE" >
+				<![CDATA[
+	    		   COURSE_NAME_CODE like '%'||#COURSE_NAME_CODE:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+			order by plan_no desc
+			]]>
+		</select>
+		
+		<select id="planManager_basic" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select plan_no,
+			       train_diff_code,
+			       get_global_name(train_diff_code,#interLanguage:VARCHAR#) train_diff_code_name,
+			       train_type_code,
+			       get_global_name(train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       course_name_code,
+			       get_global_name(course_name_code,#interLanguage:VARCHAR#) course_name_code_name,
+			       to_char(plan_startdate,'DD/MM/YYYY') plan_startdate,
+			       to_char(plan_enddate,'DD/MM/YYYY') plan_enddate,
+			       class_hour,
+			       class_unit,
+			       period_time,
+			       train_form_code,
+			       get_global_name(train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			       isnot_test,
+			       isnot_apply,
+			       des_department,
+			       des_employee,
+			       budget,
+			       budget_show,
+			       depart_mana_code,
+			       get_dept_name(depart_mana_code, #interLanguage:VARCHAR#) depart_mana_code_name,
+			       teacher_name,
+			       course_number
+			  from edu_plan_manager
+			  where cpny_id=#CPNY_ID:VARCHAR#
+			    and activity=1
+				]]>
+		   <![CDATA[
+			order by course_name_code,period_time
+			]]>
+		</select>
+		
+		<select id="teacherManager" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select t.teacher_no,
+			       t.teach_field_code,
+			       get_global_name(t.teach_field_code,#interLanguage:VARCHAR#) teach_field_code_name,
+			       t.teach_level_code,
+			       get_global_name(t.teach_level_code,#interLanguage:VARCHAR#) teach_level_code_name,
+			       to_char(t.hire_time,'DD/MM/YYYY') hire_time,
+			       to_char(t.firing_time,'DD/MM/YYYY') firing_time,
+			       t.teach_status_code,
+			       get_global_name(t.teach_status_code,#interLanguage:VARCHAR#) teach_status_code_name,
+			       t.business_act_time,
+			       t.remark,
+			       t.empid,
+			       t.person_id,
+			       t.teacher_name,
+			       (select GET_DEPT_NAME(d.deptno, #interLanguage:VARCHAR#) from hr_department d 
+			       where d.deptid=(select h.deptno from hr_employee h where h.person_id=t.person_id)) org_name_local
+			  from edu_teacher_manager t
+			     where t.cpny_id=#CPNY_ID:VARCHAR#
+			       and t.activity='1'
+				]]>
+			<isNotEmpty prepend="AND" property="TEACH_NAME_EMPID" >
+				<![CDATA[
+	    		   (t.empid = #TEACH_NAME_EMPID:VARCHAR#
+	    		or t.teacher_name like '%'||#TEACH_NAME_EMPID:VARCHAR#||'%')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="TEACH_FIELD_CODE" >
+				<![CDATA[
+	    		   t.TEACH_FIELD_CODE=#TEACH_FIELD_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="TEACH_LEVEL_CODE" >
+				<![CDATA[
+	    		   t.TEACH_LEVEL_CODE=#TEACH_LEVEL_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="TEACH_STATUS_CODE" >
+				<![CDATA[
+	    		   t.TEACH_STATUS_CODE=#TEACH_STATUS_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+			       order by t.create_date desc
+			]]>
+		</select>
+		
+		<select id="trainAgreement" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select a.agree_no,
+			       a.person_id,
+			       a.local_name,
+			       a.empid,
+			       a.agree_id,
+			       a.agree_name,
+			       to_char(a.ser_start_date,'DD/MM/YYYY') ser_start_date,
+			       to_char(a.ser_end_date,'DD/MM/YYYY') ser_end_date,
+			       a.total_fee,
+			       a.exchange_rate,
+			       a.hq_free,
+			       a.cgfy_free,
+			       a.jp_free,
+			       a.zfbz_free,
+			       a.cgbz_free,
+			       a.cgbz_free_fact,
+			       a.sybx_free,
+			       a.yx_pay,
+			       a.jt_free,
+			       a.tx_free,
+			       a.remark,
+			       a.fact_pay,
+			       to_char(a.left_date,'DD/MM/YYYY') left_date,
+			       to_char(a.agree_start_date,'DD/MM/YYYY') agree_start_date,
+			       to_char(a.agree_end_date,'DD/MM/YYYY') agree_end_date,
+			       (select GET_DEPT_NAME(d.deptno, #interLanguage:VARCHAR#) from hr_department d,hr_employee h where h.deptno=d.deptid and h.person_id=(select hh.person_id from hr_employee hh where hh.empid=a.empid)) depart_name,
+			       round(to_number(a.ser_end_date-a.LEFT_DATE+1)/to_number(SERVICE_YEAR*365)*to_number(a.TOTAL_FEE),2) weiyuejin,
+			       to_char(a.study_start_date,'DD/MM/YYYY') study_start_date,
+			       to_char(a.study_end_date,'DD/MM/YYYY') study_end_date,
+			       a.study_day,
+			       a.service_year,
+			       to_char(a.con_start_date,'DD/MM/YYYY') con_start_date,
+			       to_char(a.con_end_date,'DD/MM/YYYY') con_end_date
+			  from edu_train_agreement a
+			  where a.activity='1'
+			   and a.cpny_id=#CPNY_ID:VARCHAR#
+				]]>
+			<isNotEmpty prepend="AND" property="AGREE_DEPTNO" >
+				<![CDATA[
+	    		   a.person_id in (select h.person_id from hr_employee h,hr_department d where h.deptno=d.deptno and d.deptid in (SELECT DEPTNO  FROM HR_DEPARTMENT START WITH DEPTNO = #AGREE_DEPTNO:VARCHAR# CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO ))
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="AGREE_NAME_EMPID" >
+				<![CDATA[
+	    		   a.empid = #AGREE_NAME_EMPID:VARCHAR#
+	    		or a.local_name like '%'||#AGREE_NAME_EMPID:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CON_START_DATE" >
+				<![CDATA[
+	    		   a.CON_START_DATE>=to_date(#CON_START_DATE:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CON_END_DATE" >
+				<![CDATA[
+	    		   a.CON_END_DATE<=to_date(#CON_END_DATE:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+			   order by a.create_date desc
+			 ]]>
+		</select>
+		<select id="getAllTeacherBaseonBasicNo" parameterClass="linkMap"
+				resultClass="linkMap"> 
+				<![CDATA[
+				    SELECT T.FINAL_STUDENT_EMPID EMPID,T.FINAL_STUDENT_NAME  LOCAL_NAME FROM EDU_FINAL_STUDENT T WHERE T.BASIC_NO=  #BASIC_NO:NUMBER#
+				]]>
+		</select>
+		<select id="trainBasicInformation" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select e.basic_no,
+			       e.plan_no,
+			       e.train_type_code,
+			       get_global_name(e.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       e.course_name_code,
+			       e.train_form_code,
+			       get_global_name(e.train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			       e.train_address,
+			       to_char(e.imple_start_date,'DD/MM/YYYY') imple_start_date,
+			       to_char(e.imple_end_date,'DD/MM/YYYY') imple_end_date,
+			       e.imple_class_hour,
+			       e.imple_class_unit,
+			       e.train_content,
+			       to_char(e.com_teacher_empid) com_teacher_empid,
+				   to_char(e.com_teacher_name) com_teacher_name,
+				   to_char(e.eva_teacher_empid) eva_teacher_empid,
+				   to_char(e.eva_teacher_name) eva_teacher_name,
+				   to_char(e.plan_employee_empid) plan_employee_empid,
+				   to_char(e.plan_employee_name) plan_employee_name,
+			       e.PERIOD_TIME,
+			       (select count(1) from edu_free_employee c where c.basic_no=e.basic_no and c.eva_result is not null) pingjiacount,
+			       (select count(1) from edu_teacher_check t where t.basic_no=e.basic_no and t.allscore is not null) teapingjiacount,
+			       (select count(1) from edu_train_result r where r.basic_no=e.basic_no  and (r.difficulty is not null
+				      or r.content_rich is not null
+				      or r.practicability is not null
+				      or r.time_moderate is not null
+				   )) trainresultcount,
+			       (select r.result_no from edu_train_result r where r.basic_no=e.basic_no and r.stu_empid=#adminempid:VARCHAR# ) result_no
+			  from edu_basic_information e
+			  where e.activity='1'
+			    and e.cpny_id=#CPNY_ID:VARCHAR#
+		        ]]>
+		        <isNotEmpty prepend="AND" property="coursename" >
+				<![CDATA[
+				   e.COURSE_NAME_CODE like '%'||#coursename:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startdate" >
+				<![CDATA[
+	    		  e.imple_start_date>=to_date(#startdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="enddate" >
+				<![CDATA[
+	    		   e.imple_end_date<=to_date(#enddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			  <![CDATA[
+			     order by e.create_date desc
+			     ]]>
+		</select>
+		<select id="trainCostManager" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select e.basic_no,
+		             e.plan_no,
+		             e.train_type_code,
+		             get_global_name(e.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+		             e.course_name_code,
+		             e.train_form_code,
+		             get_global_name(e.train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+		             e.train_address,
+		             to_char(e.imple_start_date,'DD/MM/YYYY') imple_start_date,
+		             to_char(e.imple_end_date,'DD/MM/YYYY') imple_end_date,
+		             e.imple_class_hour,
+		             imple_class_unit,
+		             e.train_content,
+		             e.PERIOD_TIME,
+			         (m.TEACHER_COST+m.MATERIAL_COST+m.FIELD_COST+m.FOOD_COST+m.STAY_COST
+	                 +m.TRAFFIC_COST+m.VISA_COST+m.OTHER_COST)  all_cost,
+	                  round((m.TEACHER_COST + m.MATERIAL_COST + m.FIELD_COST + m.FOOD_COST +
+		            m.STAY_COST + m.TRAFFIC_COST + m.VISA_COST + m.OTHER_COST) /
+		            (select case when count(1)=0 then 1 else count(1) end
+		               from edu_free_employee f
+		              where f.basic_no = e.basic_no)) avg_cost,
+	                 m.cost_no,
+	                 p.BUDGET
+		        from edu_basic_information e,edu_cost_manager m,edu_plan_manager p
+		        where e.activity='1'
+		          and e.cpny_id=#CPNY_ID:VARCHAR#
+		          and e.basic_no=m.basic_no(+)
+		          and e.plan_no=p.plan_no(+)
+		        ]]>
+		    <isNotEmpty prepend="AND" property="coursename" >
+				<![CDATA[
+				   e.COURSE_NAME_CODE like '%'||#coursename:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startdate" >
+				<![CDATA[
+	    		  e.imple_start_date>=to_date(#startdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="enddate" >
+				<![CDATA[
+	    		   e.imple_end_date<=to_date(#enddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			  <![CDATA[
+			     order by e.create_date desc
+			     ]]>
+		</select>
+		
+		
+		<select id="courseApply" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select e.basic_no,
+			       e.plan_no,
+			       (select count(1) from edu_train_syllabus sy where sy.plan_no=e.plan_no) syllabusCount,
+			       e.train_type_code,
+			       get_global_name(e.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       e.course_name_code,
+			       e.train_form_code,
+			       get_global_name(e.train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			       e.train_address,
+			       to_char(e.imple_start_date,'DD/MM/YYYY') imple_start_date,
+			       to_char(e.imple_end_date,'DD/MM/YYYY') imple_end_date,
+			       e.imple_class_hour,
+			       imple_class_unit,
+			       e.train_content,
+			       e.PERIOD_TIME
+			  from edu_basic_information e,edu_plan_manager m
+			  where e.activity='1'
+			    and e.cpny_id=#CPNY_ID:VARCHAR#
+			    and e.plan_no=m.plan_no(+)
+			    and m.ISNOT_APPLY='Y'
+			    and e.apply_end_date>=to_date(to_char(sysdate,'DD/MM/YYYY'),'DD/MM/YYYY')
+		        ]]>
+		     <isNotEmpty prepend="AND" property="applyname" >
+				<![CDATA[
+				   e.COURSE_NAME_CODE like '%'||#applyname:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="applystartdate" >
+				<![CDATA[
+	    		  e.imple_start_date>=to_date(#applystartdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="appleenddate" >
+				<![CDATA[
+	    		   e.imple_end_date<=to_date(#appleenddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			  <![CDATA[
+			      order by e.create_date desc
+			     ]]>
+		</select>
+		
+		<select id="courseMaker" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+	                   select m.maker_no,
+				       m.apply_no,
+				       b.plan_no,
+				       (select count(1) from edu_train_syllabus sy where sy.plan_no=b.plan_no) syllabusCount,
+				       m.maker_person_id,
+				       m.maker_local_name,
+				       m.apply_flag,
+				       to_char(a.create_date,'DD/MM/YYYY') create_date,
+				       h.empid,
+				       a.stu_local_name,
+				       get_dept_name(h.deptno,#interLanguage:VARCHAR#) deptname,
+				       get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) post_grade_no_name,
+				       get_global_name(b.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+				       b.course_name_code,
+				       b.period_time,
+				       to_char(b.imple_start_date,'DD/MM/YYYY') imple_start_date,
+				       to_char(b.imple_end_date,'DD/MM/YYYY') imple_end_date,
+				       b.imple_class_hour,
+				       imple_class_unit,
+				       a.apply_task,
+				       m.apply_flag,
+				       m.confirm_flag     
+				  from edu_train_maker m,edu_student_apply a,hr_employee h,edu_basic_information b
+				  where m.apply_no=a.apply_no
+				    and m.activity=1
+				    and a.activity=1
+				    and m.cpny_id=a.cpny_id
+				    and m.maker_person_id=#adminPersonid:VARCHAR#
+				    and a.stu_person_id=h.person_id
+				    and a.basic_no=b.basic_no
+		        ]]>
+		    <isNotEmpty prepend="AND" property="makDepartno" >
+				<![CDATA[
+				 h.deptno in (SELECT DEPTNO  FROM HR_DEPARTMENT START WITH 
+				 DEPTNO = #makDepartno:VARCHAR# CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO )
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="makEmpidName" >
+				<![CDATA[
+	    		  (h.empid=#makEmpidName:VARCHAR#
+	    		  or h.local_name like '%'||#makEmpidName:VARCHAR#||'%')
+				]]>
+			</isNotEmpty>  
+		     <isNotEmpty prepend="AND" property="makcoursename" >
+				<![CDATA[
+				  b.COURSE_NAME_CODE like '%'||#makcoursename:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="makstartdate" >
+				<![CDATA[
+	    		  b.imple_start_date>=to_date(#makstartdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="makenddate" >
+				<![CDATA[
+	    		  b.imple_end_date<=to_date(#makenddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="maker_flag" >
+				<![CDATA[
+	    		  m.apply_flag=#maker_flag:NUMBER#
+				]]>
+			</isNotEmpty>
+			  <![CDATA[
+			      order by m.apply_flag desc,m.create_date
+			     ]]>
+			   
+		</select>
+		
+		<select id="courseConfirm" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+	                  select m.maker_no,
+				       m.apply_no,
+				       b.plan_no,
+				       (select count(1) from edu_train_syllabus sy where sy.plan_no=b.plan_no) syllabusCount,
+				       m.maker_person_id,
+				       m.maker_local_name,
+				       m.apply_flag,
+				       to_char(a.create_date,'DD/MM/YYYY') create_date,
+				       h.empid,
+				       a.stu_local_name,
+				       get_dept_name(h.deptno,#interLanguage:VARCHAR#) deptname,
+				       get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) post_grade_no_name,
+				       get_global_name(b.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+				       b.course_name_code,
+				       b.period_time,
+				       to_char(b.imple_start_date,'DD/MM/YYYY') imple_start_date,
+				       to_char(b.imple_end_date,'DD/MM/YYYY') imple_end_date,
+				       b.imple_class_hour,
+				       imple_class_unit,
+				       a.apply_task,
+				       m.apply_flag,
+				       m.confirm_flag,
+				       a.basic_no    
+				  from edu_train_maker m,edu_student_apply a,hr_employee h,edu_basic_information b
+				  where m.apply_no=a.apply_no
+				    and m.activity=1
+				    and a.activity=1
+				    and m.cpny_id=#CPNY_ID:VARCHAR#
+				    and a.stu_person_id=h.person_id
+				    and a.basic_no=b.basic_no
+				    and m.maker_level>0
+	                   
+		        ]]>
+		    <isNotEmpty prepend="AND" property="confirmDepartno" >
+				<![CDATA[
+				 h.deptno in (SELECT DEPTNO  FROM HR_DEPARTMENT START WITH 
+				 DEPTNO = #confirmDepartno:VARCHAR# CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO )
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="confirmEmpidName" >
+				<![CDATA[
+	    		  (h.empid=#makEmpidName:VARCHAR#
+	    		  or h.local_name like '%'||#confirmEmpidName:VARCHAR#||'%')
+				]]>
+			</isNotEmpty>  
+		     <isNotEmpty prepend="AND" property="confirmcoursename" >
+				<![CDATA[
+				  b.COURSE_NAME_CODE like '%'||#confirmcoursename:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="confirmstartdate" >
+				<![CDATA[
+	    		  b.imple_start_date>=to_date(#confirmstartdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="confirmenddate" >
+				<![CDATA[
+	    		  b.imple_end_date<=to_date(#confirmenddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="confirm_flag" >
+				<![CDATA[
+	    		  m.confirm_flag=#confirm_flag:NUMBER#
+				]]>
+			</isNotEmpty>
+			  <![CDATA[
+			      order by m.apply_flag desc,m.confirm_flag,m.create_date
+			     ]]>
+			   
+		</select>
+		
+		<select id="makerSituation" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+	                  select e.basic_no,
+			             e.plan_no,
+			             (select count(1) from edu_train_syllabus sy where sy.plan_no=e.plan_no) syllabusCount,
+			             e.train_type_code,
+			             get_global_name(e.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			             e.course_name_code,
+			             e.train_form_code,
+			             H.EMPID,
+						 H.LOCAL_NAME,
+						 get_dept_name(H.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+						 get_global_name(H.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NO_NAME,
+			             get_global_name(e.train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			             e.train_address,
+			             to_char(e.imple_start_date,'DD/MM/YYYY') imple_start_date,
+			             to_char(e.imple_end_date,'DD/MM/YYYY') imple_end_date,
+			             e.imple_class_hour,
+			             imple_class_unit,
+			             e.train_content,
+			             e.PERIOD_TIME,
+			             t.apply_flag,
+			             t.confirm_flag,
+			             t.maker_level,
+			             to_char(a.create_date,'DD/MM/YYYY') create_date,
+			             a.apply_task,
+			             t.maker_local_name,
+			             a.stu_person_id,
+			             a.stu_local_name,
+			             a.apply_no
+			        from edu_basic_information e,edu_plan_manager m,edu_student_apply a,edu_train_maker t,hr_employee h
+			        where e.activity='1'
+			          and e.cpny_id=#CPNY_ID:VARCHAR#
+			          and e.plan_no=m.plan_no
+			          and m.ISNOT_APPLY='Y'
+			          and e.basic_no=a.basic_no
+			          and a.apply_no=t.apply_no
+			          and a.stu_person_id = h.person_id
+			          and t.maker_level>0
+		        ]]>
+		     <isNotEmpty prepend="AND" property="confirmDepartno" >
+				<![CDATA[
+				 h.deptno in (SELECT DEPTNO  FROM HR_DEPARTMENT START WITH 
+				 DEPTNO = #confirmDepartno:VARCHAR# CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO )
+				]]>
+			</isNotEmpty>
+		     <isNotEmpty prepend="AND" property="situationcoursename" >
+				<![CDATA[
+				  e.COURSE_NAME_CODE like '%'||#situationcoursename:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="situationstartdate" >
+				<![CDATA[
+	    		  e.imple_start_date>=to_date(#situationstartdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="situationenddate" >
+				<![CDATA[
+	    		  e.imple_end_date<=to_date(#situationenddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="situation_flag" >
+				<![CDATA[
+	    		  t.apply_flag=#situation_flag:NUMBER#
+				]]>
+			</isNotEmpty>
+			  <![CDATA[
+			      order by case t.apply_flag when 1 then 1
+                  when 2 then 2 when 0 then 3 end,a.stu_local_name,t.confirm_flag desc,e.course_name_code
+			     ]]>
+			   
+		</select>
+		
+		
+		<select id="queryEmployee" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				   select h.empid,
+				   h.local_name,
+				   h.person_id,
+				   get_dept_name(h.deptno,#interLanguage:VARCHAR#) deptname,
+				   get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) post_grade_no_name
+                   from hr_employee h where h.empid in ($EMPID$)
+		 		]]>
+		 	<isNotEmpty prepend="AND" property="situationDepartno" >
+				<![CDATA[
+				 h.deptno in (SELECT DEPTNO  FROM HR_DEPARTMENT START WITH 
+				 DEPTNO = #situationDepartno:VARCHAR# CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO )
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="situationEmpidName" >
+				<![CDATA[
+	    		  (h.empid=#situationEmpidName:VARCHAR#
+	    		  or h.local_name like '%'||#situationEmpidName:VARCHAR#||'%')
+				]]>
+			</isNotEmpty>
+		</select>
+		
+		<select id="queryDefaultMaker" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select hh.empid,
+				hh.local_name,
+				hh.person_id,
+				get_dept_name(hh.deptno,#interLanguage:VARCHAR#) deptname,
+				get_global_name(hh.position_no,#interLanguage:VARCHAR#) position_no_name,
+				get_global_name(hh.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME
+				from hr_employee hh where hh.person_id =(select manager_emp_id from hr_department dd 
+				where deptno =(select deptno from hr_employee h where h.person_id=#adminPersonId:VARCHAR#))
+		        ]]>
+		</select>
+		
+		<select id="trainArchives" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+		select * from (select e.empid,
+			          e.local_name,
+			          get_global_name(p.sexcode,#interLanguage:VARCHAR#) sexcodename,
+			          GET_DEPT_NAME(d.deptno, #interLanguage:VARCHAR#) org_name_local,
+			          get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) post_grade_no_name,
+			          to_char(h.date_started,'DD/MM/YYYY') date_started,
+			          b.course_name_code,
+			          b.period_time,
+			          b.train_content,
+			          b.imple_class_hour,
+			          imple_class_unit,
+			          to_char(b.imple_start_date,'DD/MM/YYYY') imple_start_date,
+			          to_char(b.imple_end_date,'DD/MM/YYYY') imple_end_date,
+			          b.train_address,
+			          (m.TEACHER_COST+m.MATERIAL_COST+m.FIELD_COST+m.FOOD_COST+m.STAY_COST
+			          +m.TRAFFIC_COST+m.VISA_COST+m.OTHER_COST) all_cost,
+			          round(((to_number(e.test_score)*0.6+(select avg(s.allscore) from edu_student_check s 
+			          where s.basic_no=e.basic_no and s.stu_empid=e.empid)*0.4))) eva_result,
+			          nvl((select GET_DEPT_NAME(dd.deptno, #interLanguage:VARCHAR#) org_name_local from hr_department dd where dd.deptno=epm.depart_mana_code),epm.depart_mana_code) depart_mana_code_name,
+			          r.result_no
+			          from edu_free_employee e,hr_employee h,hr_department d,hr_personal_info p,edu_basic_information b,edu_cost_manager m,edu_plan_manager epm,edu_train_result r
+			          where e.empid=h.empid
+			            and e.cpny_id=#CPNY_ID:VARCHAR#
+			            and h.deptno=d.deptno(+)
+			            and h.person_id=p.person_id
+			            and e.basic_no=b.basic_no
+			            and e.basic_no=m.basic_no(+)
+			            and b.plan_no=epm.plan_no(+)
+			            and e.basic_no=r.basic_no
+			            and e.empid=r.stu_empid(+)
+		         ]]>
+			<isNotEmpty prepend="AND" property="arcDepartno" >
+				<![CDATA[
+				d.deptno in (SELECT DEPTNO FROM HR_DEPARTMENT START WITH DEPTNO = #arcDepartno:VARCHAR# 
+				CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO )  
+				]]>
+			</isNotEmpty>     
+		    <isNotEmpty prepend="AND" property="arcCourseName" >
+				<![CDATA[
+				   b.COURSE_NAME_CODE like '%'||#arcCourseName:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="actStartdate" >
+				<![CDATA[
+	    		  b.imple_start_date>=to_date(#actStartdate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="actEnddate" >
+				<![CDATA[
+	    		  b.imple_end_date<=to_date(#actEnddate:VARCHAR#,'DD/MM/YYYY')
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="arcTrainContent" >
+				<![CDATA[
+				   b.train_content like '%'||#arcTrainContent:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+		         <![CDATA[
+		            order by b.course_name_code,b.period_time) a 
+		         ]]>
+		    <isNotEmpty prepend="" property="arcEmpidName" >
+				<![CDATA[
+				  where a.empid=#arcEmpidName:VARCHAR#
+				   or a.local_name like '%'||#arcEmpidName:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>     
+		</select>
+		
+		<select id="trainArchiveshistory" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+		select * from (SELECT 
+					 AAA.EMPID,
+			          AAA.LOCAL_NAME,
+			          AAA.sexcodename,
+			          AAA.org_name_local,
+			          AAA.post_grade_no_name,
+			          date_started,
+			          course_name_code,
+			          period_time,
+			          AAA.train_content,
+			          '' imple_class_hour,
+			          imple_class_unit,
+			          imple_start_date,
+			          imple_end_date,
+			          train_address,
+			          all_cost,
+			          eva_result,
+			          '' depart_mana_code_name,
+			          '' result_no
+					FROM 
+					(
+					select H.EMPID,
+					       H.LOCAL_NAME,
+					       H.DEPTNO,
+					       get_dept_name(H.DEPTNO,#interLanguage:VARCHAR#) org_name_local,
+					       get_global_name(H.post_grade_no,#interLanguage:VARCHAR#) post_grade_no_name,
+					       get_global_name(P.sexcode,#interLanguage:VARCHAR#) sexcodename,
+					       T.EDU_CLASS course_name_code,
+					       T.EDU_TIMES period_time,
+					       to_char(h.date_started,'DD/MM/YYYY') date_started,
+					       CASE WHEN T.EDU_TIME_LENGTH >=8 THEN T.EDU_TIME_LENGTH/8 || '天'
+					       ELSE T.EDU_TIME_LENGTH ||'小时' END imple_class_unit_name,
+					       TO_CHAR(TO_DATE(T.EDU_BEGIN_DATE,'YYYY/MM/DD'),'DD/MM/YYYY')imple_start_date,
+					       TO_CHAR(TO_DATE(T.EDU_END_DATE,'YYYY/MM/DD'),'DD/MM/YYYY') imple_end_date,
+					       NVL(T.EDU_COST,0) all_cost,
+					       T.EDU_LOCATION train_address,
+					       T.PASS_SCORE eva_result,
+					       '' train_content
+					from EDU_TRAIN_BASIC_HISTORY t,HR_EMPLOYEE h,hr_personal_info P
+					where t.person_id = h.empid(+)
+					 AND  H.PERSON_ID = P.PERSON_ID(+)
+					 AND  H.CPNY_ID=#CPNY_ID:VARCHAR#
+					) AAA
+				  WHERE 1=1
+		         ]]>
+			<isNotEmpty prepend="AND" property="arcDepartno" >
+				<![CDATA[
+				AAA.deptno in (SELECT DEPTNO FROM HR_DEPARTMENT START WITH DEPTNO = #arcDepartno:VARCHAR# 
+				CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO )  
+				]]>
+			</isNotEmpty>     
+		    <isNotEmpty prepend="AND" property="arcCourseName" >
+				<![CDATA[
+				   AAA.COURSE_NAME_CODE like '%'||#arcCourseName:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="actStartdate" >
+				<![CDATA[
+	    		  AAA.imple_start_date>=#actStartdate:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="actEnddate" >
+				<![CDATA[
+	    		  AAA.imple_end_date<=#actEnddate:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="arcTrainContent" >
+				<![CDATA[
+				   AAA.train_content like '%'||#arcTrainContent:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+		         <![CDATA[
+		            order by AAA.course_name_code,AAA.period_time) a 
+		         ]]>
+		    <isNotEmpty prepend="" property="arcEmpidName" >
+				<![CDATA[
+				  where a.empid=#arcEmpidName:VARCHAR#
+				   or a.local_name like '%'||#arcEmpidName:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>     
+		</select>
+		
+		
+		<select id="studentChakan" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select check_no,
+				       stu_empid,
+				       stu_local_name,
+				       atten_rates,
+				       enthusiasm,
+				       course_crol,
+				       allscore,
+				       tea_person_id,
+				       tea_local_name,
+				       other_advise
+				  from edu_student_check 
+				  where  stu_empid=#studentempid:VARCHAR#
+		          and  activity='1'
+		          and  cpny_id=#CPNY_ID:VARCHAR#
+		          and  basic_no=#BASIC_NO:VARCHAR#
+				 ]]>
+		</select>
+		
+		<select id="teacherChakan" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				   select check_no,
+				     tea_empid,
+				     tea_local_name,
+				     stu_empid,
+				     stu_local_name,
+				     allscore,
+				     other_advise,
+				     basic_no,
+				     grooming,
+				     positive,
+				     course_enrich,
+				     interact
+				from edu_teacher_check
+				where  tea_empid=#teacherempid:VARCHAR#
+				  and  activity=1
+				  and  cpny_id=#CPNY_ID:VARCHAR#
+			      and  basic_no=#BASIC_NO:VARCHAR#    
+				 ]]>
+		</select>
+		
+		<select id="trainOrgan" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select organ_no,
+			       organ_name,
+			       linkman,
+			       address,
+			       office_phone,
+			       cellphone,
+			       url_net,
+			       main_field,
+			       work_together,
+			       organ_abstract
+			  from edu_train_organ
+				  where activity='1'
+				    and cpny_id=#CPNY_ID:VARCHAR#
+				 ]]>
+			<isNotEmpty prepend="AND" property="ORGAN_NAME" >
+				<![CDATA[
+	    		   ORGAN_NAME LIKE '%'||#ORGAN_NAME:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="ADDRESS" >
+				<![CDATA[
+	    		   ADDRESS LIKE '%'||#ADDRESS:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+		</select>
+		
+		<select id="courseManager" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select c.course_no,
+			       get_global_name(c.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       c.train_type_no,
+			       c.course_name_code,
+			       c.course_number,
+			       c.remark
+			  from edu_course_manager c
+			      where c.cpny_id=#CPNY_ID:VARCHAR#
+			      and c.activity='1'
+				]]>
+			<isNotEmpty prepend="AND" property="TRAIN_DIFF_NAME" >
+				<![CDATA[
+	    		   SUBSTR(TRAIN_TYPE_NO,0,4)=#TRAIN_DIFF_NAME:VARCHAR#
+				]]>
+			</isNotEmpty>
+			    
+			<isEmpty  prepend="AND" property="TRAIN_DIFF_NAME">
+			    <![CDATA[
+	    		  
+				]]>
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="TRAIN_TYPE_CODE" >
+				<![CDATA[
+	    		   c.TRAIN_TYPE_CODE=#TRAIN_TYPE_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="COURSE_NAME_CODE" >
+				<![CDATA[
+	    		   c.COURSE_NAME_CODE like '%'||#COURSE_NAME_CODE:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>	
+				<![CDATA[
+				order by c.create_date desc
+				]]>
+		</select>
+		
+		<select id="queryTeacher" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			     select h.empid,
+	               h.person_id,
+	               h.local_name,
+	               GET_DEPT_NAME(d.DEPTNO, #interLanguage:VARCHAR#) org_name_local,
+	               get_global_name(h.post_grade_no, #interLanguage:VARCHAR#) post_grade_no_name,
+	               get_global_name(h.position_no, #interLanguage:VARCHAR#) position_no_name
+	          from hr_employee h, hr_department d
+	         where h.deptno = d.deptno(+)
+	           and h.cpny_id = #CPNY_ID:VARCHAR#
+	           and h.local_name like '%'||#LOCAL_NAME:VARCHAR#||'%'
+	           and h.emp_office='15119'
+				]]>
+		</select>
+		
+		<select id="queryPeixun" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			     select h.empid,
+	               h.person_id,
+	               h.local_name,
+	               get_dept_name(h.deptno,#interLanguage:VARCHAR#) deptname,
+	               get_global_name(h.post_grade_no, #interLanguage:VARCHAR#) post_grade_no_name,
+	               get_global_name(h.position_no, #interLanguage:VARCHAR#) position_no_name
+	          from hr_employee h
+	         where h.cpny_id = #CPNY_ID:VARCHAR#
+	           AND h.EMP_OFFICE = '15119'
+				]]>
+		<isNotEmpty prepend="AND" property="empidname">
+		   <![CDATA[
+		    (H.LOCAL_NAME LIKE '%' || #empidname:VARCHAR# || '%' OR H.EMPID LIKE '%' || #empidname:VARCHAR# || '%' OR H.ENGLISH_NAME LIKE '%' || #empidname:VARCHAR# || '%')
+		     ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPTNO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		</select>
+		
+		<select id="queryBasicNo" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			       select basic_no from edu_student_check 
+			       where tea_person_id=#str:VARCHAR#
+			       and activity='1'
+			       and cpny_id=#CPNY_ID:VARCHAR#
+				]]>
+		</select>
+		
+		<select id="queryStrBasicNo" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			       select basic_no from edu_teacher_check 
+			       where stu_empid=#str:VARCHAR#
+			       and activity='1'
+			       and cpny_id=#CPNY_ID:VARCHAR#
+			       and allscore is not null
+				]]>
+		</select>
+		
+		<select id="queryResultBasicNo" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			       select basic_no from edu_train_result 
+			       where activity='1'
+			       and cpny_id=#CPNY_ID:VARCHAR#
+			       and allscore is not null
+				]]>
+		</select>
+		
+		
+		<select id="alreadyTrainResultList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			      select result_no,
+				       basic_no,
+				       stu_empid,
+				       stu_local_name,
+				       difficulty,
+				       content_rich,
+				       practicability,
+				       time_moderate,
+				       allscore,
+				       other_advise
+				  from edu_train_result
+				  where  activity=1
+				   and  cpny_id=#CPNY_ID:VARCHAR#
+				   and  basic_no=#BASIC_NO:NUMBER#
+				   and  allscore is not null
+				]]>
+		</select>
+		
+		<select id="queryEmptyAgreeid" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select agree_no from edu_train_agreement 
+				 where cpny_id=#CPNY_ID:VARCHAR# 
+				 and activity=1 
+				 and agree_id is null
+				 
+				]]>
+		</select>
+		<select id="getBasicNoBasePlanNo" parameterClass="linkMap"
+				resultClass="string" > 
+				<![CDATA[
+				SELECT T.BASIC_NO FROM EDU_BASIC_INFORMATION T WHERE T.PLAN_NO=#PLAN_NO:VARCHAR#
+				 
+				]]>
+		</select>
+		
+		<select id="systemManagerInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	     <![CDATA[
+	         select sysmana_no,
+	           train_diff_code,
+	           train_type_code,
+		       get_global_name(train_diff_code,#interLanguage:VARCHAR#) train_diff_code_name,
+			   get_global_name(train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+		       train_type_no,
+		       remark
+		  from edu_system_manager
+	        where sysmana_no=#SYSMANA_NO:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="courseManagerInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	     <![CDATA[
+		         select course_no,
+			       train_type_code,
+			       course_name_code,
+			       get_global_name(train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       get_global_name(course_name_code,#interLanguage:VARCHAR#) course_name_code_name,
+			       course_number,
+			       train_type_no,
+			       remark
+			  from edu_course_manager
+			    where course_no=#COURSE_NO:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="planManagerInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	     <![CDATA[
+	           select plan_no,
+			       train_diff_code,
+			       train_type_code,
+			       get_global_name(train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       course_name_code,
+			       to_char(plan_startdate,'DD/MM/YYYY') plan_startdate,
+			       to_char(plan_enddate,'DD/MM/YYYY') plan_enddate,
+			       class_hour,
+			       class_unit,
+			       period_time,
+			       train_form_code,
+			       get_global_name(train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			       isnot_test,
+			       isnot_apply,
+			       des_department,
+			       des_employee,
+			       des_employee_name,
+			       budget,
+			       budget_show,
+			       depart_mana_code,
+			       get_dept_name(depart_mana_code, #interLanguage:VARCHAR#) depart_mana_code_name,
+			       teacher_name,
+			       TO_CHAR(TEACHER_NAME_EMPID),
+			       TRAIN_ADDRESS,
+				   TRAIN_PERSON_COUNT,
+				   ISNOT_EVALUATE,
+				   ISNOT_REPORT,
+				   TRAIN_PERSON_REMARK,
+				   ISNOT_AGREEMENT,
+			       course_number
+			  from edu_plan_manager
+	           where to_char(plan_no)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+		
+	  <select id="planManagerInfoDetail" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	     <![CDATA[
+	           select e.plan_no,
+             e.train_diff_code,
+             e.train_type_code,
+             get_global_name(e.train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+             e.course_name_code,
+             to_char(e.plan_startdate,'DD/MM/YYYY') plan_startdate,
+             to_char(e.plan_enddate,'DD/MM/YYYY') plan_enddate,
+             e.class_hour,
+             e.class_unit,
+             e.period_time,
+             e.train_form_code,
+             get_global_name(e.train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+             e.isnot_test,
+             e.isnot_apply,
+             e.des_department,
+             e.des_employee,
+             e.des_employee_name,
+             e.budget,
+             e.budget_show,
+             e.depart_mana_code,
+             get_dept_name(depart_mana_code, #interLanguage:VARCHAR#) depart_mana_code_name,
+             teacher_name,
+             e.TEACHER_NAME_EMPID,
+             e.TRAIN_ADDRESS,
+             e.TRAIN_PERSON_COUNT,
+				     ISNOT_EVALUATE,
+				     e.ISNOT_REPORT,
+				     e.ISNOT_AGREEMENT,
+			       e.course_number
+			  from edu_plan_manager e
+        where e.CPNY_ID=#CPNY_ID:VARCHAR#
+	        and to_char(e.plan_no)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+	 <select id="syllabusInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	     <![CDATA[
+	            select COURSE_NAME_CODE,
+		          TO_CHAR(COURSE_DATE,'DD/MM/YYYY') COURSE_DATE,
+		          TO_CHAR(COURSE_START_DATE,'HH24:MI') TSTART,
+		          TO_CHAR(COURSE_END_DATE,'HH24:MI') TEND,
+		          DETAIL_ADDRESS
+		       from EDU_TRAIN_SYLLABUS
+	             WHERE to_char(PLAN_NO)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+		
+		<select id="singleTeacherInformation" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+		        select teach_infor_no,
+			       get_global_name(teach_level_code,#interLanguage:VARCHAR#) teach_level_code_name,
+			       get_global_name(teach_status_code,#interLanguage:VARCHAR#) teach_status_code_name,
+			       to_char(start_date,'DD/MM/YYYY') start_date,
+			       to_char(end_date,'DD/MM/YYYY') end_date,
+			       teacher_name
+			  from edu_teacher_information
+			   where  person_id=#PERSON_ID:VARCHAR#
+			     and  activity='1'
+			     and  cpny_id=#CPNY_ID:VARCHAR#
+			     order by start_date,end_date
+		     ]]>
+		</select>
+		
+	     
+		<select id="teacherManagerInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+		      select t.teacher_no,
+			       t.teach_field_code,
+			       t.teach_level_code,
+			       to_char(t.hire_time,'DD/MM/YYYY') hire_time,
+			       to_char(t.firing_time,'DD/MM/YYYY') firing_time,
+			       t.teach_status_code,
+			       round(to_number(sysdate-t.hire_time)/30+to_number(t.business_act_time)) alltime,
+			       t.remark,
+			       t.empid,
+			       t.person_id,
+			       t.teacher_name,
+			       (select d.org_name_local from hr_department d 
+			       where d.deptid=(select h.deptno from hr_employee h where h.person_id=t.person_id)) org_name_local,
+			       (select get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) from hr_employee h where h.person_id=t.person_id ) post_grade_no_name,
+			       (select get_global_name(h.position_no,#interLanguage:VARCHAR#) from hr_employee h where h.person_id=t.person_id) position_no_name
+			  from edu_teacher_manager t
+			     where t.teacher_no=#TEACHER_NO:VARCHAR#
+			 ]]>
+		</select>
+		
+		<select id="trainOrganInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+		       select organ_no,
+			       organ_name,
+			       linkman,
+			       address,
+			       office_phone,
+			       cellphone,
+			       url_net,
+			       main_field,
+			       work_together,
+			       organ_abstract
+			  from edu_train_organ
+				  where organ_no=#ORGAN_NO:VARCHAR#
+		      ]]>
+		</select>
+		
+		<select id="trainAgreementInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+		       select a.agree_no,
+			       a.person_id,
+			       a.local_name,
+			       a.empid,
+			       a.agree_id,
+			       a.agree_name,
+			       to_char(a.ser_start_date,'DD/MM/YYYY') ser_start_date,
+			       to_char(a.ser_end_date,'DD/MM/YYYY') ser_end_date,
+			       a.total_fee,
+			       a.exchange_rate,
+			       a.hq_free,
+			       a.cgfy_free,
+			       a.jp_free,
+			       a.zfbz_free,
+			       a.cgbz_free,
+			       a.cgbz_free_fact,
+			       a.sybx_free,
+			       a.yx_pay,
+			       a.jt_free,
+			       a.TRAINING_FEE,
+			       a.tx_free,
+			       a.remark,
+			       a.fact_pay,
+			       to_char(a.left_date,'DD/MM/YYYY') left_date,
+			       to_char(a.agree_start_date,'DD/MM/YYYY') agree_start_date,
+			       to_char(a.agree_end_date,'DD/MM/YYYY') agree_end_date,
+			       (select d.org_name_local from hr_department d,hr_employee h where h.deptno=d.deptid and h.person_id=a.person_id) depart_name,
+			       round(to_number(a.CON_END_DATE-a.LEFT_DATE)/to_number(a.CON_END_DATE-a.CON_START_DATE)*to_number(a.TOTAL_FEE),2) weiyuejin,
+			       to_char(a.study_start_date,'DD/MM/YYYY') study_start_date,
+			       to_char(a.study_end_date,'DD/MM/YYYY') study_end_date,
+			       a.study_day,
+			       a.service_year,
+			       to_char(a.con_start_date,'DD/MM/YYYY') con_start_date,
+			       to_char(a.con_end_date,'DD/MM/YYYY') con_end_date
+			  from edu_train_agreement a
+			  where a.activity='1'
+			   and a.cpny_id=#CPNY_ID:VARCHAR#
+			   and a.agree_no=#AGREE_NO:VARCHAR#
+		      ]]>
+		</select>
+		
+		<select id="trainBasicInformationInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+		        select basic_no,
+			       plan_no,
+			       train_type_code,
+			       get_global_name(train_type_code,#interLanguage:VARCHAR#) train_type_code_name,
+			       course_name_code,
+			       train_form_code,
+			       get_global_name(train_form_code,#interLanguage:VARCHAR#) train_form_code_name,
+			       train_address,
+			       to_char(imple_start_date,'DD/MM/YYYY') imple_start_date,
+			       to_char(imple_end_date,'DD/MM/YYYY') imple_end_date,
+			       imple_class_hour,
+			       imple_class_unit,
+			       train_content,
+			       des_department,
+			       com_teacher_empid,
+			       com_teacher_name,
+			       eva_teacher_empid,
+			       eva_teacher_name,
+			       plan_employee_empid,
+			       plan_employee_name,
+			       PERIOD_TIME,
+			       to_char(APPLY_END_DATE,'DD/MM/YYYY') APPLY_END_DATE
+			  from edu_basic_information
+			  where basic_no=#BASIC_NO:NUMBER#
+		      ]]>
+		</select>
+		
+		
+		<select id="trainCostManagerInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+		         select m.cost_no,
+			       m.basic_no,
+			       m.teacher_cost,
+			       m.material_cost,
+			       m.field_cost,
+			       m.food_cost,
+			       m.stay_cost,
+			       m.traffic_cost,
+			       m.visa_cost,
+			       m.other_cost,
+			       m.remark,
+			       (select case when count(1)=0 then 1 else count(1) end 
+			       from edu_free_employee f where f.basic_no=m.basic_no) total_count
+			  from edu_cost_manager m
+			    where m.cost_no=#COST_NO:VARCHAR#
+			     and  m.activity=1
+		         
+		      ]]>
+		</select>
+		
+		<select id="studentKaopingInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+			          select check_no,
+				       stu_empid,
+				       stu_local_name,
+				       atten_rates,
+				       enthusiasm,
+				       course_crol,
+				       allscore,
+				       tea_person_id,
+				       tea_local_name,
+				       other_advise
+				  from edu_student_check 
+				  where  stu_empid=#studentempid:VARCHAR#
+		          and  tea_person_id=#teacherPersonid:VARCHAR#
+		          and  activity='1'
+		          and  cpny_id=#CPNY_ID:VARCHAR#
+		          and  basic_no=#BASIC_NO:VARCHAR#
+		      ]]>
+		</select>
+		
+		<select id="teacherKaopingInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+			      select check_no,
+				     tea_empid,
+				     tea_local_name,
+				     stu_empid,
+				     stu_local_name,
+				     allscore,
+				     other_advise,
+				     basic_no,
+				     grooming,
+				     positive,
+				     course_enrich,
+				     interact
+				from edu_teacher_check
+				where  check_no=#CHECK_NO:VARCHAR#
+				  and  activity=1
+				  and  cpny_id=#CPNY_ID:VARCHAR#
+			      and  basic_no=#BASIC_NO:VARCHAR#    
+		      ]]>
+		</select>
+		
+		
+		<select id="trainResultInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+			         select result_no,
+				       basic_no,
+				       stu_empid,
+				       stu_local_name,
+				       difficulty,
+				       content_rich,
+				       practicability,
+				       time_moderate,
+				       allscore,
+				       other_advise
+				  from edu_train_result
+				  where result_no=#RESULT_NO:VARCHAR#
+				   and  activity=1
+				   and  cpny_id=#CPNY_ID:VARCHAR#
+		      ]]>
+		</select>
+		<select id="trainResultInfoEveList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+			       SELECT 
+					CASE WHEN 
+					     A.RESULT_NAME ='实用性' THEN '课程的内容是否实用'
+					WHEN A.RESULT_NAME ='掌握度' THEN '课程易掌握的程度'
+					WHEN A.RESULT_NAME ='时间长度' THEN '课程的时间长度'
+					WHEN A.RESULT_NAME ='满意度' THEN '课程的整体满意度' END TYPE_NAME,
+					A.REV_05,
+					A.REV_04,
+					A.REV_03,
+					A.REV_02,
+					A.REV_01,
+					A.REV_TOTAL
+					FROM (
+					SELECT 
+					TTTT.RESULT_NAME,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '非常好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2)) *100 ||'%'
+					as REV_05,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '比较好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_04,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '一般', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_03,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '比较不好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_02,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '非常不好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_01,
+					 DECODE(
+			          (SELECT COUNT(*)
+			            FROM EDU_TRAIN_RESULT T
+			           WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+			             AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+			                 T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+			          ROUND(sum(decode(TTTT.SCORE_VP, '非常好', COUNT_NUM,0)+decode(TTTT.SCORE_VP, '比较好', COUNT_NUM,0))/ 
+			          (SELECT COUNT(*)
+			            FROM EDU_TRAIN_RESULT T
+			           WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+			             AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+			                 T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+			          as REV_TOTAL
+					FROM (
+					SELECT 
+					    TTT.RESULT_NAME,
+					    CASE WHEN TTT.SCORE=5 THEN '非常好' 
+					         WHEN TTT.SCORE = 4 THEN '比较好'
+					         WHEN TTT.SCORE = 3 THEN '一般'
+					         WHEN TTT.SCORE = 2 THEN '比较不好'
+					         WHEN TTT.SCORE  =1  THEN '非常不好'
+					         END SCORE_VP,
+					    count(TTT.SCORE) COUNT_NUM
+					 FROM 
+					(
+					SELECT 
+					 TT.STU_EMPID, '满意度' RESULT_NAME , DIFFICULTY as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					UNION
+					
+					SELECT 
+					 TT.STU_EMPID, '掌握度' RESULT_NAME , CONTENT_RICH as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					UNION
+					SELECT 
+					 TT.STU_EMPID, '时间长度' RESULT_NAME , TIME_MODERATE as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					UNION
+					SELECT 
+					 TT.STU_EMPID, '实用性' RESULT_NAME , PRACTICABILITY as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					order by STU_EMPID,RESULT_NAME) TTT
+					GROUP BY  TTT.RESULT_NAME,
+					    CASE WHEN TTT.SCORE=5 THEN '非常好' 
+					         WHEN TTT.SCORE = 4 THEN '比较好'
+					         WHEN TTT.SCORE = 3 THEN '一般'
+					         WHEN TTT.SCORE = 2 THEN '比较不好'
+					         WHEN TTT.SCORE  =1  THEN '非常不好'
+					         END 
+					ORDER BY TTT.RESULT_NAME
+					)  TTTT
+					    group by TTTT.RESULT_NAME
+					   order by TTTT.RESULT_NAME
+					) A
+		      ]]>
+		</select>
+		<select id="alreadyTrainResultTSTOList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+			       SELECT 
+					CASE WHEN 
+					     A.RESULT_NAME ='实用性' THEN '课程的内容是否实用'
+					WHEN A.RESULT_NAME ='掌握度' THEN '课程易掌握的程度'
+					WHEN A.RESULT_NAME ='时间长度' THEN '课程的时间长度'
+					WHEN A.RESULT_NAME ='满意度' THEN '课程的整体满意度' END TYPE_NAME,
+					A.REV_05,
+					A.REV_04,
+					A.REV_03,
+					A.REV_02,
+					A.REV_01,
+					A.REV_TOTAL
+					FROM (
+					SELECT 
+					TTTT.RESULT_NAME,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '非常好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2)) *100 ||'%'
+					as REV_05,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '比较好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_04,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '一般', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_03,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '比较不好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_02,
+					DECODE(
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+					ROUND(sum(decode(TTTT.SCORE_VP, '非常不好', COUNT_NUM,0))/ 
+					(SELECT COUNT(*)
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+					as REV_01,
+					DECODE(
+			          (SELECT COUNT(*)
+			            FROM EDU_TRAIN_RESULT T
+			           WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+			             AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+			                 T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) ,'0','0',
+			          ROUND(sum(decode(TTTT.SCORE_VP, '非常好', COUNT_NUM,0)+decode(TTTT.SCORE_VP, '比较好', COUNT_NUM,0))/ 
+			          (SELECT COUNT(*)
+			            FROM EDU_TRAIN_RESULT T
+			           WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+			             AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+			                 T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)),2))  *100 ||'%'
+			          as REV_TOTAL
+					FROM (
+					SELECT 
+					    TTT.RESULT_NAME,
+					    CASE WHEN TTT.SCORE=5 THEN '非常好' 
+					         WHEN TTT.SCORE = 4 THEN '比较好'
+					         WHEN TTT.SCORE = 3 THEN '一般'
+					         WHEN TTT.SCORE = 2 THEN '比较不好'
+					         WHEN TTT.SCORE  =1  THEN '非常不好'
+					         END SCORE_VP,
+					    count(TTT.SCORE) COUNT_NUM
+					 FROM 
+					(
+					SELECT 
+					 TT.STU_EMPID, '满意度' RESULT_NAME , DIFFICULTY as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					UNION
+					
+					SELECT 
+					 TT.STU_EMPID, '掌握度' RESULT_NAME , CONTENT_RICH as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					UNION
+					SELECT 
+					 TT.STU_EMPID, '时间长度' RESULT_NAME , TIME_MODERATE as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					UNION
+					SELECT 
+					 TT.STU_EMPID, '实用性' RESULT_NAME , PRACTICABILITY as SCORE 
+					 FROM 
+					(SELECT T.STU_EMPID,
+					       T.DIFFICULTY,
+					       T.CONTENT_RICH,
+					       T.PRACTICABILITY,
+					       T.TIME_MODERATE
+					  FROM EDU_TRAIN_RESULT T
+					 WHERE T.BASIC_NO = #BASIC_NO:VARCHAR#
+					   AND (T.DIFFICULTY IS NOT NULL OR T.CONTENT_RICH IS NOT NULL OR
+					       T.PRACTICABILITY IS NOT NULL OR T.TIME_MODERATE IS NOT NULL)) TT
+					order by STU_EMPID,RESULT_NAME) TTT
+					GROUP BY  TTT.RESULT_NAME,
+					    CASE WHEN TTT.SCORE=5 THEN '非常好' 
+					         WHEN TTT.SCORE = 4 THEN '比较好'
+					         WHEN TTT.SCORE = 3 THEN '一般'
+					         WHEN TTT.SCORE = 2 THEN '比较不好'
+					         WHEN TTT.SCORE  =1  THEN '非常不好'
+					         END 
+					ORDER BY TTT.RESULT_NAME
+					)  TTTT
+					    group by TTTT.RESULT_NAME
+					   order by TTTT.RESULT_NAME
+					) A
+		      ]]>
+		</select>
+		<select id="checkTrainResultTSTOInfoPer" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		     <![CDATA[
+			         SELECT *
+						FROM EDU_TRAIN_RESULT T
+						WHERE T.CPNY_ID=#CPNY_ID#
+						AND  T.BASIC_NO = #BASIC_NO#
+		      ]]>
+		</select>
+		
+		<select id="queryDesEmployee" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select des_employee
+			   from edu_plan_manager
+	           where to_char(plan_no)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="queryPlanNo" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select edu_plan_mana_seq.nextval from dual
+			]]>
+		</select>
+		
+		<select id="queryClob" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select  $str$
+			   from edu_basic_information
+	           where basic_no=#BASIC_NO:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="queryClobSecond" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select  $content$
+			   from $table$
+	           where $term$
+			]]>
+		</select>
+		
+		<select id="queryCountnum" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select count(1) from edu_student_apply
+	           where basic_no=#basicno:VARCHAR#
+	             and stu_person_id=#adminPersonid:VARCHAR#
+	             and activity=1
+	             and cpny_id=#CPNY_ID:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="alreadycountnum" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select count(1) from edu_student_apply
+	           where basic_no=#basicno:VARCHAR#
+	             and activity=1
+	             and cpny_id=#CPNY_ID:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="queryDesEmployeeName" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select des_employee_name
+			   from edu_plan_manager
+	           where to_char(plan_no)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="queryTeacherName" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select to_char(teacher_name)
+			   from edu_plan_manager
+	           where to_char(plan_no)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+		<select id="queryComTeacherName" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	          select com_teacher_name from edu_basic_information 
+	           where basic_no=#BASIC_NO:NUMBER#
+			]]>
+		</select>
+		
+		<select id="queryComTeacherEmpid" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	          select com_teacher_empid from edu_basic_information 
+	           where basic_no=#BASIC_NO:NUMBER#
+			]]>
+		</select>
+		
+		<select id="queryTeacherNameEmpid" parameterClass="linkMap" resultClass="string" remapResults="true">
+	     <![CDATA[
+	           select to_char(teacher_name_empid)
+			   from edu_plan_manager
+	           where to_char(plan_no)=#PLAN_NO:VARCHAR#
+			]]>
+		</select>
+		
+    <select id="queryMaxno" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	    select MAX(TRAIN_TYPE_NO) from edu_system_manager 
+	    where cpny_id=#CPNY_ID:VARCHAR#
+	      and activity='1'
+	      and TRAIN_DIFF_CODE=#TRAIN_DIFF_CODE:VARCHAR#
+	   ]]>
+	</select>
+	
+	
+	<select id="queryBasicno" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	    select edu_basic_infor_seq.nextval from dual
+	   ]]>
+	</select>
+	
+	<select id="queryApplyno" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	    select edu_student_apply_seq.nextval from dual
+	   ]]>
+	</select>
+	
+	<select id="queryAgreeid" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	    select agree_id from edu_train_agreement where agree_no=#AGREE_NO:VARCHAR#
+	   ]]>
+	</select>
+		<select id="queryMaxcourseNo" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	    select MAX(COURSE_NUMBER) from edu_course_manager 
+	    where cpny_id=#CPNY_ID:VARCHAR#
+	      and activity='1'
+	      and TRAIN_TYPE_CODE=#TRAIN_TYPE_CODE:VARCHAR#
+	   ]]>
+	</select>
+	
+	<select id="queryMaxPeriodtime" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	    select MAX(PERIOD_TIME) from edu_plan_manager 
+	    where cpny_id=#CPNY_ID:VARCHAR#
+	      and activity<>0
+	      and course_number=#COURSE_NUMBER:VARCHAR#
+	   ]]>
+	</select>
+	
+	<select id="queryTeacherNo" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	     select edu_teacher_mana_seq.nextval from dual
+	   ]]>
+	</select>
+	
+	<select id="querySheWaiEmpid" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	     select  edu_teacher_empid_seq.nextval from dual
+	   ]]>
+	</select>
+	
+	<select id="queryMaxAgreeId" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	     select 'TEA'||MAX(SUBSTR(T.AGREE_ID,4,LENGTH(T.AGREE_ID))) from edu_train_agreement T where cpny_id=#CPNY_ID:VARCHAR#
+	   ]]>
+	</select>
+	
+	<select id="queryIsnotEva" parameterClass="linkMap" resultClass="string" remapResults="true">
+	  <![CDATA[
+	     select p.ISNOT_EVALUATE from edu_plan_manager p,edu_basic_information b 
+	     where b.plan_no=p.plan_no
+	       and b.basic_no=#basicno:VARCHAR#
+	   ]]>
+	</select>
+	
+	<select id="desEmployee" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select h.empid,h.local_name,d.org_name_local from hr_employee h,hr_department d
+					where h.deptno=d.deptno
+					  and h.cpny_id=#CPNY_ID:VARCHAR#
+					  and h.emp_office='15119' 
+		       ]]>
+		       <isNotEmpty prepend="AND" property="empidname">
+				<![CDATA[
+	    		    (h.empid=#empidname:VARCHAR#
+	    		     or h.local_name like '%'||#empidname:VARCHAR#||'%')
+				]]>
+			    </isNotEmpty>
+		       <isNotEmpty prepend="AND" property="DEPTNO" >
+				<![CDATA[
+	    		    h.deptno in ($DEPTNO$)
+				]]>
+			    </isNotEmpty>
+		    
+		       <![CDATA[
+		      
+		       ]]>
+	   </select>
+	   
+	   <select id="photoMissing" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 SELECT  H.EMPID,H.LOCAL_NAME,D.ORG_NAME_LOCAL
+				  FROM  HR_EMPLOYEE H, HR_PERSONAL_INFO P,HR_DEPARTMENT D
+				 WHERE H.PERSON_ID = P.PERSON_ID(+)
+				 AND H.CPNY_ID=#CPNY_ID:VARCHAR#
+				 AND H.DEPTNO=D.DEPTNO(+)
+				 AND P.PHOTO_PATH IS NULL
+				 AND H.EMPID NOT LIKE '11111%'
+				 AND H.EMP_OFFICE='15119'
+		       ]]>
+	   </select>
+		
+		
+		<select id="teacherSearch" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select t.empid,
+			       t.person_id,
+			       t.teacher_name,
+			       (select d.org_name_local from hr_department d 
+			       where d.deptid=(select h.deptno from hr_employee h where h.person_id=t.person_id)) org_name_local
+			  from edu_teacher_manager t
+			     where t.cpny_id=#CPNY_ID:VARCHAR#
+			       and t.activity='1'
+			       and (t.empid = #TEACHER_NAME:VARCHAR#
+	    		   or t.teacher_name like '%'||#TEACHER_NAME:VARCHAR#||'%')
+		       ]]>
+	   </select>
+	   
+	   <select id="queryCourseSyllabus" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select syll_no,
+			       course_name_code,
+			       to_char(course_date,'DD/MM/YYYY') course_date,
+			       to_char(course_start_date,'hh24:mi') course_start_date,
+			       to_char(course_end_date,'hh24:mi') course_end_date,
+			       detail_address
+			  from edu_train_syllabus
+				 where plan_no=#PLAN_NO:NUMBER#
+				   and activity=1
+				   and cpny_id=#CPNY_ID:VARCHAR#
+				   order by course_date
+		        ]]>
+	   </select>
+	   <select id="queryCourseSyllabus3" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select syll_no,
+			       course_name_code,
+			       to_char(course_date,'DD/MM/YYYY') course_date,
+			       to_char(course_start_date,'hh24:mi') course_start_date,
+			       to_char(course_end_date,'hh24:mi') course_end_date,
+			       detail_address
+			  from edu_train_syllabus
+				 where plan_no=#PLAN_NO:NUMBER#
+				   and activity=1
+				   and cpny_id=#CPNY_ID:VARCHAR#
+				   and course_date = TO_DATE(#AR_DATE_STR#,'YYYY/MM/DD')
+		        ]]>
+	   </select>
+	   <select id="getcourseNum" parameterClass="linkMap"
+				resultClass="int" remapResults="true"> 
+				<![CDATA[
+				 select count(1)
+			  from edu_train_syllabus
+				 where plan_no=#PLAN_NO:NUMBER#
+				   and activity=1
+				   and cpny_id=#CPNY_ID:VARCHAR#
+		        ]]>
+	   </select>
+	   
+	   <select id="commonTeacher" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select t.empid,
+			       t.person_id,
+			       t.teacher_name,
+			       (select d.org_name_local from hr_department d 
+			       where d.deptid=(select h.deptno from hr_employee h where h.person_id=t.person_id)) org_name_local
+			  from edu_teacher_manager t
+			     where t.cpny_id=#CPNY_ID:VARCHAR#
+			       and t.activity='1'
+			       
+		       ]]>
+		        <isNotEmpty prepend="AND" property="teacherempid" >
+				<![CDATA[
+	    		    t.empid in ($EMPID$)
+				]]>
+			    </isNotEmpty>
+	   </select>
+	   
+	   <select id="queryFreeEmployee" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select free_no,
+			       empid,
+			       local_name,
+			       flag
+			  from edu_free_employee
+				  where basic_no=#BASIC_NO:NUMBER#
+				   and activity='1'
+				   and cpny_id=#CPNY_ID:VARCHAR#
+				]]>
+	   </select>
+	   
+	   <select id="queryfinalstudent" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select final_no,
+			       FINAL_STUDENT_EMPID,
+			       FINAL_STUDENT_NAME
+			  from edu_final_student
+				  where basic_no=#BASIC_NO:NUMBER#
+				   and activity='1'
+				   and cpny_id=#CPNY_ID:VARCHAR#
+				]]>
+	   </select>
+	   
+	   <select id="queryApply" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select apply_no from edu_student_apply where basic_no=#BASIC_NO:NUMBER#
+				]]>
+	   </select>
+	   
+	   <select id="queryEvaAllemployee" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select e.free_no,
+				   e.basic_no,
+			       e.empid,
+			       e.local_name,
+			       e.flag,
+			       (select GET_DEPT_NAME(d.deptno,#interLanguage:VARCHAR#) from hr_department d where d.deptno=
+			       (select h.deptno from hr_employee h where h.empid=e.empid)) org_name_local,
+			       (select get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) 
+			       from hr_employee h where h.empid=e.empid ) post_grade_no_name,
+			       c.tea_person_id,
+			       test_score,
+			       round((to_number(c.atten_rates)*0.3+to_number(c.ENTHUSIASM)*0.3+to_number(c.COURSE_CROL)*0.4)*20) kp_avg_score,
+			       e.eva_result
+			  from edu_free_employee e,edu_student_check c
+				  where e.basic_no=#BASIC_NO:NUMBER#
+				   and e.activity='1'
+				   and e.cpny_id=#CPNY_ID:VARCHAR#
+				   and e.empid=c.stu_empid(+)
+				   and c.tea_person_id(+)=#tearcherPersonid:VARCHAR#
+				   and e.basic_no=c.basic_no(+)
+				]]>
+	   </select>
+	   
+	   <select id="queryEvaAllTeacher" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				  select t.check_no,
+			       t.tea_empid,
+			       t.tea_local_name,
+			       t.stu_empid,
+			       t.stu_local_name,
+			       t.allscore,
+			       t.other_advise,
+			       t.basic_no,
+			       t.grooming,
+			       t.positive,
+			       t.course_enrich,
+			       t.interact,
+			       (select get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) from hr_employee h where h.empid=t.tea_empid) post_grade_no_name,
+			       (select d.org_name_local from hr_department d where 
+			       d.deptno=(select hh.deptno from hr_employee hh where hh.empid=t.tea_empid)) org_name_local,
+			       (select get_global_name(p.sexcode,#interLanguage:VARCHAR#) from hr_personal_info p where 
+			       p.person_id=(select hhh.person_id from hr_employee hhh where hhh.empid=t.tea_empid)) sexcode_name,
+			       (select get_global_name(he.position_no,#interLanguage:VARCHAR#) from hr_employee he where he.empid=t.tea_empid ) position_no_name
+			  from edu_teacher_check t
+               where t.basic_no=#BASIC_NO:NUMBER#
+			   and t.activity=1
+			   and t.cpny_id=#CPNY_ID:VARCHAR#
+			   and t.stu_empid=#stuEmpid:VARCHAR#
+				]]>
+	   </select>
+	   <select id="queryEvaAllTSTOTeacher" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+			       select distinct
+			               t.tea_empid,
+			               t.tea_local_name,
+			               get_global_name(h.post_grade_no,#interLanguage:VARCHAR#) post_grade_no_name,
+			               get_dept_name(h.deptno,#interLanguage:VARCHAR#) org_name_local,
+			               get_global_name(h.position_no,#interLanguage:VARCHAR#) position_no_name,
+			               t.other_advise,
+			               t.basic_no,
+			               A.REV_05,
+			               A.REV_04,
+			               A.REV_03,
+			               A.REV_02,
+			               A.REV_01,
+			               A.REV_TOTAL
+			          from edu_teacher_check t left join hr_employee h on t.tea_empid = h.empid, (SELECT TTT.TEA_EMPID,
+			               DECODE((select count(1)
+			                        from EDU_TEACHER_CHECK t,
+			                        (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                       WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                         AND T.TEA_EMPID = M.TEA_EMPID
+			                         AND T.GROOMING IS NOT NULL),
+			                      0,
+			                      0,
+			                      ROUND(sum(decode(TTT.SCORE_VP, '非常好', COUNT_NUM, 0)) /
+			                            (select count(1)
+			                               from EDU_TEACHER_CHECK t,
+			                               (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                              WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                                AND T.TEA_EMPID = M.TEA_EMPID
+			                                AND T.GROOMING IS NOT NULL),
+			                            2)) * 100 || '%' REV_05,
+			               DECODE((select count(1)
+			                        from EDU_TEACHER_CHECK t,
+			                        (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                       WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                         AND T.TEA_EMPID = M.TEA_EMPID
+			                         AND T.GROOMING IS NOT NULL),
+			                      0,
+			                      0,
+			                      ROUND(sum(decode(TTT.SCORE_VP, '比较好', COUNT_NUM, 0)) /
+			                            (select count(1)
+			                               from EDU_TEACHER_CHECK t,
+			                               (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                              WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                                AND T.TEA_EMPID = M.TEA_EMPID
+			                                AND T.GROOMING IS NOT NULL),
+			                            2)) * 100 || '%' REV_04,
+			               DECODE((select count(1)
+			                        from EDU_TEACHER_CHECK t,
+			                        (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                       WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                         AND T.TEA_EMPID = M.TEA_EMPID
+			                         AND T.GROOMING IS NOT NULL),
+			                      0,
+			                      0,
+			                      ROUND(sum(decode(TTT.SCORE_VP, '一般', COUNT_NUM, 0)) /
+			                            (select count(1)
+			                               from EDU_TEACHER_CHECK t,
+			                               (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                              WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                                AND T.TEA_EMPID = M.TEA_EMPID
+			                                AND T.GROOMING IS NOT NULL),
+			                            2)) * 100 || '%' REV_03,
+			               DECODE((select count(1)
+			                        from EDU_TEACHER_CHECK t,
+			                        (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                       WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                         AND T.TEA_EMPID = M.TEA_EMPID
+			                         AND T.GROOMING IS NOT NULL),
+			                      0,
+			                      0,
+			                      ROUND(sum(decode(TTT.SCORE_VP, '比较不好', COUNT_NUM, 0)) /
+			                            (select count(1)
+			                               from EDU_TEACHER_CHECK t,
+			                               (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                              WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                                AND T.TEA_EMPID = M.TEA_EMPID
+			                                AND T.GROOMING IS NOT NULL),
+			                            2)) * 100 || '%' REV_02,
+			               DECODE((select count(1)
+			                        from EDU_TEACHER_CHECK t,
+			                        (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                       WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                         AND T.TEA_EMPID = M.TEA_EMPID
+			                         AND T.GROOMING IS NOT NULL),
+			                      0,
+			                      0,
+			                      ROUND(sum(decode(TTT.SCORE_VP, '非常不好', COUNT_NUM, 0)) /
+			                            (select count(1)
+			                               from EDU_TEACHER_CHECK t,
+			                               (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                              WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                                AND T.TEA_EMPID = M.TEA_EMPID
+			                                AND T.GROOMING IS NOT NULL),
+			                            2)) * 100 || '%' REV_01,
+			                DECODE((select count(1)
+			                        from EDU_TEACHER_CHECK t,
+			                        (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                       WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                         AND T.TEA_EMPID = M.TEA_EMPID
+			                         AND T.GROOMING IS NOT NULL),
+			                      0,
+			                      0,
+			                      ROUND(sum(decode(TTT.SCORE_VP, '非常好', COUNT_NUM, 0)+decode(TTT.SCORE_VP, '比较好', COUNT_NUM, 0)) /
+			                            (select count(1)
+			                               from EDU_TEACHER_CHECK t,
+			                               (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                              WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                                AND T.TEA_EMPID = M.TEA_EMPID
+			                                AND T.GROOMING IS NOT NULL),
+			                            2)) * 100 || '%' REV_TOTAL
+			          FROM (SELECT TT.TEA_EMPID,
+			                       CASE
+			                         WHEN TT.SCORE = 5 THEN
+			                          '非常好'
+			                         WHEN TT.SCORE = 4 THEN
+			                          '比较好'
+			                         WHEN TT.SCORE = 3 THEN
+			                          '一般'
+			                         WHEN TT.SCORE = 2 THEN
+			                          '比较不好'
+			                         WHEN TT.SCORE = 1 THEN
+			                          '非常不好'
+			                       END SCORE_VP,
+			                       COUNT(TT.SCORE) COUNT_NUM
+			                  FROM (select T.STU_EMPID, T.TEA_EMPID, T.GROOMING SCORE
+			                          from EDU_TEACHER_CHECK t,
+			                          (SELECT DISTINCT KA.TEA_EMPID,
+			                                 KA.TEA_LOCAL_NAME 
+			                              FROM edu_teacher_check KA 
+			                             WHERE KA.BASIC_NO=#BASIC_NO:NUMBER# )M
+			                         WHERE T.BASIC_NO = #BASIC_NO:NUMBER#
+			                           AND T.TEA_EMPID = M.TEA_EMPID
+			                           ) TT
+			                 GROUP BY TT.TEA_EMPID,
+			                          CASE
+			                            WHEN TT.SCORE = 5 THEN
+			                             '非常好'
+			                            WHEN TT.SCORE = 4 THEN
+			                             '比较好'
+			                            WHEN TT.SCORE = 3 THEN
+			                             '一般'
+			                            WHEN TT.SCORE = 2 THEN
+			                             '比较不好'
+			                            WHEN TT.SCORE = 1 THEN
+			                             '非常不好'
+			                          END
+			                 ORDER BY TT.TEA_EMPID) TTT
+			         GROUP BY TTT.TEA_EMPID
+			         ORDER BY TEA_EMPID) a
+			         where T.TEA_EMPID = A.TEA_EMPID
+			           AND t.basic_no = #BASIC_NO:NUMBER#
+			           AND t.activity = 1
+			           AND t.cpny_id = #CPNY_ID:VARCHAR#
+				]]>
+	   </select>
+	   
+	   <select id="planEmployee" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select t.empid,
+			       t.person_id,
+			       t.local_name,
+			       get_dept_name(t.deptno, #interLanguage:VARCHAR#) org_name_local
+			  from hr_employee t
+			     where t.cpny_id=#CPNY_ID:VARCHAR#
+			       and t.activity='1'
+			       
+		       ]]>
+		        <isNotEmpty prepend="AND" property="planempid" >
+				<![CDATA[
+	    		    t.empid in ($EMPID$)
+				]]>
+			    </isNotEmpty>
+	   </select>
+	   
+	   <select id="otherPlanEmployee" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select t.empid,
+			       t.person_id,
+			       t.local_name,
+			       get_dept_name(t.deptno, #interLanguage:VARCHAR#) org_name_local
+			  from hr_employee t
+			     where t.cpny_id=#CPNY_ID:VARCHAR#
+			       and t.activity='1'
+			       and t.emp_office<>'15120'
+			       
+		       ]]>
+		        <isNotEmpty prepend="AND" property="planempid" >
+				<![CDATA[
+	    		    t.empid not in ($EMPID$)
+				]]>
+			    </isNotEmpty>
+			    <isNotEmpty prepend="AND" property="empidname">
+					<![CDATA[
+		    		    (t.empid=#empidname:VARCHAR#
+		    		     or t.local_name like '%'||#empidname:VARCHAR#||'%')
+					]]>
+			    </isNotEmpty>
+			     <isNotEmpty prepend="AND" property="DEPTNO" >
+				<![CDATA[
+	    		    t.deptno in ($DEPTNO$)
+				]]>
+			    </isNotEmpty>
+		    
+			    <![CDATA[
+			       order by $KEY$
+			    ]]>
+	   </select>
+	   
+	   <select id="finalstudent" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select t.empid,
+			       t.person_id,
+			       t.local_name,
+			       get_dept_name(t.deptno, #interLanguage:VARCHAR#) org_name_local
+			  from hr_employee t
+			     where t.cpny_id=#CPNY_ID:VARCHAR#
+			       and t.activity='1'
+			       
+		       ]]>
+		        <isNotEmpty prepend="AND" property="finalempid1" >
+				<![CDATA[
+	    		    t.empid in ($EMPID$)
+				]]>
+			    </isNotEmpty>
+	   </select>
+	   
+	   <select id="querylocalname" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				 select h.local_name from hr_employee h where h.empid in ($EMPID$)
+		        ]]>
+	   </select>
+		
+		<select id="getDeptTree" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				SELECT * FROM (SELECT 
+				   distinct
+			       D.DEPTID,
+			       D.DEPTNO,
+			       D.PARENT_DEPT_NO,
+			       TO_CHAR(D.DATE_CREATED, 'DD/MM/YYYY') AS DATE_CREATED,
+			       (SELECT get_dept_name(d2.deptid,#interLanguage:VARCHAR#)
+			          FROM HR_DEPARTMENT D2
+			         WHERE D2.DEPTNO = D.PARENT_DEPT_NO
+			           AND D2.CPNY_ID=#CPNY_ID:VARCHAR#) AS PARENT_DEPT_NAME,
+			       (CASE
+			         WHEN get_dept_name(d.deptid,#interLanguage:VARCHAR#) IS NULL THEN
+			          ' '
+			         ELSE
+			          get_dept_name(d.deptid,#interLanguage:VARCHAR#) 
+			       END) AS DEPTNAME,
+			       DECODE(C.DEPTNO,'','false','true') CHECKED,
+                D.DEPT_LEVEL,
+                D.ORDERNO
+			  FROM HR_DEPARTMENT D,
+			  		(SELECT dt.DEPTNO
+                  FROM hr_department dt
+                 WHERE dt.deptno in($DES_DEPARTMENT$) ) C
+			 WHERE (D.DATE_CREATED < SYSDATE AND D.DATE_ENDED > SYSDATE OR
+			       D.DATE_ENDED IS NULL)
+			 
+			   AND D.CPNY_ID=#CPNY_ID:VARCHAR#
+			   AND D.DEPTNO = C.DEPTNO(+)
+			   AND D.USE_YN='Y'
+			 START WITH D.PARENT_DEPT_NO = '0' AND D.CPNY_ID=#CPNY_ID:VARCHAR#
+		        CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)A
+		        ORDER BY A.DEPT_LEVEL,A.ORDERNO,A.DEPTNO
+				]]>
+		</select>
+		
+</sqlMap>		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

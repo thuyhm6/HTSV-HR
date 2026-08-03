@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.include">
+	<sql id="getDataPermission">
+		<isEqual prepend="" property="specialParam" compareValue="manager">
+   			<![CDATA[
+					(SELECT DEPT.DEPTNO
+					  FROM HR_DEPARTMENT DEPT
+					 START WITH DEPT.DEPTNO = #deptNo:VARCHAR#
+					CONNECT BY PRIOR DEPT.DEPTNO = DEPT.PARENT_DEPT_NO
+		 			) 
+		    ]]>
+		</isEqual>
+	   			 
+		<isEqual prepend="" property="specialParam" compareValue="special">
+   			<![CDATA[
+		 		   (select deptno from sy_user_dept sud where sud.user_no=#userNo:VARCHAR# )
+		    ]]>
+		</isEqual>
+		<isEqual prepend="" property="specialParam" compareValue="administrator">
+   			<![CDATA[
+				( SELECT DEPTNO
+				  FROM HR_DEPARTMENT DEPT
+				  where  (DEPT.DATE_CREATED < SYSDATE AND DEPT.DATE_ENDED > SYSDATE OR
+	       					DEPT.DATE_ENDED IS NULL) 
+	       		  and DEPT.CPNY_ID=#interCpnyID:VARCHAR#
+				 START WITH DEPT.PARENT_DEPT_NO = '0'  and DEPT.CPNY_ID=#interCpnyID:VARCHAR#
+				CONNECT BY PRIOR DEPT.DEPTNO = DEPT.PARENT_DEPT_NO)
+		    ]]>
+		</isEqual>
+	</sql>
+	<sql id="getDataPermissionEmpTypeCode">
+		<isEqual prepend="" property="specialParam" compareValue="special">
+			<isEmpty prepend="" property="EMP_TYPE_GROUP">
+	   			<![CDATA[
+						 (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE P.JOBTYPE_GROUP_NO IN
+			               (SELECT EMP_TYPE_CODE
+			                  FROM SY_SUPERVISOR_EMPTYPE_INFO
+			                 WHERE PERSON_ID = #supervisorPersonId:VARCHAR#)
+			           AND CPNY_ID = #interCpnyID:VARCHAR#)
+			    ]]>
+		    </isEmpty>
+			<isNotEmpty prepend="" property="EMP_TYPE_GROUP">
+	   			<![CDATA[
+						 (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE P.JOBTYPE_GROUP_NO IN
+			               (SELECT EMP_TYPE_CODE
+			                  FROM SY_SUPERVISOR_EMPTYPE_INFO
+			                 WHERE PERSON_ID = #supervisorPersonId:VARCHAR#
+			           AND EMP_TYPE_CODE = #EMP_TYPE_GROUP#)
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+			    ]]>
+		    </isNotEmpty>
+		</isEqual>
+		 <isEqual prepend="" property="specialParam" compareValue="manager">
+			<isEmpty prepend="" property="EMP_TYPE_GROUP">
+	   			<![CDATA[
+						 (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE P.JOBTYPE_GROUP_NO IN
+			               (SELECT EMP_TYPE_CODE
+			                  FROM SY_SUPERVISOR_EMPTYPE_INFO
+			                 WHERE PERSON_ID = #supervisorPersonId:VARCHAR#)
+			           AND CPNY_ID = #interCpnyID:VARCHAR#)
+			    ]]>
+		    </isEmpty>
+			<isNotEmpty prepend="" property="EMP_TYPE_GROUP">
+	   			<![CDATA[
+						 (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE P.JOBTYPE_GROUP_NO IN
+			               (SELECT EMP_TYPE_CODE
+			                  FROM SY_SUPERVISOR_EMPTYPE_INFO
+			                 WHERE PERSON_ID = #supervisorPersonId:VARCHAR#
+			           AND EMP_TYPE_CODE = #EMP_TYPE_GROUP#)
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+			    ]]>
+		    </isNotEmpty>
+		</isEqual>
+	</sql>
+</sqlMap>

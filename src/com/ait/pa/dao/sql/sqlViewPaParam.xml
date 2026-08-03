@@ -1,0 +1,3555 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.viewpaparam">
+	<sql id="getPaInputItemParamListCondition">
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				<![CDATA[
+			 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_ITEM_NO">
+				<![CDATA[
+			 		  T.PARAM_ITEM_NO LIKE '%' || #PARAM_ITEM_NO:VARCHAR# || '%'
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_ITEM_ID">
+				<![CDATA[
+			 		  T.PARAM_ITEM_ID LIKE '%' || #PARAM_ITEM_ID:VARCHAR# || '%'
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+				<![CDATA[
+			 		  ( SY3.CONTENT LIKE '%' || #KEY:VARCHAR# || '%' ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+			 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+			    ]]>
+		</isNotEmpty>
+
+	</sql>
+
+
+	<select id="getPaInputItemParamList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       T.DISTINCT_FIELD,
+			       T.DISTINCT_FIELD_2ND,
+			       T.PARAM_ITEM_NO,
+			       T.DEFAULT_VAL,
+			       PI.PARAM_ITEM_ID,
+			       SY3.CONTENT          ALIAS_NAME,
+			       T.CPNY_ID,
+			       SY1.CONTENT          DISTINCT_FIELD_NAME,
+			       SY2.CONTENT          DISTINCT_FIELD_2ND_NAME,
+			       T.CPNY_ID          CPNY_NAME,
+			       PI.ITEM_TYPE,
+			       T.ACTIVITY
+			  FROM PA_PARAM_ITEM_PARAM T,
+			       PA_PARAM_ITEM       PI,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+			 AND T.DISTINCT_FIELD = 'PERSON_ID'
+			  AND T.PARAM_ITEM_NO <> '60051'
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND PI.ACTIVITY = 1
+		]]>
+
+		<isNotEmpty prepend="AND" property="itemType">
+			<![CDATA[
+		 		  PI.ITEM_TYPE = #itemType:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 		  T.ACTIVITY = #ACTIVITY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<include refid="getPaInputItemParamListCondition" />
+
+
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PI.ORDER_NO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<delete id="cleanTempListById" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_PARAM_DATA_TEMP where CREATED_BY =#CREATED_BY#
+		]]>
+	</delete>
+	<delete id="checkTempListById" parameterClass="linkMap">
+		<![CDATA[
+			CALL PA_CHECK_PARAM_DATA_EXCEL_P(#CREATED_BY#,#CPNY_ID#,#interLanguage#)
+		]]>
+	</delete>
+	<select id="getImportCompareList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	   SELECT T.CPNY_ID,
+       T.PARAM_ITEM_NO,
+       T.PARAM_ITEM_NAME,
+       T.EMPID,
+       T.START_MONTH,
+       T.END_MONTH,
+       T.RETURN_VALUE,
+       T.UPLOAD_ERROR_MSG
+  FROM PA_PARAM_DATA_TEMP T
+ WHERE T.CREATED_BY = #CREATED_BY#
+ AND T.CPNY_ID=#CPNY_ID#
+ AND T.PARAM_ITEM_NO IS NOT NULL
+		 order by T.UPLOAD_ERROR_MSG	
+		]]>
+	</select>
+	<select id="getImportCompareListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+	   SELECT count(1)
+  FROM PA_PARAM_DATA_TEMP T
+ WHERE T.CREATED_BY = #CREATED_BY#
+ AND T.CPNY_ID=#CPNY_ID#
+ AND T.PARAM_ITEM_NO IS NOT NULL
+		 order by T.UPLOAD_ERROR_MSG	
+		]]>
+	</select>
+	<select id="getImportCompareNum" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			
+	 SELECT COUNT(1) ERROR_NUMBER
+       
+  FROM PA_PARAM_DATA_TEMP T
+ WHERE T.CREATED_BY = #CREATED_BY#
+ AND T.CPNY_ID=#CPNY_ID#
+ AND T.PARAM_ITEM_NO IS NOT NULL 
+  AND T.UPLOAD_ERROR_MSG IS NOT NULL
+		]]>
+	</select>
+	<insert id="setPaParam" parameterClass="linkMap">
+		<![CDATA[
+	 insert into PA_PARAM_DATA PPD
+  (PPD.PARAM_DATA_NO,
+   PPD.PARAM_NO ,PPD.BATCH_IMPORT_MARK,
+   PPD.PERSON_ID,
+   PPD.START_MONTH,
+     PPD.END_MONTH,
+    PPD.REMARK,
+   PPD.RETURN_VALUE,
+   PPD.CREATED_BY,
+   PPD.CREATED_IP,
+   PPD.CREATE_DATE,
+   PPD.CPNY_ID,
+   PPD.ACTIVITY)
+  SELECT PPDT.PARAM_DATE_NO,
+         PPDT.PARAM_ITEM_NO ,1,
+         HE.PERSON_ID,
+         PPDT.START_MONTH,
+         PPDT.END_MONTH,
+         PPDT.REMARK,
+         PPDT.RETURN_VALUE,
+         PPDT.CREATED_BY,
+         PPDT.CREATED_IP,
+         PPDT.CREATE_DATE,
+         PPDT.CPNY_ID,1
+    FROM PA_PARAM_DATA_TEMP PPDT, HR_EMPLOYEE HE
+   WHERE PPDT.CREATED_BY = #CREATED_BY#
+     AND HE.EMPID = PPDT.EMPID
+     AND HE.CPNY_ID = #CPNY_ID#
+     AND PPDT.CPNY_ID = #CPNY_ID#
+     AND PPDT.PARAM_ITEM_NO IS NOT NULL
+		]]>
+	</insert>
+	<select id="monthPersonCountInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT SUM(TT.NOWTIME) NOWTIME,
+   SUM(TT.PASSTIME) PASSTIME,
+   TT.SALARY_DISTIN
+FROM (
+SELECT CASE
+         WHEN PST.PAY_SCHEDULE_NO = (SELECT   PPS.PAY_SCHEDULE_NO 
+                  FROM PA_PAY_SCHEDULE PPS
+                 WHERE PPS.PAY_DATE=TO_DATE(#PAY_DATE#,'DD/MM/YYYY')
+                 AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#
+                  AND PPS.activity = 1
+                   AND ROWNUM = 1
+                   AND PPS.CPNY_ID=#interCpnyID#) THEN
+          COUNT(1) END NOWTIME,
+        case  WHEN PST.PAY_SCHEDULE_NO =
+             (SELECT   PPS.PAY_SCHEDULE_NO 
+                  FROM PA_PAY_SCHEDULE PPS
+                 WHERE PPS.PAY_DATE=TO_DATE(#PAY_DATE_PRO#,'DD/MM/YYYY')
+                 AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#
+                  AND PPS.activity = 1
+                   AND ROWNUM = 1 AND PPS.CPNY_ID=#interCpnyID#) THEN
+                   COUNT(1)
+       END PASSTIME,
+      PST.SALARY_DISTIN_NO,
+      GET_GLOBAL_NAME(PST.SALARY_DISTIN_NO,#interLanguage#) SALARY_DISTIN
+
+  FROM PA_SUMMARY_HTSV PST
+ group by PST.PAY_SCHEDULE_NO,
+ PST.SALARY_DISTIN_NO
+ ) TT
+ WHERE  (NOWTIME>0 OR PASSTIME>0)
+ group by TT.SALARY_DISTIN
+		]]>
+	</select>
+	<select id="monthPersonIncreaseList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+     SELECT CASE
+         WHEN TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') BETWEEN PST.Hr_Start_Date AND
+       PST.Hr_Start_Date  THEN
+          'Tuyển dụng'
+      
+         ELSE
+          'Khác'
+       END PASSTIME,
+       NVL(COUNT(1), 0) NUMB,
+         ZH_CONCAT(case when rownum<=300 then he.person_id end ) PERSON_ID,
+       ZH_CONCAT(case when rownum>300 and rownum<=600 then he.person_id end ) PERSON_ID1,
+       ZH_CONCAT(case when rownum>600 then he.person_id end ) PERSON_ID2
+  FROM PA_SUMMARY_HTSV PST, HR_EMPLOYEE HE
+
+ WHERE HE.PERSON_ID = PST.PERSON_ID
+   AND PST.PAY_SCHEDULE_NO = (SELECT   PPS.PAY_SCHEDULE_NO 
+                  FROM PA_PAY_SCHEDULE PPS
+                 WHERE PPS.PAY_DATE=TO_DATE(#PAY_DATE#,'DD/MM/YYYY')
+                 AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#
+                 AND PPS.activity = 1
+                   AND PPS.CPNY_ID=#interCpnyID#
+                   AND ROWNUM = 1)
+   AND PST.PERSON_ID NOT IN
+       (SELECT PSTS.PERSON_ID
+          FROM PA_SUMMARY_HTSV PSTS
+         WHERE PSTS.PAY_SCHEDULE_NO =
+             (SELECT   PPS.PAY_SCHEDULE_NO 
+                  FROM PA_PAY_SCHEDULE PPS
+                 WHERE PPS.PAY_DATE=TO_DATE(#PAY_DATE_PRO#,'DD/MM/YYYY')
+                 AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#
+                AND PPS.activity = 1  
+                   AND PPS.CPNY_ID=#interCpnyID#              
+                   AND ROWNUM = 1))
+ GROUP BY   CASE
+         WHEN TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') BETWEEN PST.Hr_Start_Date AND
+       PST.Hr_Start_Date  THEN
+          'Tuyển dụng'
+      
+         ELSE
+          'Khác'
+       END
+		]]>
+	</select>
+	<select id="monthPersonDecreaseList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT CASE
+         WHEN TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') BETWEEN
+              PST.HR_START_DATE AND PST.HR_END_DATE
+          THEN
+          'Thôi việc'
+        ELSE 'Khác'
+       END PASSTIME,
+       NVL(COUNT(1), 0) NUMB,
+       ZH_CONCAT(case when rownum<=300 then he.person_id end ) PERSON_ID,
+       ZH_CONCAT(case when rownum>300 and rownum<=600 then he.person_id end ) PERSON_ID1,
+       ZH_CONCAT(case when rownum>600 then he.person_id end ) PERSON_ID2
+
+  FROM PA_SUMMARY_HTSV PST, HR_EMPLOYEE HE
+ WHERE HE.PERSON_ID = PST.PERSON_ID
+   AND PST.PAY_SCHEDULE_NO = (SELECT   PPS.PAY_SCHEDULE_NO 
+                  FROM PA_PAY_SCHEDULE PPS
+                 WHERE PPS.PAY_DATE=TO_DATE(#PAY_DATE_PRO#,'DD/MM/YYYY')
+                 AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#
+                  AND PPS.activity = 1
+                   AND PPS.CPNY_ID=#interCpnyID#  
+                   AND ROWNUM = 1)
+
+   AND PST.PERSON_ID NOT IN
+       (SELECT PSTS.PERSON_ID
+          FROM PA_SUMMARY_HTSV PSTS
+         WHERE PSTS.PAY_SCHEDULE_NO =(SELECT   PPS.PAY_SCHEDULE_NO 
+                  FROM PA_PAY_SCHEDULE PPS
+                 WHERE PPS.PAY_DATE=TO_DATE(#PAY_DATE#,'DD/MM/YYYY')
+                 AND PPS.activity = 1
+                   AND PPS.CPNY_ID=#interCpnyID#  
+                 AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#
+                   AND ROWNUM = 1)
+         )      
+
+ GROUP BY CASE
+         WHEN TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') BETWEEN
+              PST.HR_START_DATE AND PST.HR_END_DATE
+          THEN
+          'Thôi việc'
+       ELSE 'Khác'
+       END 
+		]]>
+	</select>
+	<select id="monthPersonCountInfoSonList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+  SELECT   HE.PERSON_ID,
+                  HE.EMPID,
+                  HE.LOCAL_NAME,
+                  HE.CPNY_ID,
+                  get_dept_name(HE.DEPTNO,#interLanguage#) DEPT_NAME,
+                  to_char(HE.DATE_STARTED,'dd.mm.yyyy') DATE_STARTED,
+                  get_global_name(HE.POST_FAMILY, #interLanguage#) POST_FAMILY,
+                  get_global_name(HE.POST_GRADE_no, #interLanguage#) POST_GRADE,
+                  get_global_name(HE.POSITION_NO, #interLanguage#) POSITION_NAME,
+                  get_global_name(HE.DUTY_NO, #interLanguage#) DUTY_NAME,
+                  get_global_name(HE.MAIN_BUSINESS, #interLanguage#) MAIN_BUSINESS,
+                  TO_CHAR(HE.DATE_LEFT, 'DD.MM.YYYY') DATE_LEFT,
+                  get_global_name(he.EMP_OFFICE,#interLanguage#) EMP_OFFICE,
+                  get_global_name(he.EMP_TYPE_CODE ,#interLanguage#)  EMP_TYPE
+    FROM   HR_EMPLOYEE HE
+    WHERE HE.CPNY_ID=#interCpnyID#
+    
+AND HE.PERSON_ID IN ($PERSON_ID_THIS$)
+		]]>
+	</select>
+	<select id="getPerPaInfo" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+	 SELECT COUNT(1) ERROR_NUMBER
+       
+  FROM PA_PARAM_DATA_TEMP T
+ WHERE T.CREATED_BY = #CREATED_BY#
+ AND T.CPNY_ID=#CPNY_ID#
+ AND T.PARAM_ITEM_NO IS NOT NULL 
+  AND T.UPLOAD_ERROR_MSG IS NOT NULL
+		]]>
+	</select>
+	<select id="getPaMonthList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT T.ITEM_ID,
+       T.ITEM_NAME,
+       T.PAGE_TYPE,
+       T.ITEM_TYPE,
+       SUM(T.PEROSN_NUM) PERSON_NUM,
+       SUM(T.PERSON_NUM_PRO) PERSON_NUM_PRO,
+       SUM(T.COUNT_NUM) COUNT_NUM,
+       SUM(T.COUNT_NUM_PRO) COUNT_NUM_PRO,
+       SUM(T.COUNT_UP) COUNT_UP,
+       SUM(T.COUNT_LOW) COUNT_LOW,
+       SUM(T.PERSON_UP) PERSON_UP,
+       SUM(T.PERSON_LOW) PERSON_LOW,
+        SUM(T.PEROSN_NUM)- SUM(T.PERSON_NUM_PRO) PERSON_NUM_DIF,
+         SUM(T.COUNT_NUM) - SUM(T.COUNT_NUM_PRO) COUNT_NUM_DIF,
+        ROUND(SUM(T.COUNT_NUM)/ CASE WHEN SUM(T.PEROSN_NUM)=0 THEN 1 ELSE SUM(T.PEROSN_NUM) END,'2')    PERSON_NUM_AVG,
+        ROUND(SUM(T.COUNT_NUM_PRO)/CASE WHEN SUM(T.PERSON_NUM_PRO)=0 THEN 1 ELSE SUM(T.PERSON_NUM_PRO) END,'2')    PERSON_NUM_AVG_PRO,
+        ROUND(SUM(T.COUNT_NUM)/CASE WHEN SUM(T.PEROSN_NUM)=0 THEN 1 ELSE SUM(T.PEROSN_NUM) END  -  SUM(T.COUNT_NUM_PRO)/ CASE WHEN SUM(T.PERSON_NUM_PRO)=0 THEN 1 ELSE SUM(T.PERSON_NUM_PRO) END,'2')   PERSON_NUM_AVG_DIF
+  FROM (SELECT COUNT(PDIT.ITEM_ID) PEROSN_NUM,
+               0 PERSON_NUM_PRO,
+               SUM(PDIT.MONTH_NOW) COUNT_NUM,
+               0 COUNT_NUM_PRO,
+              0 COUNT_UP,
+              0 COUNT_LOW,
+               GET_GLOBAL_NAME(pdit.ITEM_NO,#interLanguage#) ITEM_NAME,
+               PDIT.PAGE_TYPE,
+               pdit.ITEM_ID,
+                PDIT.ITEM_TYPE,
+              SUM(CASE WHEN PDIT.PERSON_ID NOT IN
+                    (SELECT PDIT2.PERSON_ID
+                        FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                       WHERE PDIT2.ITEM_ID = PDIT.ITEM_ID
+                        AND pdit.page_type = '3'
+                        AND PDIT.CREATED_BY = #CREATED_BY#
+                        AND PDIT.MONTH_PRO <> '0'  
+                       ) THEN 1 END  ) PERSON_UP ,0 PERSON_LOW, MAX(PDIT.ORDERNO) ORDERNO
+          FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+         where pdit.page_type = '3'
+           AND PDIT.MONTH_NOW <> '0'
+           AND PDIT.CREATED_BY = #CREATED_BY#
+        
+         GROUP BY PDIT.ITEM_ID, pdit.item_no, PDIT.PAGE_TYPE,PDIT.ITEM_TYPE  
+        
+        UNION ALL
+        
+        
+        SELECT 0 PEROSN_NUM,
+               0 PERSON_NUM_PRO,
+               0 COUNT_NUM,
+               0 COUNT_NUM_PRO,
+               SUM(CASE
+                       WHEN PDIT.MONTH_NOW > PDIT.MONTH_PRO THEN
+                       1
+                     END) COUNT_UP,
+               SUM(CASE
+                       WHEN PDIT.MONTH_NOW < PDIT.MONTH_PRO THEN
+                       1
+                     END) COUNT_LOW,
+               GET_GLOBAL_NAME(pdit.ITEM_NO,#interLanguage#) ITEM_NAME,
+               PDIT.PAGE_TYPE,
+               pdit.ITEM_ID,
+                PDIT.ITEM_TYPE,
+              0 PERSON_UP ,0 PERSON_LOW, MAX(PDIT.ORDERNO) ORDERNO
+          FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+         where pdit.page_type = '3'
+           
+           AND PDIT.CREATED_BY = #CREATED_BY#
+        
+         GROUP BY PDIT.ITEM_ID, pdit.item_no, PDIT.PAGE_TYPE,PDIT.ITEM_TYPE
+        
+        UNION ALL
+        
+        SELECT 0,
+               COUNT(PDIT.ITEM_ID),
+               0,
+               SUM(PDIT.MONTH_PRO),
+               0,
+               0,
+               GET_GLOBAL_NAME(pdit.ITEM_NO,#interLanguage#) ITEM_NAME,
+               PDIT.PAGE_TYPE,
+               pdit.ITEM_ID,
+               PDIT.ITEM_TYPE,
+               0,
+                 SUM(CASE WHEN PDIT.PERSON_ID NOT IN
+                     (SELECT PDIT2.PERSON_ID
+                        FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                       WHERE PDIT2.ITEM_ID = PDIT.ITEM_ID
+                        AND pdit.page_type = '3'
+                        AND PDIT.CREATED_BY = #CREATED_BY#
+                        AND PDIT.MONTH_NOW <> '0'
+                       ) 
+                      THEN 1 END ) , MAX(PDIT.ORDERNO) ORDERNO
+          FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+         where pdit.page_type = '3'
+           AND PDIT.CREATED_BY = #CREATED_BY#
+           AND PDIT.MONTH_PRO <> '0'
+        
+         GROUP BY PDIT.ITEM_ID, pdit.ITEM_NO, PDIT.PAGE_TYPE,PDIT.ITEM_TYPE) T
+
+ GROUP BY T.ITEM_ID, T.ITEM_NAME, T.PAGE_TYPE,T.ITEM_TYPE,T.ORDERNO
+ ORDER BY T.ITEM_TYPE,T.ORDERNO
+		
+		
+		 
+
+
+                                         
+		]]>
+	</select>
+
+
+	<select id="getItemList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT PII.ITEM_NO, PII.ITEM_NAME, PII.ITEM_ID
+  FROM PA_ITEM_INPUT PII
+ WHERE ACTIVITY = 1
+   AND PII.IS_USE = 1
+   AND PII.CPNY_ID = #interCpnyID#
+
+		]]>
+	</select>
+
+
+
+	<insert id="savePaResult" parameterClass="linkMap">
+		INSERT INTO
+		PA_ITEM_INPUT
+		(INPUT_NO,
+		ITEM_NO,
+		ITEM_ID,
+		ITEM_NAME,
+		CREATE_DATE,
+		CREATED_BY,
+		CREATED_IP,
+		ACTIVITY,
+		IS_USE,
+		CPNY_ID,
+		ORDERNO,
+		ITEM_TYPE
+		)
+		VALUES
+		(PA_ITEM_INPUT_SEQ.NEXTVAL,
+		#ITEM_NO#,
+		#ITEM_ID#,
+		#ITEM_NAME#,
+		SYSDATE,
+		#PERSON_ID#,
+		#CREATED_IP#,
+		1,
+		#IS_USE#,
+		#CPNY_ID#,
+		#ORDERNO#,
+		#ITEM_TYPE#
+		)
+		
+     </insert>
+
+
+	<update id="updatePaResult" parameterClass="linkMap">
+			<![CDATA[update PA_ITEM_INPUT
+		set ACTIVITY=0
+		where CPNY_ID=#CPNY_ID#
+		and IS_USE= #IS_USE#
+	
+		 ]]>
+		<isNotEmpty prepend="AND" property="ITEM_TYPE">
+		<![CDATA[
+		  ITEM_TYPE=#ITEM_TYPE#
+	    ]]>
+		</isNotEmpty>
+	</update>
+
+	<!-- 发令核查 -->
+
+
+	<select id="viewVerificationList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select 
+       HE.LOCAL_NAME,
+       HE.EMPID,
+       HE.PERSON_ID,
+       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+       get_global_name(HE.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+       HEI.START_DATE,
+       get_global_name(HEI.TRANS_CODE,#interLanguage:VARCHAR#) TRANS_CODE_NAME, 
+       TO_CHAR(HE.DATE_STARTED,'DD.MM.YYYY') DATE_STARTED,
+       TO_CHAR(HE.DATE_LEFT,'DD.MM.YYYY') DATE_LEFT,        
+       get_global_name(HE.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NAME,
+       get_global_name(HE.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NAME,
+       get_global_name(HE.post_family,#interLanguage:VARCHAR#) POST_FAMILY_NAME,
+         GET_GLOBAL_NAME(HE.EMP_TYPE_CODE,#interLanguage:VARCHAR#) EMP_TYPE_NAME 
+         
+       
+       
+  from HR_EXPERIENCE_INSIDE HEI, HR_EMPLOYEE HE
+ WHERE HEI.ACTIVITY = 1
+   AND HE.PERSON_ID = HEI.PERSON_ID
+   AND HE.PERSON_ID NOT LIKE '11111%'
+   AND HE.CPNY_ID=#interCpnyID#
+     AND TO_CHAR(TO_DATE(HEI.START_DATE,'DD.MM.YYYY'),'YYYY.MM.DD') BETWEEN
+       TO_CHAR((SELECT AR_START_DATE
+                 FROM PA_PAY_SCHEDULE PSS
+                WHERE PSS.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+                   ),'YYYY.MM.DD')
+   AND TO_CHAR((SELECT AR_END_DATE
+                 FROM PA_PAY_SCHEDULE PSS
+                WHERE PSS.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+                   ),'YYYY.MM.DD')
+
+
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+		 ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_CODE">
+		<![CDATA[
+		 HEI.TRANS_CODE=#TRANS_CODE#
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_REASON">
+		<![CDATA[
+		 HEI.TRANS_REASON=#TRANS_REASON#
+	    ]]>
+		</isNotEmpty>
+
+
+	</select>
+
+
+	<!--  -->
+
+	<!-- 支付合计 -->
+	<select id="viewPaResultList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+			SELECT PA.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.DEPT_ORDERNO,
+			       TO_CHAR(PA.DATE_STARTED,'DD-MM-YYYY') DATE_STARTED,
+			       TO_CHAR(PA.DATE_LEFT,'DD-MM-YYYY') DATE_LEFT,
+			       PA.PROBATION_DAYS,
+			       PA.REGULAR_DAYS,
+			       PA.WORK_SCHEDULE_DAYS,
+			       PA.PROB_NIGHT_SHIFT_COUNT,
+			       PA.NIGHT_SHIFT_COUNT,
+			       PA.PROB_WORKDAYOT150_HOURS,
+			       PA.WORKDAYOT150_HOURS,
+			       PA.PROB_WORKDAYOT200_HOURS,
+			       PA.WORKDAYOT200_HOURS,
+			       PA.PROB_WORKDAYOT210_HOURS,
+			       PA.WORKDAYOT210_HOURS,
+			       PA.PROB_SATURDAYOT200_HOURS,
+			       PA.SATURDAYOT200_HOURS,
+			       PA.PROB_SATURDAYOT270_HOURS,
+			       PA.SATURDAYOT270_HOURS,
+			       PA.PROB_WEEKLYOT200_HOURS,
+			       PA.WEEKLYOT200_HOURS,
+			       PA.PROB_WEEKLYOT270_HOURS,
+			       PA.WEEKLYOT270_HOURS,
+			       PA.PROB_HOLIDAYOT300_HOURS,
+			       PA.HOLIDAYOT300_HOURS,
+			       PA.PROB_HOLIDAYOT390_HOURS,
+			       PA.HOLIDAYOT390_HOURS,
+			       PA.RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       PA.PROB_PERSONALLEAVE_DAYS,
+			       PA.PERSONALLEAVE_DAYS,
+			       PA.PROB_SICKLEAVE_DAYS,
+			       PA.SICKLEAVE_DAYS,
+			       PA.PROB_CHILD_SICKLEAVE_DAYS,
+			       PA.CHILD_SICKLEAVE_DAYS,
+			       PA.PROB_LONG_SICKLEAVE_DAYS,
+			       PA.LONG_SICKLEAVE_DAYS,
+			       PA.MATERNITYLEAVE_DAYS,
+			       PA.PROB_ABSENTEEISM_DAYS,
+			       PA.ABSENTEEISM_DAYS,
+			       PA.PROB_LATE_ARRIVE_MINUTES,
+			       PA.LATE_ARRIVE_MINUTES,
+			       PA.PROB_EARLY_LEAVE_MINUTES,
+			       PA.EARLY_LEAVE_MINUTES,
+			       PA.UNPAIDLEAVE_DAYS,           
+			       PA.BASIC_SALARY,
+			       PA.POSITION_ALLOWANCE,
+			       PA.POSITIONALLOW_CAL,
+			       PA.TRANSPORTATION_ALLOWANCE,
+			       PA.LONG_ATTENDANCE,
+			       PA.FULL_ATTENDANCE_BONUS,
+			       PA.NIGHTSHIFT_ALLOWANCE,
+			       PA.EVALUATION_GRADE,
+			       PA.EVALUATION_BONUS,
+			       PA.PROB_OT_HOUR_SALARY,
+			       PA.OT_HOUR_SALARY,
+			       PA.PROB_WORKDAYOT150_FEE,
+			       PA.WORKDAYOT150_FEE,
+			       PA.PROB_WORKDAYOT200_FEE,
+			       PA.WORKDAYOT200_FEE,
+			       PA.PROB_WORKDAYOT210_FEE,
+			       PA.WORKDAYOT210_FEE,
+			       PA.WORKDAYOT_FEE_TOTAL,
+			       PA.PROB_SATURDAYOT200_FEE,
+			       PA.SATURDAYOT200_FEE,
+			       PA.PROB_SATURDAYOT270_FEE,
+			       PA.SATURDAYOT270_FEE,
+			       PA.SATURDAYOT_FEE_TOTAL,
+			       PA.PROB_WEEKLYOT200_FEE,
+			       PA.WEEKLYOT200_FEE,
+			       PA.PROB_WEEKLYOT270_FEE,
+			       PA.WEEKLYOT270_FEE,
+			       PA.WEEKLYOT_FEE_TOTAL,
+			       PA.PROB_HOLIDAYOT300_FEE,
+			       PA.HOLIDAYOT300_FEE,
+			       PA.PROB_HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT_FEE_TOTAL,
+			       PA.OT_FEE_TOTAL,
+			       PA.ANNUALLEAVE_CLEAR_PAY,
+			       PA.RESIGN_ANNUALLEAVE_PAY,
+			       PA.PROB_LEAVE_DAYS_SALARY,
+			       PA.LEAVE_DAYS_SALARY,
+			       PA.PROB_PERSONALLEAVE_DEDUCT,
+			       PA.PERSONALLEAVE_DEDUCT,
+			       PA.PROB_SICKLEAVE_DEDUCT,
+			       PA.SICKLEAVE_DEDUCT,
+			       PA.MATERNITYLEAVE_DEDUCT,
+			       PA.PROB_ABSENT_DEDUCT,
+			       PA.ABSENT_DEDUCT,
+			       PA.PROB_LATEEARLY_DEDUCT,           
+			       PA.LATEEARLY_DEDUCT,
+			       PA.ATT_DEDUCT_TOTAL,
+			       PA.INCOME_BEFORE_TAX,
+			       PA.TAXABLE_INCOME,
+			       PA.PERSONAL_TAX,
+			       PA.PIT_SETTLEMENT,
+			       PA.SEVERANCE_ALLOWANCE,
+			       PA.REAL_WAGES,
+			       PA.TRADE_UNION,
+			       PA.TRADE_UNION_CORP,
+			       PA.INSURANCE_BASE,
+			       PA.SOCIAL_INS_PERSONAL,
+			       PA.MEDICAL_INS_PERSONAL,
+			       PA.UNEMPLOYMENT_INS_PERSONAL,
+			       PA.PERSONAL_INS_TOTAL,
+			       PA.SOCIAL_INS_COMPANY,
+			       PA.MEDICAL_INS_COMPANY,
+			       PA.UNEMPLOYMENT_INS_COMPANY,
+			       PA.COMPANY_INS_TOTAL,
+			       PA.PT_TAX_RATE,
+			       PA.QUICK_DEDUCTION_TAX,
+			       PA.OT_SALARY_NOT_PIT,
+			       PA.SOCIAL_SICK_INS_COMPANY
+			  FROM PA_SUMMARY_HTSV PA
+		 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+			SELECT PA.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.DEPT_ORDERNO,
+			       TO_CHAR(PA.DATE_STARTED, 'DD-MM-YYYY') DATE_STARTED,
+			       TO_CHAR(PA.DATE_LEFT, 'DD-MM-YYYY') DATE_LEFT,
+			       PA.PROBATION_DAYS,
+			       PA.REGULAR_DAYS,
+			       PA.WORK_SCHEDULE_DAYS,
+			       PA.PROB_WORKDAYOT150_HOURS,
+			       PA.WORKDAYOT150_HOURS,
+			       PA.PROB_WORKDAYOT200_HOURS,
+			       PA.WORKDAYOT200_HOURS,
+			       PA.PROB_WORKDAYOT210_HOURS,
+			       PA.WORKDAYOT210_HOURS,
+			       PA.PROB_SATURDAYOT200_HOURS,
+			       PA.SATURDAYOT200_HOURS,
+			       PA.PROB_SATURDAYOT270_HOURS,
+			       PA.SATURDAYOT270_HOURS,
+			       PA.PROB_WEEKLYOT200_HOURS,
+			       PA.WEEKLYOT200_HOURS,
+			       PA.PROB_WEEKLYOT270_HOURS,
+			       PA.WEEKLYOT270_HOURS,
+			       PA.PROB_HOLIDAYOT300_HOURS,
+			       PA.HOLIDAYOT300_HOURS,
+			       PA.PROB_HOLIDAYOT390_HOURS,
+			       PA.HOLIDAYOT390_HOURS,
+			       PA.RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       PA.PROB_PERSONALLEAVE_DAYS,
+			       PA.PERSONALLEAVE_DAYS,
+			       PA.PROB_SICKLEAVE_DAYS,
+			       PA.SICKLEAVE_DAYS,
+			       PA.PROB_CHILD_SICKLEAVE_DAYS,
+			       PA.CHILD_SICKLEAVE_DAYS,
+			       PA.PROB_LONG_SICKLEAVE_DAYS,
+			       PA.LONG_SICKLEAVE_DAYS,
+			       PA.MATERNITYLEAVE_DAYS,
+			       PA.UNPAIDLEAVE_DAYS,
+			       PA.PROB_ABSENTEEISM_DAYS,
+			       PA.ABSENTEEISM_DAYS,
+			       PA.PROB_LATE_ARRIVE_MINUTES,
+			       PA.LATE_ARRIVE_MINUTES,
+			       PA.PROB_EARLY_LEAVE_MINUTES,
+			       PA.EARLY_LEAVE_MINUTES,
+			             
+			       PA.BASIC_SALARY,
+			       PA.POSITION_ALLOWANCE,
+			       PA.FULL_ATTENDANCE_BONUS,
+			       PA.EVALUATION_GRADE,
+			       PA.EVALUATION_BONUS,
+			       PA.LUNCH_ALLOWANCE,
+			       PA.HOUSING_ALLOWANCE,
+			       PA.ADDITIONAL_ALLOWANCE,
+			       PA.WOMEN_SPECIAL_ALLOWANCE,
+			       PA.PROB_OT_HOUR_SALARY,
+			       PA.OT_HOUR_SALARY,
+			       PA.PROB_WORKDAYOT150_FEE,
+			       PA.WORKDAYOT150_FEE,
+			       PA.PROB_WORKDAYOT200_FEE,
+			       PA.WORKDAYOT200_FEE,
+			       PA.PROB_WORKDAYOT210_FEE,
+			       PA.WORKDAYOT210_FEE,
+			       PA.WORKDAYOT_FEE_TOTAL,
+			       PA.PROB_SATURDAYOT200_FEE,
+			       PA.SATURDAYOT200_FEE,
+			       PA.PROB_SATURDAYOT270_FEE,
+			       PA.SATURDAYOT270_FEE,
+			       PA.SATURDAYOT_FEE_TOTAL,
+			       PA.PROB_WEEKLYOT200_FEE,
+			       PA.WEEKLYOT200_FEE,
+			       PA.PROB_WEEKLYOT270_FEE,
+			       PA.WEEKLYOT270_FEE,
+			       PA.WEEKLYOT_FEE_TOTAL,
+			       PA.PROB_HOLIDAYOT300_FEE,
+			       PA.HOLIDAYOT300_FEE,
+			       PA.PROB_HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT_FEE_TOTAL,
+			       PA.OT_FEE_TOTAL,
+			       PA.SP_OT_FEE_TAXCAL_TOTAL,
+			       PA.SP_OT_FEE_TAXFREE_TOTAL,
+			       PA.ANNUALLEAVE_CLEAR_PAY,
+			       PA.RESIGN_ANNUALLEAVE_PAY,
+			       PA.PROB_LEAVE_DAYS_SALARY,
+			       PA.LEAVE_DAYS_SALARY,
+			       PA.PROB_PERSONALLEAVE_DEDUCT,
+			       PA.PERSONALLEAVE_DEDUCT,
+			       PA.PROB_SICKLEAVE_DEDUCT,
+			       PA.SICKLEAVE_DEDUCT,
+			       PA.MATERNITYLEAVE_DEDUCT,
+			       PA.PROB_ABSENT_DEDUCT,
+			       PA.ABSENT_DEDUCT,
+			       PA.PROB_LATEEARLY_DEDUCT,
+			       PA.LATEEARLY_DEDUCT,
+			       PA.ATT_DEDUCT_TOTAL,
+			       PA.INCOME_BEFORE_TAX,
+			       PA.OT_SALARY_NOT_PIT,
+			       PA.TAXABLE_INCOME,
+			       PA.PT_TAX_RATE,
+			       PA.QUICK_DEDUCTION_TAX,
+			       PA.PERSONAL_TAX,
+			       PA.TAXABLE_INCOME15,
+			       PA.PIT_SETTLEMENT,
+			       PA.SEVERANCE_ALLOWANCE,
+			       PA.REAL_WAGES,
+			       PA.TRADE_UNION,
+			       PA.TRADE_UNION_CORP,
+			       PA.INSURANCE_BASE,
+			       PA.SOCIAL_INS_PERSONAL,
+			       PA.MEDICAL_INS_PERSONAL,
+			       PA.UNEMPLOYMENT_INS_PERSONAL,
+			       PA.PERSONAL_INS_TOTAL,
+			       PA.SOCIAL_INS_COMPANY,
+			       PA.MEDICAL_INS_COMPANY,
+			       PA.UNEMPLOYMENT_INS_COMPANY,
+			       PA.SOCIAL_SICK_INS_COMPANY,
+			       PA.COMPANY_INS_TOTAL,
+			       PA.BASIC_SALARY_FORCAL
+			  FROM PA_SUMMARY_HAE PA
+			 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+		  ( PA.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPTNO_Multi">
+			<![CDATA[
+		 	       PA.DEPTNO IN ($DEPTNO_Multi$)
+		    ]]>
+			</isNotEmpty>
+	    
+		 <![CDATA[
+	    	ORDER BY PA.EMPID ASC
+		 ]]>
+	</select>
+
+	<!-- 支付合计 -->
+
+
+	<select id="viewPaResultListSum" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+		<![CDATA[
+			SELECT SUM(PA.PROBATION_DAYS) PROBATION_DAYS,
+			       SUM(PA.REGULAR_DAYS) REGULAR_DAYS,
+			       SUM(PA.WORK_SCHEDULE_DAYS) WORK_SCHEDULE_DAYS,
+			       SUM(PA.PROB_NIGHT_SHIFT_COUNT) PROB_NIGHT_SHIFT_COUNT,
+			       SUM(PA.NIGHT_SHIFT_COUNT) NIGHT_SHIFT_COUNT,
+			       SUM(PA.PROB_WORKDAYOT150_HOURS) PROB_WORKDAYOT150_HOURS,
+			       SUM(PA.WORKDAYOT150_HOURS) WORKDAYOT150_HOURS,
+			       SUM(PA.PROB_WORKDAYOT200_HOURS) PROB_WORKDAYOT200_HOURS,
+			       SUM(PA.WORKDAYOT200_HOURS) WORKDAYOT200_HOURS,
+			       SUM(PA.PROB_WORKDAYOT210_HOURS) PROB_WORKDAYOT210_HOURS,
+			       SUM(PA.WORKDAYOT210_HOURS) WORKDAYOT210_HOURS,
+			       SUM(PA.PROB_SATURDAYOT200_HOURS) PROB_SATURDAYOT200_HOURS,
+			       SUM(PA.SATURDAYOT200_HOURS) SATURDAYOT200_HOURS,
+			       SUM(PA.PROB_SATURDAYOT270_HOURS) PROB_SATURDAYOT270_HOURS,
+			       SUM(PA.SATURDAYOT270_HOURS) SATURDAYOT270_HOURS,
+			       SUM(PA.PROB_WEEKLYOT200_HOURS) PROB_WEEKLYOT200_HOURS,
+			       SUM(PA.WEEKLYOT200_HOURS) WEEKLYOT200_HOURS,
+			       SUM(PA.PROB_WEEKLYOT270_HOURS) PROB_WEEKLYOT270_HOURS,
+			       SUM(PA.WEEKLYOT270_HOURS) WEEKLYOT270_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT300_HOURS) PROB_HOLIDAYOT300_HOURS,
+			       SUM(PA.HOLIDAYOT300_HOURS) HOLIDAYOT300_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT390_HOURS) PROB_HOLIDAYOT390_HOURS,
+			       SUM(PA.HOLIDAYOT390_HOURS) HOLIDAYOT390_HOURS,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       SUM(PA.PROB_PERSONALLEAVE_DAYS) PROB_PERSONALLEAVE_DAYS,
+			       SUM(PA.PERSONALLEAVE_DAYS) PERSONALLEAVE_DAYS,
+			       SUM(PA.PROB_SICKLEAVE_DAYS) PROB_SICKLEAVE_DAYS,
+			       SUM(PA.SICKLEAVE_DAYS) SICKLEAVE_DAYS,
+			       SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) PROB_CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.CHILD_SICKLEAVE_DAYS) CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.PROB_LONG_SICKLEAVE_DAYS) PROB_LONG_SICKLEAVE_DAYS,
+			       SUM(PA.LONG_SICKLEAVE_DAYS) LONG_SICKLEAVE_DAYS,
+			       SUM(PA.MATERNITYLEAVE_DAYS) MATERNITYLEAVE_DAYS,
+			       SUM(PA.PROB_ABSENTEEISM_DAYS) PROB_ABSENTEEISM_DAYS,
+			       SUM(PA.ABSENTEEISM_DAYS) ABSENTEEISM_DAYS,
+			       SUM(PA.PROB_LATE_ARRIVE_MINUTES) PROB_LATE_ARRIVE_MINUTES,
+			       SUM(PA.LATE_ARRIVE_MINUTES) LATE_ARRIVE_MINUTES,
+			       SUM(PA.PROB_EARLY_LEAVE_MINUTES) PROB_EARLY_LEAVE_MINUTES,
+			       SUM(PA.EARLY_LEAVE_MINUTES) EARLY_LEAVE_MINUTES,
+			       SUM(PA.UNPAIDLEAVE_DAYS) UNPAIDLEAVE_DAYS,           
+			       SUM(PA.BASIC_SALARY) BASIC_SALARY,
+			         SUM(PA.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+			         SUM(PA.POSITIONALLOW_CAL) POSITIONALLOW_CAL,
+			         SUM(PA.TRANSPORTATION_ALLOWANCE) TRANSPORTATION_ALLOWANCE,
+			         SUM(PA.LONG_ATTENDANCE) LONG_ATTENDANCE,
+			         SUM(PA.FULL_ATTENDANCE_BONUS) FULL_ATTENDANCE_BONUS,
+			         SUM(PA.NIGHTSHIFT_ALLOWANCE) NIGHTSHIFT_ALLOWANCE,
+			         SUM(PA.EVALUATION_GRADE) EVALUATION_GRADE,
+			         SUM(PA.EVALUATION_BONUS) EVALUATION_BONUS,
+			         SUM(PA.PROB_OT_HOUR_SALARY) PROB_OT_HOUR_SALARY,
+			         SUM(PA.OT_HOUR_SALARY) OT_HOUR_SALARY,
+			         SUM(PA.PROB_WORKDAYOT150_FEE) PROB_WORKDAYOT150_FEE,
+			         SUM(PA.WORKDAYOT150_FEE) WORKDAYOT150_FEE,
+			         SUM(PA.PROB_WORKDAYOT200_FEE) PROB_WORKDAYOT200_FEE,
+			         SUM(PA.WORKDAYOT200_FEE) WORKDAYOT200_FEE,
+			         SUM(PA.PROB_WORKDAYOT210_FEE) PROB_WORKDAYOT210_FEE,
+			         SUM(PA.WORKDAYOT210_FEE) WORKDAYOT210_FEE,
+			         SUM(PA.WORKDAYOT_FEE_TOTAL) WORKDAYOT_FEE_TOTAL,
+			         SUM(PA.PROB_SATURDAYOT200_FEE) PROB_SATURDAYOT200_FEE,
+			         SUM(PA.SATURDAYOT200_FEE) SATURDAYOT200_FEE,
+			         SUM(PA.PROB_SATURDAYOT270_FEE) PROB_SATURDAYOT270_FEE,
+			         SUM(PA.SATURDAYOT270_FEE) SATURDAYOT270_FEE,
+			         SUM(PA.SATURDAYOT_FEE_TOTAL) SATURDAYOT_FEE_TOTAL,
+			         SUM(PA.PROB_WEEKLYOT200_FEE) PROB_WEEKLYOT200_FEE,
+			         SUM(PA.WEEKLYOT200_FEE) WEEKLYOT200_FEE,
+			         SUM(PA.PROB_WEEKLYOT270_FEE) PROB_WEEKLYOT270_FEE,
+			         SUM(PA.WEEKLYOT270_FEE) WEEKLYOT270_FEE,
+			         SUM(PA.WEEKLYOT_FEE_TOTAL) WEEKLYOT_FEE_TOTAL,
+			         SUM(PA.PROB_HOLIDAYOT300_FEE) PROB_HOLIDAYOT300_FEE,
+			         SUM(PA.HOLIDAYOT300_FEE) HOLIDAYOT300_FEE,
+			         SUM(PA.PROB_HOLIDAYOT390_FEE) PROB_HOLIDAYOT390_FEE,
+			         SUM(PA.HOLIDAYOT390_FEE) HOLIDAYOT390_FEE,
+			         SUM(PA.HOLIDAYOT_FEE_TOTAL) HOLIDAYOT_FEE_TOTAL,
+			         SUM(PA.OT_FEE_TOTAL) OT_FEE_TOTAL,
+			         SUM(PA.ANNUALLEAVE_CLEAR_PAY) ANNUALLEAVE_CLEAR_PAY,
+			         SUM(PA.RESIGN_ANNUALLEAVE_PAY) RESIGN_ANNUALLEAVE_PAY,
+			         SUM(PA.PROB_LEAVE_DAYS_SALARY) PROB_LEAVE_DAYS_SALARY,
+			         SUM(PA.LEAVE_DAYS_SALARY) LEAVE_DAYS_SALARY,
+			         SUM(PA.PROB_PERSONALLEAVE_DEDUCT) PROB_PERSONALLEAVE_DEDUCT,
+			         SUM(PA.PERSONALLEAVE_DEDUCT) PERSONALLEAVE_DEDUCT,
+			         SUM(PA.PROB_SICKLEAVE_DEDUCT) PROB_SICKLEAVE_DEDUCT,
+			         SUM(PA.SICKLEAVE_DEDUCT) SICKLEAVE_DEDUCT,
+			         SUM(PA.MATERNITYLEAVE_DEDUCT) MATERNITYLEAVE_DEDUCT,
+			         SUM(PA.PROB_ABSENT_DEDUCT) PROB_ABSENT_DEDUCT,
+			         SUM(PA.ABSENT_DEDUCT) ABSENT_DEDUCT, 
+			         SUM(PA.PROB_LATEEARLY_DEDUCT) PROB_LATEEARLY_DEDUCT,          
+			         SUM(PA.LATEEARLY_DEDUCT) LATEEARLY_DEDUCT,
+			         SUM(PA.ATT_DEDUCT_TOTAL) ATT_DEDUCT_TOTAL,
+			         SUM(PA.INCOME_BEFORE_TAX) INCOME_BEFORE_TAX,
+			         SUM(PA.TAXABLE_INCOME) TAXABLE_INCOME,
+			         SUM(PA.PERSONAL_TAX) PERSONAL_TAX,
+			         SUM(PA.PIT_SETTLEMENT) PIT_SETTLEMENT,
+			         SUM(PA.SEVERANCE_ALLOWANCE) SEVERANCE_ALLOWANCE,
+			         SUM(PA.REAL_WAGES) REAL_WAGES,
+			         SUM(PA.TRADE_UNION) TRADE_UNION,
+			         SUM(PA.INSURANCE_BASE) INSURANCE_BASE,
+			         SUM(PA.SOCIAL_INS_PERSONAL) SOCIAL_INS_PERSONAL,
+			         SUM(PA.MEDICAL_INS_PERSONAL) MEDICAL_INS_PERSONAL,
+			         SUM(PA.UNEMPLOYMENT_INS_PERSONAL) UNEMPLOYMENT_INS_PERSONAL,
+			         SUM(PA.PERSONAL_INS_TOTAL) PERSONAL_INS_TOTAL,
+			         SUM(PA.SOCIAL_INS_COMPANY) SOCIAL_INS_COMPANY,
+			         SUM(PA.MEDICAL_INS_COMPANY) MEDICAL_INS_COMPANY,
+			         SUM(PA.UNEMPLOYMENT_INS_COMPANY) UNEMPLOYMENT_INS_COMPANY,
+			         SUM(PA.COMPANY_INS_TOTAL) COMPANY_INS_TOTAL,
+			         SUM(PA.PT_TAX_RATE) PT_TAX_RATE,
+			         SUM(PA.QUICK_DEDUCTION_TAX) QUICK_DEDUCTION_TAX,
+			         SUM(PA.OT_SALARY_NOT_PIT) OT_SALARY_NOT_PIT,
+			         SUM(PA.SOCIAL_SICK_INS_COMPANY) SOCIAL_SICK_INS_COMPANY
+			       FROM PA_SUMMARY_HTSV PA
+			     WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+	    ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+		<![CDATA[
+			SELECT SUM(PA.PROBATION_DAYS) PROBATION_DAYS,
+			       SUM(PA.REGULAR_DAYS) REGULAR_DAYS,
+			       SUM(PA.WORK_SCHEDULE_DAYS) WORK_SCHEDULE_DAYS,
+			       SUM(PA.PROB_WORKDAYOT150_HOURS) PROB_WORKDAYOT150_HOURS,
+			       SUM(PA.WORKDAYOT150_HOURS) WORKDAYOT150_HOURS,
+			       SUM(PA.PROB_WORKDAYOT200_HOURS) PROB_WORKDAYOT200_HOURS,
+			       SUM(PA.WORKDAYOT200_HOURS) WORKDAYOT200_HOURS,
+			       SUM(PA.PROB_WORKDAYOT210_HOURS) PROB_WORKDAYOT210_HOURS,
+			       SUM(PA.WORKDAYOT210_HOURS) WORKDAYOT210_HOURS,
+			       SUM(PA.PROB_SATURDAYOT200_HOURS) PROB_SATURDAYOT200_HOURS,
+			       SUM(PA.SATURDAYOT200_HOURS) SATURDAYOT200_HOURS,
+			       SUM(PA.PROB_SATURDAYOT270_HOURS) PROB_SATURDAYOT270_HOURS,
+			       SUM(PA.SATURDAYOT270_HOURS) SATURDAYOT270_HOURS,
+			       SUM(PA.PROB_WEEKLYOT200_HOURS) PROB_WEEKLYOT200_HOURS,
+			       SUM(PA.WEEKLYOT200_HOURS) WEEKLYOT200_HOURS,
+			       SUM(PA.PROB_WEEKLYOT270_HOURS) PROB_WEEKLYOT270_HOURS,
+			       SUM(PA.WEEKLYOT270_HOURS) WEEKLYOT270_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT300_HOURS) PROB_HOLIDAYOT300_HOURS,
+			       SUM(PA.HOLIDAYOT300_HOURS) HOLIDAYOT300_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT390_HOURS) PROB_HOLIDAYOT390_HOURS,
+			       SUM(PA.HOLIDAYOT390_HOURS) HOLIDAYOT390_HOURS,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       SUM(PA.PROB_PERSONALLEAVE_DAYS) PROB_PERSONALLEAVE_DAYS,
+			       SUM(PA.PERSONALLEAVE_DAYS) PERSONALLEAVE_DAYS,
+			       SUM(PA.PROB_SICKLEAVE_DAYS) PROB_SICKLEAVE_DAYS,
+			       SUM(PA.SICKLEAVE_DAYS) SICKLEAVE_DAYS,
+			       SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) PROB_CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.CHILD_SICKLEAVE_DAYS) CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.PROB_LONG_SICKLEAVE_DAYS) PROB_LONG_SICKLEAVE_DAYS,
+			       SUM(PA.LONG_SICKLEAVE_DAYS) LONG_SICKLEAVE_DAYS,
+			       SUM(PA.MATERNITYLEAVE_DAYS) MATERNITYLEAVE_DAYS,
+			       SUM(PA.UNPAIDLEAVE_DAYS) UNPAIDLEAVE_DAYS,
+			       SUM(PA.PROB_ABSENTEEISM_DAYS) PROB_ABSENTEEISM_DAYS,
+			       SUM(PA.ABSENTEEISM_DAYS) ABSENTEEISM_DAYS,
+			       SUM(PA.PROB_LATE_ARRIVE_MINUTES) PROB_LATE_ARRIVE_MINUTES,
+			       SUM(PA.LATE_ARRIVE_MINUTES) LATE_ARRIVE_MINUTES,
+			       SUM(PA.PROB_EARLY_LEAVE_MINUTES) PROB_EARLY_LEAVE_MINUTES,
+			       SUM(PA.EARLY_LEAVE_MINUTES) EARLY_LEAVE_MINUTES,
+			                   
+			       SUM(PA.BASIC_SALARY) BASIC_SALARY,
+			       SUM(PA.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+			       SUM(PA.FULL_ATTENDANCE_BONUS) FULL_ATTENDANCE_BONUS,
+			       SUM(PA.EVALUATION_GRADE) EVALUATION_GRADE,
+			       SUM(PA.EVALUATION_BONUS) EVALUATION_BONUS,
+			       SUM(PA.LUNCH_ALLOWANCE) LUNCH_ALLOWANCE,
+			       SUM(PA.HOUSING_ALLOWANCE) HOUSING_ALLOWANCE,
+			       SUM(PA.ADDITIONAL_ALLOWANCE) ADDITIONAL_ALLOWANCE,
+			       SUM(PA.WOMEN_SPECIAL_ALLOWANCE) WOMEN_SPECIAL_ALLOWANCE,
+			       SUM(PA.PROB_OT_HOUR_SALARY) PROB_OT_HOUR_SALARY,
+			       SUM(PA.OT_HOUR_SALARY) OT_HOUR_SALARY,
+			       SUM(PA.PROB_WORKDAYOT150_FEE) PROB_WORKDAYOT150_FEE,
+			       SUM(PA.WORKDAYOT150_FEE) WORKDAYOT150_FEE,
+			       SUM(PA.PROB_WORKDAYOT200_FEE) PROB_WORKDAYOT200_FEE,
+			       SUM(PA.WORKDAYOT200_FEE) WORKDAYOT200_FEE,
+			       SUM(PA.PROB_WORKDAYOT210_FEE) PROB_WORKDAYOT210_FEE,
+			       SUM(PA.WORKDAYOT210_FEE) WORKDAYOT210_FEE,
+			       SUM(PA.WORKDAYOT_FEE_TOTAL) WORKDAYOT_FEE_TOTAL,
+			       SUM(PA.PROB_SATURDAYOT200_FEE) PROB_SATURDAYOT200_FEE,
+			       SUM(PA.SATURDAYOT200_FEE) SATURDAYOT200_FEE,
+			       SUM(PA.PROB_SATURDAYOT270_FEE) PROB_SATURDAYOT270_FEE,
+			       SUM(PA.SATURDAYOT270_FEE) SATURDAYOT270_FEE,
+			       SUM(PA.SATURDAYOT_FEE_TOTAL) SATURDAYOT_FEE_TOTAL,
+			       SUM(PA.PROB_WEEKLYOT200_FEE) PROB_WEEKLYOT200_FEE,
+			       SUM(PA.WEEKLYOT200_FEE) WEEKLYOT200_FEE,
+			       SUM(PA.PROB_WEEKLYOT270_FEE) PROB_WEEKLYOT270_FEE,
+			       SUM(PA.WEEKLYOT270_FEE) WEEKLYOT270_FEE,
+			       SUM(PA.WEEKLYOT_FEE_TOTAL) WEEKLYOT_FEE_TOTAL,
+			       SUM(PA.PROB_HOLIDAYOT300_FEE) PROB_HOLIDAYOT300_FEE,
+			       SUM(PA.HOLIDAYOT300_FEE) HOLIDAYOT300_FEE,
+			       SUM(PA.PROB_HOLIDAYOT390_FEE) PROB_HOLIDAYOT390_FEE,
+			       SUM(PA.HOLIDAYOT390_FEE) HOLIDAYOT390_FEE,
+			       SUM(PA.HOLIDAYOT_FEE_TOTAL) HOLIDAYOT_FEE_TOTAL,
+			       SUM(PA.OT_FEE_TOTAL) OT_FEE_TOTAL,
+			       SUM(PA.SP_OT_FEE_TAXCAL_TOTAL) SP_OT_FEE_TAXCAL_TOTAL,
+			       SUM(PA.SP_OT_FEE_TAXFREE_TOTAL) SP_OT_FEE_TAXFREE_TOTAL,
+			       SUM(PA.ANNUALLEAVE_CLEAR_PAY) ANNUALLEAVE_CLEAR_PAY,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY) RESIGN_ANNUALLEAVE_PAY,
+			       SUM(PA.PROB_LEAVE_DAYS_SALARY) PROB_LEAVE_DAYS_SALARY,
+			       SUM(PA.LEAVE_DAYS_SALARY) LEAVE_DAYS_SALARY,
+			       SUM(PA.PROB_PERSONALLEAVE_DEDUCT) PROB_PERSONALLEAVE_DEDUCT,
+			       SUM(PA.PERSONALLEAVE_DEDUCT) PERSONALLEAVE_DEDUCT,
+			       SUM(PA.PROB_SICKLEAVE_DEDUCT) PROB_SICKLEAVE_DEDUCT,
+			       SUM(PA.SICKLEAVE_DEDUCT) SICKLEAVE_DEDUCT,
+			       SUM(PA.MATERNITYLEAVE_DEDUCT) MATERNITYLEAVE_DEDUCT,
+			       SUM(PA.PROB_ABSENT_DEDUCT) PROB_ABSENT_DEDUCT,
+			       SUM(PA.ABSENT_DEDUCT) ABSENT_DEDUCT,
+			       SUM(PA.PROB_LATEEARLY_DEDUCT) PROB_LATEEARLY_DEDUCT,
+			       SUM(PA.LATEEARLY_DEDUCT) LATEEARLY_DEDUCT,
+			       SUM(PA.ATT_DEDUCT_TOTAL) ATT_DEDUCT_TOTAL,
+			       SUM(PA.INCOME_BEFORE_TAX) INCOME_BEFORE_TAX,
+			       SUM(PA.OT_SALARY_NOT_PIT) OT_SALARY_NOT_PIT,
+			       SUM(PA.TAXABLE_INCOME) TAXABLE_INCOME,
+			       SUM(PA.PT_TAX_RATE) PT_TAX_RATE,
+			       SUM(PA.QUICK_DEDUCTION_TAX) QUICK_DEDUCTION_TAX,
+			       SUM(PA.PERSONAL_TAX) PERSONAL_TAX,
+			       SUM(PA.TAXABLE_INCOME15) TAXABLE_INCOME15,
+			       SUM(PA.PIT_SETTLEMENT) PIT_SETTLEMENT,
+			       SUM(PA.SEVERANCE_ALLOWANCE) SEVERANCE_ALLOWANCE,
+			       SUM(PA.REAL_WAGES) REAL_WAGES,
+			       SUM(PA.TRADE_UNION) TRADE_UNION,
+			       SUM(PA.TRADE_UNION_CORP) TRADE_UNION_CORP,
+			       SUM(PA.INSURANCE_BASE) INSURANCE_BASE,
+			       SUM(PA.SOCIAL_INS_PERSONAL) SOCIAL_INS_PERSONAL,
+			       SUM(PA.MEDICAL_INS_PERSONAL) MEDICAL_INS_PERSONAL,
+			       SUM(PA.UNEMPLOYMENT_INS_PERSONAL) UNEMPLOYMENT_INS_PERSONAL,
+			       SUM(PA.PERSONAL_INS_TOTAL) PERSONAL_INS_TOTAL,
+			       SUM(PA.SOCIAL_INS_COMPANY) SOCIAL_INS_COMPANY,
+			       SUM(PA.MEDICAL_INS_COMPANY) MEDICAL_INS_COMPANY,
+			       SUM(PA.UNEMPLOYMENT_INS_COMPANY) UNEMPLOYMENT_INS_COMPANY,
+			       SUM(PA.SOCIAL_SICK_INS_COMPANY) SOCIAL_SICK_INS_COMPANY,
+			       SUM(PA.COMPANY_INS_TOTAL) COMPANY_INS_TOTAL,
+			       SUM(PA.BASIC_SALARY_FORCAL) BASIC_SALARY_FORCAL
+			  FROM PA_SUMMARY_HAE PA
+			 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+	    ]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+		  ( PA.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 	       EXISTS (SELECT B1.DEPTID
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = PA.DEPTNO AND B1.CPNY_ID = #interCpnyID#
+				         START WITH B1.DEPTNO = #DEPTNO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		    ]]>
+			</isNotEmpty>
+		<![CDATA[
+			GROUP BY PA.PAY_SCHEDULE_NO
+	    ]]>
+	</select>
+
+
+	<select id="viewPaResultSSTListSum" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isNotEqual prepend="" property="SALARY_DISTIN"
+			compareValue="春节奖">
+		<![CDATA[
+			SELECT
+			  sum( PST.BASEPAY_REAL  )  BASEPAY_REAL ,  
+           sum( PST.ABILITYPAY_REAL)ABILITYPAY_REAL ,   
+            sum(PST.COMMUNICATION_FEE_REAL )  COMMUNICATION_FEE_REAL,  
+            sum(PST.EAT_FEE_REAL  ) EAT_FEE_REAL,   
+            sum(PST.TRAFIC_FEE_REAL  ) TRAFIC_FEE_REAL,  
+            sum(PST.BASE_OT_FEE_REAL  )  BASE_OT_FEE_REAL,  
+            sum(PST.P_MERIT_PAY  )  P_MERIT_PAY,  
+            sum(PST.P_PARKING_FEE) P_PARKING_FEE  ,   
+            sum(PST.WORK_OT_FEE  )  WORK_OT_FEE  ,   
+            sum(PST.WEEKEND_OT_FEE )      WEEKEND_OT_FEE    ,   
+           sum( PST.HOLIDAYS_OT_FEE  )  HOLIDAYS_OT_FEE       ,  
+            sum(PST.NIGHT_WORK_SUB   )    NIGHT_WORK_SUB    ,  
+            sum(PST.TRAINEE_SALARY   )       TRAINEE_SALARY ,   
+            sum(PST.LASTMONTH_NO_PAY )     LASTMONTH_NO_PAY    ,  
+            sum(PST.TECHWIN_BONUS   )     TECHWIN_BONUS ,   
+            sum(PST.P_OTHER_ALLOWANCE  )    P_OTHER_ALLOWANCE     ,   
+            sum(PST.P_BUSINESS_TRIP_FEE )    P_BUSINESS_TRIP_FEE      ,   
+            sum(PST.P_OTHER_ALLOW_FREETAX   )  P_OTHER_ALLOW_FREETAX       ,  
+            
+            sum(PST.P_FSE_SALARY  ) P_FSE_SALARY,  
+            sum(PST.P_MARRIAGE_SUB  ) P_MARRIAGE_SUB, 
+            sum(PST.P_BIRTH_SUB  ) P_BIRTH_SUB, 
+            sum(PST.P_FUNERAL_SUB  ) P_FUNERAL_SUB, 
+            sum(PST.P_SEVERANCE_BENEFIT  ) P_SEVERANCE_BENEFIT, 
+            sum(PST.P_INSURANCE_SUB )  P_INSURANCE_SUB, 
+            sum(PST.P_HOTWEATHER_SUB ) P_HOTWEATHER_SUB,
+            sum(PST.P_WINTERWEATHER_SUB  ) P_WINTERWEATHER_SUB,
+            sum(PST.SICK_DEDUCT  ) SICK_DEDUCT, 
+             sum(PST.PERSONAL_LEAVE_DEDUCT ) PERSONAL_LEAVE_DEDUCT, 
+            sum(PST.P_OTHER_DEDUCT ) P_OTHER_DEDUCT, 
+            sum(PST.P_OTHER_DEDUCT_FREETAX ) P_OTHER_DEDUCT_FREETAX,  
+            sum(PST.S_ENDOWMENT_PER ) S_ENDOWMENT_PER, 
+            sum(PST.S_ENDOWMENT_COR ) S_ENDOWMENT_COR, 
+            sum(PST.S_MEDICARE_PER ) S_MEDICARE_PER, 
+            sum(PST.S_MEDICARE_COR)  S_MEDICARE_COR, 
+            sum(PST.S_UNEMPLOYMENT_PER ) S_UNEMPLOYMENT_PER, 
+            sum(PST.S_UNEMPLOYMENT_COR ) S_UNEMPLOYMENT_COR, 
+             sum(PST.S_MATERNITY_COR )   S_MATERNITY_COR , 
+             sum(PST.S_ACCIDENT_COR   )  S_ACCIDENT_COR, 
+             sum(PST.S_CPF_PER  )   S_CPF_PER, 
+             sum(PST.S_CPF_COR  ) S_CPF_COR  , 
+             sum(PST.P_EDU_FEE_FSE )  P_EDU_FEE_FSE , 
+             sum(PST.P_DEDUCT_HOUSE_FSE )   P_DEDUCT_HOUSE_FSE , 
+             sum(PST.S_GONGHUI_FEE )   S_GONGHUI_FEE , 
+             
+             sum(PST.PERSONAL_INCOME_TAX )  PERSONAL_INCOME_TAX, 
+               sum(PST.RIDANG_TAX)  RIDANG_TAX , 
+             sum( PST.NET_PAY + PST.TAX_TOTAL + PST.INSURANCE_TOTAL_PER+P_DEDUCT_HOUSE_FSE+P_EDU_FEE_FSE)   NET_PAY_P , 
+               sum( PST.TAX_TOTAL + PST.INSURANCE_TOTAL_PER+P_DEDUCT_HOUSE_FSE+P_EDU_FEE_FSE )   INSURANCE_TOTAL_PER_P, 
+               sum(PST.NET_PAY)    NET_PAY
+                ]]></isNotEqual>
+		<isEqual prepend="" property="SALARY_DISTIN" compareValue="春节奖">
+		<![CDATA[
+		SELECT     SUM(PST.SPRFEE_STD_FEE) SPRFEE_STD_FEE ,
+           SUM(PST.P_MERIT_PAY_FLAG) P_MERIT_PAY_FLAG ,
+           SUM(PST.P_TECHWIN_BONUS_FLAG) P_TECHWIN_BONUS_FLAG,
+          SUM(PST.SPRFEE_CAL_FEE)  SPRFEE_CAL_FEE,
+           SUM(PST.SPRFEE_TAX ) SPRFEE_TAX,
+           SUM(PST.SPRFEE_NET_PAY ) SPRFEE_NET_PAY
+ 	   ]]></isEqual>
+ 	   <![CDATA[
+ 	FROM PA_SUMMARY_SST PST,SY_CODE SC ,HR_EMPLOYEE H,HR_DEPARTMENT HD
+		WHERE PST.PAY_SCHEDULE_NO IN
+
+		( SELECT PPS.PAY_SCHEDULE_NO
+		FROM PA_PAY_SCHEDULE PPS
+		WHERE PPS.PAY_DATE BETWEEN TO_DATE(#PAY_DATE_PRO#,'YYYY/MM/DD')
+		AND TO_DATE(#PAY_DATE#,'YYYY/MM/DD')
+		AND PPS.activity = 1
+		AND PPS.SALARY_DISTIN_NO=#SALARY_DISTIN_NO#)
+		AND PST.PERSON_ID=H.PERSON_ID(+)
+		AND H.POST_GRADE_NO = SC.CODE_NO(+)
+		AND H.EMPID NOT LIKE '11111%'
+		AND PST.DEPTNO=hd.deptno(+)
+
+
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+		 ( PST.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PST.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PST.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+		  PST.DEPTNO 
+		   
+		   IN
+       (SELECT OI2.DEPTNO
+          FROM  hr_department OI2
+         WHERE  1=1
+         START WITH OI2.DEPTNO = #DEPT_NO#
+        CONNECT BY PRIOR OI2.DEPTNO = OI2.PARENT_DEPT_NO)
+	    ]]>
+		</isNotEmpty>
+		 <![CDATA[
+		 	ORDER BY hd.order_no,SC.ORDERNO,H.EMPID
+		 ]]>
+	</select>
+
+
+
+	<insert id="CALL_PA_PERSONAL_ITEM_VIEW" parameterClass="linkMap">
+		<![CDATA[
+			call PA_PERSONAL_ITEM_VIEW(#CREATED_BY#,#PERSON_ID#,#interCpnyID#,#PAY_SCHEDULE_NO#)
+		]]>
+	</insert>
+
+
+	<select id="detailPersonCountInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	   
+			SELECT  
+				ACTUAL_WORK_DAYS,
+				WEEKDAY_OT,
+				WEEKEND_OT,
+				HOLIDAY_OT,
+				TOTAL_PERSONAL_LEAVE,
+				TOTAL_SICK_HOURS,
+				ABSENTEEISM,
+				ANNUAL_LEAVE,
+				MARRIAGE_LEAVE,
+				TOTAL_MATERNITY_LEAVE,
+				ACCOMPANY_MATERNITY_LEAVE,
+				FUNERAL_LEAVE,
+				INDUSTRIAL_INJURY_LEAVE,
+				BASE_SALARY,
+				BASE_SUBSIDY,
+				FIX_OT_FEE,
+				POSTGRADE_SUBSIDY,
+				TRANS_SUBSIDY,
+				DUTY_SUBSIDY,
+				HOUSE_SUBSIDY,
+				COMMUNICATION_FEE,
+				OT_FEE_TOTAL,
+				FOOD_SUBSIDY,
+				P_CASHIER_SUB,
+				HOT_SUBSIDY,
+				P_POSTTITLE_SUB,
+				P_SHOP_SUB,
+				P_ENDOWMENT_SUB,
+				P_ACTIVITY_FEE,
+				P_WELFARE_FEE,
+				P_HEATING_SUB,
+				P_OTHER_SUB,
+				P_BONUS,
+				YEAR_BONUS,
+				ENDOWMENT_PER,
+				UNEMPLOYMENT_PER,
+				MEDICARE_PER,
+				P_CPF_PROP_PER,
+				PERSONAL_LEAVE_DEDUCT,
+				SICK_DEDUCT,
+				ABSENT_DEDUCT,
+				NOTWORK_DEDUCT,
+				PERSONAL_INCOME_TAX,
+				YB_TAX
+			FROM PA_SUMMARY_HTSV 
+		   WHERE PERSON_ID=#PERSON_ID#
+		]]>
+	</select>
+	<select id="getPaDetailEmpInfoByPersonId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.EMPID,
+			       PA.PERSON_ID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.EMP_TYPE_CODE,
+			       GET_GLOBAL_NAME(PA.EMP_TYPE_CODE,#interLanguage#) EMP_TYPE_NAME,
+			       PA.PAY_SCHEDULE_NO,
+			       TO_CHAR(PA.DATE_STARTED,'DD-MM-YYYY') DATE_STARTED,
+			       TO_CHAR(PA.DATE_LEFT,'DD-MM-YYYY') DATE_LEFT,
+			       TO_CHAR(PA.END_PROBATION_DATE,'DD-MM-YYYY') END_PROBATION_DATE,
+			       PA.REAL_WAGES       
+			  FROM PA_SUMMARY_HTSV PA
+			 WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+			 AND PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+			]]>
+	</select>
+	<insert id="callForSalaryDetailInfo" parameterClass="linkMap">
+		<![CDATA[
+	 CALL PA_FOR_SALARY_DETAIL_PAGE_P(#interCpnyID#,#PAY_SCHEDULE_NO#,#PERSON_ID#,#CREATED_BY#)
+	 ]]>
+	</insert>
+	<select id="getPaDetailInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+	     	    SELECT P.CPNY_ID,
+				       P.PERSON_ID,
+				       GET_GLOBAL_NAME(P.ITEM_NO, #interLanguage#) ITEM_NAME,
+				       P.ITEM_TYPE,
+				       P.ITEM_VALUE,
+				       P.ITEM_FORMULAR,
+				       P.ORDERNO,
+				       P.CREATE_BY,
+				       P.CREATE_DATE,
+				       P.ITEM_NO
+				  FROM PA_SALARY_DETAIL_PAGE_DATA P
+				 WHERE P.CPNY_ID = #interCpnyID#
+				   AND P.PERSON_ID = #PERSON_ID#
+				 ORDER BY P.ITEM_TYPE, P.ORDERNO
+		 ]]>
+	</select>
+	<select id="detailYearCountInfoLeft" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+	     	<![CDATA[
+	     	SELECT PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.PAY_SCHEDULE_NO,
+			       PA.PERSON_ID,
+			       TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY-MM-DD'),'DD-MM-YYYY') PAY_DATE,
+			       TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY-MM-DD'),'DD/MM/YYYY') PAY_DATE_FORMAT,
+			       INCOME_BEFORE_TAX,
+			       (PA.PERSONAL_INS_TOTAL + PA.PERSONAL_TAX + PA.P_AFTER_TAX_MINUS) WITHHOLD_TOTAL,			        
+			       PA.REAL_WAGES
+			  FROM PA_SUMMARY_HTSV PA
+			 WHERE SUBSTR(PA.PAY_DATE,0,7) BETWEEN TO_CHAR(TO_DATE(#PAY_DATE_PRO:VARCHAR#,'MM/YYYY'),'YYYY-MM') AND TO_CHAR(TO_DATE(#PAY_DATE:VARCHAR#,'MM/YYYY'),'YYYY-MM')
+			 AND PERSON_ID = #PERSON_ID:VARCHAR#
+			 ORDER BY PA.PAY_DATE
+		 ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+	     	<![CDATA[
+	     	SELECT PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.PAY_SCHEDULE_NO,
+			       PA.PERSON_ID,
+			       TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY-MM-DD'),'DD-MM-YYYY') PAY_DATE,
+			       TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY-MM-DD'),'DD/MM/YYYY') PAY_DATE_FORMAT,
+			       INCOME_BEFORE_TAX,
+			       (PA.PERSONAL_INS_TOTAL + PA.PERSONAL_TAX + PA.P_AFTER_TAX_MINUS) WITHHOLD_TOTAL,			        
+			       PA.REAL_WAGES
+			  FROM PA_SUMMARY_HAE PA
+			 WHERE SUBSTR(PA.PAY_DATE,0,7) BETWEEN TO_CHAR(TO_DATE(#PAY_DATE_PRO:VARCHAR#,'MM/YYYY'),'YYYY-MM') AND TO_CHAR(TO_DATE(#PAY_DATE:VARCHAR#,'MM/YYYY'),'YYYY-MM')
+			 AND PERSON_ID = #PERSON_ID:VARCHAR#
+			 ORDER BY PA.PAY_DATE
+		 ]]>
+		</isEqual>
+	</select>
+	<select id="detailPersonCountInfoLeft" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+	     	<![CDATA[
+	     	SELECT PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       INCOME_BEFORE_TAX,
+			       (PA.PERSONAL_INS_TOTAL + PA.PERSONAL_TAX + PA.P_AFTER_TAX_MINUS) WITHHOLD_TOTAL,			        
+			       PA.REAL_WAGES,
+			       PA.PAY_SCHEDULE_NO,
+			       PA.PERSON_ID
+			  FROM PA_SUMMARY_HTSV PA
+			 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+				 ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+	     	<![CDATA[
+	     	SELECT PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       INCOME_BEFORE_TAX,
+			       (PA.PERSONAL_INS_TOTAL + PA.PERSONAL_TAX + PA.P_AFTER_TAX_MINUS) WITHHOLD_TOTAL,			        
+			       PA.REAL_WAGES,
+			       PA.PAY_SCHEDULE_NO,
+			       PA.PERSON_ID
+			  FROM PA_SUMMARY_HAE PA
+			 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+				 ]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	      ( PA.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+	 	       EXISTS (SELECT B1.DEPTID
+			          FROM HR_DEPARTMENT B1
+			         WHERE B1.DEPTNO = PA.DEPTNO AND B1.CPNY_ID = #interCpnyID#
+			         START WITH B1.DEPTNO = #DEPT_NO#
+			       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="POST_FAMILY_Multi">
+		<![CDATA[
+	 	       PA.POST_GRADE_GROUP_NO IN ( $POST_FAMILY_Multi$ )
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			 ORDER BY PA.EMPID
+		 ]]>
+	</select>
+	<insert id="callDetailMonthCountInfoRight" parameterClass="linkMap">
+		<![CDATA[
+	 CALL PA_FOR_MY_SALARY_DETAIL_PAGE_P(#interCpnyID#,#PAY_SCHEDULE_NO#,NULL,NULL,NULL,NULL,#PERSON_ID#,#CREATED_BY#,#ITEM_TYPE#)
+	 ]]>
+	</insert>
+	<insert id="callDetailYearCountInfoRight" parameterClass="linkMap">
+		<![CDATA[
+	 CALL PA_FOR_MY_SALARY_DETAIL_PAGE_P(#interCpnyID#,NULL,#START_MONTH#,#END_MONTH#,'全体员工',TO_CHAR(TO_DATE(#PAY_DATE#,'DD-MM-YYYY'),'YYYY-MM-DD'),#PERSON_ID#,#CREATED_BY#,#ITEM_TYPE#)
+	 ]]>
+	</insert>
+	<select id="detailMonthYearCountInfoRight" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+	     	    SELECT P.PERSON_ID,
+				       P.ITEM_TYPE,
+				       P.ITEM_NO,
+				       GET_GLOBAL_NAME(P.ITEM_NO,#interLanguage#) ITEM_NAME,
+				       P.ITEM_VALUE,
+				       P.ITEM_YEAR_VALUE,
+				       P.CREATE_BY,
+				       P.CPNY_ID
+				       FROM PA_MY_SALARY_PAGE_DATA P
+				      WHERE P.CPNY_ID = #interCpnyID#
+				         AND P.PERSON_ID = #PERSON_ID#
+				 ORDER BY P.ITEM_TYPE,P.ORDERNO
+		 ]]>
+	</select>
+	<insert id="callProForPayMonthDif" parameterClass="linkMap">
+		<![CDATA[  		
+	  call PA_MONTH_Contrast (#PAY_DATE2_PRO#,#PAY_DATE2#,#CPNY_ID#,#P_OR_G#)
+  ]]>
+
+	</insert>
+
+	<select id="detailItemCountInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		SELECT PST.PERSON_ID,
+		       PST.EMPID,
+		       PST.LOCAL_NAME,       
+		       PST.DEPTNO,
+		       GET_DEPT_NAME(PST.DEPTNO,#interLanguage#) DEPT_NAME,
+		       PST.POST_FAMILY_NO,
+		       GET_GLOBAL_NAME(PST.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+		       PST.POST_GRADE_NO,
+		       GET_GLOBAL_NAME(PST.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+		       PST.POSITION_NO,
+		       GET_GLOBAL_NAME(PST.POSITION_NO,#interLanguage#) POSITION_NAME,       
+		       PST.$ITEM_ID$ PAY_NUMBER,
+		       (select FORMULAR_VALUE
+		          from PA_CAL_FORMULAR_HTSV PCF
+		         WHERE PCF.ITEM_ID = #ITEM_ID#
+		           AND PCF.PAY_SCHEDULE_NO = PST.PAY_SCHEDULE_NO
+		           AND PCF.PERSON_ID = PST.PERSON_ID
+		           AND ROWNUM = 1) FORMULAR_VALUE,
+		       (SELECT PPD.REMARK
+		          FROM PA_PARAM_DATA PPD
+		         where PPD.PARAM_NO = (SELECT PPIP.PARAM_NO
+		                                 FROM PA_PARAM_ITEM_PARAM PPIP
+		                                WHERE PPIP.PARAM_ITEM_NO =
+		                                      (SELECT PPI.PARAM_ITEM_NO
+		                                         FROM PA_PARAM_ITEM PPI
+		                                        WHERE PPI.PARAM_ITEM_ID = #ITEM_ID#
+		                                          AND CPNY_ID = #interCpnyID#
+		                                          AND ROWNUM = 1)
+		                                  AND ROWNUM = 1)
+		           AND ROWNUM = 1) REMARK
+		  FROM PA_SUMMARY_HTSV PST
+		 WHERE PST.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+         ]]>
+	</select>
+
+	<select id="itemValueInfo" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+
+        
+        SELECT GET_GLOBAL_NAME(PII.ITEM_NO,#interLanguage#) ITEM_NAME, PII.ITEM_ID, PII.ITEM_TYPE
+  FROM PA_ITEM_INPUT PII
+ WHERE PII.IS_USE = 4
+   AND PII.CPNY_ID = #interCpnyID#
+      
+   AND PII.ACTIVITY = 1
+        
+        
+        
+		]]>
+	</select>
+
+
+
+	<select id="checkViewPaResult" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+
+        
+        SELECT 
+NVL(PII.ITEM_NAME, '0') ITEM_NAME,
+       NVL(PII.ITEM_ID, '0') ITEM_ID,
+       NVL(PII.ITEM_TYPE, '0') ITEM_TYPE,
+       NVL(PII.ITEM_NO, '0') ITEM_NO,
+       NVL(PII.ORDERNO, '0') ORDERNO
+  FROM PA_ITEM_INPUT PII
+ WHERE PII.IS_USE = #IS_USE2#
+   AND PII.CPNY_ID = #interCpnyID#
+    AND PII.ITEM_TYPE=#ITEM_TYPE2#  
+   AND PII.ACTIVITY = 1
+		]]>
+	</select>
+
+	<select id="viewDeptPaResultList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+			SELECT MIN(GET_DEPT_NAME(PA.DEPTNO,#interLanguage#)) DEPT_NAME,COUNT(PA.EMPID)EMPNUMS,
+		             SUM(PA.PROBATION_DAYS) PROBATION_DAYS,
+		             SUM(PA.REGULAR_DAYS) REGULAR_DAYS,
+		             SUM(PA.WORK_SCHEDULE_DAYS) WORK_SCHEDULE_DAYS,
+		             SUM(PA.PROB_NIGHT_SHIFT_COUNT) PROB_NIGHT_SHIFT_COUNT,
+		             SUM(PA.NIGHT_SHIFT_COUNT) NIGHT_SHIFT_COUNT,
+		             SUM(PA.PROB_WORKDAYOT150_HOURS) PROB_WORKDAYOT150_HOURS,
+		             SUM(PA.WORKDAYOT150_HOURS) WORKDAYOT150_HOURS,
+		             SUM(PA.PROB_WORKDAYOT200_HOURS) PROB_WORKDAYOT200_HOURS,
+		             SUM(PA.WORKDAYOT200_HOURS) WORKDAYOT200_HOURS,
+		             SUM(PA.PROB_WORKDAYOT210_HOURS) PROB_WORKDAYOT210_HOURS,
+		             SUM(PA.WORKDAYOT210_HOURS) WORKDAYOT210_HOURS,
+		             SUM(PA.PROB_SATURDAYOT200_HOURS) PROB_SATURDAYOT200_HOURS,
+		             SUM(PA.SATURDAYOT200_HOURS) SATURDAYOT200_HOURS,
+		             SUM(PA.PROB_SATURDAYOT270_HOURS) PROB_SATURDAYOT270_HOURS,
+		             SUM(PA.SATURDAYOT270_HOURS) SATURDAYOT270_HOURS,
+		             SUM(PA.PROB_WEEKLYOT200_HOURS) PROB_WEEKLYOT200_HOURS,
+		             SUM(PA.WEEKLYOT200_HOURS) WEEKLYOT200_HOURS,
+		             SUM(PA.PROB_WEEKLYOT270_HOURS) PROB_WEEKLYOT270_HOURS,
+		             SUM(PA.WEEKLYOT270_HOURS) WEEKLYOT270_HOURS,
+		             SUM(PA.PROB_HOLIDAYOT300_HOURS) PROB_HOLIDAYOT300_HOURS,
+		             SUM(PA.HOLIDAYOT300_HOURS) HOLIDAYOT300_HOURS,
+		             SUM(PA.PROB_HOLIDAYOT390_HOURS) PROB_HOLIDAYOT390_HOURS,
+		             SUM(PA.HOLIDAYOT390_HOURS) HOLIDAYOT390_HOURS,
+		             SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) RESIGN_ANNUALLEAVE_PAY_DAYS,
+		             SUM(PA.PROB_PERSONALLEAVE_DAYS) PROB_PERSONALLEAVE_DAYS,
+		             SUM(PA.PERSONALLEAVE_DAYS) PERSONALLEAVE_DAYS,
+		             SUM(PA.PROB_SICKLEAVE_DAYS) PROB_SICKLEAVE_DAYS,
+		             SUM(PA.SICKLEAVE_DAYS) SICKLEAVE_DAYS,
+		             SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) PROB_CHILD_SICKLEAVE_DAYS,
+		             SUM(PA.CHILD_SICKLEAVE_DAYS) CHILD_SICKLEAVE_DAYS,
+		             SUM(PA.PROB_LONG_SICKLEAVE_DAYS) PROB_LONG_SICKLEAVE_DAYS,
+		             SUM(PA.LONG_SICKLEAVE_DAYS) LONG_SICKLEAVE_DAYS,
+		             SUM(PA.MATERNITYLEAVE_DAYS) MATERNITYLEAVE_DAYS,
+		             SUM(PA.PROB_ABSENTEEISM_DAYS) PROB_ABSENTEEISM_DAYS,
+		             SUM(PA.ABSENTEEISM_DAYS) ABSENTEEISM_DAYS,
+		             SUM(PA.PROB_LATE_ARRIVE_MINUTES) PROB_LATE_ARRIVE_MINUTES,
+		             SUM(PA.LATE_ARRIVE_MINUTES) LATE_ARRIVE_MINUTES,
+		             SUM(PA.PROB_EARLY_LEAVE_MINUTES) PROB_EARLY_LEAVE_MINUTES,
+		             SUM(PA.EARLY_LEAVE_MINUTES) EARLY_LEAVE_MINUTES,
+		             SUM(PA.UNPAIDLEAVE_DAYS) UNPAIDLEAVE_DAYS,           
+		             SUM(PA.BASIC_SALARY) BASIC_SALARY,
+		             SUM(PA.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+		             SUM(PA.POSITIONALLOW_CAL) POSITIONALLOW_CAL,
+		             SUM(PA.TRANSPORTATION_ALLOWANCE) TRANSPORTATION_ALLOWANCE,
+		             SUM(PA.LONG_ATTENDANCE) LONG_ATTENDANCE,
+		             SUM(PA.FULL_ATTENDANCE_BONUS) FULL_ATTENDANCE_BONUS,
+		             SUM(PA.NIGHTSHIFT_ALLOWANCE) NIGHTSHIFT_ALLOWANCE,
+		             SUM(PA.EVALUATION_GRADE) EVALUATION_GRADE,
+		             SUM(PA.EVALUATION_BONUS) EVALUATION_BONUS,
+		             SUM(PA.PROB_OT_HOUR_SALARY) PROB_OT_HOUR_SALARY,
+		             SUM(PA.OT_HOUR_SALARY) OT_HOUR_SALARY,
+		             SUM(PA.PROB_WORKDAYOT150_FEE) PROB_WORKDAYOT150_FEE,
+		             SUM(PA.WORKDAYOT150_FEE) WORKDAYOT150_FEE,
+		             SUM(PA.PROB_WORKDAYOT200_FEE) PROB_WORKDAYOT200_FEE,
+		             SUM(PA.WORKDAYOT200_FEE) WORKDAYOT200_FEE,
+		             SUM(PA.PROB_WORKDAYOT210_FEE) PROB_WORKDAYOT210_FEE,
+		             SUM(PA.WORKDAYOT210_FEE) WORKDAYOT210_FEE,
+		             SUM(PA.WORKDAYOT_FEE_TOTAL) WORKDAYOT_FEE_TOTAL,
+		             SUM(PA.PROB_SATURDAYOT200_FEE) PROB_SATURDAYOT200_FEE,
+		             SUM(PA.SATURDAYOT200_FEE) SATURDAYOT200_FEE,
+		             SUM(PA.PROB_SATURDAYOT270_FEE) PROB_SATURDAYOT270_FEE,
+		             SUM(PA.SATURDAYOT270_FEE) SATURDAYOT270_FEE,
+		             SUM(PA.SATURDAYOT_FEE_TOTAL) SATURDAYOT_FEE_TOTAL,
+		             SUM(PA.PROB_WEEKLYOT200_FEE) PROB_WEEKLYOT200_FEE,
+		             SUM(PA.WEEKLYOT200_FEE) WEEKLYOT200_FEE,
+		             SUM(PA.PROB_WEEKLYOT270_FEE) PROB_WEEKLYOT270_FEE,
+		             SUM(PA.WEEKLYOT270_FEE) WEEKLYOT270_FEE,
+		             SUM(PA.WEEKLYOT_FEE_TOTAL) WEEKLYOT_FEE_TOTAL,
+		             SUM(PA.PROB_HOLIDAYOT300_FEE) PROB_HOLIDAYOT300_FEE,
+		             SUM(PA.HOLIDAYOT300_FEE) HOLIDAYOT300_FEE,
+		             SUM(PA.PROB_HOLIDAYOT390_FEE) PROB_HOLIDAYOT390_FEE,
+		             SUM(PA.HOLIDAYOT390_FEE) HOLIDAYOT390_FEE,
+		             SUM(PA.HOLIDAYOT_FEE_TOTAL) HOLIDAYOT_FEE_TOTAL,
+		             SUM(PA.OT_FEE_TOTAL) OT_FEE_TOTAL,
+		             SUM(PA.ANNUALLEAVE_CLEAR_PAY) ANNUALLEAVE_CLEAR_PAY,
+		             SUM(PA.RESIGN_ANNUALLEAVE_PAY) RESIGN_ANNUALLEAVE_PAY,
+		             SUM(PA.PROB_LEAVE_DAYS_SALARY) PROB_LEAVE_DAYS_SALARY,
+		             SUM(PA.LEAVE_DAYS_SALARY) LEAVE_DAYS_SALARY,
+		             SUM(PA.PROB_PERSONALLEAVE_DEDUCT) PROB_PERSONALLEAVE_DEDUCT,
+		             SUM(PA.PERSONALLEAVE_DEDUCT) PERSONALLEAVE_DEDUCT,
+		             SUM(PA.PROB_SICKLEAVE_DEDUCT) PROB_SICKLEAVE_DEDUCT,
+		             SUM(PA.SICKLEAVE_DEDUCT) SICKLEAVE_DEDUCT,
+		             SUM(PA.MATERNITYLEAVE_DEDUCT) MATERNITYLEAVE_DEDUCT,
+		             SUM(PA.PROB_ABSENT_DEDUCT) PROB_ABSENT_DEDUCT,
+		             SUM(PA.ABSENT_DEDUCT) ABSENT_DEDUCT,  
+		             SUM(PA.PROB_LATEEARLY_DEDUCT) PROB_LATEEARLY_DEDUCT,         
+		             SUM(PA.LATEEARLY_DEDUCT) LATEEARLY_DEDUCT,
+		             SUM(PA.ATT_DEDUCT_TOTAL) ATT_DEDUCT_TOTAL,
+		             SUM(PA.INCOME_BEFORE_TAX) INCOME_BEFORE_TAX,
+		             SUM(PA.TAXABLE_INCOME) TAXABLE_INCOME,
+		             SUM(PA.PERSONAL_TAX) PERSONAL_TAX,
+		             SUM(PA.PIT_SETTLEMENT) PIT_SETTLEMENT,
+		             SUM(PA.SEVERANCE_ALLOWANCE) SEVERANCE_ALLOWANCE,
+		             SUM(PA.REAL_WAGES) REAL_WAGES,
+		             SUM(PA.TRADE_UNION) TRADE_UNION,
+		             SUM(PA.TRADE_UNION_CORP) TRADE_UNION_CORP,
+		             SUM(PA.INSURANCE_BASE) INSURANCE_BASE,
+		             SUM(PA.SOCIAL_INS_PERSONAL) SOCIAL_INS_PERSONAL,
+		             SUM(PA.MEDICAL_INS_PERSONAL) MEDICAL_INS_PERSONAL,
+		             SUM(PA.UNEMPLOYMENT_INS_PERSONAL) UNEMPLOYMENT_INS_PERSONAL,
+		             SUM(PA.PERSONAL_INS_TOTAL) PERSONAL_INS_TOTAL,
+		             SUM(PA.SOCIAL_INS_COMPANY) SOCIAL_INS_COMPANY,
+		             SUM(PA.MEDICAL_INS_COMPANY) MEDICAL_INS_COMPANY,
+		             SUM(PA.UNEMPLOYMENT_INS_COMPANY) UNEMPLOYMENT_INS_COMPANY,
+		             SUM(PA.COMPANY_INS_TOTAL) COMPANY_INS_TOTAL,
+		             SUM(PA.PT_TAX_RATE) PT_TAX_RATE,
+		             SUM(PA.QUICK_DEDUCTION_TAX) QUICK_DEDUCTION_TAX,
+		             SUM(PA.OT_SALARY_NOT_PIT) OT_SALARY_NOT_PIT,
+		             SUM(PA.SOCIAL_SICK_INS_COMPANY) SOCIAL_SICK_INS_COMPANY
+         FROM PA_SUMMARY_HTSV PA
+       WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+			SELECT MIN(GET_DEPT_NAME(PA.DEPTNO,#interLanguage#)) DEPT_NAME,
+			       COUNT(PA.EMPID) EMPNUMS,
+			       SUM(PA.PROBATION_DAYS) PROBATION_DAYS,
+			       SUM(PA.REGULAR_DAYS) REGULAR_DAYS,
+			       SUM(PA.WORK_SCHEDULE_DAYS) WORK_SCHEDULE_DAYS,
+			       SUM(PA.PROB_WORKDAYOT150_HOURS) PROB_WORKDAYOT150_HOURS,
+			       SUM(PA.WORKDAYOT150_HOURS) WORKDAYOT150_HOURS,
+			       SUM(PA.PROB_WORKDAYOT200_HOURS) PROB_WORKDAYOT200_HOURS,
+			       SUM(PA.WORKDAYOT200_HOURS) WORKDAYOT200_HOURS,
+			       SUM(PA.PROB_WORKDAYOT210_HOURS) PROB_WORKDAYOT210_HOURS,
+			       SUM(PA.WORKDAYOT210_HOURS) WORKDAYOT210_HOURS,
+			       SUM(PA.PROB_SATURDAYOT200_HOURS) PROB_SATURDAYOT200_HOURS,
+			       SUM(PA.SATURDAYOT200_HOURS) SATURDAYOT200_HOURS,
+			       SUM(PA.PROB_SATURDAYOT270_HOURS) PROB_SATURDAYOT270_HOURS,
+			       SUM(PA.SATURDAYOT270_HOURS) SATURDAYOT270_HOURS,
+			       SUM(PA.PROB_WEEKLYOT200_HOURS) PROB_WEEKLYOT200_HOURS,
+			       SUM(PA.WEEKLYOT200_HOURS) WEEKLYOT200_HOURS,
+			       SUM(PA.PROB_WEEKLYOT270_HOURS) PROB_WEEKLYOT270_HOURS,
+			       SUM(PA.WEEKLYOT270_HOURS) WEEKLYOT270_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT300_HOURS) PROB_HOLIDAYOT300_HOURS,
+			       SUM(PA.HOLIDAYOT300_HOURS) HOLIDAYOT300_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT390_HOURS) PROB_HOLIDAYOT390_HOURS,
+			       SUM(PA.HOLIDAYOT390_HOURS) HOLIDAYOT390_HOURS,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       SUM(PA.PROB_PERSONALLEAVE_DAYS) PROB_PERSONALLEAVE_DAYS,
+			       SUM(PA.PERSONALLEAVE_DAYS) PERSONALLEAVE_DAYS,
+			       SUM(PA.PROB_SICKLEAVE_DAYS) PROB_SICKLEAVE_DAYS,
+			       SUM(PA.SICKLEAVE_DAYS) SICKLEAVE_DAYS,
+			       SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) PROB_CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.CHILD_SICKLEAVE_DAYS) CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.PROB_LONG_SICKLEAVE_DAYS) PROB_LONG_SICKLEAVE_DAYS,
+			       SUM(PA.LONG_SICKLEAVE_DAYS) LONG_SICKLEAVE_DAYS,
+			       SUM(PA.MATERNITYLEAVE_DAYS) MATERNITYLEAVE_DAYS,
+			       SUM(PA.UNPAIDLEAVE_DAYS) UNPAIDLEAVE_DAYS,
+			       SUM(PA.PROB_ABSENTEEISM_DAYS) PROB_ABSENTEEISM_DAYS,
+			       SUM(PA.ABSENTEEISM_DAYS) ABSENTEEISM_DAYS,
+			       SUM(PA.PROB_LATE_ARRIVE_MINUTES) PROB_LATE_ARRIVE_MINUTES,
+			       SUM(PA.LATE_ARRIVE_MINUTES) LATE_ARRIVE_MINUTES,
+			       SUM(PA.PROB_EARLY_LEAVE_MINUTES) PROB_EARLY_LEAVE_MINUTES,
+			       SUM(PA.EARLY_LEAVE_MINUTES) EARLY_LEAVE_MINUTES,
+			                   
+			       SUM(PA.BASIC_SALARY) BASIC_SALARY,
+			       SUM(PA.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+			       SUM(PA.FULL_ATTENDANCE_BONUS) FULL_ATTENDANCE_BONUS,
+			       SUM(PA.EVALUATION_GRADE) EVALUATION_GRADE,
+			       SUM(PA.EVALUATION_BONUS) EVALUATION_BONUS,
+			       SUM(PA.LUNCH_ALLOWANCE) LUNCH_ALLOWANCE,
+			       SUM(PA.HOUSING_ALLOWANCE) HOUSING_ALLOWANCE,
+			       SUM(PA.ADDITIONAL_ALLOWANCE) ADDITIONAL_ALLOWANCE,
+			       SUM(PA.WOMEN_SPECIAL_ALLOWANCE) WOMEN_SPECIAL_ALLOWANCE,
+			       SUM(PA.PROB_OT_HOUR_SALARY) PROB_OT_HOUR_SALARY,
+			       SUM(PA.OT_HOUR_SALARY) OT_HOUR_SALARY,
+			       SUM(PA.PROB_WORKDAYOT150_FEE) PROB_WORKDAYOT150_FEE,
+			       SUM(PA.WORKDAYOT150_FEE) WORKDAYOT150_FEE,
+			       SUM(PA.PROB_WORKDAYOT200_FEE) PROB_WORKDAYOT200_FEE,
+			       SUM(PA.WORKDAYOT200_FEE) WORKDAYOT200_FEE,
+			       SUM(PA.PROB_WORKDAYOT210_FEE) PROB_WORKDAYOT210_FEE,
+			       SUM(PA.WORKDAYOT210_FEE) WORKDAYOT210_FEE,
+			       SUM(PA.WORKDAYOT_FEE_TOTAL) WORKDAYOT_FEE_TOTAL,
+			       SUM(PA.PROB_SATURDAYOT200_FEE) PROB_SATURDAYOT200_FEE,
+			       SUM(PA.SATURDAYOT200_FEE) SATURDAYOT200_FEE,
+			       SUM(PA.PROB_SATURDAYOT270_FEE) PROB_SATURDAYOT270_FEE,
+			       SUM(PA.SATURDAYOT270_FEE) SATURDAYOT270_FEE,
+			       SUM(PA.SATURDAYOT_FEE_TOTAL) SATURDAYOT_FEE_TOTAL,
+			       SUM(PA.PROB_WEEKLYOT200_FEE) PROB_WEEKLYOT200_FEE,
+			       SUM(PA.WEEKLYOT200_FEE) WEEKLYOT200_FEE,
+			       SUM(PA.PROB_WEEKLYOT270_FEE) PROB_WEEKLYOT270_FEE,
+			       SUM(PA.WEEKLYOT270_FEE) WEEKLYOT270_FEE,
+			       SUM(PA.WEEKLYOT_FEE_TOTAL) WEEKLYOT_FEE_TOTAL,
+			       SUM(PA.PROB_HOLIDAYOT300_FEE) PROB_HOLIDAYOT300_FEE,
+			       SUM(PA.HOLIDAYOT300_FEE) HOLIDAYOT300_FEE,
+			       SUM(PA.PROB_HOLIDAYOT390_FEE) PROB_HOLIDAYOT390_FEE,
+			       SUM(PA.HOLIDAYOT390_FEE) HOLIDAYOT390_FEE,
+			       SUM(PA.HOLIDAYOT_FEE_TOTAL) HOLIDAYOT_FEE_TOTAL,
+			       SUM(PA.OT_FEE_TOTAL) OT_FEE_TOTAL,
+			       SUM(PA.SP_OT_FEE_TAXCAL_TOTAL) SP_OT_FEE_TAXCAL_TOTAL,
+			       SUM(PA.SP_OT_FEE_TAXFREE_TOTAL) SP_OT_FEE_TAXFREE_TOTAL,
+			       SUM(PA.ANNUALLEAVE_CLEAR_PAY) ANNUALLEAVE_CLEAR_PAY,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY) RESIGN_ANNUALLEAVE_PAY,
+			       SUM(PA.PROB_LEAVE_DAYS_SALARY) PROB_LEAVE_DAYS_SALARY,
+			       SUM(PA.LEAVE_DAYS_SALARY) LEAVE_DAYS_SALARY,
+			       SUM(PA.PROB_PERSONALLEAVE_DEDUCT) PROB_PERSONALLEAVE_DEDUCT,
+			       SUM(PA.PERSONALLEAVE_DEDUCT) PERSONALLEAVE_DEDUCT,
+			       SUM(PA.PROB_SICKLEAVE_DEDUCT) PROB_SICKLEAVE_DEDUCT,
+			       SUM(PA.SICKLEAVE_DEDUCT) SICKLEAVE_DEDUCT,
+			       SUM(PA.MATERNITYLEAVE_DEDUCT) MATERNITYLEAVE_DEDUCT,
+			       SUM(PA.PROB_ABSENT_DEDUCT) PROB_ABSENT_DEDUCT,
+			       SUM(PA.ABSENT_DEDUCT) ABSENT_DEDUCT,
+			       SUM(PA.PROB_LATEEARLY_DEDUCT) PROB_LATEEARLY_DEDUCT,
+			       SUM(PA.LATEEARLY_DEDUCT) LATEEARLY_DEDUCT,
+			       SUM(PA.ATT_DEDUCT_TOTAL) ATT_DEDUCT_TOTAL,
+			       SUM(PA.INCOME_BEFORE_TAX) INCOME_BEFORE_TAX,
+			       SUM(PA.OT_SALARY_NOT_PIT) OT_SALARY_NOT_PIT,
+			       SUM(PA.TAXABLE_INCOME) TAXABLE_INCOME,
+			       SUM(PA.PT_TAX_RATE) PT_TAX_RATE,
+			       SUM(PA.QUICK_DEDUCTION_TAX) QUICK_DEDUCTION_TAX,
+			       SUM(PA.PERSONAL_TAX) PERSONAL_TAX,
+			       SUM(PA.TAXABLE_INCOME15) TAXABLE_INCOME15,
+			       SUM(PA.PIT_SETTLEMENT) PIT_SETTLEMENT,
+			       SUM(PA.SEVERANCE_ALLOWANCE) SEVERANCE_ALLOWANCE,
+			       SUM(PA.REAL_WAGES) REAL_WAGES,
+			       SUM(PA.TRADE_UNION) TRADE_UNION,
+			       SUM(PA.TRADE_UNION_CORP) TRADE_UNION_CORP,
+			       SUM(PA.INSURANCE_BASE) INSURANCE_BASE,
+			       SUM(PA.SOCIAL_INS_PERSONAL) SOCIAL_INS_PERSONAL,
+			       SUM(PA.MEDICAL_INS_PERSONAL) MEDICAL_INS_PERSONAL,
+			       SUM(PA.UNEMPLOYMENT_INS_PERSONAL) UNEMPLOYMENT_INS_PERSONAL,
+			       SUM(PA.PERSONAL_INS_TOTAL) PERSONAL_INS_TOTAL,
+			       SUM(PA.SOCIAL_INS_COMPANY) SOCIAL_INS_COMPANY,
+			       SUM(PA.MEDICAL_INS_COMPANY) MEDICAL_INS_COMPANY,
+			       SUM(PA.UNEMPLOYMENT_INS_COMPANY) UNEMPLOYMENT_INS_COMPANY,
+			       SUM(PA.SOCIAL_SICK_INS_COMPANY) SOCIAL_SICK_INS_COMPANY,
+			       SUM(PA.COMPANY_INS_TOTAL) COMPANY_INS_TOTAL,
+			       SUM(PA.BASIC_SALARY_FORCAL) BASIC_SALARY_FORCAL
+			  FROM PA_SUMMARY_HAE PA
+			 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="DEPTNO_Multi">
+			<![CDATA[
+		 	       PA.DEPTNO IN ($DEPTNO_Multi$)
+		    ]]>
+		</isNotEmpty>
+		 <![CDATA[
+		   	GROUP BY PA.DEPTNO
+	    	ORDER BY MIN(PA.DEPT_ORDERNO)
+		 ]]>
+	</select>
+	
+	<select id="viewDeptPaResultListSum" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+			SELECT   COUNT(PA.EMPID)EMPNUMS,
+		             SUM(PA.PROBATION_DAYS) PROBATION_DAYS,
+		             SUM(PA.REGULAR_DAYS) REGULAR_DAYS,
+		             SUM(PA.WORK_SCHEDULE_DAYS) WORK_SCHEDULE_DAYS,
+		             SUM(PA.PROB_NIGHT_SHIFT_COUNT) PROB_NIGHT_SHIFT_COUNT,
+		             SUM(PA.NIGHT_SHIFT_COUNT) NIGHT_SHIFT_COUNT,
+		             SUM(PA.PROB_WORKDAYOT150_HOURS) PROB_WORKDAYOT150_HOURS,
+		             SUM(PA.WORKDAYOT150_HOURS) WORKDAYOT150_HOURS,
+		             SUM(PA.PROB_WORKDAYOT200_HOURS) PROB_WORKDAYOT200_HOURS,
+		             SUM(PA.WORKDAYOT200_HOURS) WORKDAYOT200_HOURS,
+		             SUM(PA.PROB_WORKDAYOT210_HOURS) PROB_WORKDAYOT210_HOURS,
+		             SUM(PA.WORKDAYOT210_HOURS) WORKDAYOT210_HOURS,
+		             SUM(PA.PROB_SATURDAYOT200_HOURS) PROB_SATURDAYOT200_HOURS,
+		             SUM(PA.SATURDAYOT200_HOURS) SATURDAYOT200_HOURS,
+		             SUM(PA.PROB_SATURDAYOT270_HOURS) PROB_SATURDAYOT270_HOURS,
+		             SUM(PA.SATURDAYOT270_HOURS) SATURDAYOT270_HOURS,
+		             SUM(PA.PROB_WEEKLYOT200_HOURS) PROB_WEEKLYOT200_HOURS,
+		             SUM(PA.WEEKLYOT200_HOURS) WEEKLYOT200_HOURS,
+		             SUM(PA.PROB_WEEKLYOT270_HOURS) PROB_WEEKLYOT270_HOURS,
+		             SUM(PA.WEEKLYOT270_HOURS) WEEKLYOT270_HOURS,
+		             SUM(PA.PROB_HOLIDAYOT300_HOURS) PROB_HOLIDAYOT300_HOURS,
+		             SUM(PA.HOLIDAYOT300_HOURS) HOLIDAYOT300_HOURS,
+		             SUM(PA.PROB_HOLIDAYOT390_HOURS) PROB_HOLIDAYOT390_HOURS,
+		             SUM(PA.HOLIDAYOT390_HOURS) HOLIDAYOT390_HOURS,
+		             SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) RESIGN_ANNUALLEAVE_PAY_DAYS,
+		             SUM(PA.PROB_PERSONALLEAVE_DAYS) PROB_PERSONALLEAVE_DAYS,
+		             SUM(PA.PERSONALLEAVE_DAYS) PERSONALLEAVE_DAYS,
+		             SUM(PA.PROB_SICKLEAVE_DAYS) PROB_SICKLEAVE_DAYS,
+		             SUM(PA.SICKLEAVE_DAYS) SICKLEAVE_DAYS,
+		             SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) PROB_CHILD_SICKLEAVE_DAYS,
+		             SUM(PA.CHILD_SICKLEAVE_DAYS) CHILD_SICKLEAVE_DAYS,
+		             SUM(PA.PROB_LONG_SICKLEAVE_DAYS) PROB_LONG_SICKLEAVE_DAYS,
+		             SUM(PA.LONG_SICKLEAVE_DAYS) LONG_SICKLEAVE_DAYS,
+		             SUM(PA.MATERNITYLEAVE_DAYS) MATERNITYLEAVE_DAYS,
+		             SUM(PA.PROB_ABSENTEEISM_DAYS) PROB_ABSENTEEISM_DAYS,
+		             SUM(PA.ABSENTEEISM_DAYS) ABSENTEEISM_DAYS,
+		             SUM(PA.PROB_LATE_ARRIVE_MINUTES) PROB_LATE_ARRIVE_MINUTES,
+		             SUM(PA.LATE_ARRIVE_MINUTES) LATE_ARRIVE_MINUTES,
+		             SUM(PA.PROB_EARLY_LEAVE_MINUTES) PROB_EARLY_LEAVE_MINUTES,
+		             SUM(PA.EARLY_LEAVE_MINUTES) EARLY_LEAVE_MINUTES,
+		             SUM(PA.UNPAIDLEAVE_DAYS) UNPAIDLEAVE_DAYS,           
+		             SUM(PA.BASIC_SALARY) BASIC_SALARY,
+		             SUM(PA.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+		             SUM(PA.POSITIONALLOW_CAL) POSITIONALLOW_CAL,
+		             SUM(PA.TRANSPORTATION_ALLOWANCE) TRANSPORTATION_ALLOWANCE,
+		             SUM(PA.LONG_ATTENDANCE) LONG_ATTENDANCE,
+		             SUM(PA.FULL_ATTENDANCE_BONUS) FULL_ATTENDANCE_BONUS,
+		             SUM(PA.NIGHTSHIFT_ALLOWANCE) NIGHTSHIFT_ALLOWANCE,
+		             SUM(PA.EVALUATION_GRADE) EVALUATION_GRADE,
+		             SUM(PA.EVALUATION_BONUS) EVALUATION_BONUS,
+		             SUM(PA.PROB_OT_HOUR_SALARY) PROB_OT_HOUR_SALARY,
+		             SUM(PA.OT_HOUR_SALARY) OT_HOUR_SALARY,
+		             SUM(PA.PROB_WORKDAYOT150_FEE) PROB_WORKDAYOT150_FEE,
+		             SUM(PA.WORKDAYOT150_FEE) WORKDAYOT150_FEE,
+		             SUM(PA.PROB_WORKDAYOT200_FEE) PROB_WORKDAYOT200_FEE,
+		             SUM(PA.WORKDAYOT200_FEE) WORKDAYOT200_FEE,
+		             SUM(PA.PROB_WORKDAYOT210_FEE) PROB_WORKDAYOT210_FEE,
+		             SUM(PA.WORKDAYOT210_FEE) WORKDAYOT210_FEE,
+		             SUM(PA.WORKDAYOT_FEE_TOTAL) WORKDAYOT_FEE_TOTAL,
+		             SUM(PA.PROB_SATURDAYOT200_FEE) PROB_SATURDAYOT200_FEE,
+		             SUM(PA.SATURDAYOT200_FEE) SATURDAYOT200_FEE,
+		             SUM(PA.PROB_SATURDAYOT270_FEE) PROB_SATURDAYOT270_FEE,
+		             SUM(PA.SATURDAYOT270_FEE) SATURDAYOT270_FEE,
+		             SUM(PA.SATURDAYOT_FEE_TOTAL) SATURDAYOT_FEE_TOTAL,
+		             SUM(PA.PROB_WEEKLYOT200_FEE) PROB_WEEKLYOT200_FEE,
+		             SUM(PA.WEEKLYOT200_FEE) WEEKLYOT200_FEE,
+		             SUM(PA.PROB_WEEKLYOT270_FEE) PROB_WEEKLYOT270_FEE,
+		             SUM(PA.WEEKLYOT270_FEE) WEEKLYOT270_FEE,
+		             SUM(PA.WEEKLYOT_FEE_TOTAL) WEEKLYOT_FEE_TOTAL,
+		             SUM(PA.PROB_HOLIDAYOT300_FEE) PROB_HOLIDAYOT300_FEE,
+		             SUM(PA.HOLIDAYOT300_FEE) HOLIDAYOT300_FEE,
+		             SUM(PA.PROB_HOLIDAYOT390_FEE) PROB_HOLIDAYOT390_FEE,
+		             SUM(PA.HOLIDAYOT390_FEE) HOLIDAYOT390_FEE,
+		             SUM(PA.HOLIDAYOT_FEE_TOTAL) HOLIDAYOT_FEE_TOTAL,
+		             SUM(PA.OT_FEE_TOTAL) OT_FEE_TOTAL,
+		             SUM(PA.ANNUALLEAVE_CLEAR_PAY) ANNUALLEAVE_CLEAR_PAY,
+		             SUM(PA.RESIGN_ANNUALLEAVE_PAY) RESIGN_ANNUALLEAVE_PAY,
+		             SUM(PA.PROB_LEAVE_DAYS_SALARY) PROB_LEAVE_DAYS_SALARY,
+		             SUM(PA.LEAVE_DAYS_SALARY) LEAVE_DAYS_SALARY,
+		             SUM(PA.PROB_PERSONALLEAVE_DEDUCT) PROB_PERSONALLEAVE_DEDUCT,
+		             SUM(PA.PERSONALLEAVE_DEDUCT) PERSONALLEAVE_DEDUCT,
+		             SUM(PA.PROB_SICKLEAVE_DEDUCT) PROB_SICKLEAVE_DEDUCT,
+		             SUM(PA.SICKLEAVE_DEDUCT) SICKLEAVE_DEDUCT,
+		             SUM(PA.MATERNITYLEAVE_DEDUCT) MATERNITYLEAVE_DEDUCT,
+		             SUM(PA.PROB_ABSENT_DEDUCT) PROB_ABSENT_DEDUCT,
+		             SUM(PA.ABSENT_DEDUCT) ABSENT_DEDUCT,  
+		             SUM(PA.PROB_LATEEARLY_DEDUCT) PROB_LATEEARLY_DEDUCT,         
+		             SUM(PA.LATEEARLY_DEDUCT) LATEEARLY_DEDUCT,
+		             SUM(PA.ATT_DEDUCT_TOTAL) ATT_DEDUCT_TOTAL,
+		             SUM(PA.INCOME_BEFORE_TAX) INCOME_BEFORE_TAX,
+		             SUM(PA.TAXABLE_INCOME) TAXABLE_INCOME,
+		             SUM(PA.PERSONAL_TAX) PERSONAL_TAX,
+		             SUM(PA.PIT_SETTLEMENT) PIT_SETTLEMENT,
+		             SUM(PA.SEVERANCE_ALLOWANCE) SEVERANCE_ALLOWANCE,
+		             SUM(PA.REAL_WAGES) REAL_WAGES,
+		             SUM(PA.TRADE_UNION) TRADE_UNION,
+		             SUM(PA.TRADE_UNION_CORP) TRADE_UNION_CORP,
+		             SUM(PA.INSURANCE_BASE) INSURANCE_BASE,
+		             SUM(PA.SOCIAL_INS_PERSONAL) SOCIAL_INS_PERSONAL,
+		             SUM(PA.MEDICAL_INS_PERSONAL) MEDICAL_INS_PERSONAL,
+		             SUM(PA.UNEMPLOYMENT_INS_PERSONAL) UNEMPLOYMENT_INS_PERSONAL,
+		             SUM(PA.PERSONAL_INS_TOTAL) PERSONAL_INS_TOTAL,
+		             SUM(PA.SOCIAL_INS_COMPANY) SOCIAL_INS_COMPANY,
+		             SUM(PA.MEDICAL_INS_COMPANY) MEDICAL_INS_COMPANY,
+		             SUM(PA.UNEMPLOYMENT_INS_COMPANY) UNEMPLOYMENT_INS_COMPANY,
+		             SUM(PA.COMPANY_INS_TOTAL) COMPANY_INS_TOTAL,
+		             SUM(PA.PT_TAX_RATE) PT_TAX_RATE,
+		             SUM(PA.QUICK_DEDUCTION_TAX) QUICK_DEDUCTION_TAX,
+		             SUM(PA.OT_SALARY_NOT_PIT) OT_SALARY_NOT_PIT,
+		             SUM(PA.SOCIAL_SICK_INS_COMPANY) SOCIAL_SICK_INS_COMPANY
+         FROM PA_SUMMARY_HTSV PA
+       WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+			SELECT COUNT(PA.EMPID) EMPNUMS,
+			       SUM(PA.PROBATION_DAYS) PROBATION_DAYS,
+			       SUM(PA.REGULAR_DAYS) REGULAR_DAYS,
+			       SUM(PA.WORK_SCHEDULE_DAYS) WORK_SCHEDULE_DAYS,
+			       SUM(PA.PROB_WORKDAYOT150_HOURS) PROB_WORKDAYOT150_HOURS,
+			       SUM(PA.WORKDAYOT150_HOURS) WORKDAYOT150_HOURS,
+			       SUM(PA.PROB_WORKDAYOT200_HOURS) PROB_WORKDAYOT200_HOURS,
+			       SUM(PA.WORKDAYOT200_HOURS) WORKDAYOT200_HOURS,
+			       SUM(PA.PROB_WORKDAYOT210_HOURS) PROB_WORKDAYOT210_HOURS,
+			       SUM(PA.WORKDAYOT210_HOURS) WORKDAYOT210_HOURS,
+			       SUM(PA.PROB_SATURDAYOT200_HOURS) PROB_SATURDAYOT200_HOURS,
+			       SUM(PA.SATURDAYOT200_HOURS) SATURDAYOT200_HOURS,
+			       SUM(PA.PROB_SATURDAYOT270_HOURS) PROB_SATURDAYOT270_HOURS,
+			       SUM(PA.SATURDAYOT270_HOURS) SATURDAYOT270_HOURS,
+			       SUM(PA.PROB_WEEKLYOT200_HOURS) PROB_WEEKLYOT200_HOURS,
+			       SUM(PA.WEEKLYOT200_HOURS) WEEKLYOT200_HOURS,
+			       SUM(PA.PROB_WEEKLYOT270_HOURS) PROB_WEEKLYOT270_HOURS,
+			       SUM(PA.WEEKLYOT270_HOURS) WEEKLYOT270_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT300_HOURS) PROB_HOLIDAYOT300_HOURS,
+			       SUM(PA.HOLIDAYOT300_HOURS) HOLIDAYOT300_HOURS,
+			       SUM(PA.PROB_HOLIDAYOT390_HOURS) PROB_HOLIDAYOT390_HOURS,
+			       SUM(PA.HOLIDAYOT390_HOURS) HOLIDAYOT390_HOURS,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       SUM(PA.PROB_PERSONALLEAVE_DAYS) PROB_PERSONALLEAVE_DAYS,
+			       SUM(PA.PERSONALLEAVE_DAYS) PERSONALLEAVE_DAYS,
+			       SUM(PA.PROB_SICKLEAVE_DAYS) PROB_SICKLEAVE_DAYS,
+			       SUM(PA.SICKLEAVE_DAYS) SICKLEAVE_DAYS,
+			       SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) PROB_CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.CHILD_SICKLEAVE_DAYS) CHILD_SICKLEAVE_DAYS,
+			       SUM(PA.PROB_LONG_SICKLEAVE_DAYS) PROB_LONG_SICKLEAVE_DAYS,
+			       SUM(PA.LONG_SICKLEAVE_DAYS) LONG_SICKLEAVE_DAYS,
+			       SUM(PA.MATERNITYLEAVE_DAYS) MATERNITYLEAVE_DAYS,
+			       SUM(PA.UNPAIDLEAVE_DAYS) UNPAIDLEAVE_DAYS,
+			       SUM(PA.PROB_ABSENTEEISM_DAYS) PROB_ABSENTEEISM_DAYS,
+			       SUM(PA.ABSENTEEISM_DAYS) ABSENTEEISM_DAYS,
+			       SUM(PA.PROB_LATE_ARRIVE_MINUTES) PROB_LATE_ARRIVE_MINUTES,
+			       SUM(PA.LATE_ARRIVE_MINUTES) LATE_ARRIVE_MINUTES,
+			       SUM(PA.PROB_EARLY_LEAVE_MINUTES) PROB_EARLY_LEAVE_MINUTES,
+			       SUM(PA.EARLY_LEAVE_MINUTES) EARLY_LEAVE_MINUTES,
+			                   
+			       SUM(PA.BASIC_SALARY) BASIC_SALARY,
+			       SUM(PA.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+			       SUM(PA.FULL_ATTENDANCE_BONUS) FULL_ATTENDANCE_BONUS,
+			       SUM(PA.EVALUATION_GRADE) EVALUATION_GRADE,
+			       SUM(PA.EVALUATION_BONUS) EVALUATION_BONUS,
+			       SUM(PA.LUNCH_ALLOWANCE) LUNCH_ALLOWANCE,
+			       SUM(PA.HOUSING_ALLOWANCE) HOUSING_ALLOWANCE,
+			       SUM(PA.ADDITIONAL_ALLOWANCE) ADDITIONAL_ALLOWANCE,
+			       SUM(PA.WOMEN_SPECIAL_ALLOWANCE) WOMEN_SPECIAL_ALLOWANCE,
+			       SUM(PA.PROB_OT_HOUR_SALARY) PROB_OT_HOUR_SALARY,
+			       SUM(PA.OT_HOUR_SALARY) OT_HOUR_SALARY,
+			       SUM(PA.PROB_WORKDAYOT150_FEE) PROB_WORKDAYOT150_FEE,
+			       SUM(PA.WORKDAYOT150_FEE) WORKDAYOT150_FEE,
+			       SUM(PA.PROB_WORKDAYOT200_FEE) PROB_WORKDAYOT200_FEE,
+			       SUM(PA.WORKDAYOT200_FEE) WORKDAYOT200_FEE,
+			       SUM(PA.PROB_WORKDAYOT210_FEE) PROB_WORKDAYOT210_FEE,
+			       SUM(PA.WORKDAYOT210_FEE) WORKDAYOT210_FEE,
+			       SUM(PA.WORKDAYOT_FEE_TOTAL) WORKDAYOT_FEE_TOTAL,
+			       SUM(PA.PROB_SATURDAYOT200_FEE) PROB_SATURDAYOT200_FEE,
+			       SUM(PA.SATURDAYOT200_FEE) SATURDAYOT200_FEE,
+			       SUM(PA.PROB_SATURDAYOT270_FEE) PROB_SATURDAYOT270_FEE,
+			       SUM(PA.SATURDAYOT270_FEE) SATURDAYOT270_FEE,
+			       SUM(PA.SATURDAYOT_FEE_TOTAL) SATURDAYOT_FEE_TOTAL,
+			       SUM(PA.PROB_WEEKLYOT200_FEE) PROB_WEEKLYOT200_FEE,
+			       SUM(PA.WEEKLYOT200_FEE) WEEKLYOT200_FEE,
+			       SUM(PA.PROB_WEEKLYOT270_FEE) PROB_WEEKLYOT270_FEE,
+			       SUM(PA.WEEKLYOT270_FEE) WEEKLYOT270_FEE,
+			       SUM(PA.WEEKLYOT_FEE_TOTAL) WEEKLYOT_FEE_TOTAL,
+			       SUM(PA.PROB_HOLIDAYOT300_FEE) PROB_HOLIDAYOT300_FEE,
+			       SUM(PA.HOLIDAYOT300_FEE) HOLIDAYOT300_FEE,
+			       SUM(PA.PROB_HOLIDAYOT390_FEE) PROB_HOLIDAYOT390_FEE,
+			       SUM(PA.HOLIDAYOT390_FEE) HOLIDAYOT390_FEE,
+			       SUM(PA.HOLIDAYOT_FEE_TOTAL) HOLIDAYOT_FEE_TOTAL,
+			       SUM(PA.OT_FEE_TOTAL) OT_FEE_TOTAL,
+			       SUM(PA.SP_OT_FEE_TAXCAL_TOTAL) SP_OT_FEE_TAXCAL_TOTAL,
+			       SUM(PA.SP_OT_FEE_TAXFREE_TOTAL) SP_OT_FEE_TAXFREE_TOTAL,
+			       SUM(PA.ANNUALLEAVE_CLEAR_PAY) ANNUALLEAVE_CLEAR_PAY,
+			       SUM(PA.RESIGN_ANNUALLEAVE_PAY) RESIGN_ANNUALLEAVE_PAY,
+			       SUM(PA.PROB_LEAVE_DAYS_SALARY) PROB_LEAVE_DAYS_SALARY,
+			       SUM(PA.LEAVE_DAYS_SALARY) LEAVE_DAYS_SALARY,
+			       SUM(PA.PROB_PERSONALLEAVE_DEDUCT) PROB_PERSONALLEAVE_DEDUCT,
+			       SUM(PA.PERSONALLEAVE_DEDUCT) PERSONALLEAVE_DEDUCT,
+			       SUM(PA.PROB_SICKLEAVE_DEDUCT) PROB_SICKLEAVE_DEDUCT,
+			       SUM(PA.SICKLEAVE_DEDUCT) SICKLEAVE_DEDUCT,
+			       SUM(PA.MATERNITYLEAVE_DEDUCT) MATERNITYLEAVE_DEDUCT,
+			       SUM(PA.PROB_ABSENT_DEDUCT) PROB_ABSENT_DEDUCT,
+			       SUM(PA.ABSENT_DEDUCT) ABSENT_DEDUCT,
+			       SUM(PA.PROB_LATEEARLY_DEDUCT) PROB_LATEEARLY_DEDUCT,
+			       SUM(PA.LATEEARLY_DEDUCT) LATEEARLY_DEDUCT,
+			       SUM(PA.ATT_DEDUCT_TOTAL) ATT_DEDUCT_TOTAL,
+			       SUM(PA.INCOME_BEFORE_TAX) INCOME_BEFORE_TAX,
+			       SUM(PA.OT_SALARY_NOT_PIT) OT_SALARY_NOT_PIT,
+			       SUM(PA.TAXABLE_INCOME) TAXABLE_INCOME,
+			       SUM(PA.PT_TAX_RATE) PT_TAX_RATE,
+			       SUM(PA.QUICK_DEDUCTION_TAX) QUICK_DEDUCTION_TAX,
+			       SUM(PA.PERSONAL_TAX) PERSONAL_TAX,
+			       SUM(PA.TAXABLE_INCOME15) TAXABLE_INCOME15,
+			       SUM(PA.PIT_SETTLEMENT) PIT_SETTLEMENT,
+			       SUM(PA.SEVERANCE_ALLOWANCE) SEVERANCE_ALLOWANCE,
+			       SUM(PA.REAL_WAGES) REAL_WAGES,
+			       SUM(PA.TRADE_UNION) TRADE_UNION,
+			       SUM(PA.TRADE_UNION_CORP) TRADE_UNION_CORP,
+			       SUM(PA.INSURANCE_BASE) INSURANCE_BASE,
+			       SUM(PA.SOCIAL_INS_PERSONAL) SOCIAL_INS_PERSONAL,
+			       SUM(PA.MEDICAL_INS_PERSONAL) MEDICAL_INS_PERSONAL,
+			       SUM(PA.UNEMPLOYMENT_INS_PERSONAL) UNEMPLOYMENT_INS_PERSONAL,
+			       SUM(PA.PERSONAL_INS_TOTAL) PERSONAL_INS_TOTAL,
+			       SUM(PA.SOCIAL_INS_COMPANY) SOCIAL_INS_COMPANY,
+			       SUM(PA.MEDICAL_INS_COMPANY) MEDICAL_INS_COMPANY,
+			       SUM(PA.UNEMPLOYMENT_INS_COMPANY) UNEMPLOYMENT_INS_COMPANY,
+			       SUM(PA.SOCIAL_SICK_INS_COMPANY) SOCIAL_SICK_INS_COMPANY,
+			       SUM(PA.COMPANY_INS_TOTAL) COMPANY_INS_TOTAL,
+			       SUM(PA.BASIC_SALARY_FORCAL) BASIC_SALARY_FORCAL
+			  FROM PA_SUMMARY_HAE PA
+			 WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="DEPTNO_Multi">
+			<![CDATA[
+		 	       PA.DEPTNO IN ($DEPTNO_Multi$)
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+
+	<select id="viewDeptPaResultSSTList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isNotEqual prepend="" property="SALARY_DISTIN"
+			compareValue="春节奖">
+		 
+		<![CDATA[
+		  SELECT    PST.DEPT_NAME ,   
+         
+          sum( PST.BASEPAY_REAL  )  BASEPAY_REAL ,  
+           sum( PST.ABILITYPAY_REAL)ABILITYPAY_REAL ,   
+            sum(PST.COMMUNICATION_FEE_REAL )  COMMUNICATION_FEE_REAL,  
+            sum(PST.EAT_FEE_REAL  ) EAT_FEE_REAL,   
+            sum(PST.TRAFIC_FEE_REAL  ) TRAFIC_FEE_REAL,  
+            sum(PST.BASE_OT_FEE_REAL  )  BASE_OT_FEE_REAL,  
+            sum(PST.P_MERIT_PAY  )  P_MERIT_PAY,  
+            sum(PST.P_PARKING_FEE) P_PARKING_FEE  ,   
+            sum(PST.WORK_OT_FEE  )  WORK_OT_FEE  ,   
+            sum(PST.WEEKEND_OT_FEE )      WEEKEND_OT_FEE    ,   
+           sum( PST.HOLIDAYS_OT_FEE  )  HOLIDAYS_OT_FEE       ,  
+            sum(PST.NIGHT_WORK_SUB   )    NIGHT_WORK_SUB    ,  
+            sum(PST.TRAINEE_SALARY   )       TRAINEE_SALARY ,   
+            sum(PST.LASTMONTH_NO_PAY )     LASTMONTH_NO_PAY    ,  
+            sum(PST.TECHWIN_BONUS   )     TECHWIN_BONUS ,   
+            sum(PST.P_OTHER_ALLOWANCE  )    P_OTHER_ALLOWANCE     ,   
+            sum(PST.P_BUSINESS_TRIP_FEE )    P_BUSINESS_TRIP_FEE      ,   
+            sum(PST.P_OTHER_ALLOW_FREETAX   )  P_OTHER_ALLOW_FREETAX       ,  
+            
+            sum(PST.P_FSE_SALARY  ) P_FSE_SALARY,  
+            sum(PST.P_MARRIAGE_SUB  ) P_MARRIAGE_SUB, 
+            sum(PST.P_BIRTH_SUB  ) P_BIRTH_SUB, 
+            sum(PST.P_FUNERAL_SUB  ) P_FUNERAL_SUB, 
+            sum(PST.P_SEVERANCE_BENEFIT  ) P_SEVERANCE_BENEFIT, 
+            sum(PST.P_INSURANCE_SUB )  P_INSURANCE_SUB, 
+            sum(PST.P_HOTWEATHER_SUB ) P_HOTWEATHER_SUB,
+            sum(PST.P_WINTERWEATHER_SUB  ) P_WINTERWEATHER_SUB,
+            sum(PST.SICK_DEDUCT  ) SICK_DEDUCT, 
+             sum(PST.PERSONAL_LEAVE_DEDUCT ) PERSONAL_LEAVE_DEDUCT, 
+            sum(PST.P_OTHER_DEDUCT ) P_OTHER_DEDUCT, 
+            sum(PST.P_OTHER_DEDUCT_FREETAX ) P_OTHER_DEDUCT_FREETAX,  
+            sum(PST.S_ENDOWMENT_PER ) S_ENDOWMENT_PER, 
+            sum(PST.S_ENDOWMENT_COR ) S_ENDOWMENT_COR, 
+            sum(PST.S_MEDICARE_PER ) S_MEDICARE_PER, 
+            sum(PST.S_MEDICARE_COR)  S_MEDICARE_COR, 
+            sum(PST.S_UNEMPLOYMENT_PER ) S_UNEMPLOYMENT_PER, 
+            sum(PST.S_UNEMPLOYMENT_COR ) S_UNEMPLOYMENT_COR, 
+             sum(PST.S_MATERNITY_COR )   S_MATERNITY_COR , 
+             sum(PST.S_ACCIDENT_COR   )  S_ACCIDENT_COR, 
+             sum(PST.S_CPF_PER  )   S_CPF_PER, 
+             sum(PST.S_CPF_COR  ) S_CPF_COR  , 
+             sum(PST.P_EDU_FEE_FSE )  P_EDU_FEE_FSE , 
+             sum(PST.P_DEDUCT_HOUSE_FSE )   P_DEDUCT_HOUSE_FSE , 
+             sum(PST.S_GONGHUI_FEE )   S_GONGHUI_FEE , 
+             
+             sum(PST.PERSONAL_INCOME_TAX )  PERSONAL_INCOME_TAX, 
+               sum(PST.RIDANG_TAX)  RIDANG_TAX , 
+             sum( PST.NET_PAY + PST.TAX_TOTAL + PST.INSURANCE_TOTAL_PER+P_DEDUCT_HOUSE_FSE+P_EDU_FEE_FSE)   NET_PAY_P , 
+               sum( PST.TAX_TOTAL + PST.INSURANCE_TOTAL_PER+P_DEDUCT_HOUSE_FSE+P_EDU_FEE_FSE )   INSURANCE_TOTAL_PER_P, 
+               sum(PST.NET_PAY)    NET_PAY
+               
+               	]]></isNotEqual>
+		<isEqual prepend="" property="SALARY_DISTIN" compareValue="春节奖">
+		<![CDATA[	SELECT    PST.DEPT_NAME ,     SUM(PST.SPRFEE_STD_FEE) SPRFEE_STD_FEE ,
+           SUM(PST.P_MERIT_PAY_FLAG) P_MERIT_PAY_FLAG ,
+           SUM(PST.P_TECHWIN_BONUS_FLAG) P_TECHWIN_BONUS_FLAG,
+          SUM(PST.SPRFEE_CAL_FEE)  SPRFEE_CAL_FEE,
+           SUM(PST.SPRFEE_TAX ) SPRFEE_TAX,
+           SUM(PST.SPRFEE_NET_PAY ) SPRFEE_NET_PAY
+ 	   ]]></isEqual>
+ 	   <![CDATA[
+               
+               
+               
+                FROM PA_SUMMARY_SST PST, ( SELECT DEPTNO, ORG_NAME_LOCAL,ROWNUM ORDER_NO
+                FROM HR_DEPARTMENT
+               WHERE CPNY_ID = #interCpnyID#
+               START WITH PARENT_DEPT_NO = '0'
+              CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+               ORDER SIBLINGS BY ORDERNO) HD
+ WHERE PST.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+   AND HD.DEPTNO = PST.DEPTNO
+   AND HD.DEPTNO  IN
+   (SELECT HD.DEPTNO FROM HR_DEPARTMENT HD 
+ START WITH HD.DEPTNO = #DEPTNO#
+CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+ GROUP BY PST.DEPT_NAME,hd.ORDER_NO
+ ORDER   BY hd.ORDER_NO
+  
+		 ]]>
+	</select>
+
+
+
+
+
+	<select id="viewResultConfirmSonList0" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	     	<![CDATA[
+	     	SELECT #PAY_DATE_PRO# PAY_DATE_PRO,
+	     	 		   #PAY_DATE# PAY_DATE_CUR,
+	     			   PA_PRO.PERSON_NUM PERSON_NUM_PRO,
+			           PA_PRO.NET_PAY + PA_PRO.WITHHOLD_TOTAL SALARY_TOTAL_PRO,
+			           PA_PRO.WITHHOLD_TOTAL WITHHOLD_TOTAL_PRO,
+			           PA_PRO.NET_PAY NET_PAY_PRO,
+			           PA_CUR.PERSON_NUM PERSON_NUM_CUR,
+			           PA_CUR.NET_PAY + PA_CUR.WITHHOLD_TOTAL SALARY_TOTAL_CUR,
+			           PA_CUR.WITHHOLD_TOTAL WITHHOLD_TOTAL_CUR,
+			           PA_CUR.NET_PAY NET_PAY_CUR,
+			           PA_CUR.PERSON_NUM-PA_PRO.PERSON_NUM PERSON_NUM_DIF,
+			           (PA_CUR.NET_PAY + PA_CUR.WITHHOLD_TOTAL)-
+			           (PA_PRO.NET_PAY + PA_PRO.WITHHOLD_TOTAL) SALARY_TOTAL_DIF,
+			           PA_CUR.WITHHOLD_TOTAL-PA_PRO.WITHHOLD_TOTAL WITHHOLD_TOTAL_DIF,
+			           PA_CUR.NET_PAY-PA_PRO.NET_PAY NET_PAY_DIF
+			FROM 
+			(SELECT COUNT(PA.PAY_SCHEDULE_NO)PERSON_NUM,
+			          SUM(PA.REAL_WAGES) NET_PAY,
+		 	]]>		 
+		<isEqual prepend="" property="interCpnyID" compareValue="SPC_DL">    
+	     	<![CDATA[      
+				SUM(PA.WITHHOLD_TOTAL)
+		 	]]>
+		</isEqual>
+		<isNotEqual prepend="" property="interCpnyID" compareValue="SPC_DL">    
+	     	<![CDATA[      
+				SUM(PA.ATT_DEDUCT_TOTAL) + SUM(PA.PERSONAL_INS_TOTAL)
+	          + SUM(PA.PERSONAL_TAX) + SUM(PA.P_PRE_TAX_MINUS)
+	          + SUM(PA.P_AFTER_TAX_MINUS)
+		 	]]>
+		</isNotEqual>
+	     	<![CDATA[      
+			WITHHOLD_TOTAL
+			FROM PA_SUMMARY_HTSV PA
+			WHERE PA.PAY_SCHEDULE_NO = (
+			SELECT PPS.PAY_SCHEDULE_NO FROM PA_PAY_SCHEDULE PPS
+			WHERE PPS.CPNY_ID = #interCpnyID#
+			AND TO_CHAR(PPS.PAY_DATE,'DD-MM-YYYY')= #PAY_DATE_PRO#
+			AND PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO#
+			))PA_PRO,
+			(SELECT COUNT(PA.PAY_SCHEDULE_NO)PERSON_NUM,
+			          SUM(PA.REAL_WAGES) NET_PAY,
+		 	]]>		 
+		<isEqual prepend="" property="interCpnyID" compareValue="SPC_DL">    
+	     	<![CDATA[      
+				SUM(PA.WITHHOLD_TOTAL)
+		 	]]>
+		</isEqual>
+		<isNotEqual prepend="" property="interCpnyID" compareValue="SPC_DL">    
+	     	<![CDATA[      
+				SUM(PA.ATT_DEDUCT_TOTAL) + SUM(PA.PERSONAL_INS_TOTAL)
+	          + SUM(PA.PERSONAL_TAX) + SUM(PA.P_PRE_TAX_MINUS)
+	          + SUM(PA.P_AFTER_TAX_MINUS)
+		 	]]>
+		</isNotEqual>
+	     	<![CDATA[      
+			WITHHOLD_TOTAL
+			FROM PA_SUMMARY_HTSV PA
+			WHERE PA.PAY_SCHEDULE_NO = (
+			SELECT PPS.PAY_SCHEDULE_NO FROM PA_PAY_SCHEDULE PPS
+			WHERE PPS.CPNY_ID = #interCpnyID#
+			AND TO_CHAR(PPS.PAY_DATE,'DD-MM-YYYY')= #PAY_DATE#
+			AND PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO#
+			))PA_CUR
+		 ]]>		 
+	</select>
+
+	<select id="viewResultConfirmSonList1" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		 select 1 from dual
+		]]>
+	</select>
+
+
+	<select id="viewResultConfirmSonList2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT P.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,       
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       P.ITEM_NAME,
+			       P.CAL_VALUE,
+			       P.FORMULAR_VALUE,
+			       TO_CHAR(PA.AR_START_DATE,'YYYY/MM/DD') AR_START_DATE,
+                   TO_CHAR(PA.AR_END_DATE,'YYYY/MM/DD') AR_END_DATE
+			  FROM PA_CAL_FORMULAR_HTSV P, PA_SUMMARY_HTSV PA
+			 WHERE P.PAY_SCHEDULE_NO =
+			       (SELECT PPS.PAY_SCHEDULE_NO
+			          FROM PA_PAY_SCHEDULE PPS
+			         WHERE TO_CHAR(PPS.PAY_DATE,'DD-MM-YYYY')= #PAY_DATE#
+			           AND PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO#
+			           AND PPS.ACTIVITY = 1
+			           AND PPS.CPNY_ID = #interCpnyID#)
+			   AND P.PAY_SCHEDULE_NO = PA.PAY_SCHEDULE_NO
+			   AND P.PERSON_ID = PA.PERSON_ID
+			   AND P.ITEM_NO IN (570019, 570026, 570033)
+			   AND P.CAL_VALUE > 0
+			]]>
+
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 	       EXISTS (SELECT B1.DEPTID
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = PA.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		    ]]>
+			</isNotEmpty>
+			<![CDATA[	
+			ORDER BY PA.EMPID,P.ITEM_NO
+		]]>
+	</select>
+
+
+	<select id="viewResultConfirmSonList3" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+  SELECT COUNT(PDIT.PERSON_ID) PERSON_NUM,PDIT.ITEM_ID ,PDIT.MONTH_DIF ,PDIT.ITEM_NO,GET_GLOBAL_NAME(PDIT.ITEM_NO,#interLanguage#) ITEM_NAME,PDIT.ITEM_TYPE ,SUM(MONTH_NOW) MONTH_NOW ,SUM(MONTH_PRO) MONTH_PRO FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+where PDIT.CREATED_BY=#CREATED_BY# AND ITEM_TYPE=#ITEM_TYPE#  AND PDIT.PAGE_TYPE=#PAGE_TYPE#
+group by PDIT.ITEM_ID ,PDIT.MONTH_DIF ,PDIT.ITEM_NO,PDIT.ITEM_TYPE
+		]]>
+	</select>
+
+
+	<select id="viewResultConfirmSonList4" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+ select 1 from dual
+		]]>
+	</select>
+
+
+	<select id="viewResultConfirmSonList5" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+	     	<![CDATA[
+	        SELECT P.EMPID,
+	               P.LOCAL_NAME,
+	               P.DEPTNO,
+			       GET_GLOBAL_NAME(P.DEPTNO,#interLanguage#) DEPT_NAME,
+			       P.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(P.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       P.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(P.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       P.POSITION_NO,
+			       GET_GLOBAL_NAME(P.POSITION_NO,#interLanguage#) POSITION_NAME,
+		           P.INCOME_BEFORE_TAX,
+			       P.ATT_DEDUCT_TOTAL,
+			       P.PERSONAL_INS_TOTAL,
+			       P.P_TAX_DEDUCT_STD,
+			       P.TAXABLE_INCOME,
+			       P.PT_TAX_RATE,
+			       P.PERSONAL_TAX,
+			       P.REAL_WAGES,
+			       P.P_TAX_FAMILY_DEDUCT_STD,
+			       P.P_TAX_FAMILY_DEDUCT_COUNT,
+			       P.SOCIAL_INSURANCE_NO,
+			       P.QUICK_DEDUCTION_TAX
+		      FROM PA_SUMMARY_HTSV P
+		     WHERE P.PAY_SCHEDULE_NO = (
+			SELECT PPS.PAY_SCHEDULE_NO
+			                  FROM PA_PAY_SCHEDULE PPS
+				                 WHERE TO_CHAR(PPS.PAY_DATE,'DD-MM-YYYY') = #PAY_DATE#
+				                   AND PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO#
+				                   AND PPS.ACTIVITY = 1
+				                   AND PPS.CPNY_ID =#interCpnyID#)
+		 ]]>
+		</isEqual>
+
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+	     	<![CDATA[
+	     SELECT P.EMPID,
+	               P.LOCAL_NAME,
+	               P.DEPTNO,
+			       GET_GLOBAL_NAME(P.DEPTNO,#interLanguage#) DEPT_NAME,
+			       P.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(P.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       P.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(P.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       P.POSITION_NO,
+			       GET_GLOBAL_NAME(P.POSITION_NO,#interLanguage#) POSITION_NAME,
+		           P.INCOME_BEFORE_TAX,
+			       P.ATT_DEDUCT_TOTAL,
+			       P.PERSONAL_INS_TOTAL,
+			       P.P_TAX_DEDUCT_STD,
+			       P.TAXABLE_INCOME,
+			       P.PT_TAX_RATE,
+			       P.PERSONAL_TAX,
+			       P.REAL_WAGES
+		      FROM PA_SUMMARY_HAE P
+		     WHERE P.PAY_SCHEDULE_NO = (
+			SELECT PPS.PAY_SCHEDULE_NO
+			                  FROM PA_PAY_SCHEDULE PPS
+				                 WHERE TO_CHAR(PPS.PAY_DATE,'DD-MM-YYYY') = #PAY_DATE#
+				                   AND PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO#
+				                   AND PPS.ACTIVITY = 1
+				                   AND PPS.CPNY_ID =#interCpnyID#)
+		 ]]>
+		</isEqual>
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 	       EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = P.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		    ]]>
+			</isNotEmpty>
+			<![CDATA[	
+			ORDER BY P.EMPID
+		]]>
+	</select>
+
+	<select id="viewResultConfirmSonList6" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+ 			SELECT P.EMPID,
+ 			       P.LOCAL_NAME,
+ 			       P.DEPTNO,
+			       GET_GLOBAL_NAME(P.DEPTNO,#interLanguage#) DEPT_NAME,
+			       P.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(P.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       P.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(P.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       P.POSITION_NO,
+			       GET_GLOBAL_NAME(P.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       P.MEDICAL_INS_PERSONAL,
+			       P.UNEMPLOYMENT_INS_PERSONAL,
+			       P.SOCIAL_INS_PERSONAL,
+			       P.PERSONAL_INS_TOTAL
+			FROM PA_SUMMARY_HTSV P
+			WHERE P.PAY_SCHEDULE_NO = (
+			SELECT PPS.PAY_SCHEDULE_NO
+			                  FROM PA_PAY_SCHEDULE PPS
+			                 WHERE TO_CHAR(PPS.PAY_DATE,'DD-MM-YYYY') = #PAY_DATE#
+			                   AND PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO#
+			                   AND PPS.ACTIVITY = 1
+			                   AND PPS.CPNY_ID =#interCpnyID#
+			)
+			]]>
+
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 	       EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = P.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		    ]]>
+			</isNotEmpty>
+			<![CDATA[	
+			ORDER BY P.EMPID
+		]]>
+	</select>
+
+	<select id="paEmpAccount" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+ SELECT GET_GLOBAL_NAME(PEA.ACCOUNT_TYPE,'zh')ACCOUNT_TYPE,PKG_DECRYPT.DECRYPT_DES(PEA.ACCOUNT_NO) ACCOUNT_NO
+ FROM PA_EMP_ACCOUNT  PEA WHERE PEA.PERSON_ID=#PERSON_ID#
+		]]>
+	</select>
+
+	<select id="getPersonalInfoForEmpSalaryInfo" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+			 SELECT PA.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,       
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.POSITION,
+			       GET_GLOBAL_NAME(PA.POSITION,#interLanguage#) POSITION_N,
+			       PA.EMP_TYPE_CODE,
+			       GET_GLOBAL_NAME(PA.EMP_TYPE_CODE,#interLanguage#) EMP_TYPE_NAME,   
+			       PA.EMP_OFFICE,
+                   GET_GLOBAL_NAME(PA.EMP_OFFICE,#interLanguage#) EMP_OFFICE_NAME,    
+			       PA.REAL_WAGES,
+			       PA.P_TAX_FAMILY_DEDUCT_COUNT,
+			       PA.SOCIAL_INSURANCE_NO,
+			       TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY-MM-DD'),'DD-MM-YYYY') PAY_DATE,
+			       TO_CHAR(TO_DATE(PA.HR_END_DATE,'YYYY/MM/DD'),'MM-YYYY') HR_END_DATE,
+			       TO_CHAR(LAST_DAY(TO_DATE(PA.HR_END_DATE,'YYYY/MM/DD')) - 1, 'DD/MM/YYYY') END_DATE,
+			       (SELECT MAX(P.EMP_OPINION) FROM PA_PAY_SCHEDULE P WHERE P.PAY_SCHEDULE_NO = PA.PAY_SCHEDULE_NO) EMP_PA_OPINION
+			  FROM PA_SUMMARY_HTSV PA
+			WHERE PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+			   AND PA.PERSON_ID = #PERSON_ID#
+		]]>
+	</select>
+
+	<select id="getEmpSalaryInfoList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+			 SELECT T.CPNY_ID,
+			       T.PERSON_ID,
+			       T.ITEM_TYPE,
+			       T.ITEM_NO,
+			       GET_GLOBAL_NAME(T.ITEM_NO, #interLanguage#) ITEM_NAME,
+			       T.ITEM_VALUE,
+			       T.ORDERNO,
+			       T.CREATE_BY,
+			       TO_CHAR(T.CREATE_DATE,'DD-MM-YYYY') CREATE_DATE
+			  FROM PA_EMP_SALARY_PAGE_DATA T
+			 WHERE T.CPNY_ID = #interCpnyID#
+			   AND T.PERSON_ID = #PERSON_ID#
+		]]>
+	</select>
+	
+	<insert id="callForEmpSalaryInfo" parameterClass="linkMap">
+		<![CDATA[
+	 CALL PA_FOR_EMP_SALARY_PAGE_P(#interCpnyID#,#PAY_SCHEDULE_NO#,#PERSON_ID#,#CREATED_BY#)
+	 ]]>
+	</insert>
+
+
+	<select id="paOpenFlag" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+
+	     	<![CDATA[
+			
+	SELECT  pst.PAY_DATE,case
+         when pst.SALARY_DISTIN = '正式工' THEN
+          '正式工资'
+         when pst.salary_distin = '实习生' then
+          '实习生工资'
+         else
+          pst.salary_distin
+       end SALARY_DISTIN ,
+		PST.NET_PAY
+        FROM  PA_SUMMARY_HTSV PST 
+WHERE PST.PERSON_ID=#PERSON_ID#
+AND PST.PAY_SCHEDULE_NO=#PAY_SCHEDULE_NO#
+ 	]]>
+		
+
+
+		<isEqual prepend="" property="interCpnyID" compareValue="SST">
+	     	<![CDATA[
+			
+	SELECT  PST.base_ot_fee_cal,pst.PAY_DATE,case
+         when pst.SALARY_DISTIN = '正式工' THEN
+          '正式工资'
+         when pst.salary_distin = '实习生' then
+          '实习生工资'
+         else
+          pst.salary_distin
+       end SALARY_DISTIN,
+       PST.NET_PAY
+       FROM  PA_SUMMARY_SST PST 
+WHERE PST.PERSON_ID=#PERSON_ID#
+AND PST.PAY_SCHEDULE_NO=#PAY_SCHEDULE_NO#
+ 	]]>
+		</isEqual>
+
+	</select>
+
+
+
+	<select id="paPayScheduleNoByPersonId" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	       <![CDATA[
+				 
+SELECT PST.PERSON_ID,
+       PST.PAY_SCHEDULE_NO,
+       GET_GLOBAL_NAME(PPS.SALARY_DISTIN_NO,'vi') SALARY_DISTIN,
+       PST.PAY_DATE,
+       TO_CHAR(PPS.PA_OPEN_DATE, 'MM/YYYY') PA_OPEN_DATE,
+       CASE
+         WHEN TO_CHAR(PPS.PA_OPEN_DATE, 'YYYYMMDD') <=
+              TO_CHAR(SYSDATE, 'YYYYMMDD') AND PWF.PA_OPEN_FLAG = 1 THEN
+          '1'
+         ELSE
+          '0'
+       END PA_OPEN_FLAG
+
+  FROM PA_SUMMARY_HTSV PST, PA_WORK_FLOW PWF, PA_PAY_SCHEDULE PPS
+
+ WHERE PST.PERSON_ID = #PERSON_ID#
+   AND PST.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+   AND PPS.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+ GROUP BY PST.PERSON_ID,
+          PST.PAY_SCHEDULE_NO,
+          PPS.SALARY_DISTIN_NO,
+          PST.PAY_DATE,
+          PWF.PA_OPEN_FLAG,
+          PPS.PA_OPEN_DATE
+ order by pst.pay_date desc
+
+	    	]]>
+
+
+
+	</select>
+
+	<select id="viewResultConfirmList2Right" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+	SELECT * FROM (	SELECT SUM(ADT.QUANTITY) QUANTITY,
+       get_global_name(ADT.ITEM_NO, #interLanguage:VARCHAR#) ITEM_NAME
+  FROM AR_DETAIL_TSTO_APPLY ADT
+ WHERE ADT.PERSON_ID = #PERSON_ID#
+   AND ADT.AR_DATE_STR BETWEEN #AR_START_DATE# AND #AR_END_DATE#
+      
+   AND ADT.ITEM_NO IN ('141444', '141446', '141445', '141452')
+   AND ACTIVITY = 1
+
+ GROUP BY ADT.ITEM_NO
+UNION ALL
+
+SELECT GET_AR_BEYONGOT_HOURS_TIMELY_F(H.PERSON_ID,
+                                      TO_CHAR(H.DATE_STARTED, 'YYYY/MM/DD'),
+                                      TO_CHAR(H.DATE_LEFT, 'YYYY/MM/DD'),
+                                      #AR_START_DATE#,
+                                      #AR_END_DATE#),
+       '超出勤时间'
+  from hr_employee h
+ where h.person_id = #PERSON_ID#
+ 
+ ) T 
+ 
+]]>
+	</select>
+	<select id="viewResultConfirmList2Bottom" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		SELECT HRE.EMPID,
+			       HRE.LOCAL_NAME,
+			       TO_CHAR(TO_DATE(AD.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,
+			       TO_CHAR(AD.FROM_TIME, 'DD-MM-YYYY HH24:MI:SS') FROM_TIME,
+			       TO_CHAR(AD.TO_TIME, 'DD-MM-YYYY HH24:MI:SS') TO_TIME,
+       			   GET_GLOBAL_NAME(AD.SHIFT_NO, #interLanguage#) SHIFT_NAME,
+			       GET_GLOBAL_NAME(AD.ITEM_NO, #interLanguage#) ITEM_NAME,
+			       AD.QUANTITY
+			  FROM AR_DETAIL_HTSV AD, HR_EMPLOYEE HRE
+			 WHERE AD.PERSON_ID = HRE.PERSON_ID
+   			   AND AD.ACTIVITY = 1
+			   AND AD.ITEM_NO IN (90000295, 90000296, 90000297, 90000298, 90000299, 90000300, 90000301)
+			   AND AD.PERSON_ID = #PERSON_ID#
+			   ]]>
+		<isNotEmpty prepend="AND" property="AR_START_DATE">
+			<isNotEmpty property="AR_END_DATE">
+			<![CDATA[
+		 	     AD.AR_DATE_STR BETWEEN #AR_START_DATE# AND #AR_END_DATE#
+		    ]]>
+		    </isNotEmpty>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY AD.AR_DATE_STR, AD.ITEM_NO
+		]]>
+	</select>
+	<insert id="callProForPayMonthDifItem" parameterClass="linkMap">
+		<![CDATA[
+	 CALL PA_MONTH_DIF_ITEM_VIEW(#CREATED_BY#,#interCpnyID#,TO_CHAR(TO_DATE(#PAY_DATE#,'DD-MM-YYYY'),'YYYY-MM-DD'),#SALARY_DISTIN_NO#,#ITEM_TYPE#,#PAGE_TYPE#)
+	 
+	 ]]>
+	</insert>
+	<select id="viewResultConfirmList3Right" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT PDIT.PERSON_ID,
+			       PA.LOCAL_NAME,
+			       PA.EMPID,
+			       get_dept_name(PA.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       PA.POST_GRADE_NO,
+			       get_global_name(PA.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       PA.POST_FAMILY_NO,
+			       get_global_name(PA.POST_FAMILY_NO, #interLanguage:VARCHAR#) POST_FAMILY_NAME,
+			       PA.POSITION_NO,
+			       get_global_name(PA.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NAME,       
+			       PA.EMP_TYPE_CODE,
+			       get_global_name(PA.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+			       PA.emp_office,
+			       get_global_name(PA.emp_office, #interLanguage:VARCHAR#) EMP_OFFICE,
+			       TO_CHAR(PA.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       TO_CHAR(PA.END_PROBATION_DATE, 'DD/MM/YYYY') END_PROBATION_DATE,
+			       TO_CHAR(PA.DATE_LEFT, 'DD/MM/YYYY') DATE_LEFT,
+			       PDIT.ITEM_NO,
+			       GET_GLOBAL_NAME(PDIT.ITEM_NO, #interLanguage:VARCHAR#) ITEM_NAME,
+			       PDIT.MONTH_PRO,
+			       PDIT.MONTH_NOW,
+			       nvl(PDIT.FORMULAR_VALUE, PDIT.MONTH_NOW) FORMULAR_VALUE
+			  FROM PA_MONTH_DIF_ITEM_TEMP PDIT, PA_SUMMARY_HTSV PA
+			 WHERE PDIT.CREATED_BY = #CREATED_BY#
+			   AND PA.PERSON_ID = PDIT.PERSON_ID
+			   AND PA.PAY_SCHEDULE_NO = (SELECT PPS.PAY_SCHEDULE_NO FROM PA_PAY_SCHEDULE PPS WHERE TO_CHAR(PPS.PAY_DATE, 'DD-MM-YYYY') = #PAY_DATE# AND PPS.CPNY_ID = #interCpnyID#)
+			   AND PDIT.ITEM_TYPE = #ITEM_TYPE#      
+			   AND PDIT.PAGE_TYPE = #PAGE_TYPE#
+		]]>
+		<isNotEmpty prepend="AND" property="MONTH_DIF">
+		<![CDATA[
+	 	     PDIT.MONTH_DIF =#MONTH_DIF#
+	    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="MONTH_DIF">
+
+			<isEqual prepend="" property="PAGE_TYPE" compareValue="2">
+	     	<![CDATA[
+	 	     PDIT.MONTH_DIF in ('0','1','2','4')
+	        ]]>
+			</isEqual>
+			<isEqual prepend="" property="PAGE_TYPE" compareValue="1">
+	     	<![CDATA[
+	 	     PDIT.MONTH_DIF in ('0','1','2','4')
+	        ]]>
+			</isEqual>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+		<![CDATA[
+	   PDIT.ITEM_ID=#ITEM_ID#  
+	    ]]>
+		</isNotEmpty>
+
+		<isEqual prepend="AND" property="SELECT_TYPE" compareValue="PERSON_NUM">
+	     	<![CDATA[
+	 	    PDIT.MONTH_NOW <> '0'
+	        ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="SELECT_TYPE" compareValue="PERSON_NUM_PRO">
+	     	<![CDATA[
+	 	     PDIT.MONTH_PRO <> '0'
+	        ]]>
+		</isEqual>
+
+		<isEqual prepend="AND" property="SELECT_TYPE" compareValue="COUNT_UP">
+	     	<![CDATA[
+	 	      PDIT.MONTH_NOW > PDIT.MONTH_PRO  
+	        ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="SELECT_TYPE" compareValue="COUNT_LOW">
+	     	<![CDATA[
+	 	     PDIT.MONTH_NOW < PDIT.MONTH_PRO  
+	        ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="SELECT_TYPE" compareValue="PERSON_UP">
+	     	<![CDATA[
+	 	     PDIT.PERSON_ID NOT IN
+                                (SELECT PDIT2.PERSON_ID
+                                   FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                                  WHERE PDIT2.ITEM_ID = PDIT.ITEM_ID
+                                    AND pdit.page_type =#PAGE_TYPE#
+                                    AND PDIT.CREATED_BY = #CREATED_BY#
+                                    AND PDIT.MONTH_PRO <> '0')
+	        ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="SELECT_TYPE" compareValue="PERSON_LOW">
+	     	<![CDATA[
+	 	     PDIT.PERSON_ID NOT IN
+                                (SELECT PDIT2.PERSON_ID
+                                   FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                                  WHERE PDIT2.ITEM_ID   = PDIT.ITEM_ID
+                                    AND pdit.page_type  = #PAGE_TYPE#
+                                    AND PDIT.CREATED_BY = #CREATED_BY#
+                                    AND PDIT.MONTH_NOW <> '0')
+	        ]]>
+		</isEqual>
+		<![CDATA[	     
+		
+		ORDER BY PA.DATE_STARTED
+		
+		]]>
+
+	</select>
+
+
+
+
+	<insert id="callItemList" parameterClass="linkMap">
+		<![CDATA[
+	 CALL PA_MONTH_DIF_ITEM_VIEW2(#CREATED_BY#,#interCpnyID#,TO_CHAR(TO_DATE(#PAY_DATE#,'DD-MM-YYYY'),'YYYY-MM-DD'),TO_CHAR(TO_DATE(#PAY_DATE_PRO#,'DD-MM-YYYY'),'YYYY-MM-DD'),#SALARY_DISTIN_NO#,'4','3')
+	 
+	 ]]>
+	</insert>
+
+
+
+	<insert id="callPaArSummarySearch" parameterClass="linkMap">
+		<![CDATA[
+	CALL PA_AR_SEARCH_VIEW(#PAY_SCHEDULE_NO#,#CREATED_BY#)
+	 ]]>
+	</insert>
+
+
+	<select id="viewPaArSummarySearchList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+	<![CDATA[select $COLUMN_NAMES$ from 
+        PA_AR_SUMMARY_SEARCH   PSS
+       WHERE PSS.First_Flag='1'
+        AND PSS.CREATED_BY=#CREATED_BY#
+       
+	
+	]]></select>
+
+
+
+	<select id="viewPaArSummarySearchLowList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+	<![CDATA[
+	
+	 select PAY_SCHEDULE_NO,
+			PERSON_ID,
+			PAY_DATE,
+			SALARY_DISTIN_NO,
+			SALARY_DISTIN,
+			AR_START_DATE,
+			AR_END_DATE,
+			HR_START_DATE,
+			HR_END_DATE,
+			CREATED_BY,
+			CREATE_DATE,
+			CPNY_ID,
+			EMPID,
+			LOCAL_NAME,
+			DEPTNO,
+			DEPT_NAME,
+			DEPT_ORDERNO,
+			TO_CHAR(DATE_STARTED, 'DD/MM/YYYY')DATE_STARTED,
+			TO_CHAR(DATE_LEFT, 'DD/MM/YYYY')DATE_LEFT,
+			POST_FAMILY_NO,
+			POST_FAMILY,
+			POSITION_NO,
+			POSITION_NAME,
+			POST_GRADE_NO,
+			POST_GRADE,
+			EMP_TYPE_CODE,
+			EMP_TYPE_NAME,
+			EMP_OFFICE,
+			EMP_OFFICE_NAME,
+			NATIONALITY_CODE,
+			NATIONALITY_NAME,
+			TO_CHAR(END_PROBATION_DATE, 'DD/MM/YYYY') END_PROBATION_DATE,
+			ACCOUNT_NO,
+			PROBATION_DAYS,
+			REGULAR_DAYS,
+			WORK_SCHEDULE_DAYS,
+			PROB_NIGHT_SHIFT_COUNT,
+			NIGHT_SHIFT_COUNT,
+			PROB_WORKDAYOT150_HOURS,
+			WORKDAYOT150_HOURS,
+			PROB_WORKDAYOT200_HOURS,
+			WORKDAYOT200_HOURS,
+			PROB_WORKDAYOT210_HOURS,
+			WORKDAYOT210_HOURS,
+			PROB_SATURDAYOT200_HOURS,
+			SATURDAYOT200_HOURS,
+			PROB_SATURDAYOT270_HOURS,
+			SATURDAYOT270_HOURS,
+			PROB_WEEKLYOT200_HOURS,
+			WEEKLYOT200_HOURS,
+			PROB_WEEKLYOT270_HOURS,
+			WEEKLYOT270_HOURS,
+			PROB_HOLIDAYOT300_HOURS,
+			HOLIDAYOT300_HOURS,
+			PROB_HOLIDAYOT390_HOURS,
+			HOLIDAYOT390_HOURS,
+			RESIGN_ANNUALLEAVE_PAY_DAYS,
+			PROB_PERSONALLEAVE_DAYS,
+			PERSONALLEAVE_DAYS,
+			PROB_SICKLEAVE_DAYS,
+			SICKLEAVE_DAYS,
+			PROB_CHILD_SICKLEAVE_DAYS,
+			CHILD_SICKLEAVE_DAYS,
+			PROB_LONG_SICKLEAVE_DAYS,
+			LONG_SICKLEAVE_DAYS,
+			MATERNITYLEAVE_DAYS,
+			PROB_ABSENTEEISM_DAYS,
+			ABSENTEEISM_DAYS,
+			PROB_LATE_ARRIVE_MINUTES,
+			LATE_ARRIVE_MINUTES,
+			PROB_EARLY_LEAVE_MINUTES,
+			EARLY_LEAVE_MINUTES,
+			UNPAIDLEAVE_DAYS
+	 from AR_SUMMARY_HTSV
+       WHERE PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:VARCHAR#
+	
+	 ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = AR_SUMMARY_HTSV.DEPTNO
+				         AND B1.ACTIVITY = 1
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+			( EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+        ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+				 ORDER BY EMPID ASC
+        ]]>
+
+
+
+
+	</select>
+
+
+	<select id="viewPaArSummaryList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+	<![CDATA[
+	
+	SELECT wm_concat(COLUMN_NAME || ' VALUE' || rownum)COLUMN_NAMES FROM USER_TAB_COLUMNS
+                    WHERE TABLE_NAME = 'PA_AR_SUMMARY_SEARCH'||''
+                      AND COLUMN_NAME NOT IN (
+                      'PERSON_ID','CREATED_BY',
+                      'PAY_SCHEDULE_NO','FIRST_FLAG'
+                       )
+	]]></select>
+
+	<select id="viewPaArSummarySearchListSST" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+	<![CDATA[
+	
+	 select  * from 
+          PA_AR_SUMMARY_SEARCH   PSS
+       WHERE PSS.First_Flag='1'
+	]]></select>
+
+	<select id="exportPayDetailTxtReport" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+	<![CDATA[
+SELECT PEA.ACCOUNT_NO, PST.LOCAL_NAME,HP.IDCARD_NO, trim(to_char(PST.NET_PAY,'9999999999999.99')) NET_PAY
+  FROM PA_SUMMARY_TSTO PST, PA_EMP_ACCOUNT PEA,HR_PERSONAL_INFO HP,SY_CODE SC,HR_DEPARTMENT HD
+ WHERE PEA.PERSON_ID = PST.PERSON_ID
+ AND SC.CODE_NO=PST.POST_GRADE_NO
+ AND  pst.deptno= HD.DEPTNO(+)
+ AND HP.PERSON_ID=PST.PERSON_ID
+   AND PST.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+   ]]>
+		<isEqual prepend="" property="SPECIAL_INSURANCE" compareValue="1">
+	     	<![CDATA[
+	     	
+	    AND SPECIAL_INSURANCE=0
+		 ]]>
+		</isEqual>
+		<isEqual prepend="" property="SPECIAL_INSURANCE" compareValue="2">
+	     	<![CDATA[
+	   AND SPECIAL_INSURANCE>0
+         ]]></isEqual>
+   
+   
+   	<![CDATA[
+   
+  order by hd.order_no,sc.orderno,pst.empid
+   
+	]]>
+
+
+
+
+
+	</select>
+
+
+
+
+
+
+	<select id="getPayScheduleList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PST.PAY_SCHEDULE_NO ,
+          PST.PAY_DATE,
+          PST.SALARY_DISTIN,
+          PST.PERSON_ID,
+           CASE WHEN PST.SALARY_DISTIN='春节奖'
+            THEN PST.SPRFEE_NET_PAY
+       WHEN PST.SALARY_DISTIN='中秋奖'
+         THEN PST.MID_NET_PAY       
+            ELSE  PST.NET_PAY
+              END NET_PAY ,
+              
+               CASE WHEN PST.SALARY_DISTIN='春节奖'
+            THEN PST.SPRFEE_NET_PAY+PST.WITHHOLD_TOTAL
+               WHEN PST.SALARY_DISTIN='中秋奖'
+                 THEN  PST.MID_NET_PAY+PST.WITHHOLD_TOTAL
+            ELSE  PST.NET_PAY+PST.WITHHOLD_TOTAL
+              END   BASE_ALL,
+              PST.WITHHOLD_TOTAL,
+              PST.INSURANCE_TOTAL_COR,
+              pst.PAYMENT_TOTAL 
+              
+              
+				FROM  ]]>
+
+		<isEqual prepend="" property="interCpnyID" compareValue="TSTO">
+	     	<![CDATA[
+	     	
+	     	PA_SUMMARY_TSTO
+		 ]]>
+		</isEqual>
+
+		<isEqual prepend="" property="interCpnyID" compareValue="SST">
+	     	<![CDATA[
+	     (
+     SELECT  
+      TRIM(PST.SALARY_DISTIN) SALARY_DISTIN,PST.PAY_DATE,
+     PST.PERSON_ID,PST.EMPID,PST.LOCAL_NAME, PAY_SCHEDULE_NO,PST.POST_GRADE_NO,PST.DEPTNO,
+     PST.NET_PAY + PST.TAX_TOTAL + PST.INSURANCE_TOTAL_PER+PST.P_DEDUCT_HOUSE_FSE+PST.P_EDU_FEE_FSE 
+     WITHHOLD_TOTAL, 
+     PST.NET_PAY,
+     PST.SPRFEE_NET_PAY,
+     PST.INSURANCE_TOTAL_COR,
+       pst.PAYMENT_TOTAL ,
+     0  MID_NET_PAY
+     FROM PA_SUMMARY_SST PST 
+     WHERE  PERSON_ID=#PERSON_ID# 
+      ) 
+		 ]]>
+		</isEqual>
+		 <![CDATA[ PST
+				WHERE   TO_CHAR(to_date(PAY_DATE,'YYYY-MM-DD'),'YYYY-MM') BETWEEN #PAY_DATE_PRO# AND #PAY_DATE#
+          AND SALARY_DISTIN=get_global_name(#SALARY_DISTIN_NO#,'zh') 
+          AND PERSON_ID=#PERSON_ID# 
+	      ORDER BY PST.PAY_DATE DESC
+	      
+		]]>
+	</select>
+
+	<select id="dayPersonCountInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		 SELECT PST.LOCAL_NAME,
+  PST.EMPID,PST.DEPT_NAME,PST.POST_GRADE,PCF.IS_CAL_BY_DAY,PCF.ITEM_NAME,PCF.CAL_VALUE,NVL(PCF.FORMULAR_VALUE,PCF.CAL_VALUE) FORMULAR_VALUE
+ FROM PA_SUMMARY_HTSV PST,PA_CAL_FORMULAR_HTSV PCF,SY_CODE SC ,HR_DEPARTMENT HD
+ 
+ WHERE
+ PST.PAY_SCHEDULE_NO=PCF.PAY_SCHEDULE_NO
+  AND PST.PERSON_ID=PCF.PERSON_ID
+  AND PST.PAY_SCHEDULE_NO=#PAY_SCHEDULE_NO#
+  AND PST.POST_GRADE_NO=SC.CODE_NO(+)
+  AND PST.DEPTNO= HD.DEPTNO(+) 
+  AND PCF.IS_CAL_BY_DAY=#IS_CAL_BY_DAY#
+ ORDER BY HD.ORDER_NO,SC.ORDERNO,PST.EMPID
+ 
+    
+		]]>
+	</select>
+
+	<select id="detailPersonCountInfoRight" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		 SELECT P.ITEM_ID,P.ITEM_NAME,P.CAL_VALUE,P.FORMULAR_VALUE,P.IS_CAL_BY_DAY
+		FROM PA_CAL_FORMULAR_HTSV P
+		WHERE P.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		AND P.PERSON_ID = #PERSON_ID#
+ 
+    
+		]]>
+	</select>
+
+    <select id="getPayDetailList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+        <isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+			SELECT PA.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.DEPT_ORDERNO,
+			       TO_CHAR(PA.DATE_STARTED,'DD-MM-YYYY') DATE_STARTED,
+			       TO_CHAR(PA.END_PROBATION_DATE, 'DD-MM-YYYY') END_PROBATION_DATE,
+			       TO_CHAR(PA.DATE_LEFT,'DD-MM-YYYY') DATE_LEFT,
+			       PA.PROBATION_DAYS,
+			       PA.REGULAR_DAYS,
+			       PA.WORK_SCHEDULE_DAYS,
+			       PA.PROB_NIGHT_SHIFT_COUNT,
+			       PA.NIGHT_SHIFT_COUNT,
+			       PA.PROB_WORKDAYOT150_HOURS,
+			       PA.WORKDAYOT150_HOURS,
+			       PA.PROB_WORKDAYOT200_HOURS,
+			       PA.WORKDAYOT200_HOURS,
+			       PA.PROB_WORKDAYOT210_HOURS,
+			       PA.WORKDAYOT210_HOURS,
+			       PA.PROB_SATURDAYOT200_HOURS,
+			       PA.SATURDAYOT200_HOURS,
+			       PA.PROB_SATURDAYOT270_HOURS,
+			       PA.SATURDAYOT270_HOURS,
+			       PA.PROB_WEEKLYOT200_HOURS,
+			       PA.WEEKLYOT200_HOURS,
+			       PA.PROB_WEEKLYOT270_HOURS,
+			       PA.WEEKLYOT270_HOURS,
+			       PA.PROB_HOLIDAYOT300_HOURS,
+			       PA.HOLIDAYOT300_HOURS,
+			       PA.PROB_HOLIDAYOT390_HOURS,
+			       PA.HOLIDAYOT390_HOURS,
+			       PA.RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       PA.PROB_PERSONALLEAVE_DAYS,
+			       PA.PERSONALLEAVE_DAYS,
+			       PA.PROB_SICKLEAVE_DAYS,
+			       PA.SICKLEAVE_DAYS,
+			       PA.PROB_CHILD_SICKLEAVE_DAYS,
+			       PA.CHILD_SICKLEAVE_DAYS,
+			       PA.PROB_LONG_SICKLEAVE_DAYS,
+			       PA.LONG_SICKLEAVE_DAYS,
+			       PA.MATERNITYLEAVE_DAYS,
+			       PA.PROB_ABSENTEEISM_DAYS,
+			       PA.ABSENTEEISM_DAYS,
+			       PA.PROB_LATE_ARRIVE_MINUTES,
+			       PA.LATE_ARRIVE_MINUTES,
+			       PA.PROB_EARLY_LEAVE_MINUTES,
+			       PA.EARLY_LEAVE_MINUTES,
+			       PA.UNPAIDLEAVE_DAYS,           
+			       PA.BASIC_SALARY,
+			       PA.POSITION_ALLOWANCE,
+			       PA.POSITIONALLOW_CAL,
+			       PA.TRANSPORTATION_ALLOWANCE,
+			       PA.LONG_ATTENDANCE,
+			       PA.FULL_ATTENDANCE_BONUS,
+			       PA.NIGHTSHIFT_ALLOWANCE,
+			       PA.EVALUATION_GRADE,
+			       PA.EVALUATION_BONUS,
+			       PA.PROB_OT_HOUR_SALARY,
+			       PA.OT_HOUR_SALARY,
+			       PA.PROB_WORKDAYOT150_FEE,
+			       PA.WORKDAYOT150_FEE,
+			       PA.PROB_WORKDAYOT200_FEE,
+			       PA.WORKDAYOT200_FEE,
+			       PA.PROB_WORKDAYOT210_FEE,
+			       PA.WORKDAYOT210_FEE,
+			       PA.WORKDAYOT_FEE_TOTAL,
+			       PA.PROB_SATURDAYOT200_FEE,
+			       PA.SATURDAYOT200_FEE,
+			       PA.PROB_SATURDAYOT270_FEE,
+			       PA.SATURDAYOT270_FEE,
+			       PA.SATURDAYOT_FEE_TOTAL,
+			       PA.PROB_WEEKLYOT200_FEE,
+			       PA.WEEKLYOT200_FEE,
+			       PA.PROB_WEEKLYOT270_FEE,
+			       PA.WEEKLYOT270_FEE,
+			       PA.WEEKLYOT_FEE_TOTAL,
+			       PA.PROB_HOLIDAYOT300_FEE,
+			       PA.HOLIDAYOT300_FEE,
+			       PA.PROB_HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT_FEE_TOTAL,
+			       PA.OT_FEE_TOTAL,
+			       PA.ANNUALLEAVE_CLEAR_PAY,
+			       PA.RESIGN_ANNUALLEAVE_PAY,
+			       PA.PROB_LEAVE_DAYS_SALARY,
+			       PA.LEAVE_DAYS_SALARY,
+			       PA.PROB_PERSONALLEAVE_DEDUCT,
+			       PA.PERSONALLEAVE_DEDUCT,
+			       PA.PROB_SICKLEAVE_DEDUCT,
+			       PA.SICKLEAVE_DEDUCT,
+			       PA.MATERNITYLEAVE_DEDUCT,
+			       PA.PROB_ABSENT_DEDUCT,
+			       PA.ABSENT_DEDUCT,
+			       PA.PROB_LATEEARLY_DEDUCT,           
+			       PA.LATEEARLY_DEDUCT,
+			       PA.ATT_DEDUCT_TOTAL,
+			       PA.INCOME_BEFORE_TAX,
+			       CASE WHEN PA.TAXABLE_INCOME < 0 THEN 0 ELSE PA.TAXABLE_INCOME END TAXABLE_INCOME,
+			       PA.PERSONAL_TAX,
+			       PA.PIT_SETTLEMENT,
+			       PA.SEVERANCE_ALLOWANCE,
+			       PA.REAL_WAGES,
+			       PA.TRADE_UNION,
+			       PA.TRADE_UNION_CORP,
+			       PA.INSURANCE_BASE,
+			       PA.SOCIAL_INS_PERSONAL,
+			       PA.MEDICAL_INS_PERSONAL,
+			       PA.UNEMPLOYMENT_INS_PERSONAL,
+			       PA.PERSONAL_INS_TOTAL,
+			       PA.SOCIAL_INS_COMPANY,
+			       PA.MEDICAL_INS_COMPANY,
+			       PA.UNEMPLOYMENT_INS_COMPANY,
+			       PA.COMPANY_INS_TOTAL,
+			       PA.PT_TAX_RATE,
+			       PA.QUICK_DEDUCTION_TAX,
+			       PA.OT_SALARY_NOT_PIT,
+			       PA.SOCIAL_SICK_INS_COMPANY,
+			       PA.P_BASIC_SALARY_STD,
+			       PA.P_PROB_BASIC_SALARY_STD,
+			       PA.P_POSITION_ALLOWANCE_STD,
+			       PA.P_TRANSP_ALLOW_PROB_STD,
+			       PA.P_TRANSPORTATION_ALLOW_STD,
+			       PA.P_LONG_ATTENDANCE_ALLOW_STD,
+			       PA.P_FULL_ATTENDANCE_ALLOW_STD,
+			       PA.P_OTHER_PLUS,
+			       PA.P_WELFARE,
+			       PA.P_BONUS,
+			       PA.P_PRE_TAX_PLUS,
+			       PA.P_PRE_TAX_MINUS,
+			       PA.P_TAX_DEDUCT_STD,
+			       PA.P_TAX_FAMILY_DEDUCT_COUNT,
+			       PA.SOCIAL_INSURANCE_NO,
+			       PA.P_ONLY_FOR_DEDUCT_TAX,
+			       PA.P_AFTER_TAX_PLUS,
+			       PA.P_AFTER_TAX_MINUS,
+			       GET_GLOBAL_NAME(AC.ACCOUNT_TYPE,#interLanguage#) ACCOUNT_TYPE,
+			       AC.ACCOUNT_NAME,
+			       PKG_DECRYPT.DECRYPT_DES(AC.ACCOUNT_NO) ACCOUNT_NO
+			  FROM PA_SUMMARY_HTSV PA,PA_EMP_ACCOUNT AC
+			 WHERE PA.PERSON_ID = AC.PERSON_ID(+)
+			   AND PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+			SELECT PA.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       GET_DEPT_NAME(PA.DEPTNO,#interLanguage#) DEPT_NAME,
+			       PA.POST_FAMILY_NO,
+			       GET_GLOBAL_NAME(PA.POST_FAMILY_NO,#interLanguage#) POST_FAMILY_NAME,
+			       PA.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(PA.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PA.POSITION_NO,
+			       GET_GLOBAL_NAME(PA.POSITION_NO,#interLanguage#) POSITION_NAME,
+			       PA.DEPT_ORDERNO,
+			       TO_CHAR(PA.DATE_STARTED, 'DD-MM-YYYY') DATE_STARTED,
+			       TO_CHAR(PA.END_PROBATION_DATE, 'DD-MM-YYYY') END_PROBATION_DATE,
+			       TO_CHAR(PA.DATE_LEFT, 'DD-MM-YYYY') DATE_LEFT,
+			       PA.PROBATION_DAYS,
+			       PA.REGULAR_DAYS,
+			       PA.WORK_SCHEDULE_DAYS,
+			       PA.PROB_WORKDAYOT150_HOURS,
+			       PA.WORKDAYOT150_HOURS,
+			       PA.PROB_WORKDAYOT200_HOURS,
+			       PA.WORKDAYOT200_HOURS,
+			       PA.PROB_WORKDAYOT210_HOURS,
+			       PA.WORKDAYOT210_HOURS,
+			       PA.PROB_SATURDAYOT200_HOURS,
+			       PA.SATURDAYOT200_HOURS,
+			       PA.PROB_SATURDAYOT270_HOURS,
+			       PA.SATURDAYOT270_HOURS,
+			       PA.PROB_WEEKLYOT200_HOURS,
+			       PA.WEEKLYOT200_HOURS,
+			       PA.PROB_WEEKLYOT270_HOURS,
+			       PA.WEEKLYOT270_HOURS,
+			       PA.PROB_HOLIDAYOT300_HOURS,
+			       PA.HOLIDAYOT300_HOURS,
+			       PA.PROB_HOLIDAYOT390_HOURS,
+			       PA.HOLIDAYOT390_HOURS,
+			       PA.RESIGN_ANNUALLEAVE_PAY_DAYS,
+			       PA.PROB_PERSONALLEAVE_DAYS,
+			       PA.PERSONALLEAVE_DAYS,
+			       PA.PROB_SICKLEAVE_DAYS,
+			       PA.SICKLEAVE_DAYS,
+			       PA.PROB_CHILD_SICKLEAVE_DAYS,
+			       PA.CHILD_SICKLEAVE_DAYS,
+			       PA.PROB_LONG_SICKLEAVE_DAYS,
+			       PA.LONG_SICKLEAVE_DAYS,
+			       PA.MATERNITYLEAVE_DAYS,
+			       PA.UNPAIDLEAVE_DAYS,
+			       PA.PROB_ABSENTEEISM_DAYS,
+			       PA.ABSENTEEISM_DAYS,
+			       PA.PROB_LATE_ARRIVE_MINUTES,
+			       PA.LATE_ARRIVE_MINUTES,
+			       PA.PROB_EARLY_LEAVE_MINUTES,
+			       PA.EARLY_LEAVE_MINUTES,
+			             
+			       PA.BASIC_SALARY,
+			       PA.POSITION_ALLOWANCE,
+			       PA.FULL_ATTENDANCE_BONUS,
+			       PA.EVALUATION_GRADE,
+			       PA.EVALUATION_BONUS,
+			       PA.LUNCH_ALLOWANCE,
+			       PA.HOUSING_ALLOWANCE,
+			       PA.ADDITIONAL_ALLOWANCE,
+			       PA.WOMEN_SPECIAL_ALLOWANCE,
+			       PA.PROB_OT_HOUR_SALARY,
+			       PA.OT_HOUR_SALARY,
+			       PA.PROB_WORKDAYOT150_FEE,
+			       PA.WORKDAYOT150_FEE,
+			       PA.PROB_WORKDAYOT200_FEE,
+			       PA.WORKDAYOT200_FEE,
+			       PA.PROB_WORKDAYOT210_FEE,
+			       PA.WORKDAYOT210_FEE,
+			       PA.WORKDAYOT_FEE_TOTAL,
+			       PA.PROB_SATURDAYOT200_FEE,
+			       PA.SATURDAYOT200_FEE,
+			       PA.PROB_SATURDAYOT270_FEE,
+			       PA.SATURDAYOT270_FEE,
+			       PA.SATURDAYOT_FEE_TOTAL,
+			       PA.PROB_WEEKLYOT200_FEE,
+			       PA.WEEKLYOT200_FEE,
+			       PA.PROB_WEEKLYOT270_FEE,
+			       PA.WEEKLYOT270_FEE,
+			       PA.WEEKLYOT_FEE_TOTAL,
+			       PA.PROB_HOLIDAYOT300_FEE,
+			       PA.HOLIDAYOT300_FEE,
+			       PA.PROB_HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT390_FEE,
+			       PA.HOLIDAYOT_FEE_TOTAL,
+			       PA.OT_FEE_TOTAL,
+			       PA.SP_OT_FEE_TAXCAL_TOTAL,
+			       PA.SP_OT_FEE_TAXFREE_TOTAL,
+			       PA.ANNUALLEAVE_CLEAR_PAY,
+			       PA.RESIGN_ANNUALLEAVE_PAY,
+			       PA.PROB_LEAVE_DAYS_SALARY,
+			       PA.LEAVE_DAYS_SALARY,
+			       PA.PROB_PERSONALLEAVE_DEDUCT,
+			       PA.PERSONALLEAVE_DEDUCT,
+			       PA.PROB_SICKLEAVE_DEDUCT,
+			       PA.SICKLEAVE_DEDUCT,
+			       PA.MATERNITYLEAVE_DEDUCT,
+			       PA.PROB_ABSENT_DEDUCT,
+			       PA.ABSENT_DEDUCT,
+			       PA.PROB_LATEEARLY_DEDUCT,
+			       PA.LATEEARLY_DEDUCT,
+			       PA.ATT_DEDUCT_TOTAL,
+			       PA.INCOME_BEFORE_TAX,
+			       PA.OT_SALARY_NOT_PIT,
+			       PA.TAXABLE_INCOME,
+			       PA.PT_TAX_RATE,
+			       PA.QUICK_DEDUCTION_TAX,
+			       PA.PERSONAL_TAX,
+			       PA.TAXABLE_INCOME15,
+			       PA.PIT_SETTLEMENT,
+			       PA.SEVERANCE_ALLOWANCE,
+			       PA.REAL_WAGES,
+			       PA.TRADE_UNION,
+			       PA.TRADE_UNION_CORP,
+			       PA.INSURANCE_BASE,
+			       PA.SOCIAL_INS_PERSONAL,
+			       PA.MEDICAL_INS_PERSONAL,
+			       PA.UNEMPLOYMENT_INS_PERSONAL,
+			       PA.PERSONAL_INS_TOTAL,
+			       PA.SOCIAL_INS_COMPANY,
+			       PA.MEDICAL_INS_COMPANY,
+			       PA.UNEMPLOYMENT_INS_COMPANY,
+			       PA.SOCIAL_SICK_INS_COMPANY,
+			       PA.COMPANY_INS_TOTAL,
+			       PA.BASIC_SALARY_FORCAL,
+			       PA.P_BASIC_SALARY_STD,
+			       PA.P_PROB_BASIC_SALARY_STD,
+			       PA.P_POSITION_ALLOWANCE_STD,
+			       PA.P_TRANSP_ALLOW_PROB_STD,
+			       PA.P_TRANSPORTATION_ALLOW_STD,
+			       PA.P_LONG_ATTENDANCE_ALLOW_STD,
+			       PA.P_FULL_ATTENDANCE_ALLOW_STD,
+			       PA.P_OTHER_PLUS,
+			       PA.P_WELFARE,
+			       PA.P_PRE_TAX_PLUS,
+			       PA.P_PRE_TAX_MINUS,
+			       PA.P_TAX_DEDUCT_STD,
+			       PA.P_TAX_FAMILY_DEDUCT_COUNT,
+			       PA.SOCIAL_INSURANCE_NO,
+			       PA.P_ONLY_FOR_DEDUCT_TAX,
+			       PA.P_AFTER_TAX_PLUS,
+			       PA.P_AFTER_TAX_MINUS,
+			       GET_GLOBAL_NAME(AC.ACCOUNT_TYPE,#interLanguage#) ACCOUNT_TYPE,
+			       AC.ACCOUNT_NAME,
+			       PKG_DECRYPT.DECRYPT_DES(AC.ACCOUNT_NO) ACCOUNT_NO
+			  FROM PA_SUMMARY_HAE PA,PA_EMP_ACCOUNT AC
+			 WHERE PA.PERSON_ID = AC.PERSON_ID(+)
+  			   AND PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+		</isEqual>
+
+		<isNotEmpty prepend="AND" property="DEPTNO_Multi">
+			<![CDATA[
+		 	       PA.DEPTNO IN ($DEPTNO_Multi$)
+		    ]]>
+		</isNotEmpty>
+	    
+		 <![CDATA[
+	    	ORDER BY PA.EMPID ASC
+		 ]]>
+    </select>
+    
+    <select id="getPayScheduleArDate" parameterClass="linkMap" resultClass="String" remapResults="true">
+			<![CDATA[
+			    SELECT TO_CHAR(SC.AR_END_DATE, 'MM.YYYY') AR_END_DATE
+				  FROM PA_PAY_SCHEDULE SC
+				 WHERE SC.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		    ]]>
+    </select>
+	
+	<delete id = "deleteArSummaryHTSVTemp" parameterClass="linkMap">
+		<![CDATA[
+		DELETE AR_SUMMARY_HTSV_TEMP WHERE PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		]]>
+	</delete>
+	
+	<update id="updateArSummaryHTSV" parameterClass="linkMap">
+		<![CDATA[
+		UPDATE AR_SUMMARY_HTSV AR SET (
+			AR.PROBATION_DAYS,AR.REGULAR_DAYS,
+			AR.WORK_SCHEDULE_DAYS,AR.PROB_NIGHT_SHIFT_COUNT,
+			AR.NIGHT_SHIFT_COUNT,AR.PROB_WORKDAYOT150_HOURS,
+			AR.WORKDAYOT150_HOURS,AR.PROB_WORKDAYOT200_HOURS,
+			AR.WORKDAYOT200_HOURS,AR.PROB_WORKDAYOT210_HOURS,
+			AR.WORKDAYOT210_HOURS,AR.PROB_SATURDAYOT200_HOURS,
+			AR.SATURDAYOT200_HOURS,AR.PROB_SATURDAYOT270_HOURS,
+			AR.SATURDAYOT270_HOURS,AR.PROB_WEEKLYOT200_HOURS,
+			AR.WEEKLYOT200_HOURS,AR.PROB_WEEKLYOT270_HOURS,
+			AR.WEEKLYOT270_HOURS,AR.PROB_HOLIDAYOT300_HOURS,
+			AR.HOLIDAYOT300_HOURS,AR.PROB_HOLIDAYOT390_HOURS,
+			AR.HOLIDAYOT390_HOURS,AR.RESIGN_ANNUALLEAVE_PAY_DAYS,
+			AR.PROB_PERSONALLEAVE_DAYS,AR.PERSONALLEAVE_DAYS,
+			AR.PROB_SICKLEAVE_DAYS,AR.SICKLEAVE_DAYS,
+			AR.PROB_CHILD_SICKLEAVE_DAYS,AR.CHILD_SICKLEAVE_DAYS,
+			AR.PROB_LONG_SICKLEAVE_DAYS,AR.LONG_SICKLEAVE_DAYS,
+			AR.MATERNITYLEAVE_DAYS,AR.PROB_ABSENTEEISM_DAYS,
+			AR.ABSENTEEISM_DAYS,AR.PROB_LATE_ARRIVE_MINUTES,
+			AR.LATE_ARRIVE_MINUTES,AR.PROB_EARLY_LEAVE_MINUTES,
+			AR.EARLY_LEAVE_MINUTES,AR.UNPAIDLEAVE_DAYS)  
+			= ( SELECT
+			ART.PROBATION_DAYS,ART.REGULAR_DAYS,
+			ART.WORK_SCHEDULE_DAYS,ART.PROB_NIGHT_SHIFT_COUNT,
+			ART.NIGHT_SHIFT_COUNT,ART.PROB_WORKDAYOT150_HOURS,
+			ART.WORKDAYOT150_HOURS,ART.PROB_WORKDAYOT200_HOURS,
+			ART.WORKDAYOT200_HOURS,ART.PROB_WORKDAYOT210_HOURS,
+			ART.WORKDAYOT210_HOURS,ART.PROB_SATURDAYOT200_HOURS,
+			ART.SATURDAYOT200_HOURS,ART.PROB_SATURDAYOT270_HOURS,
+			ART.SATURDAYOT270_HOURS,ART.PROB_WEEKLYOT200_HOURS,
+			ART.WEEKLYOT200_HOURS,ART.PROB_WEEKLYOT270_HOURS,
+			ART.WEEKLYOT270_HOURS,ART.PROB_HOLIDAYOT300_HOURS,
+			ART.HOLIDAYOT300_HOURS,ART.PROB_HOLIDAYOT390_HOURS,
+			ART.HOLIDAYOT390_HOURS,ART.RESIGN_ANNUALLEAVE_PAY_DAYS,
+			ART.PROB_PERSONALLEAVE_DAYS,ART.PERSONALLEAVE_DAYS,
+			ART.PROB_SICKLEAVE_DAYS,ART.SICKLEAVE_DAYS,
+			ART.PROB_CHILD_SICKLEAVE_DAYS,ART.CHILD_SICKLEAVE_DAYS,
+			ART.PROB_LONG_SICKLEAVE_DAYS,ART.LONG_SICKLEAVE_DAYS,
+			ART.MATERNITYLEAVE_DAYS,ART.PROB_ABSENTEEISM_DAYS,
+			ART.ABSENTEEISM_DAYS,ART.PROB_LATE_ARRIVE_MINUTES,
+			ART.LATE_ARRIVE_MINUTES,ART.PROB_EARLY_LEAVE_MINUTES,
+			ART.EARLY_LEAVE_MINUTES,ART.UNPAIDLEAVE_DAYS FROM AR_SUMMARY_HTSV_TEMP ART 
+			WHERE AR.EMPID = ART.EMPID AND AR.PAY_SCHEDULE_NO = ART.PAY_SCHEDULE_NO  AND ART.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#)
+		WHERE EXISTS (SELECT 1 FROM AR_SUMMARY_HTSV_TEMP ART 
+			WHERE AR.EMPID = ART.EMPID AND AR.PAY_SCHEDULE_NO = ART.PAY_SCHEDULE_NO AND ART.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#)
+		]]>
+	</update>
+	
+	<insert id="callArSummaryManageP" parameterClass="linkMap">
+		<![CDATA[
+	CALL AR_SUMMARY_MANAGE_P(#PAY_SCHEDULE_NO#,#interCpnyID#,#adminID#,#adminIP#)
+	 ]]>
+	</insert>
+	
+	<select id="getPayrollPersonList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+				<![CDATA[
+					SELECT PA.PERSON_ID
+					  FROM PA_SUMMARY_HTSV PA, HR_EMPLOYEE HR
+					 WHERE PA.PERSON_ID = HR.PERSON_ID
+					   AND PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+				]]>
+			<isNotEmpty prepend="AND" property="PERSON_ID">
+				<![CDATA[
+			 	       PA.PERSON_ID = #PERSON_ID#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="seach_KEY">
+				<![CDATA[
+			 	       ( HR.EMPID LIKE '%' || #seach_KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#seach_KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #seach_KEY:VARCHAR# || '%' )
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="seach_DEPTNO_Multi">
+				<![CDATA[
+			 	       HR.DEPTNO IN ($seach_DEPTNO_Multi$)
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="seach_EMP_OFFICE">
+				<![CDATA[
+			 	       HR.EMP_OFFICE = #seach_EMP_OFFICE:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="seach_WORKER_FLAG">
+				<isEqual prepend="" property="seach_WORKER_FLAG" compareValue="0">
+					<![CDATA[
+						1 = 1
+					]]>
+				</isEqual>
+				<isEqual prepend="" property="seach_WORKER_FLAG" compareValue="1">
+					<![CDATA[
+						PA.POST_GRADE_NO <> '90000325'
+					]]>
+				</isEqual>
+				<isEqual prepend="" property="seach_WORKER_FLAG" compareValue="2">
+					<![CDATA[
+						PA.POST_GRADE_NO = '90000325'
+					]]>
+				</isEqual>
+			</isNotEmpty>
+				<![CDATA[
+			 	       ORDER BY HR.DEPTNO,HR.EMPID, HR.POSITION
+			    ]]>
+	</select>
+	
+	<select id="getEmpInsuranceRate" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		     SELECT BB.PARAM_ITEM_NO, 
+			        TO_NUMBER(NVL(AA.RETURN_VALUE, BB.DEFAULT_VAL))*100 || '%' ITEM_VALUE
+			  FROM (SELECT B.PARAM_ITEM_NO, MAX(C.RETURN_VALUE) RETURN_VALUE
+			          FROM PA_PARAM_ITEM_PARAM B, PA_PARAM_DATA C, PA_SUMMARY_HTSV PA
+			         WHERE B.PARAM_NO = C.PARAM_NO(+)
+			           AND B.PARAM_ITEM_NO IN
+			               ('540065', '540066', '540067', '540068', '540069', '540070')
+			           AND C.PERSON_ID = PA.PERSON_ID
+			           AND C.ACTIVITY = '1'
+			           AND B.CPNY_ID = #interCpnyID#
+			           AND PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+			           AND PA.PERSON_ID = #PERSON_ID#
+			           AND TO_DATE(TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'MMYYYY'),
+			                       'MMYYYY') BETWEEN TO_DATE(C.START_MONTH, 'MMYYYY') AND
+			               NVL(TO_DATE(C.END_MONTH, 'MMYYYY'),
+			                   TO_DATE('129999', 'MMYYYY'))
+			           GROUP BY B.PARAM_ITEM_NO) AA,
+			       (SELECT PPIP.PARAM_ITEM_NO, PPIP.DEFAULT_VAL
+			          FROM PA_PARAM_ITEM_PARAM PPIP
+			         WHERE PPIP.PARAM_ITEM_NO IN
+			               ('540065', '540066', '540067', '540068', '540069', '540070')
+			           AND PPIP.CPNY_ID = #interCpnyID#) BB
+			 WHERE AA.PARAM_ITEM_NO(+) = BB.PARAM_ITEM_NO
+			  ORDER BY BB.PARAM_ITEM_NO
+		]]>
+	</select>
+	
+	<select id="getPaInputItemListByItemNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		    SELECT TO_NUMBER(NVL(C.RETURN_VALUE, 0)) RETURN_VALUE,
+			       C.REMARK
+			  FROM PA_PARAM_ITEM_PARAM B, PA_PARAM_DATA C, PA_SUMMARY_HTSV PA
+			 WHERE B.PARAM_NO = C.PARAM_NO
+			   AND C.PERSON_ID = PA.PERSON_ID
+			   AND B.PARAM_ITEM_NO = '540129'
+			   AND C.ACTIVITY = '1'
+				 AND B.CPNY_ID = #interCpnyID#
+			   AND PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+			   AND PA.PERSON_ID = #PERSON_ID#
+			   AND TO_DATE(TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'MMYYYY'),'MMYYYY') 
+			              BETWEEN TO_DATE(C.START_MONTH, 'MMYYYY') AND NVL(TO_DATE(C.END_MONTH, 'MMYYYY'), TO_DATE('129999', 'MMYYYY'))
+			ORDER BY C.CREATE_DATE
+		]]>
+	</select>
+	
+	<select id="getPaInputTaxItem" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		    SELECT TO_NUMBER(NVL(C.RETURN_VALUE, 0)) RETURN_VALUE,
+			       C.REMARK
+			  FROM PA_PARAM_ITEM_PARAM B, PA_PARAM_DATA C, PA_SUMMARY_HTSV PA
+			 WHERE B.PARAM_NO = C.PARAM_NO
+			   AND C.PERSON_ID = PA.PERSON_ID
+			   AND B.PARAM_ITEM_NO IN ('540099','90000496','90000495','90000494','90000493')
+			   AND C.ACTIVITY = '1'
+				 AND B.CPNY_ID = #interCpnyID#
+			   AND PA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+			   AND PA.PERSON_ID = #PERSON_ID#
+			   AND TO_DATE(TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'MMYYYY'),'MMYYYY') 
+			              BETWEEN TO_DATE(C.START_MONTH, 'MMYYYY') AND NVL(TO_DATE(C.END_MONTH, 'MMYYYY'), TO_DATE('129999', 'MMYYYY'))
+			ORDER BY C.CREATE_DATE
+		]]>
+	</select>
+	
+</sqlMap>

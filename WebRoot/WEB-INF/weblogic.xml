@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<weblogic-web-app
+	xmlns="http://www.bea.com/ns/weblogic/weblogic-web-app"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.bea.com/ns/weblogic/weblogic-web-app http://www.bea.com/ns/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd"
+>
+<session-descriptor>
+	<timeout-secs>18000</timeout-secs>
+</session-descriptor>
+<jsp-descriptor>
+<page-check-seconds>1</page-check-seconds>
+</jsp-descriptor>
+	<context-root>/</context-root>
+	<virtual-directory-mapping>
+		<local-path>/workarea/lotte_ss/lotte2</local-path>
+		<url-pattern>/resources/*</url-pattern>
+	</virtual-directory-mapping>
+</weblogic-web-app>

@@ -1,0 +1,1021 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.rolesGroup">
+
+	<select id="getRolesGroupList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT T.ROLE_NO,
+			         T.ROLE_ID,
+			         T.CPNY_ID,
+			         (SELECT CONTENT
+			            FROM SY_ROLE SR, HR_COMPANY HC, SY_GLOBAL_NAME SG
+			           WHERE SR.CPNY_ID = HC.CPNY_ID
+			             AND SR.ROLE_NO = T.ROLE_NO
+			             AND SG.NO(+) = SR.ROLE_NO
+			             AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#) SCREEN_NAME,
+			         (SELECT CONTENT
+			            FROM HR_COMPANY HC, SY_GLOBAL_NAME SG
+			           WHERE HC.CPNY_ID = C.CPNY_ID
+			             AND SG.NO(+) = HC.CPNY_NO
+			             AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#) CPNY_NAME
+			    FROM SY_ROLE T, HR_COMPANY C
+			   WHERE T.CPNY_ID = C.CPNY_ID 
+			   	AND T.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	
+		 
+			<isNotEmpty prepend="AND" property="SCREEN_GRANT_NAME_ZH">
+				<![CDATA[
+			 		 (SELECT CONTENT
+			            FROM SY_ROLE SR, HR_COMPANY HC, SY_GLOBAL_NAME SG
+			           WHERE SR.CPNY_ID = HC.CPNY_ID
+			             AND SR.ROLE_NO = T.ROLE_NO
+			             AND SG.NO(+) = SR.ROLE_NO
+			             AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#) like '%'|| #SCREEN_GRANT_NAME_ZH# ||'%'
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty  prepend="AND" property="MENU_NAME_ZH">
+				<![CDATA[
+				  T.ROLE_NO  in ( SELECT ROLE_NO FROM SY_ROLE_RELATION  N,SY_GLOBAL_NAME G WHERE N.menu_no=G.NO AND G.LANGUAGE='zh'
+						and n.role_no= T.ROLE_NO
+						AND N.SELECTR<>'0'
+ and g.content like  '%'|| #MENU_NAME_ZH# ||'%' )
+				]]> 
+				</isNotEmpty>
+				
+				
+				 
+			
+			
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+			      T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    </isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="ROLE_NO">
+				<![CDATA[
+			 		 T.ROLE_NO = #ROLE_NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="ROLE_ID">
+				<![CDATA[
+			 		 T.ROLE_ID = #ROLE_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="SYS_TYPE">
+				<![CDATA[
+			 		 T.SYS_TYPE = #SYS_TYPE:NUMERIC#
+			    ]]>
+			</isNotEmpty>
+			 
+		
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY TO_NUMBER(T.ROLE_NO)
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getRolesGroupCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_ROLE T
+			 WHERE T.CPNY_ID=#interCpnyID:VARCHAR# 
+		]]>	  
+			<isNotEmpty prepend="AND" property="SYS_TYPE">
+				<![CDATA[
+			 		 T.SYS_TYPE = #SYS_TYPE:NUMERIC#
+			    ]]>
+			</isNotEmpty>
+		
+			<isNotEmpty prepend="AND" property="SCREEN_GRANT_NAME_ZH">
+				<![CDATA[
+					 (SELECT CONTENT
+			            FROM SY_ROLE SR, HR_COMPANY HC, SY_GLOBAL_NAME SG
+			           WHERE SR.CPNY_ID = HC.CPNY_ID
+			             AND SR.ROLE_NO = T.ROLE_NO
+			             AND SG.NO(+) = SR.ROLE_NO
+			             AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#) like '%'|| #SCREEN_GRANT_NAME_ZH# ||'%'
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty  prepend="AND" property="MENU_NAME_ZH">
+				<![CDATA[
+				  T.ROLE_NO  in ( SELECT ROLE_NO FROM SY_ROLE_RELATION  N,SY_GLOBAL_NAME G WHERE N.menu_no=G.NO AND G.LANGUAGE='zh'
+						and n.role_no= T.ROLE_NO
+						AND N.SELECTR<>'0'
+ and g.content like  '%'|| #MENU_NAME_ZH# ||'%' )
+				]]> 
+				</isNotEmpty>
+	</select>
+	
+	<select id="isRolesGroupIdExsit" parameterClass="linkMap"
+		resultClass="int">          
+		<![CDATA[  
+			  SELECT  COUNT(*) FROM SY_LOGIN_SCREEN WHERE SCREEN_GRANT_ID=#SCREEN_GRANT_ID:VARCHAR#                 
+			]]>
+	</select>
+	
+	<insert id="addRolesGroupInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO SY_LOGIN_SCREEN (
+					SCREEN_GRANT_NO,
+					SCREEN_GRANT_NAME_ZH,
+					SCREEN_GRANT_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY,
+					SCREEN_GRANT_NAME_EN,
+					SCREEN_GRANT_NAME_KR,
+					CPNY_ID
+					)
+				VALUES(
+					#SCREEN_GRANT_NO:VARCHAR# ,
+					#SCREEN_GRANT_NAME_ZH:VARCHAR# ,
+					#SCREEN_GRANT_NO:VARCHAR# ,
+					SYSDATE ,
+					#CREATED_BY:VARCHAR# ,
+					#ORDERNO:NUMERIC# ,
+					1,
+					#SCREEN_GRANT_NAME_EN:VARCHAR# ,
+					#SCREEN_GRANT_NAME_KR:VARCHAR#,
+					#CPNY_ID:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<update id="updateRolesGroupInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE SY_LOGIN_SCREEN SET
+					CPNY_ID=#CPNY_ID:VARCHAR#
+					SCREEN_GRANT_NAME_ZH = #SCREEN_GRANT_NAME_ZH:VARCHAR# ,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR# ,
+					ORDERNO =#ORDERNO:NUMERIC# ,
+					SCREEN_GRANT_NAME_EN = #SCREEN_GRANT_NAME_EN:VARCHAR# ,
+					SCREEN_GRANT_NAME_KR = #SCREEN_GRANT_NAME_KR:VARCHAR#
+
+			WHERE SCREEN_GRANT_NO = #SCREEN_GRANT_NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<insert id="addRolesGroupPageInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO SY_SCREEN_GRANT (
+					SCREEN_CODE,
+					SCREEN_GRANT_NO,
+					SELECTR,
+					INSERTR,
+					UPDATER,
+					DELETER,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY)
+				VALUES(
+					#SCREEN_CODE:VARCHAR# ,
+					#SCREEN_GRANT_NO:VARCHAR# ,
+					#RFore:VARCHAR# ,
+					#RInsert:VARCHAR# ,
+					#RUpdate:VARCHAR# ,
+					#RDelete:VARCHAR# ,
+					SYSDATE ,
+					#CREATED_BY:VARCHAR# ,
+					#ORDERNO:NUMERIC# ,
+					1
+				)
+		]]>
+	</insert>
+	
+	<delete id="deleteRolesGroupInfo" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE SY_LOGIN_SCREEN WHERE SCREEN_GRANT_NO = #SCREEN_GRANT_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteRolesGroupPageInfo" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE SY_SCREEN_GRANT WHERE SCREEN_GRANT_NO = #SCREEN_GRANT_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="getRolesGroupPageList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.MENU_CODE,
+			       A.MENU_NO,
+			       A.MENU_NAME_ZH,
+			       A.MENU_NAME_EN,
+			       A.MENU_NAME_KR,
+			       A.DEPTH,
+			       NVL(B.SELECTR, 0) AS SELECTR,
+			       NVL(B.INSERTR, 0) AS INSERTR,
+			       NVL(B.UPDATER, 0) AS UPDATER,
+			       NVL(B.DELETER, 0) AS DELETER,
+			       A.MENU_PARENT_CODE
+			  FROM (SELECT T.MENU_CODE,
+			               T.MENU_NO,
+			               T.MENU_NAME_ZH,
+			               NVL(T.MENU_NAME_EN, ' ') AS MENU_NAME_EN,
+			               NVL(T.MENU_NAME_KR, ' ') AS MENU_NAME_KR,
+			               T.MENU_PARENT_CODE,
+			               T.DEPTH,
+			               ROWNUM RN
+			          FROM SY_MENU T
+			         START WITH T.DEPTH = 0
+			        CONNECT BY PRIOR T.MENU_CODE = T.MENU_PARENT_CODE
+			         ORDER SIBLINGS BY T.ORDERNO) A,
+			       SY_SCREEN_GRANT B
+			 WHERE A.MENU_NO = B.MENU_NO(+)
+			   AND B.SCREEN_GRANT_NO(+) = #SCREEN_GRANT_NO:VARCHAR#
+			   ORDER BY RN
+		]]>	
+		
+	</select>
+	
+	<select id="checkSyLoginScreen" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM SY_ROLE T WHERE T.ROLE_NO = #ROLE_NO:VARCHAR#
+		]]>	
+	</select>
+	<select id="backscreenGrant" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT * FROM SY_ROLE T WHERE T.ROLE_NO=#ROLE_NO:VARCHAR#
+		]]>	
+	</select>
+	<update id="updateSyLoginScreen"  parameterClass="linkMap" >
+		UPDATE SY_ROLE T
+		   SET CREATE_DATE = SYSDATE,
+		       CREATED_BY  = #CREATE_BY:VARCHAR#,
+		       ORDERNO     = #ORDERNO:NUMERIC#,
+		       ACTIVITY    = 1,
+		       CPNY_ID     = #CPNY_ID#
+		 WHERE ROLE_NO = #ROLE_NO:VARCHAR#
+	</update>
+	<insert id="saveSyLoginScreen"  parameterClass="linkMap">
+		   INSERT INTO SY_ROLE(
+					ROLE_NO,
+					ROLE_ID,
+					SYS_TYPE,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY,
+					CPNY_ID
+			)VALUES(
+					#NO:VARCHAR#  ,
+					#ROLE_ID:VARCHAR# ,
+					#SYS_TYPE:NUMERIC# ,
+					SYSDATE ,
+					#CREATED_BY:VARCHAR# ,
+					#ORDERNO:NUMERIC# ,
+					1,
+					#CPNY_ID:VARCHAR#
+				)
+			 
+	</insert>
+	<select id="checkSyScreenGrant" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_ROLE_RELATION T
+			 WHERE T.ROLE_NO = #ROLE_NO#
+			   AND T.MENU_NO = #MENU_NO#			
+		]]>	
+	</select>
+	<update id="updateSyScreenGrant"  parameterClass="linkMap" >
+		UPDATE SY_ROLE_RELATION
+		   SET SELECTR = #SELECTR:VARCHAR#,
+		       INSERTR = #INSERTR:VARCHAR#,
+		       UPDATER = #UPDATER:VARCHAR#,
+		       DELETER = #DELETER:VARCHAR#
+		 WHERE ROLE_NO = #ROLE_NO:VARCHAR#
+		   and MENU_NO = #MENU_NO#
+	</update>
+	<insert id="saveSyScreenGrant"  parameterClass="linkMap">
+			INSERT INTO SY_ROLE_RELATION (
+					ROLE_NO,
+					SELECTR,
+					INSERTR,
+					UPDATER,
+					DELETER,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY,
+					MENU_NO 
+					)
+				VALUES(
+					#ROLE_NO:VARCHAR# ,
+					#SELECTR:VARCHAR# ,
+					#INSERTR:VARCHAR# ,
+					#UPDATER:VARCHAR# ,
+					#DELETER:VARCHAR# ,
+					SYSDATE ,
+					#CREATED_BY:VARCHAR# ,
+					#ORDERNO:NUMERIC# ,
+					1,
+					#MENU_NO# 
+				)
+	</insert>
+	<select id="getSelectMenuForRoles" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT * FROM SY_ROLE_RELATION T, SY_ROLE TL
+			  WHERE T.ROLE_NO = TL.ROLE_NO
+			    AND TL.ROLE_NO=#ROLE_NO:VARCHAR#
+			    AND T.MENU_NO IN
+			        (SELECT S.MENU_NO
+			           FROM SY_MENU S
+			          WHERE S.MENU_PARENT_NO = #PARENT_CODE_NO:VARCHAR# OR S.MENU_NO=#PARENT_CODE_NO:VARCHAR#)
+			   
+		]]>	
+	</select>
+	<delete id="deleteRolesGroupItem" parameterClass="linkMap"  >
+		DELETE sy_role_relation
+			 WHERE role_no = #NO:VARCHAR#
+	</delete>
+	<delete id="deleteRolesGroup" parameterClass="linkMap"  >
+		DELETE sy_role
+			 WHERE role_no  = #NO:VARCHAR#
+	</delete>
+	<delete id="deleteRolesGroupRelation" parameterClass="linkMap"  >
+		DELETE sy_role_group_relation
+			 WHERE role_no  = #NO:VARCHAR#
+	</delete>
+	<select id="getSyRolesGroupList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.*,
+				       S.CONTENT AS GROUP_NAME,
+				       (SELECT CONTENT
+				          FROM HR_COMPANY, SY_GLOBAL_NAME
+				         WHERE CPNY_ID = T.CPNY_ID
+				           AND NO(+) = CPNY_NO
+				           AND LANGUAGE = #interLanguage:VARCHAR#) CPNY_NAME
+				  FROM SY_ROLE_GROUP T, SY_GLOBAL_NAME S
+				 WHERE T.ROLE_GROUP_NO = S.NO(+)
+				   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="GROUP_NAME">
+			<![CDATA[
+		 		  S.CONTENT LIKE '%'||#GROUP_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.ROLE_GROUP_NO=#NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SYS_TYPE">
+			<![CDATA[
+		 		  T.SYS_TYPE=#SYS_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		 		   ORDER BY TO_NUMBER(T.ROLE_GROUP_NO)
+		    ]]>
+	</select>
+	<select id="getSyRolesGroupListCnt"  parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_ROLE_GROUP T, SY_GLOBAL_NAME S
+			 WHERE T.ROLE_GROUP_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.CPNY_ID=#interCpnyID:VARCHAR#	
+		]]>	
+		<isNotEmpty prepend="AND" property="GROUP_NAME">
+			<![CDATA[
+		 		  S.CONTENT LIKE '%'||#GROUP_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.ROLE_GROUP_NO=#NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SYS_TYPE">
+			<![CDATA[
+		 		  T.SYS_TYPE=#SYS_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getSyRolesIfCheckedList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ROLE_NO,
+			       T.ROLE_ID,
+			       T.CPNY_ID,
+			       (CASE
+			         WHEN T.ROLE_NO = C.ROLE_NO THEN
+			          1
+			         ELSE
+			          0
+			       END) AS CHECKED,
+			       SG.CONTENT AS roleName
+			  FROM SY_ROLE T,
+			       (SELECT S.ROLE_NO
+			          FROM SY_ROLE_GROUP_RELATION S
+			         WHERE S.ROLE_GROUP_NO = #NO:VARCHAR#) C,
+			       SY_GLOBAL_NAME SG
+			 WHERE SG.NO(+) = T.ROLE_NO
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   and T.ROLE_NO = C.ROLE_NO(+)
+			   and T.CPNY_ID=#cpnyInitId:VARCHAR#
+			]]>   
+			   <isNotEmpty prepend="AND" property="SYS_TYPE">
+			<![CDATA[
+		 		  t.SYS_TYPE=#SYS_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+			   <![CDATA[
+			 ORDER BY TO_NUMBER(T.ROLE_NO)
+		]]>	
+	</select>  
+	
+	<insert id="InsertSyRoleGroupInfo"  parameterClass="linkMap">
+			INSERT INTO SY_ROLE_GROUP
+					  (ROLE_GROUP_NO,
+					   ROLE_GROUP_ID,
+					   SYS_TYPE,
+					   CREATE_DATE,
+					   CREATED_BY,
+					   UPDATE_DATE,
+					   UPDATED_BY,
+					   ORDERNO,
+					   ACTIVITY,
+					   CPNY_ID,
+					   JOIN_DEFAULT
+					   )
+					VALUES(
+						#NO:VARCHAR# ,
+						#NO:VARCHAR# ,
+						#SYS_TYPE:NUMERIC#,
+						SYSDATE ,
+						#CREATED_BY:VARCHAR# ,
+						SYSDATE ,
+						#CREATED_BY:VARCHAR# ,
+						#ORDERNO:NUMERIC# ,
+						1,
+						#CPNY_ID:VARCHAR# ,
+						#JOIN_DEFAULT:VARCHAR#
+					)
+	</insert>
+	<insert id="InsertSyRoleGroupRelationInfo"  parameterClass="linkMap">
+			INSERT INTO SY_ROLE_GROUP_RELATION
+					  (ROLE_GROUP_NO,
+					   ROLE_NO,
+					   CREATE_DATE,
+					   CREATED_BY,
+					   UPDATE_DATE,
+					   UPDATED_BY,
+					   ORDERNO,
+					   ACTIVITY
+					   )VALUES(
+						#ROLE_GROUP_NO:VARCHAR# ,
+						#ROLE_NO:VARCHAR# ,
+						SYSDATE ,
+						#CREATED_BY:VARCHAR# ,
+						SYSDATE ,
+						#CREATED_BY:VARCHAR# ,
+						#ORDERNO:NUMERIC# ,
+						1 
+					)
+	</insert>
+			 
+	<update id="UpdateSyRoleGroupInfo" parameterClass="linkMap" >
+		<![CDATA[
+				UPDATE SY_ROLE_GROUP SET
+					   UPDATE_DATE = SYSDATE,
+					   UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					   ORDERNO = #ORDERNO:NUMERIC# ,
+					   ACTIVITY = 1,
+					   CPNY_ID = #CPNY_ID:VARCHAR#,
+					   JOIN_DEFAULT=#JOIN_DEFAULT:VARCHAR#
+		        WHERE ROLE_GROUP_NO = #ROLE_GROUP_NO:VARCHAR#  
+		]]>
+	</update>
+	<delete id="deleteSyRoleGroupRelationInfo" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE SY_ROLE_GROUP_RELATION WHERE ROLE_GROUP_NO = #ROLE_GROUP_NO:VARCHAR#  
+		]]>
+	</delete>
+	<delete id="deleteSyRolesGroup" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE SY_ROLE_GROUP WHERE ROLE_GROUP_NO = #ROLE_GROUP_NO:VARCHAR#  
+		]]>
+	</delete>
+	<delete id="deleteSyUserRelation" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE SY_USER_RELATION WHERE ROLE_GROUP_NO = #ROLE_GROUP_NO:VARCHAR#  
+		]]>
+	</delete>
+	<!-- 查询菜单为权限设置 -->
+	<select id="getMenuForRolesGroup" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT
+			 	distinct 
+			 	T.*, N.*
+			    FROM SY_MENU T, 
+			         SY_GLOBAL_NAME N, 
+			         SY_MENU_PARAM P
+			  WHERE T.MENU_NO = P.MENU_NO 
+			        AND T.MENU_NO = N.NO(+)
+			        AND N.LANGUAGE(+) = #interLanguage:VARCHAR#
+			        AND P.CPNY_ID=#interCpnyID:VARCHAR#
+			        AND T.ACTIVITY = 1
+			        AND T.ACTIVITY = 1
+			        AND P.ACTIVITY = 1
+			        AND (T.MENU_NO = #PARENT_CODE_NO:VARCHAR# OR T.MENU_PARENT_NO = #PARENT_CODE_NO:VARCHAR#)
+			  START WITH T.MENU_NO = #PARENT_CODE_NO:VARCHAR# AND P.CPNY_ID=#interCpnyID:VARCHAR#
+			 CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO
+			  ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	
+	
+     <!-- gsod权限 -->
+
+     <select id="getGsodRoleGroupList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.ROLE_GSOD_NO,
+				       T.GROUPNO,
+				       T.ROLE_GSOD_NAME,
+				       T.SY_ROLE_GROUP_NO,
+				       T.CPNY_ID,
+				       SY.CONTENT SY_ROLE_GROUP_NAME
+				  FROM SY_ROLE_GROUP_GSOD T, SY_GLOBAL_NAME SY
+				 WHERE T.SY_ROLE_GROUP_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="GROUPNO">
+		<![CDATA[
+		 		  T.GROUPNO = #GROUPNO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ROLE_GSOD_NAME">
+			<![CDATA[
+		 		  T.ROLE_GSOD_NAME = #ROLE_GSOD_NAME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ROLE_GSOD_NO">
+			<![CDATA[
+		 		  T.ROLE_GSOD_NO=#ROLE_GSOD_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SY_ROLE_GROUP_NAME">
+			<![CDATA[
+		 		  SY.CONTENT LIKE '%'||#SY_ROLE_GROUP_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SY_ROLE_GROUP_NO">
+			<![CDATA[
+		 		  T.SY_ROLE_GROUP_NO = #SY_ROLE_GROUP_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		 		   ORDER BY T.ROLE_GSOD_NAME
+		    ]]>
+	   </select>
+	<select id="getGsodRoleGroupCnt"  parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			 FROM SY_ROLE_GROUP_GSOD T, SY_GLOBAL_NAME SY
+		    WHERE T.SY_ROLE_GROUP_NO = SY.NO(+)
+			  AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>	
+		<isNotEmpty prepend="AND" property="ROLE_GSOD_NAME">
+			<![CDATA[
+		 		  T.ROLE_GSOD_NAME LIKE '%'||#ROLE_GSOD_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ROLE_GSOD_NAME">
+			<![CDATA[
+		 		  T.ROLE_GSOD_NAME = #ROLE_GSOD_NAME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ROLE_GSOD_NO">
+			<![CDATA[
+		 		  T.ROLE_GSOD_NO=#ROLE_GSOD_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SY_ROLE_GROUP_NAME">
+			<![CDATA[
+		 		  SY.CONTENT LIKE '%'||#SY_ROLE_GROUP_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		 		   ORDER BY T.ROLE_GSOD_NAME
+		    ]]>
+	</select>
+	
+	<insert id="addGsodRoleGroupInfo" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO SY_ROLE_GROUP_GSOD 
+				(ROLE_GSOD_NO,
+				 GROUPNO, 
+				 ROLE_GSOD_NAME, 
+				 SY_ROLE_GROUP_NO, 
+				 CREATE_DATE, 
+				 CREATED_BY,
+				 UPDATED_BY,
+				 UPDATE_DATE, 
+				 ORDERNO,
+				 ACTIVITY,
+				 CPNY_ID
+                ) 
+		VALUES (
+    		    ROLE_GSOD_NO_SEQ.NEXTVAL,
+    		    #GROUPNo:NUMERIC#,
+				#ROLE_GSOD_NAME:VARCHAR#, 
+				#SY_ROLE_GROUP_NO:VARCHAR#,
+				SYSDATE, 
+				#CREATED_BY:VARCHAR#,
+				#UPDATED_BY:VARCHAR#,
+				SYSDATE,
+				(SELECT NVL(MAX(ORDERNO),0) + 1 FROM SY_ROLE_GROUP_GSOD),
+				#ACTIVITY:VARCHAR#,
+				#CPNY_ID:VARCHAR#
+				)
+	    ]]>
+	</insert>
+	
+	<update id="updateGsodRoleGroupInfo" parameterClass="linkMap">
+	    <![CDATA[
+		 UPDATE SY_ROLE_GROUP_GSOD T 
+			SET T.ROLE_GSOD_NAME   = #ROLE_GSOD_NAME:VARCHAR#,
+			    T.SY_ROLE_GROUP_NO = #SY_ROLE_GROUP_NO:VARCHAR#,
+			    T.UPDATE_DATE      = SYSDATE,
+			    T.UPDATED_BY       = #UPDATED_BY:VARCHAR#
+			    T.CPNY_ID          = #CPNY_ID:VARCHAR#
+		  WHERE T.ROLE_GSOD_NO     = #ROLE_GSOD_NO:VARCHAR#
+	    ]]>
+	</update>
+	
+	<!--删除 -->
+     <delete id="deleteGsodRoleGroupInfo">
+		<![CDATA[
+			DELETE FROM SY_ROLE_GROUP_GSOD T WHERE T.ROLE_GSOD_NO = #ROLE_GSOD_NO:VARCHAR#
+    	]]>
+	</delete>
+	
+	<!--删除 -->
+     <delete id="deleteGsodRoleInfo">
+		<![CDATA[
+			DELETE FROM SY_ROLE_GROUP_GSOD T WHERE T.SY_ROLE_GROUP_NO = #ROLE_GROUP_NO:VARCHAR#
+    	]]>
+	</delete>
+	
+	<!--删除 -->
+     <delete id="deleteGsodRoleGroupInfoAll">
+		<![CDATA[
+			DELETE FROM SY_ROLE_GROUP_GSOD T WHERE T.GROUPNO = #GROUPNO:VARCHAR#
+    	]]>
+	</delete>
+	
+	<select id="checkGsodRoleGroupExsitName" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_ROLE_GROUP_GSOD T 
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="role_GSOD_NAME">
+				<![CDATA[
+			 		 T.ROLE_GSOD_NAME = #role_GSOD_NAME:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="checkGsodRoleGroupExsit" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_ROLE_GROUP_GSOD T 
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="SY_ROLE_GROUP_NO">
+				<![CDATA[
+			 		 T.SY_ROLE_GROUP_NO = #SY_ROLE_GROUP_NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getGsodGroupNo"  parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			select nvl(max(groupno),0) from sy_role_group_gsod 
+		]]>	
+	</select>
+	
+	<select id="getSyRolesGroupListGsodAdd" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		 SELECT T.*,
+               S.CONTENT AS GROUP_NAME
+          FROM SY_ROLE_GROUP T, SY_GLOBAL_NAME S
+         WHERE T.ROLE_GROUP_NO = S.NO(+)
+           AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+           AND T.ROLE_GROUP_NO NOT IN (SELECT TT.SY_ROLE_GROUP_NO FROM SY_ROLE_GROUP_GSOD TT)
+		]]>	
+		<isNotEmpty prepend="AND" property="SY_ROLE_GROUP_NAME">
+			<![CDATA[
+		 		  S.CONTENT LIKE '%'||#SY_ROLE_GROUP_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ROLE_GROUP_NO">
+			<![CDATA[
+		 		  T.ROLE_GROUP_NO=#ROLE_GROUP_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		 		   ORDER BY S.CONTENT
+		    ]]>
+	</select>
+	
+	<select id="getSyRolesGroupListGsod" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		 SELECT T.*,
+               S.CONTENT AS GROUP_NAME
+          FROM SY_ROLE_GROUP T, SY_GLOBAL_NAME S
+         WHERE T.ROLE_GROUP_NO = S.NO(+)
+           AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="SY_ROLE_GROUP_NAME">
+			<![CDATA[
+		 		  S.CONTENT LIKE '%'||#SY_ROLE_GROUP_NAME:VARCHAR#||'%%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ROLE_GROUP_NO">
+			<![CDATA[
+		 		  T.ROLE_GROUP_NO=#ROLE_GROUP_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		 		   ORDER BY S.CONTENT
+		    ]]>
+	</select>
+	
+	<select id="getRoleIdByPersonId" parameterClass="string" resultClass="string" remapResults="true">
+		<![CDATA[
+				SELECT DISTINCT RO.ROLE_GROUP_ID 
+			          FROM SY_USER U, SY_USER_RELATION R, SY_ROLE_GROUP RO
+			         WHERE U.USER_NO = R.USER_NO(+)
+			           AND R.ROLE_GROUP_NO = RO.ROLE_GROUP_NO
+			           AND R.ACTIVITY = 1
+			           AND RO.ACTIVITY = 1
+			           AND U.PERSON_ID=#PERSON_ID#
+		]]>	
+	</select>
+	
+	<select id="getArSupervisor" parameterClass="string" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT 1 FROM AR_SUPERVISOR WHERE PERSON_ID = #PERSON_ID#
+		]]>	
+	</select>
+	<!-- 获取员工的总数 首页显示 -->
+	<select id="getTotalEmpCountForMain"  parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(HRE.EMPID)
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+		]]>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY')||'/01/01'
+		        AND ( HRE.DATE_LEFT IS NULL 
+		              OR 
+		              TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') >= TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/01/01' )
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY/MM')||'/01'
+           		AND ( HRE.DATE_LEFT IS NULL 
+		              OR TO_CHAR(HRE.DATE_LEFT,'YYYYMM') >= TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM') )
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') <= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+           		AND ( HRE.DATE_LEFT IS NULL 
+		              OR TO_CHAR(HRE.DATE_LEFT,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM') )
+		    ]]>
+		</isEqual>
+	</select>
+	
+	<select id="getPersonInfo"  parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="TYPE" compareValue="TOTAL">
+			<![CDATA[
+				   SELECT LOCAL_NAME,
+						EMPID,
+						GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+						GET_GLOBAL_NAME(POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+						GET_GLOBAL_NAME(MAIN_BUSINESS,#interLanguage:VARCHAR#) MAIN_BUSINESS,
+	         			GET_GLOBAL_NAME(emp_type_code,#interLanguage:VARCHAR#) EMP_TYPE,
+						GET_GLOBAL_NAME(EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE
+				   FROM HR_EMPLOYEE HRE
+				  WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+				  AND HRE.EMPID NOT LIKE '11111%'
+			]]>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY')||'/01/01'
+			        AND ( HRE.DATE_LEFT IS NULL 
+			              OR 
+			              TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') >= TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/01/01' )
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY/MM')||'/01'
+	           		AND ( HRE.DATE_LEFT IS NULL 
+			              OR TO_CHAR(HRE.DATE_LEFT,'YYYYMM') >= TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM') )
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') <= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+	           		AND ( HRE.DATE_LEFT IS NULL 
+			              OR TO_CHAR(HRE.DATE_LEFT,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM') )
+			    ]]>
+			</isEqual>
+		</isEqual>
+		<isEqual property="TYPE" compareValue="INCUMBENCY">
+			<![CDATA[
+			SELECT LOCAL_NAME,
+						EMPID,
+						GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+						GET_GLOBAL_NAME(POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+						GET_GLOBAL_NAME(MAIN_BUSINESS,#interLanguage:VARCHAR#) MAIN_BUSINESS,
+	         			GET_GLOBAL_NAME(emp_type_code,#interLanguage:VARCHAR#) EMP_TYPE,
+						GET_GLOBAL_NAME(EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+			]]>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY')||'/01/01'
+	           		AND ( HRE.DATE_LEFT IS NULL OR TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') >= TO_CHAR(SYSDATE,'YYYY')||'/01/01' )
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY/MM')||'/01'
+	           		AND ( HRE.DATE_LEFT IS NULL OR TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') >= TO_CHAR(SYSDATE,'YYYY/MM')||'/01' )
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') <= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+	           		AND ( HRE.DATE_LEFT IS NULL OR TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') > TO_CHAR(SYSDATE,'YYYY/MM/DD') )
+			    ]]>
+			</isEqual>
+		</isEqual>
+		<isEqual property="TYPE" compareValue="QUIT">
+			<![CDATA[
+			SELECT LOCAL_NAME,
+						EMPID,
+						GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+						GET_GLOBAL_NAME(POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+						GET_GLOBAL_NAME(MAIN_BUSINESS,#interLanguage:VARCHAR#) MAIN_BUSINESS,
+	         			GET_GLOBAL_NAME(emp_type_code,#interLanguage:VARCHAR#) EMP_TYPE,
+						GET_GLOBAL_NAME(EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+			]]>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') BETWEEN TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/01/01'
+			                                                                                  AND TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/12/31'
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_LEFT,'YYYYMM') = TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM')
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_LEFT,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM')
+			    ]]>
+			</isEqual>
+		</isEqual>
+		<isEqual property="TYPE" compareValue="NEW">
+			<![CDATA[
+				SELECT LOCAL_NAME,
+						EMPID,
+						GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+						GET_GLOBAL_NAME(POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+						GET_GLOBAL_NAME(MAIN_BUSINESS,#interLanguage:VARCHAR#) MAIN_BUSINESS,
+	         			GET_GLOBAL_NAME(emp_type_code,#interLanguage:VARCHAR#) EMP_TYPE,
+						GET_GLOBAL_NAME(EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE
+				   FROM HR_EMPLOYEE HRE
+				  WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+				  AND HRE.EMPID NOT LIKE '11111%'
+			]]>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') BETWEEN TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/01/01'
+			                                                                                  AND TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/12/31'
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYYMM') = TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM')
+			    ]]>
+			</isEqual>
+			<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+				<![CDATA[
+					TO_CHAR(HRE.DATE_STARTED,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM')
+			    ]]>
+			</isEqual>
+		</isEqual>
+	</select>
+	
+	<!-- 获取在职的员工 首页显示 -->
+	<select id="getInCpnyTotalEmpCountForMain"  parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(HRE.EMPID)
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+		]]>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY')||'/01/01'
+           		AND ( HRE.DATE_LEFT IS NULL OR TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') >= TO_CHAR(SYSDATE,'YYYY')||'/01/01' )
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') < TO_CHAR(SYSDATE,'YYYY/MM')||'/01'
+           		AND ( HRE.DATE_LEFT IS NULL OR TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') >= TO_CHAR(SYSDATE,'YYYY/MM')||'/01' )
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') <= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+           		AND ( HRE.DATE_LEFT IS NULL OR TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') > TO_CHAR(SYSDATE,'YYYY/MM/DD') )
+		    ]]>
+		</isEqual>
+	</select>
+	<!-- 获取离职的员工 首页显示 -->
+	<select id="getLeftManTotalEmpCountForMain"  parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(HRE.EMPID)
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+		]]>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_LEFT,'YYYY/MM/DD') BETWEEN TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/01/01'
+		                                                                                  AND TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/12/31'
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_LEFT,'YYYYMM') = TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM')
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_LEFT,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEqual>
+	</select>
+	<!-- 获取新入职的员工 首页显示 -->
+	<select id="getNewManTotalEmpCountForMain"  parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(HRE.EMPID)
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+		]]>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastYear">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYY/MM/DD') BETWEEN TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/01/01'
+		                                                                                  AND TO_CHAR(ADD_MONTHS(SYSDATE,-12),'YYYY')||'/12/31'
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="lastMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYYMM') = TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM')
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="FLAG" compareValue="currMonth">
+			<![CDATA[
+				TO_CHAR(HRE.DATE_STARTED,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEqual>
+	</select>
+</sqlMap>

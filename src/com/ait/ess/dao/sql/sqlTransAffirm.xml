@@ -1,0 +1,3191 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.trans">
+<sql id="searchTransListCondition">
+	<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			   ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	   ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="ACTIVITY">
+	    <![CDATA[
+	               HEI.ACTIVITY = #ACTIVITY#
+        ]]>   
+	</isNotEmpty>	
+			
+    <isNotEmpty prepend="AND" property="CPNY_ID">
+	    <![CDATA[
+	               HE.CPNY_ID = #CPNY_ID#
+        ]]>   
+	</isNotEmpty>	
+	
+	<!-- 入职/晋升降级/调动/离职复职/兼职/代理发令共用 开始时间和结束时间 start -->
+	<isNotEmpty prepend="AND" property="FROM_TIME">
+		<![CDATA[
+			    HEI.START_DATE >= TO_DATE(#FROM_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="TO_TIME">
+		<![CDATA[
+		        HEI.START_DATE <= TO_DATE(#TO_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	<!-- 入职/晋升降级/调动/离职复职/兼职/代理发令共用 开始时间和结束时间 start -->
+
+     <!-- 奖励发令 开始时间和结束时间 start -->	
+    <isNotEmpty prepend="AND" property="REWARD_FROM_DATE">
+		<![CDATA[
+			    HEI.REWARD_DATE >= TO_DATE(#REWARD_FROM_DATE#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="REWARD_TO_DATE">
+		<![CDATA[
+		        HEI.REWARD_DATE <= TO_DATE(#REWARD_TO_DATE#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	<!-- 奖励发令 开始时间和结束时间 end -->
+	
+	<!-- 惩戒发令 开始时间和结束时间 start -->	
+	<isNotEmpty prepend="AND" property="DATE_FROM_PUNISHED">
+		<![CDATA[
+			    HEI.DATE_PUNISHED >= TO_DATE(#DATE_FROM_PUNISHED#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="DATE_TO_PUNISHED">
+		<![CDATA[
+		        HEI.DATE_PUNISHED <= TO_DATE(#DATE_TO_PUNISHED#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+    <!-- 惩戒发令 开始时间和结束时间 end -->
+    
+	<!-- 转正发令 开始时间和结束时间 start -->	
+	<isNotEmpty prepend="AND" property="PROBATION_DATE_FROM">
+		<![CDATA[
+			    HEI.PROBATION_DATE >= TO_DATE(#PROBATION_DATE_FROM#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="PROBATION_DATE_TO">
+		<![CDATA[
+		        HEI.PROBATION_DATE <= TO_DATE(#PROBATION_DATE_TO#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+    <!-- 转正发令 开始时间和结束时间 end -->
+    
+	<!-- 离职发令 开始时间和结束时间 start -->	
+	<isNotEmpty prepend="AND" property="RESIGN_DATE_FROM">
+		<![CDATA[
+			    HEI.RESIGN_DATE >= TO_DATE(#RESIGN_DATE_FROM#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="RESIGN_DATE_TO">
+		<![CDATA[
+		        HEI.RESIGN_DATE <= TO_DATE(#RESIGN_DATE_TO#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+    <!-- 离职发令 开始时间和结束时间 end -->    
+    
+    <!-- 部门查询条件 start -->
+<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HE.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)	       
+        ]]>
+</isNotEmpty>
+	<!-- 部门查询条件 end -->
+	
+    <isNotEmpty prepend="AND" property="TRANS_NO">
+	    <![CDATA[
+	             HEI.TRANS_NO = #TRANS_NO#
+        ]]>   
+	</isNotEmpty>	
+    <isNotEmpty prepend="AND" property="TRANS_CODE">
+	    <![CDATA[
+	             HEI.TRANS_CODE = #TRANS_CODE#
+        ]]>   
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="ADMIN_ID">
+	    <![CDATA[
+	             HA.AFFIRMOR_ID = #ADMIN_ID#
+        ]]>   
+	</isNotEmpty>	
+	
+    <!-- jjy 决裁状态 start -->
+        <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+            <![CDATA[
+            (HEI.ACTIVITY = 0 
+             AND 
+             0 = (SELECT COUNT(*)
+                    FROM HR_AFFIRM HA
+                   WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                     AND HA.AFFIRM_FLAG <> 0
+                     AND HA.AFFIRMOR_ID = #ADMIN_ID#
+                     AND HEI.TRANS_NO = #TRANS_NO#)
+            )
+            ]]>
+        </isEqual>
+        <isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+            <![CDATA[
+            (HEI.ACTIVITY != 0
+             OR
+             0 < (SELECT COUNT(*)
+                    FROM HR_AFFIRM HA
+                   WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                     AND HA.AFFIRM_FLAG <> 0
+                     AND HA.AFFIRMOR_ID = #ADMIN_ID#
+                     AND HEI.TRANS_NO = #TRANS_NO#)
+            )
+            ]]>
+        </isEqual>  
+    <!-- jjy 决裁状态 end -->
+        
+	
+	<!-- 过滤权限 start -->
+	<!--<isNotEmpty prepend="AND" property="specialParam">
+		<isNotEqual prepend="" property="specialParam" compareValue="general">
+			<![CDATA[
+		   		HE.DEPTNO IN  
+             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+	</isNotEmpty>   -->
+    <!-- 过滤权限 end -->
+</sql>
+
+<select id="getEntryTransAfiirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       TO_CHAR(HE.JOIN_COMPANY_DATE, 'yyyy-MM-dd') JOIN_COMPANY_DATE,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.CURRENT_AFFIRM_ID,		       
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HE.JOIN_TYPE_CODE,
+			       JOIN_TYPE.CONTENT JOIN_TYPE_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_FLAG,
+			       WORK_AR.NO WORK_AREA_NO,
+			       WORK_AR.CONTENT WORK_AREA_NAME,
+			       HE.STATUS_CODE STATUS_CODE,
+                   HEI.ACTIVITY
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE_TEMP     HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       JOIN_TYPE,
+			       SY_GLOBAL_NAME       POSITION,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POST_GRADE,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+                   HR_DEPARTMENT        HD,
+			       HR_AFFIRM            HA,
+			       SY_GLOBAL_NAME       WORK_AR
+			 WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+			   AND HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.JOIN_TYPE_CODE = JOIN_TYPE.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HE.WORK_AREA = WORK_AR.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND WORK_AR.LANGUAGE(+) = #interLanguage:VARCHAR#			    
+			   AND JOIN_TYPE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE(+)  = #interLanguage:VARCHAR#
+			   AND HEI.ACTIVITY <> '3'
+               AND (HA.affirm_flag > 0 OR HEI.Current_Affirm_Id = HA.AFFIRMOR_ID)
+    ]]>	
+
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HE.DATE_STARTED DESC,
+                   HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getEntryTransAfiirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+		      FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE_TEMP     HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO		
+			   AND HEI.ACTIVITY <> '3'
+               AND (HA.affirm_flag > 0 OR HEI.Current_Affirm_Id = HA.AFFIRMOR_ID)
+    ]]>		
+    <include refid="searchTransListCondition"/>	
+
+</select>
+
+<select id="getPaAdjustTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+                   TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+                   TO_CHAR(HE.JOIN_COMPANY_DATE, 'yyyy-MM-dd') JOIN_COMPANY_DATE,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.PAYRISE_CNT,
+			       HEI.PAYRISE_PAYSTEP,
+			       HEI.REMARK,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       TO_CHAR(HEI.END_DATE, 'yyyy-MM-dd') END_DATE,
+			       HEI.CURRENT_AFFIRM_ID,
+			       hei.RETURN_VALUE,
+                   HEI.ADJUST_REASON,
+                   HEI.ITEM_NO,
+                   AD_RES.CONTENT ADJUST_REASON_NAME,	
+			       HEI.TRANS_CODE,
+			       SALARY.CONTENT SALARY_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_REMARK,
+			       HA.ACTIVITY,
+			       (SELECT MAX(P.RETURN_VALUE) KEEP(DENSE_RANK FIRST ORDER BY P.START_DATE DESC ) AS S_RETURN_VALUE
+					  FROM PA_BASIC_DATA P
+					 WHERE P.PERSON_ID = HE.PERSON_ID
+					 and P.CPNY_ID = #CPNY_ID#
+                     AND P.PARAM_NO = (SELECT PB.PARAM_NO FROM PA_BASIC_ITEM_PARAM PB 
+                     WHERE PB.ITEM_NO = HEI.ITEM_NO 
+                     AND PB.CPNY_ID = #CPNY_ID:VARCHAR#)) F_RETURN_VALUE
+			  FROM HR_PAYRISE         HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     SALARY,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME     AD_RES,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+                   HR_DEPARTMENT        HD,
+			       HR_AFFIRM          HA
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HEI.TRANS_CODE = SALARY.NO(+)
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND hei.adjust_reason= AD_RES.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+               AND AD_RES.LANGUAGE(+) = #interLanguage#
+			   AND SALARY.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+               and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              
+    ]]>		
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getPaAdjustTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_PAYRISE          HEI,
+			       HR_AFFIRM           HA,
+			       HR_EMPLOYEE         HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO		
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID   
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+		       and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+		        and hra.affirm_flag = 0)              
+    ]]>    		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getProbationTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HEI.EMP_TYPE_CODE,
+			       TO_CHAR(HEI.SCHEDULE_PROBATION_DATE, 'yyyy-MM-dd') SCHEDULE_PROBATION_DATE,
+			       TO_CHAR(HEI.PROBATION_DATE, 'yyyy-MM-dd') START_DATE,
+			       HEI.PROBATION_MARK,
+			       HE.STATUS_CODE,
+			       STATUS.CONTENT STATUS_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HEI.TRANS_CODE,
+			       PRO_CODE.CONTENT PRO_TYPE_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_FLAG
+			  FROM HR_PROBATION       HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     STATUS,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME     PRO_CODE,
+			       SY_GLOBAL_NAME     DIS_DEPT,
+                   HR_DEPARTMENT      HD,
+			       HR_AFFIRM          HA
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.STATUS_CODE = STATUS.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HEI.TRANS_CODE = PRO_CODE.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#			   
+			   AND STATUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND PRO_CODE.LANGUAGE(+) =  #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE(+) = #interLanguage#				
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID  	
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+               and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              			   
+    ]]>		
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getProbationTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_PROBATION         HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO			 
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID 
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+				                and hra.affirm_flag = 2)  
+		       and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+		                and hra.affirm_flag = 0)              			   			   
+    ]]>		   
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getAgentTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.AGENT_REASON,
+			       HEI.RELATION_EXP_INSIDE_NO,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HEI.END_DATE,
+			       HEI.REMARK,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HE.DUTY_NO,
+			       DUTY.CONTENT DUTY_NAME,
+			       HE.WORK_AREA,
+			       WORK_AREA.CONTENT WORK_AREA_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAMEL,
+			       HEI.AGENT_DEPTNO,
+			       HDN_AGENT.CONTENT AGENT_DEPT_NAME,
+			       HEI.AGENT_POSITION_NO,
+			       AGENT_POSITION.CONTENT AGENT_POS_NAME,
+			       HEI.AGENT_DUTY_NO,
+			       AGENT_DUTY.CONTENT AGENT_DUTY_NAME,
+			       HEI.TRANS_CODE,
+			       TRANS.CONTENT TRANS_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID
+			  FROM HR_AGENT           HEI,
+			       HR_AFFIRM          HA,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       HR_DEPARTMENT_NAME HDN_AGENT,
+			       SY_GLOBAL_NAME     WORK_AREA,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     DUTY,
+			       SY_GLOBAL_NAME     AGENT_POSITION,
+			       SY_GLOBAL_NAME     AGENT_DUTY,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME     DIS_DEPT,
+                   HR_DEPARTMENT      HD,
+			       SY_GLOBAL_NAME     TRANS
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.WORK_AREA = WORK_AREA.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HE.DUTY_NO = DUTY.NO(+)
+			   AND HEI.AGENT_DEPTNO = HDN_AGENT.DEPTNO(+)
+			   AND HEI.AGENT_POSITION_NO = AGENT_POSITION.NO(+)
+			   AND HEI.AGENT_DUTY_NO = AGENT_DUTY.NO(+)
+			   AND HEI.TRANS_CODE = TRANS.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND TRANS.LANGUAGE(+) = #interLanguage#			   
+			   AND AGENT_POSITION.LANGUAGE(+) = #interLanguage#
+			   AND AGENT_DUTY.LANGUAGE(+) = #interLanguage#
+			   AND DUTY.LANGUAGE(+) = #interLanguage#
+			   AND WORK_AREA.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND HDN_AGENT.LANGUAGE(+) = #interLanguage#		  	
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+		         and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+		                and hra.affirm_flag = 2)  
+		         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+		                and hra.affirm_flag = 0)              			   			   
+    ]]>	
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getAgentTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_AGENT             HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	  
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+		         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+		                and hra.affirm_flag = 0)              
+    ]]>		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getRewardTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	  <![CDATA[
+				SELECT HE.EMPID,
+				       HE.CHINESE_PINYIN,
+				       HE.ENGLISH_NAME,
+				       HE.KOREAN_NAME,
+				       HE.LOCAL_NAME,
+				       HE.PERSON_ID,
+				       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+				       HEI.EXP_INSIDE_NO,
+				       HEI.TRANS_NO,
+				       HEI.TRANS_CODE,
+				       HEI.REWARD_TYPE_CODE,
+				       HEI.REWARD_CONTENTS,
+				       TO_CHAR(HEI.REWARD_DATE,'yyyy-MM-dd')	REWARD_DATE,
+				       TO_CHAR(HEI.REWARD_DATE, 'yyyy-MM-dd') START_DATE,
+				       HEI.REWARD_BONUS,
+				       HEI.CURRENT_AFFIRM_ID,
+				       REWARD_TYPE.CONTENT REWARD_TYPE_NAME,
+				       HE.DEPTNO,
+				       HDN.CONTENT DEPT_NAME,
+				       HEI.POSITION_NO,
+				       POSITION.CONTENT POSITION_NAME,
+				       HEI.POST_NO,
+				       POST.CONTENT POST_NAME,
+				       HE.POST_GRADE_NO,
+				       POST_GRADE.CONTENT POST_GRADE_NAME,
+				       dis_dept.content DEPT_DISTINGUISH_NAME,
+				       HA.HR_AFFIRM_NO,
+				       HA.AFFIRM_FLAG,
+				       HA.AFFIRM_LEVEL,
+				       HA.AFFIRMOR_ID,
+				       HA.AFFIRM_REMARK,
+				       HA.ACTIVITY
+				  FROM HR_REWARD          HEI,
+				       HR_EMPLOYEE        HE,
+				       HR_DEPARTMENT_NAME HDN,
+				       SY_GLOBAL_NAME     REWARD_TYPE,
+				       SY_GLOBAL_NAME     POSITION,
+				       SY_GLOBAL_NAME     POST,
+				       SY_GLOBAL_NAME     POST_GRADE,
+				       SY_GLOBAL_NAME       DIS_DEPT,
+				       HR_DEPARTMENT        HD,				       
+				       HR_AFFIRM          HA
+				 WHERE HEI.PERSON_ID = HE.PERSON_ID
+				   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+				   AND HE.DEPTNO = HDN.DEPTNO(+)
+				   AND HEI.TRANS_CODE = REWARD_TYPE.NO(+)
+				   AND HEI.POSITION_NO = POSITION.NO(+)
+				   AND HEI.POST_NO = POST.NO(+)
+				   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+				   AND HE.DEPTNO = HD.DEPTNO
+				   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+				   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#			   
+			       AND REWARD_TYPE.LANGUAGE(+) = #interLanguage#
+			       AND POSITION.LANGUAGE(+) = #interLanguage#
+			       AND POST.LANGUAGE(+) = #interLanguage#
+			       AND POST_GRADE.LANGUAGE(+) = #interLanguage#
+			       AND HDN.LANGUAGE(+) = #interLanguage#	
+			       AND HEI.ACTIVITY <> 3
+                   AND (HA.affirm_flag > 0 OR HEI.Current_Affirm_Id = HA.AFFIRMOR_ID)
+    ]]>		
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HEI.REWARD_DATE DESC,
+                   HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getRewardTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_REWARD            HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	
+               AND HEI.ACTIVITY <> 3
+               AND (HA.affirm_flag > 0 OR HEI.Current_Affirm_Id = HA.AFFIRMOR_ID)
+    ]]>		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getPunishmentTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			 SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.PUN_REASON,
+			       TO_CHAR(HEI.DATE_PUNISHED,'yyyy-MM-dd')	DATE_PUNISHED,
+			       TO_CHAR(HEI.DATE_PUNISHED, 'yyyy-MM-dd') START_DATE,
+			       HEI.PUN_BONUS,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HEI.TRANS_CODE,
+			       PU_TRANS.CONTENT PUNISHMENT_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HEI.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HEI.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_REMARK,
+			       HEI.ACTIVITY
+			  FROM HR_PUNISHMENT      HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     PU_TRANS,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+			       HR_DEPARTMENT        HD,			       
+			       HR_AFFIRM          HA
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HEI.TRANS_CODE = PU_TRANS.NO(+)
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HEI.POSITION_NO = POSITION.NO(+)
+			   AND HEI.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#			   
+               AND PU_TRANS.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#		
+               AND HEI.ACTIVITY <> 3             				   
+               AND (HA.affirm_flag > 0 OR HEI.Current_Affirm_Id = HA.AFFIRMOR_ID)
+    ]]>	
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HEI.DATE_PUNISHED DESC,
+                   HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getPunishmentTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_PUNISHMENT        HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+               AND HEI.ACTIVITY <> 3
+               AND (HA.affirm_flag > 0 OR HEI.Current_Affirm_Id = HA.AFFIRMOR_ID)	            				   
+    ]]>		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getResignationTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       TO_CHAR(HEI.RESIGN_DATE, 'yyyy-MM-dd') START_DATE,
+			       HEI.RESIGN_REASON,
+			       HEI.REMARK,
+			       TO_CHAR(HEI.SETTLEMENT_DATE, 'yyyy-MM-dd') SETTLEMENT_DATE,
+			       HEI.BLACKLIST_YN,
+			       HEI.BLACKLIST_REASON,
+			       HEI.RESIGN_TYPE_CODE,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HE.STATUS_CODE,
+			       STATUS.CONTENT STATUS_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HEI.TRANS_CODE,
+			       RES_CODE.CONTENT RES_TYPE_NAME,
+			       RESON_CODE.CONTENT REASON_CODE_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_FLAG
+			  FROM HR_RESIGNATION     HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     STATUS,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME     RES_CODE,
+			       SY_GLOBAL_NAME     RESON_CODE,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+			       HR_DEPARTMENT        HD,			       
+			       HR_AFFIRM          HA
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.STATUS_CODE = STATUS.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HEI.TRANS_CODE = RES_CODE.NO(+)
+			   AND HEI.RESIGN_REASON = RESON_CODE.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND STATUS.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND RES_CODE.LANGUAGE(+) = #interLanguage#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage#		
+			   AND RESON_CODE.LANGUAGE(+) = #interLanguage#		
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   AND HEI.ACTIVITY = 0  
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              				   
+    ]]>	
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getResignationTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_RESIGNATION       HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	  
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              
+    ]]>		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getTransferTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HE.WORK_AREA,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HE.JOIN_TYPE_CODE,
+			       JOIN_TYPE.CONTENT JOIN_TYPE_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+                   HEI.DEPTNO NEW_DEPTNO,
+                   NEW_HDN.CONTENT NEW_DEPT_NAME,
+                   HEI.POSITION_NO NEW_POSITION_NO,
+                   NEW_POSITION.CONTENT NEW_POSITION_NAME,
+                   HEI.POST_NO NEW_POST_NO,
+                   NEW_POST.CONTENT NEW_POST_NAME,
+                   HEI.POST_GRADE_NO NEW_POST_GRADE_NO,
+                   NEW_POST_GRADE.CONTENT NEW_POST_GRADE_NAME,
+                   HEI.WORK_AREA NEW_WORK_AREA,
+                   TRANS_N.CONTENT TRANS_TYPE_NAME,
+                   dis_dept.content DEPT_DISTINGUISH_NAME,
+                   HA.HR_AFFIRM_NO,
+                   HA.AFFIRM_LEVEL,
+                   HA.AFFIRMOR_ID,
+                   HA.AFFIRM_FLAG,
+			       WORK_AR.NO WORK_AREA_NO,
+			       WORK_AR.CONTENT WORK_AREA_NAME,
+			       NEW_WORK_AR.NO NEW_WORK_AR_NO,
+			       NEW_WORK_AR.CONTENT NEW_WORK_AR_NAME,
+			       NVL(GET_EMP_WORK_AREA_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), WORK_AR.CONTENT) EMP_WORK_AREA_NAME,
+			       NVL(GET_EMP_DEPT_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), HDN.CONTENT) EMP_DEPT_NAME,
+			       NVL(GET_EMP_POSITION_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), POSITION.CONTENT) EMP_POSITION_NAME,
+			       NVL(GET_EMP_POST_GRADE_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), POST_GRADE.CONTENT) EMP_POST_GRADE_NAME,
+			       NVL(GET_EMP_POST_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), POST.CONTENT) EMP_POST_NAME,
+			       HEI.WORK_AREA,
+       			   HEI.GRADE_LEVEL,
+       			   HEI.DETAIL_HR_DIFF			                    
+              FROM HR_EXPERIENCE_INSIDE HEI,
+                   HR_EMPLOYEE          HE,
+                   HR_DEPARTMENT_NAME   HDN,
+                   SY_GLOBAL_NAME       JOIN_TYPE,
+                   SY_GLOBAL_NAME       POSITION,
+                   SY_GLOBAL_NAME       POST,
+                   SY_GLOBAL_NAME       POST_GRADE,
+                   HR_DEPARTMENT_NAME   NEW_HDN,
+                   SY_GLOBAL_NAME       NEW_POSITION,
+                   SY_GLOBAL_NAME       NEW_POST,
+                   SY_GLOBAL_NAME       NEW_POST_GRADE,
+                   SY_GLOBAL_NAME       TRANS_N,
+                   SY_GLOBAL_NAME       DIS_DEPT,
+                   HR_DEPARTMENT        HD,
+                   HR_AFFIRM            HA,
+			       SY_GLOBAL_NAME       WORK_AR,
+			       SY_GLOBAL_NAME       NEW_WORK_AR
+             WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+               AND HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.JOIN_TYPE_CODE = JOIN_TYPE.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HEI.DEPTNO = NEW_HDN.DEPTNO(+)
+			   AND HEI.POSITION_NO = NEW_POSITION.NO(+)
+			   AND HEI.POST_NO = NEW_POST.NO(+)
+			   AND HEI.POST_GRADE_NO = NEW_POST_GRADE.NO(+)
+			   AND HEI.TRANS_CODE = TRANS_N.NO(+)
+			   AND HE.WORK_AREA = WORK_AR.NO(+)
+			   AND HEI.WORK_AREA = NEW_WORK_AR.NO(+)
+			   AND HEI.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND WORK_AR.LANGUAGE(+) = #interLanguage#
+			   AND NEW_WORK_AR.LANGUAGE(+) = #interLanguage#		   
+			   AND TRANS_N.LANGUAGE(+)= #interLanguage#
+			   AND JOIN_TYPE.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POSITION.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POST.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND NEW_HDN.LANGUAGE(+) = #interLanguage#
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   AND HEI.ACTIVITY = 0
+			  and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)               			  				   
+    ]]>	
+
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getTransferTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   AND HEI.ACTIVITY = 0
+			   AND 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                AND hra.affirm_flag = 2)  
+               AND 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                AND hra.affirm_flag = 0)               		  			   
+    ]]>	
+
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getPromotRelegatTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HE.WORK_AREA,
+			       WORK_AREA.CONTENT WORK_AREA_NAME,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HE.JOIN_TYPE_CODE,
+			       JOIN_TYPE.CONTENT JOIN_TYPE_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HEI.DEPTNO NEW_DEPTNO,
+			       NEW_HDN.CONTENT NEW_DEPT_NAME,
+			       HEI.POSITION_NO NEW_POSITION_NO,
+			       NEW_POSITION.CONTENT NEW_POSITION_NAME,
+			       HEI.POST_NO NEW_POST_NO,
+			       NEW_POST.CONTENT NEW_POST_NAME,
+			       HEI.POST_GRADE_NO NEW_POST_GRADE_NO,
+			       NEW_POST_GRADE.CONTENT NEW_POST_GRADE_NAME,
+			       HEI.WORK_AREA NEW_WORK_AREA,
+			       NEW_WAOK_AREA.CONTENT NEW_WAOK_AREA_NAME,
+			       TRANS_N.CONTENT TRANS_TYPE_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_FLAG
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       JOIN_TYPE,
+			       SY_GLOBAL_NAME       POSITION,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POST_GRADE,
+			       SY_GLOBAL_NAME       WORK_AREA,
+			       SY_GLOBAL_NAME       NEW_WAOK_AREA,
+			       HR_DEPARTMENT_NAME   NEW_HDN,
+			       SY_GLOBAL_NAME       NEW_POSITION,
+			       SY_GLOBAL_NAME       NEW_POST,
+			       SY_GLOBAL_NAME       NEW_POST_GRADE,
+			       SY_GLOBAL_NAME       TRANS_N,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+                   HR_DEPARTMENT        HD,
+			       HR_AFFIRM            HA
+			 WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+			   AND HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.JOIN_TYPE_CODE = JOIN_TYPE.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HE.WORK_AREA = WORK_AREA.NO(+)
+			   AND HEI.WORK_AREA = NEW_WAOK_AREA.NO(+)
+			   AND HEI.DEPTNO = NEW_HDN.DEPTNO(+)
+			   AND HEI.POSITION_NO = NEW_POSITION.NO(+)
+			   AND HEI.POST_NO = NEW_POST.NO(+)
+			   AND HEI.POST_GRADE_NO = NEW_POST_GRADE.NO(+)
+			   AND HEI.TRANS_CODE = TRANS_N.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND TRANS_N.LANGUAGE(+)= #interLanguage#
+			   AND JOIN_TYPE.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POSITION.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POST.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND NEW_HDN.LANGUAGE(+) = #interLanguage#	
+			   AND WORK_AREA.LANGUAGE(+) = #interLanguage#
+			   AND NEW_WAOK_AREA.LANGUAGE(+) = #interLanguage#	
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID	
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              		  				   
+    ]]>	
+ 
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getPromotRelegatTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE     HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              
+    ]]>		
+
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getPluralityTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.RELATION_EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.PLU_REASON,
+			       HEI.REMARK,
+			       HEI.DEPTNO,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HDN.CONTENT DEPT_NAME,
+			       HEI.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HEI.PLU_DEPTNO,
+			       PLU_DEPT.CONTENT PLU_DEPT_NAME,
+			       HEI.PLU_POSITION_NO,
+			       PLU_POSITION.CONTENT PLU_POSITION_NAME,
+			       HEI.PLU_DUTY_NO,
+			       PLU_DUTY.CONTENT PLU_DUTY_NAME,
+			       HEI.PLU_TYPE_CODE,
+			       PLU_TYPE.CONTENT PLU_TYPE_NAME,
+			       HE.WORK_AREA,
+			       WORK_A.CONTENT WORK_AREA_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_REMARK
+			  FROM HR_PLURALITY       HEI,
+			       HR_AFFIRM          HA,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     POSITION,
+			       HR_DEPARTMENT_NAME PLU_DEPT,
+			       SY_GLOBAL_NAME     PLU_POSITION,
+			       SY_GLOBAL_NAME     PLU_DUTY,
+			       SY_GLOBAL_NAME     PLU_TYPE,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+                   HR_DEPARTMENT        HD,
+			       SY_GLOBAL_NAME     WORK_A
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HE.WORK_AREA = WORK_A.NO(+)
+			   AND HEI.DEPTNO = HDN.DEPTNO(+)
+			   AND HEI.POSITION_NO = POSITION.NO(+)
+			   AND HEI.PLU_DEPTNO = PLU_DEPT.DEPTNO(+)
+			   AND HEI.PLU_POSITION_NO = PLU_POSITION.NO(+)
+			   AND HEI.PLU_DUTY_NO = PLU_DUTY.NO(+)
+			   AND HEI.PLU_TYPE_CODE = PLU_TYPE.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND PLU_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND PLU_POSITION.LANGUAGE(+) = #interLanguage#
+			   AND PLU_DUTY.LANGUAGE(+) = #interLanguage#
+			   AND PLU_TYPE.LANGUAGE(+) = #interLanguage#	
+			   AND WORK_A.LANGUAGE(+) = #interLanguage#		
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID		
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)                				   
+    ]]>		
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getPluralityTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+		    SELECT COUNT(0)
+		      FROM HR_PLURALITY       HEI,
+			       HR_AFFIRM          HA,
+			       HR_EMPLOYEE        HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              
+	 ]]>		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getSuspensionTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.TRANS_CODE,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       TO_CHAR(HEI.END_DATE, 'yyyy-MM-dd') END_DATE,
+			       HEI.SUSPEND_REASON,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HEI.RELATION_EXP_INSIDE_NO,
+			       SUS_TRANS.CONTENT SUS_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.STATUS_CODE,
+			       STATUS.CONTENT STATUS_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_REMARK,
+			       HA.ACTIVITY
+			  FROM HR_SUSPENSION      HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     SUS_TRANS,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     STATUS,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+                   HR_DEPARTMENT        HD,
+			       HR_AFFIRM          HA
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO 
+			   AND HEI.TRANS_CODE = SUS_TRANS.NO(+)
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.STATUS_CODE = STATUS.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND SUS_TRANS.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND STATUS.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#		
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID	
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              	  				   
+    ]]>		
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getSuspensionTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_SUSPENSION   HEI,
+			       HR_AFFIRM       HA,
+			       HR_EMPLOYEE     HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	   
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+		         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+		                and hra.affirm_flag = 0)              
+    ]]>		
+    <include refid="searchTransListCondition"/>
+</select>
+
+<!-- 修改HR_EXPERIENCE_INSIDE (入职/调动/晋升/降职 共用) -->
+<update id="updateHrExperience" parameterClass="linkMap">
+	<![CDATA[
+			UPDATE HR_EXPERIENCE_INSIDE HEI
+			   SET HEI.ACTIVITY    = #ACTIVITY#,
+			       HEI.CURRENT_AFFIRM_ID    = #NEXT_AFFIRM_ID#,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+<!-- 修改HR_REWARD奖励发令 如果不是流程的最后一步,通过后续修改HR_REWARD.CURRENT_AFFIRM_ID为下一流程的决裁者 -->
+<update id="updateHrRewardByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+			UPDATE HR_REWARD HR
+			   SET HR.ACTIVITY    = #ACTIVITY#,
+			       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+			       HR.UPDATE_DATE = SYSDATE,
+			       HR.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+<!-- 修改转正发令 如果不是流程的最后一步,通过后续修改HR_PROBATION.CURRENT_AFFIRM_ID为下一流程的决裁者 -->
+<update id="updateProbationByExpInsideNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_PROBATION HR
+				   SET HR.ACTIVITY    = #ACTIVITY#,
+				       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       HR.UPDATE_DATE = SYSDATE,
+				       HR.UPDATED_BY  = #UPDATED_BY#
+				 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	    ]]>
+</update>
+
+<!-- 修改HR_PUNISHMENT惩戒发令 如果不是流程的最后一步,通过后续修改HR_PUNISHMENT.CURRENT_AFFIRM_ID为下一流程的决裁者 -->
+<update id="updateHrPunishmentByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+			UPDATE HR_PUNISHMENT HR
+			   SET HR.ACTIVITY    = #ACTIVITY#,
+			       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+			       HR.UPDATE_DATE = SYSDATE,
+			       HR.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+<!-- 修改兼职发令 如果不是流程的最后一步,通过后续修改HR_PLURALITY.CURRENT_AFFIRM_ID为下一流程的决裁者 -->
+<update id="updatePluralityByExpInsideNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_PLURALITY HR
+				   SET HR.ACTIVITY    = #ACTIVITY#,
+				       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       HR.UPDATE_DATE = SYSDATE,
+				       HR.UPDATED_BY  = #UPDATED_BY#
+				 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	    ]]>
+</update>
+
+<!-- 如果是取消兼职发令的时候,修改关联兼职表的结束时间   -->
+<update id="updatePluralityByRelationExpInsideNo" parameterClass="linkMap">
+	<isNotEmpty property="RELATION_EXP_INSIDE_NO"> 
+		<![CDATA[
+				UPDATE HR_PLURALITY H
+				   SET H.END_DATE    = SYSDATE,
+				       H.UPDATE_DATE = SYSDATE,
+				       H.UPDATED_BY  = #UPDATED_BY#
+				 WHERE H.EXP_INSIDE_NO = #RELATION_EXP_INSIDE_NO#
+	    ]]>
+	</isNotEmpty>
+</update>
+
+<!-- 如果是取消代理发令的时候,修改关联代理发令的结束时间   -->
+<update id="updateAgentByRelationExpInsideNo" parameterClass="linkMap">
+	<isNotEmpty property="RELATION_EXP_INSIDE_NO"> 
+		<![CDATA[
+				UPDATE HR_AGENT   H
+				   SET H.END_DATE    = SYSDATE,
+				       H.UPDATE_DATE = SYSDATE,
+				       H.UPDATED_BY  = #UPDATED_BY#
+				 WHERE H.EXP_INSIDE_NO = #RELATION_EXP_INSIDE_NO#
+	    ]]>
+	</isNotEmpty>
+</update>
+
+<!-- 如果是复职发令的时候,修改关联停职发令的结束时间   -->
+<update id="updateSuspensionByRelationExpInsideNo" parameterClass="linkMap">
+	<isNotEmpty property="RELATION_EXP_INSIDE_NO"> 
+		<![CDATA[
+		        UPDATE HR_SUSPENSION H
+		           SET H.END_DATE    = SYSDATE,
+		               H.UPDATE_DATE = SYSDATE,
+		               H.UPDATED_BY    = #UPDATED_BY#
+		         WHERE H.EXP_INSIDE_NO = #RELATION_EXP_INSIDE_NO#
+	    ]]>
+	</isNotEmpty>
+</update>
+
+<!-- 修改停职/复职发令 如果不是流程的最后一步,通过后续修改HR_SUSPENSION.CURRENT_AFFIRM_ID为下一流程的决裁者 -->
+<update id="updateSuspensionByExpInsideNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_SUSPENSION HR
+				   SET HR.ACTIVITY    = #ACTIVITY#,
+				       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       HR.UPDATE_DATE = SYSDATE,
+				       HR.UPDATED_BY  = #UPDATED_BY#
+				 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	    ]]>
+</update>
+
+<!-- 修改离职发令 如果不是流程的最后一步,通过后续修改HR_Resignation.CURRENT_AFFIRM_ID为下一流程的决裁者 -->
+<update id="updateResignationByExpInsideNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_RESIGNATION HR
+				   SET HR.ACTIVITY    = #ACTIVITY#,
+				       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       HR.UPDATE_DATE = SYSDATE,
+				       HR.UPDATED_BY  = #UPDATED_BY#
+				 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	    ]]>
+</update>
+
+<!-- 修改代理发令 如果不是流程的最后一步,通过后续修改HR_AGENT.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+<update id="updateAgentTransByExpInsideNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_AGENT    HR
+				   SET HR.ACTIVITY    = #ACTIVITY#,
+				       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       HR.UPDATE_DATE = SYSDATE,
+				       HR.UPDATED_BY  = #UPDATED_BY#
+				 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	    ]]>
+</update>
+<!-- 修改代理发令 如果不是流程的最后一步,通过后续修改HR_AGENT.CURRENT_AFFIRM_ID为下一流程的决裁者 end-->
+
+<!-- 修改薪资调整发令 如果不是流程的最后一步,通过后续修改HR_PAYRISE.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+<update id="updatePayRiseTransByExpInsideNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_PAYRISE    HR
+				   SET HR.ACTIVITY    = #ACTIVITY#,
+				       HR.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       HR.UPDATE_DATE = SYSDATE,
+				       HR.UPDATED_BY  = #UPDATED_BY#
+				 WHERE HR.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	    ]]>
+</update>
+<!-- 修改薪资调整发令 如果不是流程的最后一步,通过后续修改HR_PAYRISE.CURRENT_AFFIRM_ID为下一流程的决裁者 end-->
+
+<!-- 修改HR_AFFIRM  -->
+<update id="updateHrAffirm" parameterClass="linkMap">
+	<![CDATA[
+ 			UPDATE HR_AFFIRM HA
+			   SET HA.AFFIRM_FLAG   = #AFFIRM_FLAG#,
+			       HA.ACTIVITY      = #AFFIRM_FLAG#,			       
+			       HA.UPDATE_DATE   = SYSDATE,
+			       HA.UPDATED_BY    = #UPDATED_BY#
+			WHERE  HA.HR_AFFIRM_NO  = #HR_AFFIRM_NO#
+              AND  HA.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+<select id="getMaxAffirmLevelByExpInsideNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+              SELECT NVL(MAX(HA.AFFIRM_LEVEL), 0) FROM HR_AFFIRM HA WHERE HA.EXP_INSIDE_NO = #EXP_INSIDE_NO#		  				   
+     ]]>		
+</select>
+
+<!-- 取当前发令的下一个决裁者 -->
+<select id="getHrAffirmInfoByExpInsideNoAndLevel" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_REMARK,
+			       HA.EXP_INSIDE_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID
+			  FROM HR_AFFIRM HA
+			 WHERE HA.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+			   AND HA.AFFIRM_LEVEL = #AFFIRM_LEVEL#
+	]]>		
+</select>
+
+<!-- 取当前发令流程中的决裁级别 入职/调动/晋升降职共用-->
+<select id="getCurrentAffirmLevel" parameterClass="linkMap" resultClass="int"> 
+	<![CDATA[
+			SELECT HA.AFFIRM_LEVEL
+			  FROM HR_AFFIRM            HA,
+			       HR_EXPERIENCE_INSIDE HEI
+			 WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+			   AND HA.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+			   AND HEI.CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID#
+	]]>		
+</select>
+
+<select id="getAffirmerListByExpInsideNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+		 	 SELECT HE.PERSON_ID,
+			        HE.LOCAL_NAME,
+			        HA.HR_AFFIRM_NO,
+			        HA.AFFIRM_FLAG,
+			        HA.AFFIRM_LEVEL,
+			        HA.AFFIRMOR_ID,
+			        HA.AFFIRM_REMARK,
+			        HA.EXP_INSIDE_NO,
+			        '$START_DATE$' START_DATE
+			   FROM HR_AFFIRM   HA,
+			        HR_EMPLOYEE HE
+			  WHERE HA.AFFIRMOR_ID = HE.PERSON_ID
+			    AND HA.EXP_INSIDE_NO = #EXP_INSIDE_NO#	
+	       ORDER BY HA.AFFIRM_LEVEL		  				   
+    ]]>	
+</select>
+
+<update id="updateHrEmployeeForTransactionTrans" parameterClass="linkMap">
+	<![CDATA[
+			 update hr_employee
+			 set POST_GRADE_NO=NVL(#POST_GRADE_NO:VARCHAR#,POST_GRADE_NO),
+			     POSITION_NO=NVL(#POSITION_NO:VARCHAR#,POSITION_NO),
+			     POST_NO=NVL(#POST_NO:VARCHAR#,POST_NO),
+			     DEPTNO=NVL(#DEPTNO:VARCHAR#,DEPTNO),
+			     DUTY_NO=NVL(#DUTY_NO:VARCHAR#,DUTY_NO),
+			     WORK_AREA=NVL(#WORK_AREA:VARCHAR#,WORK_AREA),
+				 GRADE_LEVEL=NVL(#GRADE_LEVEL:VARCHAR#,GRADE_LEVEL),
+				 EMP_TYPE_CODE=NVL(#DETAIL_HR_DIFF:VARCHAR#,EMP_TYPE_CODE),
+			     UPDATE_DATE=SYSDATE,
+			     UPDATED_BY=#UPDATED_BY:VARCHAR#
+			  ]]>
+			 <isEqual prepend="," property="IN_THE_DIFFERENCE" compareValue="Y"> 
+				 	IN_THE_DIFFERENCE='N'
+			</isEqual>
+			 <isEqual prepend="," property="NOW_DEPARTMENT_DATE" compareValue="Y"> 
+					NOW_DEPARTMENT_DATE=TO_DATE(#START_DATE#, 'YYYY-MM-DD')	 
+			 </isEqual>
+			 <isEqual prepend="," property="POST_GRADE_CHANGE_DATE" compareValue="Y"> 
+					POST_GRADE_CHANGE_DATE=TO_DATE(#START_DATE#, 'YYYY-MM-DD')		 			 
+			 </isEqual>
+			  <isEqual prepend="," property="PROMOTION_DATE" compareValue="Y"> 
+					PROMOTION_DATE=TO_DATE(#START_DATE#, 'YYYY-MM-DD')	 			 
+			 </isEqual>				 
+			 where person_id = #PERSON_ID:VARCHAR#	 
+   
+</update>
+
+
+<update id="updateHrEmpOfficeForTransactionTrans" parameterClass="linkMap">
+	<![CDATA[
+			 UPDATE HR_EMPLOYEE
+			 SET EMP_OFFICE=#EMP_OFFICE1#,
+			     UPDATE_DATE=SYSDATE,
+			     UPDATED_BY=#UPDATED_BY#
+			 WHERE PERSON_ID = #PERSON_ID#	 
+    ]]>
+</update>
+
+
+<update id="updateHrEmpOfficeStatusForTransactionTrans" parameterClass="linkMap">
+	<![CDATA[
+			 UPDATE HR_EMPLOYEE
+			 SET EMP_OFFICE=#EMP_OFFICE1#,
+			     STATUS_CODE=#STATUS_CODE1#,
+			     UPDATE_DATE=SYSDATE,
+			     UPDATED_BY=#UPDATED_BY#
+			 WHERE PERSON_ID = #PERSON_ID#	 
+    ]]>
+</update>
+
+
+<update id="updateHrEmpStatusForTransactionTrans" parameterClass="linkMap">
+	<![CDATA[
+			 UPDATE HR_EMPLOYEE
+			 SET STATUS_CODE=#STATUS_CODE1#,
+			 	 END_PROBATION_DATE=#START_DATE#,
+			     UPDATE_DATE=SYSDATE,
+			     UPDATED_BY=#UPDATED_BY#
+			 WHERE PERSON_ID = #PERSON_ID#	 
+    ]]>
+</update>
+
+<update id="updateHrEmpPostByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+		   UPDATE HR_EMP_POST HE
+			    SET (
+		             HE.POST_NO,
+		             HE.ENDDATE,
+		             HE.E_EXP_INSIDE_NO,
+		             HE.UPDATE_DATE,
+		             HE.UPDATED_BY
+					 ) = (
+					 SELECT HEI.POST_NO,
+		             HEI.RESIGN_DATE-1,
+		             HEI.EXP_INSIDE_NO,
+		             SYSDATE,
+				  	 #UPDATED_BY#
+					 FROM $TRANS_TABLE$ HEI
+			   WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#)
+			   WHERE HE.PERSON_ID = #PERSON_ID#
+                 AND HE.ACTIVITY = 0
+	 ]]>		
+</update>
+
+<update id="updateHrEmpPositionByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+    		  UPDATE HR_EMP_POSITION HE
+			    SET (
+		             HE.POSITION_NO,
+		             HE.ENDDATE,
+		             HE.E_EXP_INSIDE_NO,
+		             HE.UPDATE_DATE,
+		             HE.UPDATED_BY
+					 ) = (
+					SELECT HEI.POSITION_NO,
+		             HEI.RESIGN_DATE-1,
+		             HEI.EXP_INSIDE_NO,
+		             SYSDATE,
+				  	 #UPDATED_BY#
+  					FROM $TRANS_TABLE$ HEI
+  			   WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+                     )
+			   WHERE HE.PERSON_ID = #PERSON_ID#
+                 AND HE.ACTIVITY = 0                     
+	 ]]>		
+</update>
+
+<update id="updateHrEmpPostGradeByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+          UPDATE HR_EMP_POST_GRADE HE
+			    SET (
+		             HE.POST_GRADE_NO,
+		             HE.ENDDATE,
+		             HE.E_EXP_INSIDE_NO,
+		             HE.UPDATE_DATE,
+		             HE.UPDATED_BY
+					 ) = (
+					SELECT HEI.POST_GRADE_NO,
+		             HEI.START_DATE-1,
+		             HEI.EXP_INSIDE_NO,
+		             SYSDATE,
+				  	 #UPDATED_BY#
+  					FROM $TRANS_TABLE$ HEI
+  			   WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+                     )
+			   WHERE HE.PERSON_ID = #PERSON_ID#
+                 AND HE.ACTIVITY = 0                     
+	 ]]>		
+</update>
+
+<update id="updateHrEmpDeptByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+	          UPDATE HR_EMP_DEPT HE
+				    SET (
+			             HE.DEPTNO,
+			             HE.ENDDATE,
+			             HE.E_EXP_INSIDE_NO,
+			             HE.UPDATE_DATE,
+			             HE.UPDATED_BY
+						 ) = (
+						SELECT HEI.DEPTNO,
+			             HEI.RESIGN_DATE-1,
+			             HEI.EXP_INSIDE_NO,
+			             SYSDATE,
+					  	 #UPDATED_BY#
+	  					FROM $TRANS_TABLE$ HEI
+	  			   WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+             )  
+				   WHERE HE.PERSON_ID = #PERSON_ID#
+			         AND HE.ACTIVITY = 0                
+	 ]]>		
+</update>
+
+<update id="updateHrEmpWorkAreaByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+	          UPDATE HR_EMP_WORK_AREA HE
+				    SET (
+			             HE.WORK_AREA,
+			             HE.ENDDATE,
+			             HE.E_EXP_INSIDE_NO,
+			             HE.UPDATE_DATE,
+			             HE.UPDATED_BY
+						 ) = (
+						SELECT HEI.WORK_AREA,
+			             HEI.START_DATE-1,
+			             HEI.EXP_INSIDE_NO,
+			             SYSDATE,
+					  	     #UPDATED_BY#
+	  					FROM $TRANS_TABLE$ HEI
+	  			   WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+             )  
+				   WHERE HE.PERSON_ID = #PERSON_ID#
+			         AND HE.ACTIVITY = 0                
+	 ]]>		
+</update>
+
+<update id="updateHrEmpPayStepByExpInsideNo" parameterClass="linkMap">
+	<![CDATA[
+	          UPDATE HR_EMP_PAYSTEP HE
+				    SET (
+			             HE.PAYS_TEP,
+			             HE.ENDDATE,
+			             HE.E_EXP_INSIDE_NO,
+			             HE.UPDATE_DATE,
+			             HE.UPDATED_BY
+						 ) = (
+						SELECT HEI.PAY_STEP,
+			             HEI.START_DATE-1,
+			             HEI.EXP_INSIDE_NO,
+			             SYSDATE,
+					  	 #UPDATED_BY#
+	  					FROM HR_EXPERIENCE_INSIDE HEI
+	  			   WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+             )  
+				   WHERE HE.PERSON_ID = #PERSON_ID#
+			         AND HE.ACTIVITY = 0            
+	 ]]>		
+</update>
+
+<insert id="insertHrEmpPostByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_POST HE
+			  (HE.PERSON_ID,
+			   HE.POST_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.POST_NO,
+			         SYSDATE,
+			         HEI.EXP_INSIDE_NO,
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#           
+	]]>		
+</insert>
+
+<insert id="insertHrEmpPositionByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_POSITION HE
+			  (HE.PERSON_ID,
+			   HE.POSITION_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.POSITION_NO,
+			         SYSDATE,
+			         HEI.EXP_INSIDE_NO,
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#         
+	]]>		
+</insert>
+
+<insert id="insertHrEmpPostGradeByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[              
+			INSERT INTO HR_EMP_POST_GRADE HE
+			  (HE.PERSON_ID,
+			   HE.POST_GRADE_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.POST_GRADE_NO,
+			         SYSDATE,
+			         HEI.EXP_INSIDE_NO,
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#        
+	]]>		
+</insert>
+
+<insert id="insertHrEmpDeptByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_DEPT HE
+			  (HE.PERSON_ID,
+			   HE.DEPTNO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.DEPTNO,
+			         SYSDATE,
+			         HEI.EXP_INSIDE_NO,
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>		
+</insert>
+
+<insert id="insertHrEmpDutyByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_DUTY HE
+			  (HE.PERSON_ID,
+			   HE.DUTY_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.DUTY_NO,
+			         SYSDATE,
+			         HEI.EXP_INSIDE_NO,
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>		
+</insert>
+
+<insert id="insertHrEmpWorkAreaByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_WORK_AREA HE
+			  (HE.PERSON_ID,
+			   HE.WORK_AREA,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.WORK_AREA,
+			         SYSDATE,
+			         HEI.EXP_INSIDE_NO,
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#            
+	]]>		
+</insert>
+
+<insert id="insertHrEmpInfoFromHrEmpInfoTemp" parameterClass="linkMap">
+	<![CDATA[
+			INSERT INTO HR_EMP_PA_INFO HI
+				  (HI.BANK_ID,
+				   HI.PERSON_ID,
+				   HI.CARD_NO,
+				   HI.CARD_NAME,
+				   HI.CALC_FLAG,
+				   HI.ACTIVITY,
+				   HI.IS_CALC_FLAG,
+				   HI.ORDERNO,
+				   HI.BN_CALC_FLAG)
+				  SELECT HIT.BANK_ID,
+				         HIT.PERSON_ID,
+				         HIT.CARD_NO,
+				         HIT.CARD_NAME,
+				         HIT.CALC_FLAG,
+				         HIT.ACTIVITY,
+				         HIT.IS_CALC_FLAG,
+				         HIT.ORDERNO,
+				         HIT.BN_CALC_FLAG
+				    FROM HR_EMP_PA_INFO_TEMP HIT
+				   WHERE HIT.EXP_INSIDE_NO = #EXP_INSIDE_NO#       	
+    ]]>
+</insert>
+
+<insert id="insertHrEmpPayStepByExpInsideNo" parameterClass="linkMap"> 
+	<![CDATA[              
+		      INSERT INTO HR_EMP_PAYSTEP HE
+					  (HE.PERSON_ID,
+					   HE.PAYS_TEP,
+					   HE.STARTDATE,
+					   HE.S_EXP_INSIDE_NO,
+					   CREATE_DATE,
+					   CREATED_BY,
+					   ACTIVITY)
+					  SELECT HEI.PERSON_ID,
+					         HEI.PAY_STEP,
+					         SYSDATE,
+					         HEI.EXP_INSIDE_NO,
+					         SYSDATE,
+					         #CREATED_BY#,
+					         0
+					    FROM HR_EXPERIENCE_INSIDE HEI
+					   WHERE HEI.PAY_STEP = #EXP_INSIDE_NO#                
+	]]>		
+</insert>
+
+<!-- 将HR_EMPLOYEE_TEMP的信息同步到HR_EMPLOYEE -->
+<insert id="insertHrPersonalInfoFromHrPersonalInfoTemp" parameterClass="linkMap">
+	<![CDATA[
+			INSERT INTO HR_PERSONAL_INFO HE 
+			  (		  HE.PERSON_ID,
+			          HE.SEXCODE,
+			          HE.DOB,
+			          HE.NATION_CODE,
+			          HE.NATIONALITY_CODE,
+			          HE.IDCARD_NO,
+			          HE.EMAIL,
+			          HE.HOME_ADDRESS,
+			          HE.REG_TYPE_CODE,
+			          HE.REG_PLACE,
+			          HE.HOME_PHONE,
+			          HE.CELLPHONE,
+			          HE.ORDERNO,
+			          HE.CREATE_DATE,
+			          HE.CREATED_BY,
+			          HE.ACTIVITY,
+			          HE.INSURANCE_TYPE_CODE,
+			          HE.RECRUITMENT_SOURCE_TYPE,
+			          HE.FINAL_SUBJECT,
+			          HE.FINAL_SCHOOL,
+			          HE.FINAL_DEGREE_CODE,
+			          HE.REC_SOURCE_DETAIL_NO)
+			  SELECT  HET.PERSON_ID,
+			          HET.SEXCODE,
+			          HET.DOB,
+			          HET.NATION_CODE,
+			          HET.NATIONALITY_CODE,
+			          HET.IDCARD_NO,
+			          HET.EMAIL,
+			          HET.HOME_ADDRESS,
+			          HET.REG_TYPE_CODE,
+			          HET.REG_PLACE,
+			          HET.HOME_PHONE,
+			          HET.CELLPHONE,
+			          HET.ORDERNO,
+			          HET.CREATE_DATE,
+			          HET.CREATED_BY,
+			          HET.ACTIVITY,
+			          HET.INSURANCE_TYPE_CODE,
+			          HET.RECRUITMENT_SOURCE_TYPE,
+			          HET.FINAL_SUBJECT,
+			          HET.FINAL_SCHOOL,
+			          HET.FINAL_DEGREE_CODE,
+			          HET.REC_SOURCE_DETAIL_NO
+			    FROM HR_PERSONAL_INFO_TEMP HET
+			   WHERE HET.EXP_INSIDE_NO = #EXP_INSIDE_NO#			
+    ]]>
+</insert>
+
+<!-- 将HR_EMPLOYEE_TEMP的信息同步到HR_EMPLOYEE -->
+<insert id="insertHrEmployeeFromHrEmployeeTemp" parameterClass="linkMap">
+	<![CDATA[
+			INSERT INTO HR_EMPLOYEE HE
+			  (		HE.EMPID,																					
+		            HE.CHINESE_PINYIN,
+		            HE.ENGLISH_NAME,
+		            HE.POSITION_NO,
+		            HE.DUTY_NO,
+		            HE.POST_NO,
+		            HE.POST_GRADE_NO,
+		            HE.STATUS_CODE,
+		            HE.JOIN_TYPE_CODE,
+		            HE.CREATE_DATE,
+		            HE.CREATED_BY,
+		            HE.ORDERNO,
+		            HE.ACTIVITY,
+		            HE.EMP_TYPE_CODE,
+		            HE.CPNY_ID,
+		            HE.PERSON_ID,
+		            HE.DEPTNO,
+		            HE.LOCAL_NAME,
+		            HE.JOIN_COMPANY_DATE,
+		            HE.WORK_AREA,
+		            HE.BEFORE_END_PROBATION_DATE,
+		            HE.NOW_DEPARTMENT_DATE,
+		            HE.EMP_OFFICE,
+		            HE.JOIN_BLOC_DATE,
+		            HE.CONTRACT_TYPE,
+		            HE.WORKING_TIME,
+		            HE.WHETHER_FOREIGNERS,
+		            HE.IN_THE_DIFFERENCE,
+		            HE.WHETHER_COMMUNIST,
+		            HE.ANMELDEN_PROVINCE_CODE,
+		            HE.JOB_TYPE,
+		            HE.DATE_STARTED,
+		            HE.SOCIAL_SECURITY_AREA,
+		            HE.EMPLOYMENT_TYPE,
+		            HE.GRADE_LEVEL,
+		            HE.DISABLED_OR_NOT,
+				    HE.WHETHER_THE_UNION_MEMBERS,
+		            HE.PRESENT_ADDRESS_PROVINCE_CODE)
+			  SELECT HET.EMPID,																					
+		           HET.CHINESE_PINYIN,
+		            HET.ENGLISH_NAME,
+		            HET.POSITION_NO,
+		            HET.DUTY_NO,
+		            HET.POST_NO,
+		            HET.POST_GRADE_NO,
+		            HET.STATUS_CODE,
+		            HET.JOIN_TYPE_CODE,
+		            HET.CREATE_DATE,
+		            HET.CREATED_BY,
+		            HET.ORDERNO,
+		            HET.ACTIVITY,
+		            HET.EMP_TYPE_CODE,
+		            HET.CPNY_ID,
+		            HET.PERSON_ID,
+		            HET.DEPTNO,
+		            HET.LOCAL_NAME,
+		            HET.JOIN_COMPANY_DATE,
+		            HET.WORK_AREA,
+		            HET.BEFORE_END_PROBATION_DATE,
+		            HET.NOW_DEPARTMENT_DATE,
+		            HET.EMP_OFFICE,
+		            HET.JOIN_BLOC_DATE,
+		            HET.CONTRACT_TYPE,
+		            HET.WORKING_TIME,
+		            HET.WHETHER_FOREIGNERS,
+		            HET.IN_THE_DIFFERENCE,
+		            HET.WHETHER_COMMUNIST,
+		            HET.ANMELDEN_PROVINCE_CODE,
+		            HET.JOB_TYPE,
+		            HET.DATE_STARTED,
+		            HET.SOCIAL_SECURITY_AREA,
+		            HET.EMPLOYMENT_TYPE,
+		            HET.GRADE_LEVEL,
+		            HET.DISABLED_OR_NOT,
+				    HET.WHETHER_THE_UNION_MEMBERS,
+		            HET.PRESENT_ADDRESS_PROVINCE_CODE
+			    FROM HR_EMPLOYEE_TEMP HET
+			   WHERE HET.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+		  ]]>
+</insert>
+
+<select id="getSyUserSeqNextVal" parameterClass="linkMap" resultClass="int">
+    <![CDATA[				     
+            SELECT SY_USER_SEQ.NEXTVAL FROM DUAL
+    ]]>
+</select>
+
+<insert id="insertSyUserForForEntryTrans" parameterClass="linkMap"> 
+	<![CDATA[
+		INSERT INTO
+			  SY_USER
+			  (
+			    USER_NO,
+			    PERSON_ID,
+			    CPNY_ID,
+			    USER_NAME,
+			    PASSWORD,
+			    SPECIAL_PARAM,
+			    CREATE_DATE,
+			    CREATED_BY,
+			    ORDERNO,
+			    ACTIVITY
+			  )
+			  VALUES
+			  (
+			    #USER_NO#,
+			    #PERSON_ID#,
+			    #CPNY_ID#,
+			    #EMPID#,
+			    (SELECT NVL(NVL(IDCARD_NO, PASSPORT_NO), #EMPID#)
+			       FROM HR_PERSONAL_INFO_TEMP
+			      WHERE PERSON_ID = (SELECT PERSON_ID
+			                          FROM Hr_Employee
+			                         WHERE CPNY_ID = #CPNY_ID#
+			                           AND EMPID = #EMPID#)),
+			    'general',
+			    SYSDATE,
+			    #CREATED_BY#,
+			    (SELECT NVL(MAX(ORDERNO),0)+1 FROM SY_USER),
+			    1
+			  )
+		]]>		
+</insert>
+
+<insert id="insertSyUserRelationForEntryTrans" parameterClass="linkMap">
+	<![CDATA[
+			INSERT INTO SY_USER_RELATION SUR
+			  (USER_NO,
+			   ROLE_GROUP_NO,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ORDERNO,
+			   ACTIVITY)
+			VALUES
+			  (
+			  #USER_NO:VARCHAR#,
+			  #ROLE_GROUP_NO:VARCHAR#,
+			  SYSDATE,
+			  #CREATED_BY:VARCHAR#,
+			  (SELECT NVL(MAX(ORDERNO),0)+1 FROM SY_USER_RELATION),
+			  1
+			  )    	
+    ]]>
+</insert>
+
+<!-- 通过发令NO获得发令和当前决裁者信息(入职不用) -->
+<select id="getExpInsideAndHrAffirmByNo" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.TRANS_CODE,
+			       HEI.PERSON_ID,
+			       HEI.POST_GRADE_NO,
+			       HEI.POSITION_NO,
+			       HEI.START_DATE,
+			       HEI.END_DATE,
+			       HEI.REMARK,
+			       HEI.ORDERNO,
+			       HEI.ACTIVITY,
+			       HEI.STATUS_CODE,
+			       HEI.POST_NO,
+			       HEI.DEPTNO,
+			       HEI.DUTY_NO,
+			       HEI.WORK_AREA,
+			       HEI.OLD_POST_GRADE_NO,
+			       HEI.PAY_STEP,
+			       HEI.AGENT_POST_GRADE_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HE.EMPID,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.ACTIVITY,
+			       HA.AFFIRM_REMARK
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HEI.CURRENT_AFFIRM_ID = HA.AFFIRMOR_ID
+			   AND HEI.PERSON_ID = HE.PERSON_ID
+	]]>		
+</select>
+
+<!-- 通过发令NO获得发令和当前决裁者信息(入职用) -->
+<select id="getExpInsideAndHrAffirmByNoForEntryTrans" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.TRANS_CODE,
+			       HEI.PERSON_ID,
+			       HEI.POST_GRADE_NO,
+			       HEI.POSITION_NO,
+			       HEI.START_DATE,
+			       HEI.END_DATE,
+			       HEI.REMARK,
+			       HEI.ORDERNO,
+			       HEI.ACTIVITY,
+			       HEI.STATUS_CODE,
+			       HEI.POST_NO,
+			       HEI.DEPTNO,
+			       HEI.DUTY_NO,
+			       HEI.WORK_AREA,
+			       HEI.OLD_POST_GRADE_NO,
+			       HEI.PAY_STEP,
+			       HEI.AGENT_POST_GRADE_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HE.EMPID,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_FLAG,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.ACTIVITY,
+			       HA.AFFIRM_REMARK
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE_TEMP     HE
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+			   AND HEI.CURRENT_AFFIRM_ID = HA.AFFIRMOR_ID
+			   AND HEI.PERSON_ID = HE.PERSON_ID
+	]]>		
+</select>
+
+<!-- 转正发令生效时修改人员信息 start 入职用 -->
+<update id="updateHrEmployeeForTrans" parameterClass="linkMap">
+	<![CDATA[
+            UPDATE HR_EMPLOYEE HR
+			   SET HR.STATUS_CODE = '14891',
+			       HR.EMP_OFFICE         = '15119',
+			       HR.JOIN_COMPANY_DATE  = TO_DATE(#START_DATE#,'YYYY-MM-DD'),
+			       HR.UPDATE_DATE        = SYSDATE,
+			       HR.UPDATED_BY         = #UPDATED_BY#
+			 WHERE HR.PERSON_ID = #PERSON_ID#
+	 ]]>		
+</update>
+<!-- 转正发令生效时修改人员信息 end   -->
+<!-- 停职/复职发令生效时修改人员信息 start -->
+<update id="updateHrEmployeeForSuspension" parameterClass="linkMap">
+    <isEmpty property="RELATION_EXP_INSIDE_NO"> 
+	   <![CDATA[
+			UPDATE HR_EMPLOYEE HR
+			   SET HR.STATUS_CODE        = '1377',
+			       HR.UPDATE_DATE        = SYSDATE,
+			       HR.UPDATED_BY         = #UPDATED_BY#
+			 WHERE HR.PERSON_ID = #PERSON_ID#
+	    ]]>
+	 </isEmpty>
+	 
+	 <isNotEmpty property="RELATION_EXP_INSIDE_NO"> 	
+	 	<![CDATA[
+			UPDATE HR_EMPLOYEE HR
+			   SET HR.STATUS_CODE        = '1375',
+			       HR.UPDATE_DATE        = SYSDATE,
+			       HR.UPDATED_BY         = #UPDATED_BY#
+			 WHERE HR.PERSON_ID = #PERSON_ID#
+	 ]]>
+	</isNotEmpty>	
+</update>
+<!-- 停职/复职发令生效时修改人员信息 end   -->
+<!-- 转正发令生效时修改人员信息 start,14891对应在职 -->
+<update id="updateHrEmployeeForProbation" parameterClass="linkMap">
+	<isEqual prepend="" property="PRO_TRANS_FLAG" compareValue="1">
+		<![CDATA[
+		UPDATE HR_EMPLOYEE HR
+		   SET HR.STATUS_CODE        = 1374,
+		       HR.emp_type_code      = #EMP_TYPE_CODE#,
+		       HR.END_PROBATION_DATE = #PROBATION_DATE#,
+		       HR.UPDATE_DATE        = SYSDATE,
+		       HR.UPDATED_BY         = #UPDATED_BY#
+		 WHERE HR.PERSON_ID = #PERSON_ID#
+		 ]]>		
+	</isEqual>
+	<isEqual prepend="" property="PRO_TRANS_FLAG" compareValue="2">
+		<![CDATA[
+		UPDATE HR_EMPLOYEE HR
+		   SET HR.STATUS_CODE        = 14891,
+		       HR.emp_type_code      = #EMP_TYPE_CODE#,
+		       HR.END_PROBATION_DATE = #PROBATION_DATE#,
+		       HR.Date_Started       = #DATE_STARTED#,
+		       HR.UPDATE_DATE        = SYSDATE,
+		       HR.UPDATED_BY         = #UPDATED_BY#
+		 WHERE HR.PERSON_ID = #PERSON_ID#	
+		 ]]>	
+	</isEqual>
+	<isEqual prepend="" property="PRO_TRANS_FLAG" compareValue="3">
+		<![CDATA[
+		UPDATE HR_EMPLOYEE HR
+		   SET HR.STATUS_CODE        = 14891,
+		       HR.emp_type_code      = #EMP_TYPE_CODE#,
+		       HR.END_PROBATION_DATE = #PROBATION_DATE#,		       
+		       HR.UPDATE_DATE        = SYSDATE,
+		       HR.UPDATED_BY         = #UPDATED_BY#
+		 WHERE HR.PERSON_ID = #PERSON_ID#	
+		 ]]>	
+	</isEqual>
+</update>
+<!-- 转正发令生效时修改人员信息 end   -->
+<!-- 离职发令生效时修改人员信息 start -->
+<update id="updateHrEmployeeForResignation" parameterClass="linkMap">
+	<![CDATA[
+			UPDATE HR_EMPLOYEE HR
+			   SET HR.STATUS_CODE        = '1375',
+			       HR.EMP_OFFICE         = '15120',
+			       HR.DATE_LEFT          = #RESIGN_DATE#,
+			       HR.SETTLEMENT_DATE    = #SETTLEMENT_DATE#,
+			       HR.UPDATE_DATE        = SYSDATE,
+			       HR.UPDATED_BY         = #UPDATED_BY#
+			 WHERE HR.PERSON_ID = #PERSON_ID#
+	 ]]>		
+</update>
+<!-- 离职发令生效时修改人员信息 end   -->
+
+<!-- 获得当前法人默认入职权限组NO start   -->
+<select id="getEntryRoleGroupNoByCpnyId" parameterClass="linkMap" resultClass="string" remapResults="true" > 
+	<![CDATA[
+			 SELECT G.ROLE_GROUP_NO
+			   FROM SY_ROLE_GROUP G
+			  WHERE G.CPNY_ID = #CPNY_ID#
+			    AND G.JOIN_DEFAULT = '1'			   
+    ]]>		
+</select>
+<!-- 获得当前法人默认入职权限组NO end   -->
+
+	<update id="updatePaBasicData" parameterClass="linkMap">
+		<![CDATA[
+	          UPDATE PA_BASIC_DATA PBD
+				 SET PBD.END_DATE = TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')-1,
+				 	 PBD.ACTIVITY = 0
+			   WHERE PBD.PERSON_ID = #PERSON_ID:VARCHAR#
+			     AND PBD.END_DATE IS NULL
+	 	]]>		
+	</update>	
+	
+	<insert id="insertPaBasicData" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_BASIC_DATA(
+			   BASIC_DATA_NO,
+		       PARAM_NO,
+		       PERSON_ID,
+		       RETURN_VALUE,
+		       START_DATE,
+		       ORDERNO,
+		       ACTIVITY,
+		       CPNY_ID,
+		       CREATE_DATE,
+		       CREATED_BY
+		      )
+		      VALUES(
+		        PA_BASE_DATA_SEQ.NEXTVAL,
+		      	(SELECT PB.PARAM_NO FROM PA_BASIC_ITEM_PARAM PB WHERE PB.ITEM_NO=#ITEM_NO:VARCHAR# AND PB.CPNY_ID = #CPNY_ID:VARCHAR#),
+		      	#PERSON_ID:VARCHAR#,
+		      	#RETURN_VALUE:VARCHAR#,
+		      	TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD'),
+		      	(SELECT NVL(MAX(ORDERNO),0) + 1 FROM PA_BASIC_DATA),
+		      	1,
+		      	#CPNY_ID:VARCHAR#,
+		      	SYSDATE,
+		      	#CREATED_BY:VARCHAR#
+		      )     
+		]]>		
+	</insert>
+
+<!-- 取当前发令生效时间之后的最近的一条记录 -->
+<select id="getLatestEmpDataInfoAfterEffectDate" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT MAX(T.PERSON_ID) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS PERSON_ID,
+			       MAX(T.STARTDATE) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE ASC) AS START_DATE,
+			       MAX(T.ENDDATE) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE ASC) AS ENDDATE,
+			       MAX(T.S_EXP_INSIDE_NO) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE ASC) AS S_EXP_INSIDE_NO,
+			       MAX(T.E_EXP_INSIDE_NO) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE ASC) AS E_EXP_INSIDE_NO,
+			       MAX(T.ACTIVITY) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE ASC) AS ACTIVITY
+			  FROM $HR_EMP_TABLE$ T
+			 WHERE T.PERSON_ID = #PERSON_ID#
+			   AND T.STARTDATE > TO_DATE(#START_DATE#,'YYYY-MM-DD')
+	]]>		
+</select>
+
+<!-- 取当前发令生效时间之前的最近的一条记录 -->
+<select id="getLatestEmpDataInfoBeforeEffectDate" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT MAX(T.PERSON_ID) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS PERSON_ID,
+			       MAX(T.STARTDATE) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS START_DATE,
+			       MAX(T.ENDDATE) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS ENDDATE,
+			       MAX(T.S_EXP_INSIDE_NO) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS S_EXP_INSIDE_NO,
+			       MAX(T.E_EXP_INSIDE_NO) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS E_EXP_INSIDE_NO,
+			       MAX(T.ACTIVITY) KEEP(DENSE_RANK FIRST ORDER BY T.STARTDATE DESC) AS ACTIVITY
+			  FROM $HR_EMP_TABLE$ T
+			 WHERE T.PERSON_ID = #PERSON_ID#
+			   AND T.STARTDATE <= TO_DATE(#START_DATE#,'YYYY-MM-DD')
+	]]>		
+</select>
+
+<update id="updateHrEmpTableInfo" parameterClass="linkMap">
+	<![CDATA[
+		    UPDATE $HR_EMP_TABLE$ H
+			   SET H.E_EXP_INSIDE_NO = #E_EXP_INSIDE_NO#,
+			       H.ENDDATE         = TO_DATE(#START_DATE#,'YYYY-MM-DD')-1,
+			       H.UPDATE_DATE     = SYSDATE,
+			       H.UPDATED_BY      = #UPDATED_BY#,
+			       H.ACTIVITY        = #ACTIVITY#
+			 WHERE H.PERSON_ID = #PERSON_ID#
+			   AND H.S_EXP_INSIDE_NO = #S_EXP_INSIDE_NO#              
+	]]>		
+</update>
+
+<insert id="insertHrEmpDeptInfo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_DEPT HE
+			  (HE.PERSON_ID,
+			   HE.DEPTNO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+	]]>			   
+	<isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[		   
+			   HE.ENDDATE,
+			   HE.E_EXP_INSIDE_NO,
+    	    ]]>
+	</isNotEmpty>			   
+			   HE.CREATE_DATE,
+			   HE.CREATED_BY,
+			   HE.ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.DEPTNO,
+			         HEI.START_DATE,
+			         HEI.EXP_INSIDE_NO,
+	 <isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[			         
+			         #ENDDATE#-1,
+			         #E_EXP_INSIDE_NO#,
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[		         
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>		
+
+</insert>
+
+<insert id="insertHrEmpDutyInfo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_DUTY HE
+			  (HE.PERSON_ID,
+			   HE.DUTY_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+	]]>			   
+	<isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[		   
+			   HE.ENDDATE,
+			   HE.E_EXP_INSIDE_NO,
+    	    ]]>
+	</isNotEmpty>			   
+			   HE.CREATE_DATE,
+			   HE.CREATED_BY,
+			   HE.ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.DUTY_NO,
+			         HEI.START_DATE,
+			         HEI.EXP_INSIDE_NO,
+	 <isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[			         
+			         #ENDDATE#-1,
+			         #E_EXP_INSIDE_NO#,
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[		         
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>			
+</insert>
+
+<insert id="insertHrEmpPositionInfo" parameterClass="linkMap">
+	<![CDATA[
+			INSERT INTO HR_EMP_POSITION HE
+			  (HE.PERSON_ID,
+			   HE.POSITION_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+	]]>			   
+	<isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[		   
+			   HE.ENDDATE,
+			   HE.E_EXP_INSIDE_NO,
+    	    ]]>
+	</isNotEmpty>			   
+			   HE.CREATE_DATE,
+			   HE.CREATED_BY,
+			   HE.ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.POSITION_NO,
+			         HEI.START_DATE,
+			         HEI.EXP_INSIDE_NO,
+	 <isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[			         
+			         #ENDDATE#-1,
+			         #E_EXP_INSIDE_NO#,
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[		         
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>		 	
+</insert>
+
+<insert id="insertHrEmpPostInfo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_POST HE
+			  (HE.PERSON_ID,
+			   HE.POST_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+	]]>			   
+	<isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[		   
+			   HE.ENDDATE,
+			   HE.E_EXP_INSIDE_NO,
+    	    ]]>
+	</isNotEmpty>			   
+			   HE.CREATE_DATE,
+			   HE.CREATED_BY,
+			   HE.ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.POST_NO,
+			         HEI.START_DATE,
+			         HEI.EXP_INSIDE_NO,
+	 <isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[			         
+			         #ENDDATE#-1,
+			         #E_EXP_INSIDE_NO#,
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[		         
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>			
+</insert>
+
+<insert id="insertHrEmpPostGradeInfo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_POST_GRADE HE
+			  (HE.PERSON_ID,
+			   HE.POST_GRADE_NO,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+	]]>			   
+	<isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[		   
+			   HE.ENDDATE,
+			   HE.E_EXP_INSIDE_NO,
+    	    ]]>
+	</isNotEmpty>			   
+			   HE.CREATE_DATE,
+			   HE.CREATED_BY,
+			   HE.ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.POST_GRADE_NO,
+			         HEI.START_DATE,
+			         HEI.EXP_INSIDE_NO,
+	 <isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[			         
+			         #ENDDATE#-1,
+			         #E_EXP_INSIDE_NO#,
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[		         
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>		
+</insert>
+
+<insert id="insertHrEmpWorkAreaInfo" parameterClass="linkMap"> 
+	<![CDATA[
+			INSERT INTO HR_EMP_WORK_AREA HE
+			  (HE.PERSON_ID,
+			   HE.WORK_AREA,
+			   HE.STARTDATE,
+			   HE.S_EXP_INSIDE_NO,
+	]]>			   
+	<isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[		   
+			   HE.ENDDATE,
+			   HE.E_EXP_INSIDE_NO,
+    	    ]]>
+	</isNotEmpty>			   
+			   HE.CREATE_DATE,
+			   HE.CREATED_BY,
+			   HE.ACTIVITY)
+			  SELECT HEI.PERSON_ID,
+			         HEI.WORK_AREA,
+			         HEI.START_DATE,
+			         HEI.EXP_INSIDE_NO,
+	 <isNotEmpty prepend="" property="ENDDATE">
+		<![CDATA[			         
+			         #ENDDATE#-1,
+			         #E_EXP_INSIDE_NO#,
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[		         
+			         SYSDATE,
+			         #CREATED_BY#,
+			         0
+			    FROM HR_EXPERIENCE_INSIDE HEI
+			   WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#              
+	]]>		
+</insert>
+
+<select id="get" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+             SELECT TO_DATE(#START_DATE#,'YYYY-MM-DD') - TO_DATE(#START_DATE#,'YYYY-MM-DD') FROM DUAL	   
+     ]]>	
+</select>
+
+<!-- 根据发令NO获得转正发令信息 -->
+<select id="getProbationByExpInsideNo" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT H.EXP_INSIDE_NO,
+			       H.PERSON_ID,
+			       H.PROBATION_DATE,
+			       H.TRANS_NO,
+			       H.TRANS_CODE,
+			       H.EMP_TYPE_CODE,
+			       H.CURRENT_AFFIRM_ID
+			  FROM HR_PROBATION h
+			 where h.exp_inside_no = #EXP_INSIDE_NO#				                           		 
+	]]>		
+</select>
+
+<!-- 根据发令NO获得发令信息 -->
+<select id="getResignationByExpInsideNo" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+		      SELECT h.exp_inside_no,
+		             h.person_id,
+		             h.resign_type_code,
+		             h.resign_date,
+		             h.resign_reason,
+		             h.remark,
+		             h.position_no,
+		             h.post_no,
+		             h.deptno,
+		             h.settlement_date,
+		             H.TRANS_NO,
+		             H.TRANS_CODE,
+		             H.SETTLEMENT_DATE,
+		             H.CURRENT_AFFIRM_ID
+		        FROM hr_resignation h
+		       where h.exp_inside_no = #EXP_INSIDE_NO#				                           		 
+	]]>		
+</select>
+
+
+<!-- 根据发令NO获得转正发令信息 -->
+<select id="getTransactionTransByExpInsideNo" parameterClass="linkMap" resultClass="linkMap"> 
+	<![CDATA[
+			SELECT HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.TRANS_CODE,
+			       HEI.PERSON_ID,
+			       HEI.POST_GRADE_NO,
+			       HEI.POSITION_NO,
+			       HEI.START_DATE,
+			       HEI.END_DATE,
+			       HEI.REMARK,
+			       HEI.CREATE_DATE,
+			       HEI.CREATED_BY,
+			       HEI.UPDATE_DATE,
+			       HEI.UPDATED_BY,
+			       HEI.ORDERNO,
+			       HEI.ACTIVITY,
+			       HEI.STATUS_CODE,
+			       HEI.POST_NO,
+			       HEI.DEPTNO,
+			       HEI.DUTY_NO,
+			       HEI.WORK_AREA,
+			       HEI.OLD_POST_GRADE_NO,
+			       HEI.PAY_STEP,
+			       HEI.AGENT_POST_GRADE_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       HEI.OLD_POSITION_NO,
+			       HEI.OLD_POST_NO,
+			       HEI.OLD_DEPTNO,
+			       HEI.OLD_DUTY_NO,
+			       HEI.GRADE_LEVEL,
+			       HEI.PARTTIME_DEPT,
+			       HEI.DEPT_POST_GRADE_NO,
+			       HEI.DEPT_POST_NO,
+			       HEI.PARTTIME_DUTY,
+			       HEI.DEPT_POSITION_NO,
+			       HEI.DETAIL_HR_DIFF,
+			       HEI.SAL_CALCULATE_DATE,
+			       HEI.TRANSFER_ORDER_REASON,
+			       HEI.TRANS_NUM,
+			       HEI.CPNY_ID,
+			       HEI.RELATION_EXP_INSIDE_NO,
+			       HEI.REPLACE_DEPT	,
+				   HEI.REPLACE_POST_GRADE_NO	,
+				   HEI.REPLACE_POST_NO	,
+				   HEI.REPLACE_DUTY	,
+				   HEI.REPLACE_POSITION_NO	,
+			       HEI.POSITIVE_DATES	,
+				   HEI.POSITION_PAUSE_TYPE	,
+				   HEI.RESIGN_TYPE	,
+				   HEI.RESIGN_REASON	,
+				   HEI.TEMP_CPNY	,
+				   HEI.CUR_DEPTNO	,
+				   HEI.CUR_GRADE_LEVEL	,
+				   HEI.WORK_AREA_NAME	,
+				   HEI.PARTTIME_POSITION_NO	,
+				   HEI.PARTTIME_POST_GRADE_NO	,
+			       HEI.PARTTIME_POST_NO	,
+				   HEI.TEMP_DATE	,
+			       #UPDATED_BY:VARCHAR# UPDATED_BY
+			  FROM HR_EXPERIENCE_INSIDE HEI
+			 WHERE  HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO:VARCHAR#				                           		 
+	]]>		
+</select>
+
+	<insert id="savePersonChangeInfo" parameterClass="linkMap">
+		<![CDATA[			
+			INSERT INTO HR_CHANGE_STATUS
+			VALUES
+			  (#PERSON_ID#,
+			   TO_DATE(#START_DATE#, 'YYYY-MM-DD'),
+			   null,
+			   (SELECT STATUS_CODE FROM HR_EMPLOYEE_TEMP WHERE PERSON_ID = #PERSON_ID#))	 
+		]]>
+	</insert>
+	
+	<insert id="savePersonStatus" parameterClass="linkMap">
+		<![CDATA[			
+			INSERT INTO HR_CHANGE_STATUS VALUES (#PERSON_ID#,TO_DATE(#START_DATE#,'YYYY-MM-DD'),null,'1360')	 
+		]]>
+	</insert>
+	<update id="updatePersonStatus" parameterClass="linkMap">
+		<![CDATA[			
+			 UPDATE HR_CHANGE_STATUS SET END_DATE = TO_DATE(#START_DATE#,'YYYY-MM-DD')-1 WHERE  PERSON_ID = #PERSON_ID# AND END_DATE IS NULL
+		]]>
+	</update>
+	
+	<insert id="savePersonStatusl" parameterClass="linkMap">
+		<![CDATA[			
+			INSERT INTO HR_CHANGE_STATUS VALUES (#PERSON_ID#,TO_DATE(#START_DATE#,'YYYY-MM-DD'),null,'15120')	 
+		]]>
+	</insert>
+	<update id="updatePersonStatusl" parameterClass="linkMap">
+		<![CDATA[			
+			 UPDATE HR_CHANGE_STATUS SET END_DATE = TO_DATE(#START_DATE#,'YYYY-MM-DD')-1 WHERE  PERSON_ID = #PERSON_ID# AND END_DATE IS NULL
+		]]>
+	</update>
+	
+	
+	<select id="getLastRecord" parameterClass="linkMap" resultClass="linkMap"> 
+		<![CDATA[			
+			 SELECT  TO_CHAR(T.R_TIME,'YYYY-MM-DD HH:MI:SS') LAST_RECORD FROM (SELECT * FROM AR_MAC_RECORDS_C04 A WHERE A.PERSON_ID=#PERSON_ID#  ORDER BY A.R_TIME DESC ) T WHERE ROWNUM <2
+		]]>
+	</select>
+	
+	<update id="changeLastRecord" parameterClass="linkMap">
+		<![CDATA[			
+			 UPDATE HR_RESIGNATION H SET H.LAST_CARD_DATE = TO_DATE(#LAST_RECORD#,'YYYY-MM-DD HH:MI:SS') WHERE H.PERSON_ID=#PERSON_ID#
+		]]>
+	</update>
+	
+	<update id="specialUpdateForC01ForEmp" parameterClass="linkMap">
+		<![CDATA[			
+			UPDATE HR_EMPLOYEE T
+   				SET T.DATE_STARTED = TO_DATE(#START_DATE#,'YYYY-MM-DD'), T.POST_GRADE_NO = '16078',T.END_PROBATION_DATE=TO_DATE(#START_DATE#,'YYYY-MM-DD')
+			 WHERE T.CPNY_ID = 'C04'
+  				 AND T.PERSON_ID = #PERSON_ID#
+   				
+		]]>
+	</update>
+	<select id="getPayStepTransAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HE.WORK_AREA,
+			       WORK_AREA.CONTENT WORK_AREA_NAME,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       HEI.CURRENT_AFFIRM_ID,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HE.JOIN_TYPE_CODE,
+			       JOIN_TYPE.CONTENT JOIN_TYPE_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HEI.DEPTNO NEW_DEPTNO,
+			       NEW_HDN.CONTENT NEW_DEPT_NAME,
+			       HEI.POSITION_NO NEW_POSITION_NO,
+			       NEW_POSITION.CONTENT NEW_POSITION_NAME,
+			       HEI.POST_NO NEW_POST_NO,
+			       NEW_POST.CONTENT NEW_POST_NAME,
+			       HEI.POST_GRADE_NO NEW_POST_GRADE_NO,
+			       NEW_POST_GRADE.CONTENT NEW_POST_GRADE_NAME,
+			       HEI.WORK_AREA NEW_WORK_AREA,
+			       NEW_WAOK_AREA.CONTENT NEW_WAOK_AREA_NAME,
+			       TRANS_N.CONTENT TRANS_TYPE_NAME,
+			       dis_dept.content DEPT_DISTINGUISH_NAME,
+			       HA.HR_AFFIRM_NO,
+			       HA.AFFIRM_LEVEL,
+			       HA.AFFIRMOR_ID,
+			       HA.AFFIRM_FLAG,
+			       SY1.CONTENT   PAY_STEP_NAME,
+			       SY2.CONTENT   OLD_POST_GRADE_NAME,
+			       NSY1.CONTENT  NEW_PAY_STEP_NAME,
+			       NSY2.CONTENT  NEW_OLD_POST_GRADE_NAME,
+			       HE.PAY_STEP   PAY_STEP_NO,
+			       HE.OLD_POST_GRADE_NO,
+			       HEI.PAY_STEP  NEW_PAY_STEP_NO,
+			       HEI.OLD_POST_GRADE_NO NEW_OLD_POST_GRADE_NO
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       JOIN_TYPE,
+			       SY_GLOBAL_NAME       POSITION,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POST_GRADE,
+			       SY_GLOBAL_NAME       WORK_AREA,
+			       SY_GLOBAL_NAME       NEW_WAOK_AREA,
+			       HR_DEPARTMENT_NAME   NEW_HDN,
+			       SY_GLOBAL_NAME       NEW_POSITION,
+			       SY_GLOBAL_NAME       NEW_POST,
+			       SY_GLOBAL_NAME       NEW_POST_GRADE,
+			       SY_GLOBAL_NAME       TRANS_N,
+			       SY_GLOBAL_NAME       DIS_DEPT,
+			       SY_GLOBAL_NAME       SY1,
+			       SY_GLOBAL_NAME       SY2,
+			       SY_GLOBAL_NAME       NSY1,
+			       SY_GLOBAL_NAME       NSY2,
+                   HR_DEPARTMENT        HD,
+			       HR_AFFIRM            HA
+			 WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+			   AND HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.JOIN_TYPE_CODE = JOIN_TYPE.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HE.WORK_AREA = WORK_AREA.NO(+)
+			   AND HEI.WORK_AREA = NEW_WAOK_AREA.NO(+)
+			   AND HEI.DEPTNO = NEW_HDN.DEPTNO(+)
+			   AND HEI.POSITION_NO = NEW_POSITION.NO(+)
+			   AND HEI.POST_NO = NEW_POST.NO(+)
+			   AND HEI.POST_GRADE_NO = NEW_POST_GRADE.NO(+)
+			   AND HEI.TRANS_CODE = TRANS_N.NO(+)
+			   AND HE.PAY_STEP = SY1.NO(+)
+			   AND HE.OLD_POST_GRADE_NO = SY2.NO(+)
+			   AND HEI.PAY_STEP = NSY1.NO(+)
+			   AND HEI.OLD_POST_GRADE_NO = NSY2.NO(+)
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPT_DISTINGUISH_NO = DIS_DEPT.NO(+)
+			   AND DIS_DEPT.LANGUAGE(+) = #interLanguage#
+			   AND TRANS_N.LANGUAGE(+)= #interLanguage#
+			   AND JOIN_TYPE.LANGUAGE(+) = #interLanguage#
+			   AND POSITION.LANGUAGE(+) = #interLanguage#
+			   AND POST.LANGUAGE(+) = #interLanguage#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND HDN.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POSITION.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POST.LANGUAGE(+) = #interLanguage#
+			   AND NEW_POST_GRADE.LANGUAGE(+) = #interLanguage#
+			   AND NEW_HDN.LANGUAGE(+) = #interLanguage#	
+			   AND WORK_AREA.LANGUAGE(+) = #interLanguage#
+			   AND NEW_WAOK_AREA.LANGUAGE(+) = #interLanguage#
+			   AND SY1.LANGUAGE(+) = #interLanguage#
+			   AND SY2.LANGUAGE(+) = #interLanguage#
+			   AND NSY1.LANGUAGE(+) = #interLanguage#
+			   AND NSY2.LANGUAGE(+) = #interLanguage#
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              		  				   
+    ]]>	
+ 
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HA.AFFIRM_FLAG,HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getPayStepTransAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_AFFIRM            HA,
+			       HR_EMPLOYEE     HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HEI.EXP_INSIDE_NO = HA.EXP_INSIDE_NO	
+			   AND HEI.Current_Affirm_Id = HA.AFFIRMOR_ID
+			   and 0=(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 2)  
+         and 0<(SELECT COUNT(*) FROM hr_affirm hra where hra.exp_inside_no = hei.exp_inside_no
+                and hra.affirm_flag = 0)              
+    ]]>		
+
+    <include refid="searchTransListCondition"/>
+</select>
+	<select id="isFirstChangePayStep"  parameterClass="linkMap" resultClass="int">
+		SELECT COUNT(0) FROM HR_EMP_PAYSTEP HEP WHERE HEP.PERSON_ID=#PERSON_ID#
+		
+	</select>
+	
+<!-- 将HR_EDUCATION_TEMP的信息同步到HR_EDUCATION -->
+<insert id="insertHrEducationFromHrEducationTemp" parameterClass="linkMap">
+	<![CDATA[
+			INSERT INTO HR_EDUCATION HE 
+			  (	HE.EDUC_NO,
+	       		HE.PERSON_ID,
+				HE.INSTITUTION_NAME,
+				HE.SUBJECT_CLASSIFY,
+				HE.SUBJECT,
+				HE.SUBJECT_CLASSIFY_TWO,
+				HE.SUBJECT_SECOND,
+				HE.START_DATE,
+				HE.END_DATE,
+				HE.DEGREE_CODE,
+				HE.SITE_PROVINCE,
+				HE.SITE_CITY,
+				HE.FINAL_DEGREE_WHETHER,
+				HE.CREATED_BY,
+				HE.CREATE_DATE,
+				HE.ACTIVITY,
+				HE.REMARKS)
+			  SELECT  HET.EDUC_NO,
+		       		  HET.PERSON_ID,
+					  HET.INSTITUTION_NAME,
+					  HET.SUBJECT_CLASSIFY,
+					  HET.SUBJECT,
+					  HET.SUBJECT_CLASSIFY_TWO,
+					  HET.SUBJECT_SECOND,
+					  HET.START_DATE,
+					  HET.END_DATE,
+					  HET.DEGREE_CODE,
+					  HET.SITE_PROVINCE,
+					  HET.SITE_CITY,
+					  HET.FINAL_DEGREE_WHETHER,
+					  HET.CREATED_BY,
+					  HET.CREATE_DATE,
+					  HET.ACTIVITY,
+					  HET.REMARKS
+			    FROM HR_EDUCATION_TEMP HET
+			   WHERE HET.EXP_INSIDE_NO = #EXP_INSIDE_NO#			
+    ]]>
+</insert>
+<select id="getHrExperienceInsideSaveByTransCodeByEss" remapResults="true"
+		resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[   
+			select 
+h.exp_inside_no EXPNO,
+(select empid from hr_employee he where he.person_id=h.person_id ) EMPID,
+(select local_name from hr_employee he where he.person_id=h.person_id) LOCAL_NAME,
+h.trans_no   TRANS_ORDER_TYPE1,
+get_global_name(h.trans_no,#LAN#) TRANS_ORDER_TYPE,
+h.trans_code TRANSCODE,
+h.person_id PERSONID,
+h.post_grade_no POST_GRADE_NO1,
+get_global_name(h.post_grade_no,#LAN#) POST_GRADE_NO,
+h.position_no POSITION_NO1,
+get_global_name(h.position_no,#LAN#) POSITION_NO,
+h.start_date   TRANS_ORDER_DATE,
+h.end_date TRANS_ORDER_ENDDATE,
+h.remark REMARK,
+h.create_date CREATE_DATE,
+h.created_by CREATEBY,
+h.update_date UPDATE_DATE,
+h.update_date UPDATE_BY,
+h.orderno ORDERNO,
+h.activity ACTIVITY,
+h.status_code STATUSCODE,
+h.post_no POST_NO1,
+get_global_name(h.post_no,#LAN#) POST_NO,
+h.deptno DEPTNO1,
+get_dept_name(h.deptno,'zh') DEPTNO,
+h.duty_no DUTY_NO1,
+get_global_name(h.duty_no,#LAN#) DUTY_NO,
+h.work_area WORK_AREA_NAME1,
+get_global_name(h.work_area,#LAN#) WORK_AREA_NAME,
+h.old_post_grade_no, 
+h.agent_post_grade_no,
+h.current_affirm_id,
+h.old_position_no,
+h.old_post_no,
+h.old_deptno,
+h.old_duty_no,
+h.GRADE_LEVEL GRADE_LEVEL1,
+get_global_name(h.GRADE_LEVEL,#LAN#) GRADE_LEVEL,
+h.parttime_dept PARTTIME_DEPT,
+h.dept_post_grade_no DEPT_POST_GRADE_NO,
+h.dept_post_no DEPT_POST_NO,
+h.detail_hr_diff DETAIL_HR_DIFF,
+h.sal_calculate_date SAL_CALCULATE_DATE,
+h.transfer_order_reason TRANSFER_ORDER_REASON,
+h.trans_num TRANS_NUM
+from hr_experience_inside h
+where h.created_by=#CREAATDBY:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="TRANSNO">	
+			h.trans_no = #TRANSNO:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">	
+			(select * from hr_employee h where h.person_id  LIKE '%'||#EMPID:VARCHAR#||'%' OR LOCAL_NAME LIKE '%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			 h.start_date> to_date(#START_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			 h.start_date <![CDATA[    <]]> to_date(#END_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			ACTIVITY=#ACTIVITY:VARCHAR#;
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			DEPTNO=#DEPTNO:VARCHAR#
+		</isNotEmpty>
+	</select>
+	<select id="getHrExperienceInsideSaveByTransCodeByEssCnt" remapResults="true"
+		resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[   
+		select count(*) from hr_experience_inside h
+			where h.created_by=#CREAATDBY:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="TRANSNO">	
+			h.trans_no = #TRANSNO:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">	
+			(select * from hr_employee h where h.person_id  LIKE '%'||#EMPID:VARCHAR#||'%' OR LOCAL_NAME LIKE '%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			 h.start_date> to_date(#START_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			 h.start_date <![CDATA[    <]]> to_date(#END_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			ACTIVITY=#ACTIVITY:VARCHAR#;
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			DEPTNO=#DEPTNO:VARCHAR#
+		</isNotEmpty>
+	</select >
+		<select id="getHrExpInsideList" remapResults="true"
+		resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[   
+				SELECT $sql$
+				   H.DEPTNO,	
+				   H.DEPTNO DEPTNO1,	
+			       h.EXP_INSIDE_NO,
+      			   h.ACTIVITY,
+      			   h.CURRENT_AFFIRM_ID,
+      			   HA.AFFIRM_LEVEL
+			from hr_experience_inside h, HR_AFFIRM HA
+			where trans_no =#CODE:VARCHAR#
+             AND HA.AFFIRMOR_ID = #ADMIN_ID:VARCHAR#
+  			 AND H.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+  			 AND H.Activity <> 3
+             AND (HA.affirm_flag > 0 OR H.Current_Affirm_Id = HA.AFFIRMOR_ID)
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID">	 
+			 h.person_id in (select * from (select he.person_id from hr_employee he where he.person_id like '%'|| #EMPID:VARCHAR# ||'%') )
+             or h.person_id in (select * from (select he.person_id from hr_employee he where he.local_name like '%'|| #EMPID:VARCHAR# ||'%') )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			 h.start_date>= to_date(#START_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			 h.end_date <![CDATA[    <=]]> to_date(#END_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			h.ACTIVITY=#ACTIVITY:VARCHAR#
+		</isNotEmpty>
+        <!-- jjy 决裁状态 start -->
+        <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+            <![CDATA[
+            (h.ACTIVITY = 0 
+             AND 
+             0 = (SELECT COUNT(*)
+                    FROM HR_AFFIRM HA
+                   WHERE HA.EXP_INSIDE_NO = H.EXP_INSIDE_NO
+                     AND HA.AFFIRM_FLAG <> 0
+                     AND HA.AFFIRMOR_ID = #ADMIN_ID#
+                     AND H.TRANS_NO = #TRANS_NO#)
+            )
+            ]]>
+        </isEqual>
+        <isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+            <![CDATA[
+            (h.ACTIVITY != 0
+             OR
+             0 < (SELECT COUNT(*)
+                    FROM HR_AFFIRM HA
+                   WHERE HA.EXP_INSIDE_NO = H.EXP_INSIDE_NO
+                     AND HA.AFFIRM_FLAG <> 0
+                     AND HA.AFFIRMOR_ID = #ADMIN_ID#
+                     AND H.TRANS_NO = #TRANS_NO#)
+            )
+            ]]>
+        </isEqual>  
+        <!-- jjy 决裁状态 end -->
+    	<isNotEmpty prepend="AND" property="DEPTNO">
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPTNO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)	    
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BIANHAO">
+			TRANS_NUM=#BIANHAO:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[ 
+			ORDER BY H.START_DATE DESC
+		]]>
+	</select>
+	<select id="getHrExpInsideListCnt" remapResults="true"
+		resultClass="int" parameterClass="linkMap">
+		<![CDATA[   
+				SELECT count(*)
+			from hr_experience_inside h, HR_AFFIRM HA
+			where trans_no =#CODE:VARCHAR#
+			 AND HA.AFFIRMOR_ID = #ADMIN_ID:VARCHAR#
+  			 AND H.EXP_INSIDE_NO = HA.EXP_INSIDE_NO
+  			 AND H.Activity <> 3
+             AND (HA.affirm_flag > 0 OR H.Current_Affirm_Id = HA.AFFIRMOR_ID)
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID">	 
+			 h.person_id in (select * from (select he.person_id from hr_employee he where he.person_id like '%'|| #EMPID:VARCHAR# ||'%') )
+             or h.person_id in (select * from (select he.person_id from hr_employee he where he.local_name like '%'|| #EMPID:VARCHAR# ||'%') )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			 h.start_date>= to_date(#START_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			 h.end_date <![CDATA[    <=]]> to_date(#END_DATE#,'YYYY-MM-DD')	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			h.ACTIVITY=#ACTIVITY:VARCHAR#
+		</isNotEmpty>
+        <!-- jjy 决裁状态 start -->
+        <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+            <![CDATA[
+            (h.ACTIVITY = 0 
+             AND 
+             0 = (SELECT COUNT(*)
+                    FROM HR_AFFIRM HA
+                   WHERE HA.EXP_INSIDE_NO = H.EXP_INSIDE_NO
+                     AND HA.AFFIRM_FLAG <> 0
+                     AND HA.AFFIRMOR_ID = #ADMIN_ID#
+                     AND H.TRANS_NO = #TRANS_NO#)
+            )
+            ]]>
+        </isEqual>
+        <isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+            <![CDATA[
+            (h.ACTIVITY != 0
+             OR
+             0 < (SELECT COUNT(*)
+                    FROM HR_AFFIRM HA
+                   WHERE HA.EXP_INSIDE_NO = H.EXP_INSIDE_NO
+                     AND HA.AFFIRM_FLAG <> 0
+                     AND HA.AFFIRMOR_ID = #ADMIN_ID#
+                     AND H.TRANS_NO = #TRANS_NO#)
+            )
+            ]]>
+        </isEqual>  
+        <!-- jjy 决裁状态 end -->
+		<isNotEmpty prepend="AND" property="DEPTNO">
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPTNO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)	    
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BIANHAO">
+			TRANS_NUM=#BIANHAO:VARCHAR#
+		</isNotEmpty>
+	</select>
+	<select id="getHrExperienceInsideSaveByTransCode" remapResults="true"
+		resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[   
+		select 
+			h.exp_inside_no,
+  h.trans_no TRANS_ORDER_TYPE,
+  h.trans_code,
+  h.person_id,
+  h.post_grade_no,
+  h.position_no,
+  h.start_date TRANS_ORDER_DATE,
+  h.end_date TRANS_ORDER_ENDDATE,
+  h.remark,
+  h.create_date,
+  h.created_by,
+  h.activity,
+  h.status_code,
+  h.post_no,
+  h.deptno,
+  h.duty_no,
+  h.work_area ,
+  h.old_post_grade_no,
+  h.agent_post_grade_no,
+  h.current_affirm_id,
+  h.old_position_no,
+  h.old_post_no,
+  h.old_deptno,
+  h.old_duty_no,
+  h.grade_level,
+  h.parttime_dept,
+  h.dept_post_grade_no,
+  h.dept_post_no,
+  h.parttime_duty,
+  h.dept_position_no,
+  h.detail_hr_diff,
+  h.sal_calculate_date,
+  h.transfer_order_reason,
+  h.trans_num,
+  (select e.local_name from hr_employee e where e.person_id=h.person_id) LOCAL_NAME,
+  (select e.empid from hr_employee e where e.person_id=h.person_id) EMPID
+   from hr_experience_inside_save h
+ 			where TRANS_NO = #CODE:VARCHAR#
+   	]]> 
+   	<isNotEmpty prepend="AND" property="DEPTNO1">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = H.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO1:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+	</isNotEmpty>				
+   	order by h.exp_inside_no desc
+		
+	</select>
+	
+	<!-- 离职时更新 HR_EMPLOYEE 表 -->
+	<update id="updateHrEmpOfficeStatusForTransactionTransDateLeft" parameterClass="linkMap">
+	<![CDATA[
+			 UPDATE HR_EMPLOYEE
+			 SET EMP_OFFICE=#EMP_OFFICE1#,
+			     STATUS_CODE=#STATUS_CODE1#,
+			     DATE_LEFT=TO_DATE(#DATE_LEFT#,'YYYY-MM-DD'),
+			     UPDATE_DATE=SYSDATE,
+			     UPDATED_BY=#UPDATED_BY#
+			 WHERE PERSON_ID = #PERSON_ID#	 
+    ]]> 
+	</update>
+</sqlMap>

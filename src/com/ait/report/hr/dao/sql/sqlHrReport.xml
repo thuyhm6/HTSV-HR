@@ -1,0 +1,1538 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.hr">
+	
+	<procedure id="humanResourcesCal" parameterClass="linkMap">
+		<![CDATA[	
+			{call report_hr_hmc(#year#||#month#)}
+		]]>		  
+	</procedure>   
+    <select id="humanResources" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[  
+		   	SELECT *  FROM REPORT_HR_HMC_TEMP		  	  
+		  ]]>
+    </select>
+    
+    <select id="humanResourcesDetail" remapResults="true" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[  
+		   	SELECT HE.EMPID,
+		   		   HE.CHINESENAME,		   		   	
+		   		   GET_CODE_NAME(HP.SEXCODE) SEX,
+		   		   CASE 
+			          WHEN TO_NUMBER(TO_CHAR(LAST_DAY(TO_DATE(#year#||#month#||'01','YYYYMMDD')),'MMDD')) >= TO_NUMBER(TO_CHAR(HP.DOB,'MMDD')) THEN 
+			              #year#-TO_CHAR(HP.DOB,'YYYY')
+			           ELSE 
+			              #year#-TO_CHAR(HP.DOB,'YYYY')-1
+			          END AS AGE,
+			       NVL(GET_CODE_NAME(HP.BEFORE_DEGREE_CODE),'未填加') DEGREE,
+			       ROUND(MONTHS_BETWEEN(LAST_DAY(TO_DATE(#year#||#month#||'01','YYYYMMDD')),HE.DATE_STARTED)/12,1) AS WORKAGE,
+			       GET_CODE_NAME(HE.EMP_TYPE_CODE) EMPTYPE,
+			       TO_CHAR(HE.DATE_STARTED,'YYYY-MM-DD') DATESTARTED,
+			       DECODE(HE.DATE_LEFT,'',' ',TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD')) DATELEFT
+		    FROM HR_EMPLOYEE HE,HR_PERSONAL_INFO HP
+		    WHERE HP.EMPID = HE.EMPID
+		    AND HE.DATE_STARTED <= LAST_DAY(TO_DATE(#year#||#month#||'01','YYYYMMDD'))
+		    AND ( HE.DATE_LEFT >= TO_DATE(#year#||#month#||'01','YYYYMMDD')
+		     OR HE.DATE_LEFT IS NULL)	  	  
+		  ]]>
+		  <isEmpty property="sortname">
+		  	<![CDATA[
+		 		  ORDER BY HE.DEPTID,HE.EMPID
+		    ]]>
+		  </isEmpty>
+		 
+    </select>
+    
+    <select id="humanResourcesDetailCnt" resultClass="int">
+		<![CDATA[  
+		   	SELECT COUNT(HE.EMPID)		   		   
+		    FROM HR_EMPLOYEE HE,HR_PERSONAL_INFO HP
+		    WHERE HP.EMPID = HE.EMPID
+		    AND HE.DATE_STARTED <= LAST_DAY(TO_DATE(#year#||#month#||'01','YYYYMMDD'))
+		    AND ( HE.DATE_LEFT >= TO_DATE(#year#||#month#||'01','YYYYMMDD')
+		     OR HE.DATE_LEFT IS NULL)	  	  
+		  ]]>
+    </select>
+    
+    <select id="getCertificateEmploymentList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       NVL(NVL(HPP.IDCARD_NO, HPP.PASSPORT_NO), HPP.FOREIGNER_IDCARD_NO) IDCARD_NO,
+			       HE.POSITION_NO,
+			       GG.CONTENT POSITION,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT
+			  FROM HR_EMPLOYEE HE, HR_POSITION HP, SY_GLOBAL_NAME GG,HR_PERSONAL_INFO HPP
+			 WHERE HE.POSITION_NO = HP.POSITION_NO(+)
+			   AND HP.POSITION_NO = GG.NO(+)
+			   AND HE.PERSON_ID = HPP.PERSON_ID(+)
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+	      ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getCertificateEmploymentListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		SELECT COUNT(*) FROM (
+				SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       NVL(NVL(HPP.IDCARD_NO, HPP.PASSPORT_NO), HPP.FOREIGNER_IDCARD_NO) IDCARD_NO,
+			       HE.POSITION_NO,
+			       GG.CONTENT POSITION,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT
+			  FROM HR_EMPLOYEE HE, HR_POSITION HP, SY_GLOBAL_NAME GG,HR_PERSONAL_INFO HPP
+			 WHERE HE.POSITION_NO = HP.POSITION_NO(+)
+			   AND HP.POSITION_NO = GG.NO(+)
+			   AND HE.PERSON_ID = HPP.PERSON_ID(+)
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			)
+		]]>
+	</select>
+	
+	<select id="getPersonRecodeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       NVL(NVL(HPP.IDCARD_NO, HPP.PASSPORT_NO), HPP.FOREIGNER_IDCARD_NO) IDCARD_NO,
+			       HD.DEPTID,
+			       HD.DEPTNO,
+			       HDN.CONTENT DEPARTMENT
+			  FROM HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       HR_PERSONAL_INFO   HPP
+			 WHERE HE.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HE.PERSON_ID = HPP.PERSON_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IDCARD_NO">
+			<![CDATA[
+				(HPP.IDCARD_NO LIKE '%' || #IDCARD_NO:VARCHAR# || '%' OR HPP.FOREIGNER_IDCARD_NO LIKE '%' || #IDCARD_NO:VARCHAR# || '%' OR
+       				HPP.PASSPORT_NO LIKE '%' || #IDCARD_NO:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+	      ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getPersonRecodeListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		SELECT COUNT(*) FROM (
+			SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       NVL(NVL(HPP.IDCARD_NO, HPP.PASSPORT_NO), HPP.FOREIGNER_IDCARD_NO) IDCARD_NO,
+			       HD.DEPTID,
+			       HD.DEPTNO,
+			       HDN.CONTENT DEPARTMENT
+			  FROM HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       HR_PERSONAL_INFO   HPP
+			 WHERE HE.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HE.PERSON_ID = HPP.PERSON_ID(+)	
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IDCARD_NO">
+			<![CDATA[
+				( HPP.IDCARD_NO LIKE '%' || #IDCARD_NO:VARCHAR# || '%' OR HPP.FOREIGNER_IDCARD_NO LIKE '%' || #IDCARD_NO:VARCHAR# || '%' OR
+       				HPP.PASSPORT_NO LIKE '%' || #IDCARD_NO:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			)
+		]]>
+	</select>
+	
+	<select id="getSysdate" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUBSTR(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 0, 4) YEA,
+			       SUBSTR(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 6, 2) MON,
+			       SUBSTR(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 9, 2) DAT,
+			       TO_CHAR(SYSDATE, 'YYYY-MM-DD') DDATE
+			  FROM DUAL
+		]]>
+	</select>
+	
+	<select id="getPersonRecordByPid" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       HE.CPNY_ID,
+			       HD.DEPTID,
+			       HD.DEPTNO,
+			       HDN.CONTENT DEPARTMENT,
+			       HE.POSITION_NO,
+			       POS.CONTENT POSITION,
+			       HE.DUTY_NO,
+			       HUS.CONTENT DUTY,
+			       HPI.NATION_CODE,
+			       NAT.CONTENT NATION,
+			       HPI.SEXCODE,
+			       SEX.CONTENT SEX,
+			       TO_CHAR(HPI.DOB, 'YYYY-MM-DD') DOB,
+			       HPI.MARITAL_STATUS_CODE,
+			       MAR.CONTENT MARITAL,
+			       TO_CHAR(HE.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.EXP_DATE, 'YYYY-MM-DD') EXP_DATE,
+			       HPI.BORNPLACE_CODE,
+			       BOR.CONTENT BORNPLACE,
+			       NVL(NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO), HPI.FOREIGNER_IDCARD_NO) IDCARD_NO,
+			       HPI.HOME_ADDRESS,
+			       HPI.HOME_PHONE,
+			       HPI.REG_TYPE_CODE,
+			       REG.CONTENT REG_TYPE,
+			       HPI.REG_PLACE
+			  FROM HR_EMPLOYEE        HE,
+			       SY_GLOBAL_NAME     POS,
+			       SY_GLOBAL_NAME     HUS,
+			       HR_PERSONAL_INFO   HPI,
+			       SY_GLOBAL_NAME     NAT,
+			       SY_GLOBAL_NAME     SEX,
+			       SY_GLOBAL_NAME     MAR,
+			       SY_GLOBAL_NAME     BOR,
+			       SY_GLOBAL_NAME     REG,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE HE.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.POSITION_NO = POS.NO(+)
+			   AND POS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HE.DUTY_NO = HUS.NO(+)
+			   AND HUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.NATION_CODE = NAT.NO(+)
+			   AND NAT.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.SEXCODE = SEX.NO(+)
+			   AND SEX.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.MARITAL_STATUS_CODE = MAR.NO(+)
+			   AND MAR.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.BORNPLACE_CODE = BOR.NO(+)
+			   AND BOR.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.REG_TYPE_CODE = REG.NO(+)
+			   AND REG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HE.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+	</select>
+	
+	<select id="getRecordEducationList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select *
+			  from (select row_.*, rownum rownum_
+			          from (SELECT HED.PERSON_ID,
+			                       HED.START_DATE START_DATE,
+			                       HED.END_DATE END_DATE,
+			                       HED.INSTITUTION_NAME,
+			                       HED.SUBJECT SUBJECT_CODE,
+			                       SUB.CONTENT SUBJECT,
+			                       HED.DEGREE_CODE,
+			                       DEG.CONTENT DEGREENAME,
+			                       HED.SCHOOL_ADDRESS
+			                  FROM HR_EDUCATION   HED,
+			                       SY_GLOBAL_NAME SUB,
+			                       SY_GLOBAL_NAME DEG
+			                 WHERE HED.SUBJECT = SUB.NO(+)
+			                   AND SUB.LANGUAGE(+) = #interLanguage:VARCHAR#
+			                   AND HED.DEGREE_CODE = DEG.NO(+)
+			                   AND DEG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HED.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[
+			ORDER BY HED.PERSON_ID, HED.END_DATE DESC
+				) row_
+			         where rownum <= 4)
+			 where rownum_ > 0
+		]]>
+	</select>
+	
+	<select id="getRecordContractList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select *
+			  from (select row_.*, rownum rownum_
+			          from (SELECT HC.PERSON_ID,
+			                       HC.CONTRACT_TYPE_CODE,
+			                       CON.CONTENT CONTRACT,
+			                       TO_CHAR(HC.START_CONTRACT_DATE, 'YYYY-MM-DD') START_CONTRACT_DATE,
+			                       TO_CHAR(HC.END_CONTRACT_DATE, 'YYYY-MM-DD') END_CONTRACT_DATE,
+			                       HC.CONTRACT_PERIOD,
+			                       NVL(TO_CHAR(HC.RENEWABLE), '0') RENEWABLE
+			                  FROM HR_CONTRACT HC, SY_GLOBAL_NAME CON
+			                 WHERE HC.CONTRACT_TYPE_CODE = CON.NO(+)
+			                   AND CON.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HC.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[
+			ORDER BY HC.PERSON_ID, HC.END_CONTRACT_DATE DESC
+				) row_
+			         where rownum <= 3)
+			 where rownum_ > 0
+		]]>
+	</select>
+	
+	<select id="getRecordExperienceInsideList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HEI.PERSON_ID,
+			       HEI.TRANS_CODE,
+			       TRA.CONTENT TRANS,
+			       HEI.DEPTNO,
+			       HDN.CONTENT DEPARTMENT,
+			       HEI.POSITION_NO,
+			       POS.CONTENT POSITION,
+			       HEI.POST_NO,
+			       POT.CONTENT POST,
+			       TO_CHAR(HEI.START_DATE, 'YYYY-MM-DD') START_DATE,
+			       TO_CHAR(HEI.END_DATE, 'YYYY-MM-DD') END_DATE
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       SY_GLOBAL_NAME       TRA,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       POS,
+			       SY_GLOBAL_NAME       POT
+			 WHERE HEI.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.TRANS_CODE = TRA.NO(+)
+			   AND TRA.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.POSITION_NO = POS.NO(+)
+			   AND POS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.POST_NO = POT.NO(+)
+			   AND POT.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.START_DATE >= ADD_MONTHS(SYSDATE,-36)
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HEI.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[
+			ORDER BY HEI.PERSON_ID, HEI.START_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getRecordExperienceOutsideList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HW.PERSON_ID,
+			       HW.CPNY_NAME,
+			       HW.DEPT_NAME,
+			       HW.POSITION,
+			       HW.DUTY,
+			       HW.START_DATE,
+			       HW.END_DATE,
+			  FROM HR_WORK_EXPERIENCE HW
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HW.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[
+			ORDER BY HW.PERSON_ID, HW.START_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getRecordFamilyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select *
+			  from (select row_.*, rownum rownum_
+			          from (SELECT HF.PERSON_ID,
+			                       HF.FAM_TYPE_CODE,
+			                       FAM.CONTENT FAM_TYPE,
+			                       HF.FAM_NAME,
+			                       TO_CHAR(HF.FAM_BORNDATE, 'YYYY-MM-DD') FAM_BORNDATE,
+			                       HF.FAM_COMPANY_NAME,
+			                       HF.FAM_PHONE
+			                  FROM HR_FAMILY HF, SY_GLOBAL_NAME FAM
+			                 WHERE HF.FAM_TYPE_CODE = FAM.NO(+)
+			                   AND FAM.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HF.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[
+			ORDER BY HF.PERSON_ID, HF.FAMILY_NO
+				) row_
+			         where rownum <= 3)
+			 where rownum_ > 0
+		]]>
+	</select>
+	
+	
+	
+	<select id="getHrEmployeeForInterfaceList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT '员工工号' AS EMPID,
+			       '员工姓名' AS LOCAL_NAME,
+			       '人员状态' AS EMP_OFFICE,
+			       '所属门店' AS CPNY_ID,
+			       '部门编号' AS DEPTNO,
+			       '部门名称' AS DEPTNAME,
+			       '人员类别编码' AS EMP_TYPE_CODE,
+			       '人员类别名称' AS EMP_TYPE_NAME
+			  FROM DUAL
+			UNION ALL
+			SELECT T.EMPID,
+			       T.LOCAL_NAME,
+			       DECODE(T.EMP_OFFICE, '15120', '1', '15119', '0', '0') EMP_OFFICE,
+			       '1002',
+			       T.DEPTNO,
+			       HDN.CONTENT DEPTNAME,
+			       T.EMP_TYPE_CODE,
+			       SY.CONTENT EMP_TYPE_NAME
+			  FROM HR_EMPLOYEE T, 
+			  	   HR_DEPARTMENT_NAME HDN, 
+				   SY_GLOBAL_NAME SY,
+				    (
+					 SELECT MAX(CREATE_DATE) AS TIMES
+			           FROM SY_PORTAL_LOG 
+			  		  WHERE CPNY_ID = 'C11'
+					    AND MAKE_RESULT = 1
+						AND ACTIVITY = 1
+						AND SUBSTR(PORTAL_NAME,1,3) = 'EMC'
+					  ) IFLOG
+			 WHERE T.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = 'zh'
+			   AND T.EMP_TYPE_CODE = SY.NO(+)
+			   AND SY.LANGUAGE(+) = 'zh'
+			   AND T.CPNY_ID = 'C11'
+			   AND (T.CREATE_DATE > IFLOG.TIMES OR 
+			   	    T.UPDATE_DATE > IFLOG.TIMES OR 
+					HDN.CREATE_DATE > IFLOG.TIMES OR 
+					HDN.UPDATE_DATE > IFLOG.TIMES)
+			   AND HDN.DEPTNO IN (
+					  SELECT TB.DEPTNO
+					    FROM HR_DEPARTMENT TB
+					   WHERE TB.CPNY_ID = 'C11'
+					  CONNECT BY PRIOR TB.DEPTNO = TB.PARENT_DEPT_NO
+					   START WITH TB.DEPTNO IN ('C113','C117')
+					   		     )
+	 	]]>
+	</select>  
+	
+	
+	<select id="getHrEmployeeForInterfaceCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE        T
+			 WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+	 	]]>
+	</select>
+	
+	
+	
+	<select id="getHrDeptForMess" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT T.DEPTNO,
+		             HDN.CONTENT DEPTNAME,
+		             T.PARENT_DEPT_NO,
+		             TO_CHAR(T.DATE_CREATED, 'yyyy-mm-dd hh24:mi:ss') DATE_CREATED,
+		             TO_CHAR(T.DATE_ENDED, 'yyyy-mm-dd hh24:mi:ss') DATE_ENDED,
+		             T.ACTIVITY
+		        FROM HR_DEPARTMENT      T,
+		             HR_DEPARTMENT_NAME HDN
+		       WHERE T.DEPTNO = HDN.DEPTNO(+)
+		         AND HDN.LANGUAGE(+) = 'zh'
+		         AND T.CPNY_ID = 'C11'
+		      CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+		       START WITH T.DEPTNO IN ('C113','C117')
+	 	]]>
+	</select>  
+	
+	
+	<select id="getHrUserInfoForMess" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			    SELECT T.PERSON_ID,
+				       T.EMPID,
+				       T.LOCAL_NAME,
+				       T.DEPTNO,
+				       TO_CHAR(T.DATE_LEFT, 'yyyy-mm-dd hh24:mi:ss') DATE_LEFT,
+				       DECODE(T.EMP_OFFICE, '15120', '0', '15119', '1', '0') EMP_OFFICE,
+				       ACA.CARD_NO AS CARD_NO,
+				       ADCA.CARD_NO AS CARD_NO_ME
+				  FROM HR_EMPLOYEE              T,
+				       AR_CARD_ASSOCIATE        ACA,
+				       AR_DINING_CARD_ASSOCIATE ADCA,
+				       HR_DEPARTMENT            HD
+				 WHERE T.PERSON_ID = ACA.PERSON_ID(+)
+				   AND T.PERSON_ID = ADCA.PERSON_ID(+)
+				   AND T.DEPTNO = HD.DEPTNO(+)
+				   AND T.CPNY_ID = 'C11'
+				   AND T.DEPTNO IN (SELECT DEPTNO FROM HR_DEPARTMENT HD CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO START WITH HD.DEPTNO IN ('C113', 'C117'))
+		]]>
+	</select>  
+	
+	<select id="getHrPerInfoForSap" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT '公司代码' CPNY_ID,
+		             '员工代码' EMPID,
+		             '员工姓名' LOCAL_NAME,
+		             '所属国家' COUNTRY,
+		             '所属部门名称' DEPTNAME,
+		             '身份证号' IDCARD_NO,
+		             '工资卡银行代码' BANKCODE,
+		             '工资卡银行帐号' CARD_NO
+		        FROM DUAL
+		      UNION ALL
+	          SELECT TB.CPNY_ID,
+		             TB.CPNY_ID || SUBSTR(TB.EMPID, 1, 2) || SUBSTR(TB.EMPID, 4, LENGTH(TB.EMPID)) AS EMPID,
+		             TB.LOCAL_NAME,
+		             DECODE(HPI.NATIONALITY_CODE, '871', 'CN', '872', 'KR', 'CN') AS COUNTRY,
+		             GET_DEPT_NAME(GET_DEPTNO_BY_LEVEL(TB.DEPTNO, 'C11', 5), 'zh') AS DEPTNAME,
+		             NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO) IDCARD_NO,
+		             DECODE(HEPI.CARD_NO,NULL,'','102110001261') BANKCODE,
+		             HEPI.CARD_NO AS CARD_NO
+		        FROM HR_EMPLOYEE      TB,
+		             HR_PERSONAL_INFO HPI,
+		             HR_EMP_PA_INFO   HEPI,
+					 (
+					SELECT MAX(TO_DATE(SUBSTR(PORTAL_NAME,4,8)|| ' ' ||SUBSTR(PORTAL_NAME,14,6),'YYYY-MM-DD HH24:MI:SS')) AS TIMES
+			           FROM SY_PORTAL_LOG 
+			  		  WHERE CPNY_ID = 'C11'
+					    AND MAKE_RESULT = 1
+						AND ACTIVITY = 1
+						AND SUBSTR(PORTAL_NAME,1,3) = 'EMY'
+					  ) IFLOG
+		       WHERE TB.PERSON_ID = HPI.PERSON_ID
+		         AND TB.PERSON_ID = HEPI.PERSON_ID(+)
+		         AND TB.CPNY_ID = 'C11'
+		         AND TB.DEPTNO IN
+		             (SELECT TD.DEPTNO FROM HR_DEPARTMENT TD WHERE TD.CPNY_ID = 'C11' CONNECT BY PRIOR TD.DEPTNO = TD.PARENT_DEPT_NO START WITH TD.DEPTNO IN ('C113','C117'))
+		         AND NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO) IS NOT NULL     
+				 AND (TB.CREATE_DATE > IFLOG.TIMES OR 
+				 	  HPI.CREATE_DATE > IFLOG.TIMES OR 
+					  HEPI.CREATE_DATE > IFLOG.TIMES OR 
+					  TB.UPDATE_DATE > IFLOG.TIMES OR 
+					  HPI.UPDATE_DATE > IFLOG.TIMES OR 
+					  HEPI.UPDATE_DATE > IFLOG.TIMES)
+       	 
+	 	]]>
+	</select>  
+	
+	
+	<select id="getMoneyAwardForSap" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT '公司代码' AS CPNY_ID,
+			                 '年度' AS YEAR,
+			                 '期间' AS MONTH,
+			                 '导出日期' AS EXPORTDATE,
+			                 '成本中心代码' AS DEPTNO,
+			                 '人员类别' AS EMP_TYPE_CODE,
+			                 '工资项目代码' AS PROCODE,
+			                 '工资项目描述' AS PAPROREMARK,
+			                 '金额' AS MONEY
+			            FROM DUAL
+			          UNION ALL
+			        
+			      SELECT * FROM (
+			        SELECT       
+			        RESULT_TB.CPNY_ID,
+			        RESULT_TB.YEAR,
+			        RESULT_TB.MONTH,
+			        RESULT_TB.EXPORTDATE,
+			        RESULT_TB.DEPTNO,
+			        RESULT_TB.EMP_TYPE_CODE,
+			        RESULT_TB.PROCODE,
+			        RESULT_TB.PAPROREMARK,
+			        RESULT_TB.MONEY
+			        FROM (
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4) YEAR,SUBSTR(PA_MONTH, 5, 6) MONTH,TO_CHAR(SYSDATE, 'yyyymmdd') EXPORTDATE,
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1')EMP_TYPE_CODE,
+			       get_sap_item_no('XIAOSHIGONGGONGZI') PROCODE,'小时工工资' PAPROREMARK,TO_CHAR(SUM(XIAOSHIGONGGONGZI)) MONEY
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'),
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),       
+			       get_sap_item_no('LABOUR_OT_FEE'),'小时工延长工时费',TO_CHAR(SUM(LABOUR_OT_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),       
+			       get_sap_item_no('DANGYUEJIBENGONGZI_TOTAL'),'汇总当月基本工资',TO_CHAR(SUM(DANGYUEJIBENGONGZI_TOTAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('POSITION_ALLOWANCE_CAL'),'岗位津贴',TO_CHAR(SUM(POSITION_ALLOWANCE_CAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('NIGHT_SHIFT_FEE'),'夜班费',TO_CHAR(SUM(NIGHT_SHIFT_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('JIAOTONGFEI'),'交通费',TO_CHAR(SUM(JIAOTONGFEI))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('TONGXUNBUTIE'),'通讯补贴',TO_CHAR(SUM(TONGXUNBUTIE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('MEALS_ALLOWANCE'),'餐费补贴',TO_CHAR(SUM(MEALS_ALLOWANCE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('AGENT_FEE'),'代理津贴',TO_CHAR(SUM(AGENT_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('WEEKDAY_OT_TOTAL'),'平日加班合计',TO_CHAR(SUM(WEEKDAY_OT_TOTAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('WEEKEND_OT_TOTAL'),'周末加班合计',TO_CHAR(SUM(WEEKEND_OT_TOTAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('HOLIDAY_OT_TOTAL'),'节假日加班合计',TO_CHAR(SUM(HOLIDAY_OT_TOTAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('LONG_TIME_OT_FEE'),'超时加班费',TO_CHAR(SUM(LONG_TIME_OT_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('ADDITIONAL_OT_FEE_TL'),'追补加班费合计',TO_CHAR(SUM(ADDITIONAL_OT_FEE_TL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('BEFORE_TAXABLE_PAY_PLUS'),'薪资追补（税前）',TO_CHAR(SUM(BEFORE_TAXABLE_PAY_PLUS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('AFTER_TAXABLE_PAY_PLUS'),'薪资追补（税后）',TO_CHAR(SUM(AFTER_TAXABLE_PAY_PLUS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('IS_TO_MEDICAL_FEE'),'社保拨入药费',TO_CHAR(SUM(IS_TO_MEDICAL_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('IS_TO_BIRTH_FEE'),'社保拨入生育津贴',TO_CHAR(SUM(IS_TO_BIRTH_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('HOT_FEE'),'高温补贴',TO_CHAR(SUM(HOT_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('HEATING_FEE'),'煤火费补贴',TO_CHAR(SUM(HEATING_FEE))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			------------------------------------------
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('ACTUAL_RELEASE_SALARY'),'实发工资',TO_CHAR(SUM(ACTUAL_RELEASE_SALARY))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('TAX_PERSONAL_INCOME'),'个人所得税',TO_CHAR(SUM(TAX_PERSONAL_INCOME))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('SICK_CHARGE_BACK'),'病假扣款',TO_CHAR(SUM(SICK_CHARGE_BACK))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('LEAVE_CHARGE_BACK'),'事假扣款',TO_CHAR(SUM(LEAVE_CHARGE_BACK))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('TARDINESS_DEDUCTIONS'),'迟到扣款',TO_CHAR(SUM(TARDINESS_DEDUCTIONS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('EARLYDAY_DEDUCTIONS'),'早退扣款',TO_CHAR(SUM(EARLYDAY_DEDUCTIONS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('ABSENTEEISM_DEDUCTIONS'),'旷工扣款',TO_CHAR(SUM(ABSENTEEISM_DEDUCTIONS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('TARD_EARLY_TO_ABSENT'),'迟到早退转旷工扣款',TO_CHAR(SUM(TARD_EARLY_TO_ABSENT))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('TARD_EARLY_LONG_DEDUCTIONS'),'迟到早退超过60分钟旷工扣款',TO_CHAR(SUM(TARD_EARLY_LONG_DEDUCTIONS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('OTHER_DEDUCTIONS'),'其他扣款',TO_CHAR(SUM(OTHER_DEDUCTIONS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('BEFORE_TAXABLE_PAY_DEDUCT'),'薪资追扣（税前）',TO_CHAR(SUM(BEFORE_TAXABLE_PAY_DEDUCT))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('AFTER_TAXABLE_PAY_DEDUCT'),'薪资追扣（税后）',TO_CHAR(SUM(AFTER_TAXABLE_PAY_DEDUCT))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('ENDOWMENT_PERSONAL'),'养老(个人)',TO_CHAR(SUM(ENDOWMENT_PERSONAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('MEDICAL_PERSONAL'),'医疗(个人)',TO_CHAR(SUM(MEDICAL_PERSONAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('UNEMPLOYMENT_PERSONAL'),'失业(个人)',TO_CHAR(SUM(UNEMPLOYMENT_PERSONAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('HOUSE_FUNDING_PERSONAL'),'公积金(个人)',TO_CHAR(SUM(HOUSE_FUNDING_PERSONAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE 
+			union all 
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('GERENDABINGYILIAO'),'个人大病医疗保险应缴值',TO_CHAR(SUM(GERENDABINGYILIAO))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all        
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('BONUS_TOTAL'),'奖金',TO_CHAR(SUM(BONUS_TOTAL))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			union all         
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('ENDOWMENT_ADD_DEDUCTION'),'追扣养老',TO_CHAR(SUM(ENDOWMENT_ADD_DEDUCTION))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			  union all        
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('MEDICAL_ADD_DEDUCTION'),'追扣医疗',TO_CHAR(SUM(MEDICAL_ADD_DEDUCTION))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			  union all        
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('UNEMPLOYMENT_ADD_DEDUCTION'),'追扣失业',TO_CHAR(SUM(UNEMPLOYMENT_ADD_DEDUCTION))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			  union all        
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('ACCUMULATION_FUND_ADDDEDUCTION'),'追扣公积金',TO_CHAR(SUM(ACCUMULATION_FUND_ADDDEDUCTION))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			  union all        
+			
+			SELECT PA_SUMMARY_C11.CPNY_ID,SUBSTR(PA_MONTH, 1, 4),SUBSTR(PA_MONTH, 5, 6),TO_CHAR(SYSDATE, 'yyyymmdd'), 
+			       GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5) DEPTNO,DECODE(HR_PERSONAL_INFO.NATIONALITY_CODE, '871', '1', '872', '2', '1'),
+			       get_sap_item_no('MONTH_BONUS'),'月奖金',TO_CHAR(SUM(MONTH_BONUS))
+			  FROM PA_SUMMARY_C11,HR_EMPLOYEE,HR_PERSONAL_INFO
+			 WHERE PA_SUMMARY_C11.PERSON_ID = HR_EMPLOYEE.PERSON_ID AND PA_SUMMARY_C11.PERSON_ID = HR_PERSONAL_INFO.PERSON_ID AND PA_SUMMARY_C11.PA_MONTH = '201207'
+			 GROUP BY PA_SUMMARY_C11.CPNY_ID,PA_SUMMARY_C11.PA_MONTH,GET_DEPTNO_BY_LEVEL(PA_SUMMARY_C11.DEPTNO,'C11',5),HR_PERSONAL_INFO.NATIONALITY_CODE
+			        ) RESULT_TB
+			        WHERE RESULT_TB.MONEY >0
+			        ORDER BY TO_NUMBER(SUBSTR(RESULT_TB.DEPTNO,4,LENGTH(RESULT_TB.DEPTNO))),TO_NUMBER(RESULT_TB.EMP_TYPE_CODE)
+			      )
+
+	 	]]>
+	</select>  
+	
+	
+	<select id="getPersonList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT PERSON_ID ,MEAL_NUM 
+				FROM  
+				( 
+				 SELECT HE.PERSON_ID,
+				        SHIFT_NO,
+				        DECODE(TB1.SHIFT_NO,
+				               '122071','2',
+				               '122072','2',
+				               '122058','2',
+				               '122063','2',
+				               '122064','2',
+				               '122077','0','1') AS MEAL_NUM 
+				   FROM HR_EMPLOYEE HE,
+				        (SELECT TB1.PERSON_ID,
+				                TB1.SHIFT_NO
+				           FROM AR_SCHEDULE_C11 TB1
+				          WHERE (TB1.AR_DATE_STR = TO_CHAR(SYSDATE, 'yyyy/mm/dd') OR
+				                TB1.AR_DATE_STR = TO_CHAR(SYSDATE, 'yyyy-mm-dd'))
+				            ) TB1
+				  WHERE CPNY_ID = 'C11'
+				    AND HE.PERSON_ID = TB1.PERSON_ID(+)
+				    AND EMP_OFFICE = '15119'
+				)
+				WHERE MEAL_NUM >0
+		]]>
+	</select>  
+	
+	<select id="getPersonCount" resultClass="int">
+		<![CDATA[  
+			SELECT COUNT(A.PERSON_ID)
+			  FROM HR_EMPLOYEE A,
+			       (SELECT PERSON_ID,
+			               CASE
+			                 WHEN SHIFT_LENGTH > '8' THEN
+			                  '2'
+			                 WHEN SHIFT_LENGTH <= '8' THEN
+			                  '1'
+			                 ELSE
+			                  '1'
+			               END MEAL_NUM
+			          FROM (SELECT TB1.PERSON_ID,
+			                       TB1.SHIFT_NO,
+			                       TB1.AR_DATE_STR,
+			                       (SELECT SUM(((TO_TIME + END_DAY_OFFSET) - (FROM_TIME + BEGIN_DAY_OFFSET)) * 24)
+			                          FROM AR_SHIFT020 TB2
+			                         WHERE TB2.SHIFT_NO = TB1.SHIFT_NO
+			                         GROUP BY TB2.SHIFT_NO) SHIFT_LENGTH
+			                  FROM AR_SCHEDULE_C11 TB1
+			                 WHERE TB1.AR_DATE_STR = TO_CHAR(SYSDATE, 'yyyy/mm/dd'))) B
+			 WHERE A.PERSON_ID = B.PERSON_ID(+)
+			   AND A.CPNY_ID = 'C11'
+			   AND (A.DATE_LEFT IS NULL OR A.DATE_LEFT > SYSDATE)
+		  ]]>
+    </select>
+    
+    <select id="getPersonBasicInfoList" parameterClass="linkMap"
+		resultClass="HashMap" remapResults="true">
+		<![CDATA[  
+			SELECT HP.PERSON_ID,
+				   HDN.CONTENT DNAME,
+			       HE.POSITION_NO,
+			       SY3.CONTENT POSITION_NAME,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HP.SEXCODE,
+			       SY1.CONTENT SEX_NAME,
+			       HP.NATION_CODE,
+			       SY2.CONTENT NATION_NAME,
+			       TO_CHAR(HP.DOB,'YYYY-MM-DD') DOB,
+			       HP.IDCARD_NO,
+			       HP.CELLPHONE,
+			       HP.MARITAL_STATUS_CODE,
+			       SY4.CONTENT MARITAL_STATUS_NAME,
+			       HP.IDCARD_ADDR,
+			       HP.HOME_ADDRESS,
+			       HP.PER_EMAIL,
+			       TO_CHAR(HE.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(SYSDATE,'YYYY-MM-DD') NEWTIME
+			
+			  FROM HR_PERSONAL_INFO   HP,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     SY1,
+			       SY_GLOBAL_NAME     SY2,
+			       SY_GLOBAL_NAME     SY3,
+			       SY_GLOBAL_NAME     SY4
+			       
+			 WHERE HP.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HE.CPNY_ID = #interCpnyID:VARCHAR#
+			      
+			   AND HP.SEXCODE = SY1.NO(+)
+			   AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HP.NATION_CODE = SY2.NO(+)
+			   AND SY2.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HE.POSITION_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HP.MARITAL_STATUS_CODE = SY4.NO(+)
+			   AND SY4.LANGUAGE = #interLanguage:VARCHAR#
+		  ]]>
+		  
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="interCpnyID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #interCpnyID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IDCARD_NO">
+			<![CDATA[
+				(HP.idcard_no LIKE '%' || #IDCARD_NO:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+	      ORDER BY HE.EMPID
+		]]>
+    </select>
+    
+    <!-- C12接口开始 -->
+    <select id="getHrDeptForMessC12" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT T.DEPTNO,
+		             HDN.CONTENT DEPTNAME,
+		             T.PARENT_DEPT_NO,
+		             TO_CHAR(T.DATE_CREATED, 'yyyy-mm-dd hh24:mi:ss') DATE_CREATED,
+		             TO_CHAR(T.DATE_ENDED, 'yyyy-mm-dd hh24:mi:ss') DATE_ENDED,
+		             T.ACTIVITY
+		        FROM HR_DEPARTMENT      T,
+		             HR_DEPARTMENT_NAME HDN
+		       WHERE T.DEPTNO = HDN.DEPTNO(+)
+		         AND HDN.LANGUAGE(+) = 'zh'
+		         AND T.CPNY_ID = 'C12'
+		      CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+		       START WITH T.DEPTNO IN ('C122')
+	 	]]>
+	</select>  
+	
+	<select id="getHrUserInfoForMessC12" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			    SELECT T.PERSON_ID,
+				       T.EMPID,
+				       T.LOCAL_NAME,
+				       T.DEPTNO,
+				       TO_CHAR(T.DATE_LEFT, 'yyyy-mm-dd hh24:mi:ss') DATE_LEFT,
+				       DECODE(T.EMP_OFFICE, '15120', '0', '15119', '1', '0') EMP_OFFICE,
+				       ACA.CARD_NO AS CARD_NO,
+				       ADCA.CARD_NO AS CARD_NO_ME
+				  FROM HR_EMPLOYEE              T,
+				       AR_CARD_ASSOCIATE        ACA,
+				       AR_DINING_CARD_ASSOCIATE ADCA,
+				       HR_DEPARTMENT            HD
+				 WHERE T.PERSON_ID = ACA.PERSON_ID(+)
+				   AND T.PERSON_ID = ADCA.PERSON_ID(+)
+				   AND T.DEPTNO = HD.DEPTNO(+)
+				   AND T.CPNY_ID = 'C12'
+				   AND T.DEPTNO IN (SELECT DEPTNO FROM HR_DEPARTMENT HD 
+				                      CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO 
+				                            START WITH HD.DEPTNO IN ('C122')
+				   )
+		]]>
+	</select>  
+	
+	<select id="getPersonListC12" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PERSON_ID, MEAL_NUM FROM AR_SHIFT_C12_LENGTH_V
+		]]>
+	</select>  
+	
+	<select id="getPersonCountC12" resultClass="int">
+		<![CDATA[  
+			SELECT COUNT(*) FROM AR_SHIFT_C12_LENGTH_V
+		  ]]>
+    </select>
+    
+    <select id="getHrPerInfoForSapC12" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT '公司代码' CPNY_ID,
+		             '员工代码' EMPID,
+		             '员工姓名' LOCAL_NAME,
+		             '所属国家' COUNTRY,
+		             '所属部门名称' DEPTNAME,
+		             '身份证号' IDCARD_NO,
+		             '工资卡银行代码' BANKCODE,
+		             '工资卡银行帐号' CARD_NO
+		        FROM DUAL
+		      UNION ALL
+	          SELECT 'C12' CPNY_ID,
+		             TB.CPNY_ID || SUBSTR(TB.EMPID, 1, 2) || SUBSTR(TB.EMPID, 4, LENGTH(TB.EMPID)) AS EMPID,
+		             TB.LOCAL_NAME,
+		             DECODE(HPI.NATIONALITY_CODE, '871', 'CN', '872', 'KR', 'CN') AS COUNTRY,
+		             GET_DEPT_NAME(GET_DEPTNO_BY_LEVEL(TB.DEPTNO, 'C12', 5), 'zh') AS DEPTNAME,
+		             NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO) IDCARD_NO,
+		             '100000569876' BANKCODE,
+		             HEPI.CARD_NO AS CARD_NO
+		        FROM HR_EMPLOYEE      TB,
+		             HR_PERSONAL_INFO HPI,
+		             HR_EMP_PA_INFO   HEPI,
+					 (SELECT MAX(CREATE_DATE) AS TIMES
+			           FROM SY_PORTAL_LOG 
+			  		  WHERE CPNY_ID = 'C12'
+					    AND MAKE_RESULT = 1
+						AND ACTIVITY = 1
+						AND SUBSTR(PORTAL_NAME,1,3) = 'EMY') IFLOG
+		       WHERE TB.PERSON_ID = HPI.PERSON_ID
+		         AND TB.PERSON_ID = HEPI.PERSON_ID(+)
+		         AND TB.CPNY_ID = 'C12'
+		         AND TB.DEPTNO IN
+		             (SELECT TD.DEPTNO FROM HR_DEPARTMENT TD WHERE TD.CPNY_ID = 'C12' CONNECT BY PRIOR TD.DEPTNO = TD.PARENT_DEPT_NO START WITH TD.DEPTNO IN ('C122'))
+		         AND NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO) IS NOT NULL     
+				 AND (TB.CREATE_DATE > IFLOG.TIMES OR 
+				 	  HPI.CREATE_DATE > IFLOG.TIMES OR 
+					  HEPI.CREATE_DATE > IFLOG.TIMES OR 
+					  TB.UPDATE_DATE > IFLOG.TIMES OR 
+					  HPI.UPDATE_DATE > IFLOG.TIMES OR 
+					  HEPI.UPDATE_DATE > IFLOG.TIMES)
+	 	]]>
+	</select>  
+	
+	
+	<select id="getMoneyAwardForSapC12" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  SELECT '公司代码' AS CPNY_ID,
+                 '年度' AS YEAR,
+                 '期间' AS MONTH,
+                 '导出日期' AS EXPORTDATE,
+                 '成本中心代码' AS DEPTNO,
+                 '人员类别' AS EMP_TYPE_CODE,
+                 '工资项目代码' AS PROCODE,
+                 '工资项目描述' AS PAPROREMARK,
+                 '金额' AS MONEY
+            FROM DUAL
+	 	]]>
+	</select>  
+	
+	<select id="getHrEmployeeC12ForInterfaceList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT '员工工号' AS EMPID,
+			       '员工姓名' AS LOCAL_NAME,
+			       '人员状态' AS EMP_OFFICE,
+			       '所属门店' AS CPNY_ID,
+			       '部门编号' AS DEPTNO,
+			       '部门名称' AS DEPTNAME,
+			       '人员类别编码' AS EMP_TYPE_CODE,
+			       '人员类别名称' AS EMP_TYPE_NAME
+			  FROM DUAL
+			UNION ALL
+			SELECT T.EMPID,
+			       T.LOCAL_NAME,
+			       DECODE(T.EMP_OFFICE, '15120', '1', '15119', '0', '0') EMP_OFFICE,
+			       '1003',
+			       T.DEPTNO,
+			       HDN.CONTENT DEPTNAME,
+			       T.EMP_TYPE_CODE,
+			       SY.CONTENT EMP_TYPE_NAME
+			  FROM HR_EMPLOYEE T, 
+			  	   HR_DEPARTMENT_NAME HDN, 
+				   SY_GLOBAL_NAME SY,
+				    (
+					 SELECT MAX(CREATE_DATE) AS TIMES
+			           FROM SY_PORTAL_LOG 
+			  		  WHERE CPNY_ID = 'C12'
+					    AND MAKE_RESULT = 1
+						AND ACTIVITY = 1
+						AND SUBSTR(PORTAL_NAME,1,3) = 'EMC'
+					  ) IFLOG
+			 WHERE T.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = 'zh'
+			   AND T.EMP_TYPE_CODE = SY.NO(+)
+			   AND SY.LANGUAGE(+) = 'zh'
+			   AND T.CPNY_ID = 'C12'
+			   AND (T.CREATE_DATE > IFLOG.TIMES OR 
+			   	    T.UPDATE_DATE > IFLOG.TIMES OR 
+					HDN.CREATE_DATE > IFLOG.TIMES OR 
+					HDN.UPDATE_DATE > IFLOG.TIMES)
+			   AND HDN.DEPTNO IN (
+					  SELECT TB.DEPTNO
+					    FROM HR_DEPARTMENT TB
+					   WHERE TB.CPNY_ID = 'C12'
+					  CONNECT BY PRIOR TB.DEPTNO = TB.PARENT_DEPT_NO
+					   START WITH TB.DEPTNO IN ('C122')
+					   		     )
+	 	]]>
+	</select>  
+	
+	<select id="getHrEmployeeC12ForInterfaceCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE        T
+			 WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+	 	]]>
+	</select>
+	<!-- C12接口结束 -->
+	
+	<!-- C13接口开始 -->
+    <select id="getHrDeptForMessC13" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT T.DEPTNO,
+		             HDN.CONTENT DEPTNAME,
+		             T.PARENT_DEPT_NO,
+		             TO_CHAR(T.DATE_CREATED, 'yyyy-mm-dd hh24:mi:ss') DATE_CREATED,
+		             TO_CHAR(T.DATE_ENDED, 'yyyy-mm-dd hh24:mi:ss') DATE_ENDED,
+		             T.ACTIVITY
+		        FROM HR_DEPARTMENT      T,
+		             HR_DEPARTMENT_NAME HDN
+		       WHERE T.DEPTNO = HDN.DEPTNO(+)
+		         AND HDN.LANGUAGE(+) = 'zh'
+		         AND T.CPNY_ID = 'C13'
+		      CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+		       START WITH T.DEPTNO IN ('C132')
+	 	]]>
+	</select>  
+	
+	<select id="getHrUserInfoForMessC13" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			    SELECT T.PERSON_ID,
+				       T.EMPID,
+				       T.LOCAL_NAME,
+				       T.DEPTNO,
+				       TO_CHAR(T.DATE_LEFT, 'yyyy-mm-dd hh24:mi:ss') DATE_LEFT,
+				       DECODE(T.EMP_OFFICE, '15120', '0', '15119', '1', '0') EMP_OFFICE,
+				       ACA.CARD_NO AS CARD_NO,
+				       ADCA.CARD_NO AS CARD_NO_ME
+				  FROM HR_EMPLOYEE              T,
+				       AR_CARD_ASSOCIATE        ACA,
+				       AR_DINING_CARD_ASSOCIATE ADCA,
+				       HR_DEPARTMENT            HD
+				 WHERE T.PERSON_ID = ACA.PERSON_ID(+)
+				   AND T.PERSON_ID = ADCA.PERSON_ID(+)
+				   AND T.DEPTNO = HD.DEPTNO(+)
+				   AND T.CPNY_ID = 'C13'
+				   AND T.DEPTNO IN (SELECT DEPTNO FROM HR_DEPARTMENT HD 
+				                      CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO 
+				                            START WITH HD.DEPTNO IN ('C132')
+				   )
+		]]>
+	</select>  
+	
+	<select id="getPersonListC13" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PERSON_ID, MEAL_NUM FROM AR_SHIFT_C13_LENGTH_V
+		]]>
+	</select>  
+	
+	<select id="getPersonCountC13" resultClass="int">
+		<![CDATA[  
+			SELECT COUNT(*) FROM AR_SHIFT_C13_LENGTH_V
+		  ]]>
+    </select>
+    
+    <select id="getHrPerInfoForSapC13" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT '公司代码' CPNY_ID,
+		             '员工代码' EMPID,
+		             '员工姓名' LOCAL_NAME,
+		             '所属国家' COUNTRY,
+		             '所属部门名称' DEPTNAME,
+		             '身份证号' IDCARD_NO,
+		             '工资卡银行代码' BANKCODE,
+		             '工资卡银行帐号' CARD_NO
+		        FROM DUAL
+		      UNION ALL
+	          SELECT 'C13' CPNY_ID,
+		             TB.CPNY_ID || SUBSTR(TB.EMPID, 1, 2) || SUBSTR(TB.EMPID, 4, LENGTH(TB.EMPID)) AS EMPID,
+		             TB.LOCAL_NAME,
+		             DECODE(HPI.NATIONALITY_CODE, '871', 'CN', '872', 'KR', 'CN') AS COUNTRY,
+		             GET_DEPT_NAME(GET_DEPTNO_BY_LEVEL(TB.DEPTNO, 'C13', 5), 'zh') AS DEPTNAME,
+		             NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO) IDCARD_NO,
+		             '309651000109' BANKCODE,
+		             HEPI.CARD_NO AS CARD_NO
+		        FROM HR_EMPLOYEE      TB,
+		             HR_PERSONAL_INFO HPI,
+		             HR_EMP_PA_INFO   HEPI,
+					 (SELECT MAX(CREATE_DATE) AS TIMES
+			           FROM SY_PORTAL_LOG 
+			  		  WHERE CPNY_ID = 'C13'
+					    AND MAKE_RESULT = 1
+						AND ACTIVITY = 1
+						AND SUBSTR(PORTAL_NAME,1,3) = 'EMY') IFLOG
+		       WHERE TB.PERSON_ID = HPI.PERSON_ID
+		         AND TB.PERSON_ID = HEPI.PERSON_ID(+)
+		         AND TB.CPNY_ID = 'C13'
+		         AND TB.DEPTNO IN
+		             (SELECT TD.DEPTNO FROM HR_DEPARTMENT TD WHERE TD.CPNY_ID = 'C13' CONNECT BY PRIOR TD.DEPTNO = TD.PARENT_DEPT_NO START WITH TD.DEPTNO IN ('C132'))
+		         AND NVL(HPI.IDCARD_NO, HPI.PASSPORT_NO) IS NOT NULL     
+				 AND (TB.CREATE_DATE > IFLOG.TIMES OR 
+				 	  HPI.CREATE_DATE > IFLOG.TIMES OR 
+					  HEPI.CREATE_DATE > IFLOG.TIMES OR 
+					  TB.UPDATE_DATE > IFLOG.TIMES OR 
+					  HPI.UPDATE_DATE > IFLOG.TIMES OR 
+					  HEPI.UPDATE_DATE > IFLOG.TIMES)
+	 	]]>
+	</select>  
+	
+	
+	<select id="getMoneyAwardForSapC13" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  SELECT '公司代码' AS CPNY_ID,
+                 '年度' AS YEAR,
+                 '期间' AS MONTH,
+                 '导出日期' AS EXPORTDATE,
+                 '成本中心代码' AS DEPTNO,
+                 '人员类别' AS EMP_TYPE_CODE,
+                 '工资项目代码' AS PROCODE,
+                 '工资项目描述' AS PAPROREMARK,
+                 '金额' AS MONEY
+            FROM DUAL
+	 	]]>
+	</select>  
+	
+	<select id="getHrEmployeeC13ForInterfaceList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT '员工工号' AS EMPID,
+			       '员工姓名' AS LOCAL_NAME,
+			       '人员状态' AS EMP_OFFICE,
+			       '所属门店' AS CPNY_ID,
+			       '部门编号' AS DEPTNO,
+			       '部门名称' AS DEPTNAME,
+			       '人员类别编码' AS EMP_TYPE_CODE,
+			       '人员类别名称' AS EMP_TYPE_NAME
+			  FROM DUAL
+			UNION ALL
+			SELECT T.EMPID,
+			       T.LOCAL_NAME,
+			       DECODE(T.EMP_OFFICE, '15120', '1', '15119', '0', '0') EMP_OFFICE,
+			       '1004',
+			       T.DEPTNO,
+			       HDN.CONTENT DEPTNAME,
+			       T.EMP_TYPE_CODE,
+			       SY.CONTENT EMP_TYPE_NAME
+			  FROM HR_EMPLOYEE T, 
+			  	   HR_DEPARTMENT_NAME HDN, 
+				   SY_GLOBAL_NAME SY,
+				    (
+					 SELECT MAX(CREATE_DATE) AS TIMES
+			           FROM SY_PORTAL_LOG 
+			  		  WHERE CPNY_ID = 'C13'
+					    AND MAKE_RESULT = 1
+						AND ACTIVITY = 1
+						AND SUBSTR(PORTAL_NAME,1,3) = 'EMC'
+					  ) IFLOG
+			 WHERE T.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = 'zh'
+			   AND T.EMP_TYPE_CODE = SY.NO(+)
+			   AND SY.LANGUAGE(+) = 'zh'
+			   AND T.CPNY_ID = 'C13'
+			   AND (T.CREATE_DATE > IFLOG.TIMES OR 
+			   	    T.UPDATE_DATE > IFLOG.TIMES OR 
+					HDN.CREATE_DATE > IFLOG.TIMES OR 
+					HDN.UPDATE_DATE > IFLOG.TIMES)
+			   AND HDN.DEPTNO IN (
+					  SELECT TB.DEPTNO
+					    FROM HR_DEPARTMENT TB
+					   WHERE TB.CPNY_ID = 'C13'
+					  CONNECT BY PRIOR TB.DEPTNO = TB.PARENT_DEPT_NO
+					   START WITH TB.DEPTNO IN ('C132')
+					   		     )
+	 	]]>
+	</select>  
+	
+	<select id="getHrEmployeeC13ForInterfaceCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE        T
+			 WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+	 	]]>
+	</select>
+	<!-- C13接口结束 -->
+</sqlMap>

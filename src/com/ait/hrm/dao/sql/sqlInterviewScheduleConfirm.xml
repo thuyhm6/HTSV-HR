@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.interviewScheduleConfirm">	
+	
+	<!-- 应聘者基本信息查询-->
+	<select id="getInterviewScheduleConfirmList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT RE.REC_EMPLOYEE_NO,
+		       RE.EMP_NAME,
+		       RE.CERT_TYPE_CODE,
+		       GET_GLOBAL_NAME(RE.CERT_TYPE_CODE,#interLanguage:VARCHAR#) CERT_TYPE_NAME,
+		       RE.CERT_NUMBER,
+		       RE.EMP_TELPHONE,
+		       RE.EMP_ADDRESS,
+		       RE.SEX_CODE,
+		       GET_GLOBAL_NAME(RE.SEX_CODE,#interLanguage:VARCHAR#) SEX_NAME,
+		       RE.NATIONALITY_CODE,
+		       GET_GLOBAL_NAME(RE.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_NAME,
+		       RE.EMP_BIRTHDAY,
+		       FLOOR(MONTHS_BETWEEN(SYSDATE,TO_DATE(RE.EMP_BIRTHDAY,'YYYY/MM/DD'))/12) EMP_AGE,
+		       RE.FINAL_SCHOOL,
+		       RE.FINAL_EDU_CODE,
+		       GET_GLOBAL_NAME(RE.FINAL_EDU_CODE,#interLanguage:VARCHAR#) FINAL_EDU_NAME,
+		       RE.FINAL_GRAD_DATE,
+		       RE.EMP_EMAIL,
+		       RE.POST_TYPE_CODE,
+		       GET_GLOBAL_NAME(RE.POST_TYPE_CODE,#interLanguage:VARCHAR#) POST_TYPE_NAME,
+		       RE.WORK_EXPERIENCE,
+		       RE.FILE_PATH,
+		       RE.FILE_NAME,
+		       RE.REC_TYPE,
+		       TO_CHAR(RE.INTERVIEW_TIME, 'DD/MM/YYYY hh24:mi') INTERVIEW_TIME,
+		       RE.INTERVIEW_ADDRESS,
+		       RE.CONFIRM,
+		       TO_CHAR(RE.CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+		       RE.CREATED_BY,
+		       get_local_name_by_personid(RE.CREATED_BY,#CPNY_ID:VARCHAR#) CREATED_NAME,
+		       TO_CHAR(RE.UPDATE_DATE,'DD/MM/YYYY') UPDATE_DATE,
+		       RE.UPDATED_BY,
+		       get_local_name_by_personid(RE.UPDATED_BY,#CPNY_ID:VARCHAR#) UPDATED_NAME
+		        FROM REC_EMPLOYEE RE
+		       WHERE RE.ACTIVITY = 1
+		       AND REC_TYPE = 3
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  UPPER(RE.EMP_NAME) LIKE UPPER('%'||#KEY:VARCHAR#||'%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_TYPE_CODE">
+			<![CDATA[
+		 		  RE.POST_TYPE_CODE = #POST_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINAL_EDU_CODE">
+			<![CDATA[
+		 		  RE.FINAL_EDU_CODE = #FINAL_EDU_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="CONFIRM">
+			<![CDATA[
+				  RE.CONFIRM = '0'
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="CONFIRM">
+			<![CDATA[
+				  RE.CONFIRM = #CONFIRM:NUMBER#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		  order by RE.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getRecInterViewSeq" parameterClass="linkMap" resultClass="int">
+	    <![CDATA[				     
+	            SELECT REC_INTERVIEW_NO_SEQ.NEXTVAL FROM DUAL
+	    ]]>
+	</select>
+	
+	<select id="getInterviewStatus" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT REC_INTERVIEW_NO FROM REC_INTERVIEW 
+			WHERE REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR#
+			AND INTERVIEW_STATUS > 0
+		]]>
+	</select>
+	
+	<update id="saveInterviewConfirm" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE REC_EMPLOYEE SET
+			      INTERVIEW_TIME = TO_DATE(#INTERVIEW_TIME#,'DD/MM/YYYY HH24:MI'),
+			      INTERVIEW_ADDRESS = #INTERVIEW_ADDRESS:VARCHAR#,
+			      UPDATE_DATE = SYSDATE,
+			      UPDATED_BY = #UPDATED_BY:VARCHAR#,
+			      REC_TYPE = 3,
+			      CONFIRM = 1
+			WHERE REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR# 
+		]]>
+	</update>
+</sqlMap>

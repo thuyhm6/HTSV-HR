@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.annualStandard">
+
+	<select id="getArAnnualStandardList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.VAC_NO,
+			       T.VAC_TP,
+			       SY1.CONTENT,
+			       T.STRT_MONTH,
+			       T.END_MONTH,
+			       T.VAC_DAY_CNT VAC_DAY_CNT,
+			       T.VAC_DAY_CNT/8 VAC_DAY_CNT_DAY,
+			       TO_CHAR(T.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       T.CREATED_BY,
+			       TO_CHAR(T.UPDATE_DATE, 'YYYY-MM-DD') UPDATE_DATE,
+			       T.UPDATED_BY,
+			       T.CPNY_ID
+			  FROM AR_VAC_MASTER T, SY_GLOBAL_NAME SY1
+			 WHERE T.VAC_TP = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ]]>
+		
+		<isNotEmpty prepend="AND" property="VAC_NO">
+			<![CDATA[
+		 		  T.VAC_NO = #VAC_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STRT_MONTH">
+			<![CDATA[
+		 		  T.STRT_MONTH = #STRT_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.VAC_TP, TO_NUMBER(T.STRT_MONTH),T.VAC_NO
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<select id="getArAnnualStandardCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_VAC_MASTER T, SY_GLOBAL_NAME SY1
+			 WHERE T.VAC_TP = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="VAC_NO">
+			<![CDATA[
+		 		  T.VAC_NO = #VAC_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STRT_MONTH">
+			<![CDATA[
+		 		  T.STRT_MONTH = #STRT_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<delete id="deleteArAnnualStandard" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE AR_VAC_MASTER T
+			 WHERE VAC_NO = #VAC_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	<update id="updateArAnnualStandard" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_VAC_MASTER T SET
+				   STRT_MONTH = #STRT_MONTH:NUMERIC#,
+				   END_MONTH = #END_MONTH:NUMERIC#,
+				   VAC_DAY_CNT = #VAC_DAY_CNT:NUMERIC#,
+				   UPDATE_DATE = SYSDATE,
+				   UPDATED_BY = #UPDATED_BY:VARCHAR# 
+			 WHERE VAC_NO = #VAC_NO:NUMERIC#
+		]]>
+	</update>
+	
+	<select id="checkAddArAnnualStandardInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_VAC_MASTER T
+			 WHERE 1 = 1
+			   
+		]]>
+		
+		<isNotEmpty prepend="AND" property="VAC_TP">
+			<![CDATA[
+		 		  VAC_TP = #VAC_TP:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STRT_MONTH">
+			<![CDATA[
+		 		  T.STRT_MONTH = #STRT_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<insert id="addArAnnualStandard" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO AR_VAC_MASTER
+				(
+					VAC_NO,
+					VAC_TP,
+					STRT_MONTH,
+					END_MONTH,
+					VAC_DAY_CNT,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY,
+					CPNY_ID,
+					ORDERNO
+				)
+			VALUES
+				(
+					AR_VAC_MASTER_SEQ.NEXTVAL,
+					#VAC_TP:VARCHAR#,
+					#STRT_MONTH:VARCHAR#,
+					#END_MONTH:VARCHAR#,
+					#VAC_DAY_CNT:NUMERIC#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1,
+					#interCpnyID:VARCHAR#,
+					#ORDERNO:NUMERIC#
+				)
+		]]>
+	</insert>
+	
+	<select id="getArAnnualOrderno" resultClass="int" >
+		<![CDATA[
+			SELECT NVL(MAX(ORDERNO),0) + 1 FROM AR_VAC_MASTER
+		]]>
+	</select>
+	
+	<select id="getArAnnualMonthList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT 
+			       T.STRT_MONTH
+			  FROM AR_VAC_MASTER T
+			  WHERE 1 = 1
+		 ]]>
+		 
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY TO_NUMBER(T.STRT_MONTH),T.VAC_NO
+			]]>
+		</isEmpty>
+		
+	</select>
+</sqlMap>

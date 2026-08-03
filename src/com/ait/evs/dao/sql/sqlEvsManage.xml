@@ -1,0 +1,3741 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="evs.manage">
+	
+	<!-- 概要信息 -->
+	<select id="viewResumeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       EVS_TYPE,
+			       RESUME_NAME,
+			       REMARK,
+			       EVS_CYCLE,
+			       GET_CODE_NAME(EVS_CYCLE,#interLanguage:VARCHAR#) EVS_CYCLE_NAME,
+			       EVS_YEAR,
+			       EVS_MONTH,
+			       GET_CODE_NAME(EVS_MONTH,#interLanguage:VARCHAR#) EVS_MONTH_NAME,
+			       TO_CHAR(STANDARD_DATE,'DD/MM/YYYY') STANDARD_DATE,
+			       EVS_START_DATE,
+			       EVS_END_DATE,
+			       ACTIVITY,
+			       EVS_LEVEL,
+			       GET_CODE_NAME(EVS_LEVEL,#interLanguage:VARCHAR#) EVS_LEVEL_NAME,
+			       TARGET_LEVEL,
+			       GET_CODE_NAME(TARGET_LEVEL,#interLanguage:VARCHAR#) TARGET_LEVEL_NAME,
+			       COPY_OBJECT,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_RESUME_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="LIMIT">
+			<![CDATA[
+				PKG_EVS_PROCESS.GET_EVS_LIMIT(#adminID#,A.SEQ,#LIMIT#) <> 0
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_CYCLE">
+			<![CDATA[
+				EVS_CYCLE = #EVS_CYCLE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="evsType">
+			<![CDATA[
+				A.EVS_TYPE = #evsType#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="evsType">
+			<isEmpty prepend="" property="SEQ">
+				<![CDATA[
+					A.EVS_TYPE = 'empty'
+				]]>
+			</isEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY ORDER_NO DESC,TO_NUMBER(A.SEQ) DESC
+		]]>
+	</select>
+	
+	<!-- 概要信息Code -->
+	<select id="viewResumeCodeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_NAME
+			  FROM EVS_RESUME_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+			   AND A.EVS_TYPE = #evsType#
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ <> #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- 概要信息 -->
+	<select id="viewProbationResumeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       PROBATION_END_DATE || '->[' || EMPID || ']' || LOCAL_NAME RESUME_NAME,
+				   EVS_TYPE,
+				   PERSON_ID,
+				   EMPID,
+				   LOCAL_NAME,
+				   DEPTNO,
+         		   GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+				   PROBATION_END_DATE,
+				   POST_GRADE_NO,
+				   POST_GRADE_NAME,
+				   MAIN_BUSINESS,
+				   GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+				   EMP_TYPE_CODE,
+				   EMP_TYPE_NAME,
+				   PRODUCT_CODE,
+				   PRODUCT_CODE_NAME,
+				   ACTIVITY,
+				   CPNY_ID,
+				   EVS_OBJECT_SEQ,
+				   DATE_STARTED,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(EVS_OBJECT_SEQ, 0, 'AFFIRM_CONTENT') AFFIRM_CONTENT,
+			       CURRENT_AFFIRM_SEQ,
+			       FINAL_POINT,
+			       FINAL_GRADE,
+			       CHIDAO,
+			       KUANGGONG,
+			       SHIJIA
+			  FROM EVS_PROBATION_RESUME_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="LIMIT">
+			<![CDATA[
+				PKG_EVS_PROCESS.GET_PROBATION_EVS_LIMIT(#adminID#,A.SEQ,#LIMIT#) <> 0
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="LIMIT_AFF">
+			<![CDATA[
+				A.CURRENT_AFFIRM_SEQ IN ( SELECT SEQ FROM EVS_AFFIRM WHERE AFFIRMOR_ID = #adminID#)
+				AND A.ACTIVITY = 2
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(A.SEQ) DESC
+		]]>
+	</select>
+	
+	<!-- 概要信息Code -->
+	<select id="viewProbationResumeCodeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       PROBATION_END_DATE || '->[' || EMPID || ']' || LOCAL_NAME RESUME_NAME
+			  FROM EVS_PROBATION_RESUME_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+			   AND A.EVS_TYPE = #evsType#
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ <> #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ) DESC
+		]]>
+	</select>
+	
+	<!-- 新增概要 -->
+	<insert id="addResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_RESUME_INFO
+			  (SEQ,
+			   EVS_TYPE,
+			   RESUME_NAME,
+			   REMARK,
+			   EVS_CYCLE,
+			   EVS_YEAR,
+			   EVS_MONTH,
+			   STANDARD_DATE,
+			   EVS_START_DATE,
+			   EVS_END_DATE,
+			   ACTIVITY,
+			   EVS_LEVEL,
+			   TARGET_LEVEL,
+			   COPY_OBJECT,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY,
+			   CPNY_ID)
+			VALUES
+			  (EVS_RESUME_INFO_SEQ.NEXTVAL,
+			   #EVS_TYPE:VARCHAR#,
+			   #RESUME_NAME:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   #EVS_CYCLE:VARCHAR#,
+			   #EVS_YEAR:VARCHAR#,
+			   #EVS_MONTH:VARCHAR#,
+			   TO_DATE(#STANDARD_DATE:VARCHAR#,'DD/MM/YYYY'),
+			   #EVS_START_DATE:VARCHAR#,
+			   #EVS_END_DATE:VARCHAR#,
+			   '2',
+			   #EVS_LEVEL:VARCHAR#,
+			   #TARGET_LEVEL:VARCHAR#,
+			   #COPY_OBJECT:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   #interCpnyID:VARCHAR#)
+	]]>
+	<selectKey resultClass="string" keyProperty="id" >
+    	SELECT EVS_RESUME_INFO_SEQ.CURRVAL AS ID FROM DUAL
+   	</selectKey>
+	</insert>
+	
+	<!-- 更新概要 -->
+	<update id="updateResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_RESUME_INFO
+		   SET RESUME_NAME = #RESUME_NAME:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       EVS_CYCLE = #EVS_CYCLE:VARCHAR#,
+		       EVS_YEAR = #EVS_YEAR:VARCHAR#,
+		       EVS_MONTH = #EVS_MONTH:VARCHAR#,
+		       STANDARD_DATE = TO_DATE(#STANDARD_DATE:VARCHAR#, 'DD/MM/YYYY'),
+		       EVS_START_DATE = #EVS_START_DATE:VARCHAR#,
+		       EVS_END_DATE = #EVS_END_DATE:VARCHAR#,
+		       EVS_LEVEL = #EVS_LEVEL:VARCHAR#,  
+		       TARGET_LEVEL = #TARGET_LEVEL:VARCHAR#,
+		       COPY_OBJECT = #COPY_OBJECT:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除概要 -->
+	<update id="deleteResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_RESUME_INFO
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 日程信息 -->
+	<select id="viewScheduleList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       SCHEDULE_TYPE,
+			       NO,
+			       NAME,
+			       PERSON_ID,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+			       POST_GRADE_NAME,
+			       EVS_OBJECT,
+			       GET_CODE_NAME(EVS_OBJECT,#interLanguage:VARCHAR#) EVS_OBJECT_NAME,
+			       EVS_STEP,
+			       GET_CODE_NAME(EVS_STEP,#interLanguage:VARCHAR#) EVS_STEP_NAME,
+			       TO_CHAR(START_DATE,'DD/MM/YYYY') START_DATE,
+			       TO_CHAR(END_DATE,'DD/MM/YYYY') END_DATE,
+			       ACTIVITY,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_SCHEDULE
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+			   AND SCHEDULE_TYPE = #SCHEDULE_TYPE#
+		]]>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增日程信息 -->
+	<insert id="addScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_SCHEDULE
+			  (SEQ,
+			   RESUME_SEQ,
+			   SCHEDULE_TYPE,
+			   NO,
+			   NAME,
+			   DEPTNO,
+			   DEPTNAME,
+			   POST_GRADE_NO,
+			   POST_GRADE_NAME,
+			   EVS_OBJECT,
+			   EVS_STEP,
+			   START_DATE,
+			   END_DATE,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_SCHEDULE_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #SCHEDULE_TYPE:VARCHAR#,
+			   #NO:VARCHAR#,
+			   #NAME:VARCHAR#,
+			   #DEPTNO:VARCHAR#,
+			   #DEPTNAME:VARCHAR#,
+			   #POST_GRADE_NO:VARCHAR#,
+			   #POST_GRADE_NAME:VARCHAR#,
+			   #EVS_OBJECT:VARCHAR#,
+			   #EVS_STEP:VARCHAR#,
+			   to_date(#START_DATE:VARCHAR#,'DD/MM/YYYY'),
+			   to_date(#END_DATE:VARCHAR#,'DD/MM/YYYY'),
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的日程信息 -->
+	<delete id="deleteEmptyScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_SCHEDULE
+		   WHERE NO IS NULL
+		     AND NAME IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新日程信息 -->
+	<update id="updateScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_SCHEDULE
+		   SET NO = CASE WHEN SCHEDULE_TYPE = 'CPNY' THEN
+		   				#interCpnyID:VARCHAR#
+		   				ELSE
+		   				GET_CODE_NO(#NAME:VARCHAR#,'0',#interCpnyID:VARCHAR#,'DEPT')
+		   				END,
+		       NAME = DECODE(SCHEDULE_TYPE,'CPNY',#interCpnyID:VARCHAR#,#NAME:VARCHAR#),
+		   	   EVS_STEP = GET_CODE_NO(#EVS_STEP_NAME:VARCHAR#,'14015065',#interCpnyID:VARCHAR#,'CODE'),
+		   	   ORDER_NO = #ORDER_NO:VARCHAR#,
+		       START_DATE = TO_DATE(#START_DATE#,'DD/MM/YYYY HH24:MI:SS'),
+		       END_DATE = TO_DATE(#END_DATE#,'DD/MM/YYYY HH24:MI:SS'),
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 更新日程信息 -->
+	<update id="updateScheduleInfoByEmp" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_SCHEDULE
+		   SET NO = #EMPID:VARCHAR#,
+		       NAME = #LOCAL_NAME:VARCHAR#,
+		       PERSON_ID = #PERSON_ID:VARCHAR#,
+		       POST_GRADE_NAME = #POST_GRADE_NAME:VARCHAR#,
+		   	   EVS_STEP = GET_CODE_NO(#EVS_STEP_NAME:VARCHAR#,'14015065',#interCpnyID:VARCHAR#,'CODE'),
+		   	   ORDER_NO = #ORDER_NO:VARCHAR#,
+		       START_DATE = TO_DATE(#START_DATE#,'DD/MM/YYYY HH24:MI:SS'),
+		       END_DATE = TO_DATE(#END_DATE#,'DD/MM/YYYY HH24:MI:SS'),
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除日程信息 -->
+	<delete id="deleteScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_SCHEDULE
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 初始化考核信息  -->
+	<procedure id="initEvsInfo" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_INIT_EVS_PARAM(
+						#SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 初始化考核信息  -->
+	<procedure id="PR_AFFIRM_EXECUTE" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_AFFIRM_EXECUTE(
+						#RESUME_SEQ:VARCHAR#,
+						#AFFIRM_LEVEL:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 生成考核对象及考核者  -->
+	<procedure id="createEvsTarget" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_CREATE_EVS_TARGET(
+						#SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 生成考核对象及考核者  -->
+	<procedure id="createEvsTargetPro" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_INIT_PROBATION_EVS() }
+		]]>
+	</procedure>
+	
+	<!-- 添加考核者  -->
+	<procedure id="PR_ADD_EVS_OBJECT" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_ADD_EVS_OBJECT(
+						#RESUME_SEQ:VARCHAR#,
+						#AFFIRM_ID:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 评价存储  -->
+	<procedure id="excuteEvsPro" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.$PRO_NAME$(
+						#SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 开始考核  -->
+	<procedure id="PR_EVS_START" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_EVS_START(
+						#SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 开始考核  -->
+	<procedure id="PR_CREATE_AR_DETAIL" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_CREATE_AR_DETAIL(
+						#SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 同步日程信息 -->
+	<update id="syncScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_SCHEDULE EVS
+		   SET END_DATE=(
+		       	SELECT ES.END_DATE
+                   FROM EVS_SCHEDULE ES
+                  WHERE ES.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+                    AND ES.SCHEDULE_TYPE = 'CPNY'
+                    AND ES.EVS_STEP = DECODE(EVS.DEPT_TYPE,'14013953','14015071','14015070')
+		       ),
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+		   AND SCHEDULE_TYPE = 'EMP'
+		   AND EVS_STEP = '14015069'
+		]]>
+	</update>
+	
+	<!-- 考核等级属性信息 -->
+	<select id="viewGradeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       EVS_TYPE,
+			       GET_CODE_NAME(EVS_TYPE,#interLanguage:VARCHAR#) EVS_TYPE_NAME,
+			       EVS_GRADE,
+			       GET_CODE_NAME(EVS_GRADE,#interLanguage:VARCHAR#) EVS_GRADE_ORIGINAL,
+			       DECODE(GET_CODE_NAME(EVS_GRADE,#interLanguage:VARCHAR#),'A','EX','B','VG','C','GD','D','NI','E','UN') EVS_GRADE_NAME,
+			       IS_INCLUDE,
+			       START_SCORE,
+			       END_SCORE,
+			       SCORE,
+			       REMARK,
+			       ACTIVITY,
+			       DISTRIBUTION_RATE,
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_GRADE
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+		<isNotEmpty prepend="AND" property="IS_INCLUDE">
+			<![CDATA[
+				IS_INCLUDE = 1
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增考核等级属性信息 -->
+	<insert id="addGradeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_GRADE
+			  (SEQ,
+			   RESUME_SEQ,
+			   EVS_TYPE,
+			   EVS_GRADE,
+			   IS_INCLUDE,
+			   START_SCORE,
+			   END_SCORE,
+			   SCORE,
+			   REMARK,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   14015138,
+			   #EVS_GRADE:VARCHAR#,
+			   1,
+			   0,
+			   0,
+			   0,
+			   #REMARK:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的考核等级属性信息 -->
+	<delete id="deleteEmptyGradeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_GRADE
+		   WHERE EVS_GRADE IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新考核等级属性信息 -->
+	<update id="updateGradeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_GRADE
+		   SET IS_INCLUDE = NVL(#IS_INCLUDE:VARCHAR#,0), 
+		       START_SCORE = #START_SCORE:VARCHAR#,
+		       END_SCORE = #END_SCORE:VARCHAR#,
+		       SCORE = #SCORE:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+			   EVS_TYPE = GET_CODE_NO(#EVS_TYPE_NAME:VARCHAR#,'14015137',#interCpnyID:VARCHAR#,'CODE'),
+			   EVS_GRADE = GET_CODE_NO(#EVS_GRADE_NAME:VARCHAR#,'14015161',#interCpnyID:VARCHAR#,'CODE'),
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 更新考核等级信息 -->
+	<update id="updateGrade" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_AFFIRM_TEMP T SET T.EVS_GRADE = (SELECT GET_GLOBAL_NAME(EG.EVS_GRADE,'vi') 
+			FROM EVS_GRADE EG WHERE T.EVALUATOR_SCORE > EG.START_SCORE AND T.EVALUATOR_SCORE <= EG.END_SCORE 
+			   AND T.RESUME_SEQ = EG.RESUME_SEQ)
+			WHERE EXISTS (SELECT 1
+			FROM EVS_GRADE EG WHERE T.EVALUATOR_SCORE > EG.START_SCORE AND T.EVALUATOR_SCORE <= EG.END_SCORE 
+			    AND T.RESUME_SEQ = EG.RESUME_SEQ)
+		]]>
+	</update>
+	
+	<!-- 更新评价分数  -->
+	<update id="modifyEvsAffirmFromTemp" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_OBJECT E 
+			SET E.FINAL_GRADE = (SELECT DECODE(ET.EVS_GRADE,'EX','A','VG','B','GD','C','NI','D','UN','E') FROM EVS_AFFIRM_TEMP ET WHERE ET.EMPLOYEE_ID = E.EMPID AND ET.RESUME_SEQ = E.RESUME_SEQ)
+			WHERE EXISTS (SELECT 1  FROM EVS_AFFIRM_TEMP ET WHERE ET.EMPLOYEE_ID = E.EMPID AND ET.RESUME_SEQ = E.RESUME_SEQ)
+		]]>
+	</update>
+	
+	<!-- 删除考核等级属性信息 -->
+	<delete id="deleteGradeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_GRADE
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 考核分配率属性信息 -->
+	<select id="viewScoreList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       SCORE_TYPE,
+			       NO,
+			       NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+			       POST_GRADE_NAME,
+			       A,
+			       B,
+			       C,
+			       D,
+			       E,
+			       N,
+			       O,
+			       SUM,
+			       A+B+C+D+E+N+O TOTAL,
+			       ACTIVITY,
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_SCORE
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增考核分配率属性信息 -->
+	<insert id="addScoreInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_SCORE
+			  (SEQ,
+			   RESUME_SEQ,
+			   SCORE_TYPE,
+			   NO,
+			   NAME,
+			   DEPTNO,
+			   DEPTNAME,
+			   POST_GRADE_NO,
+			   POST_GRADE_NAME,
+			   A,
+			   B,
+			   C,
+			   D,
+			   E,
+			   N,
+			   O,
+			   SUM,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #SCORE_TYPE:VARCHAR#,
+			   #NO:VARCHAR#,
+			   #NAME:VARCHAR#,
+			   #DEPTNO:VARCHAR#,
+			   #DEPTNAME:VARCHAR#,
+			   #POST_GRADE_NO:VARCHAR#,
+			   #POST_GRADE_NAME:VARCHAR#,
+			   #A:VARCHAR#,
+			   #B:VARCHAR#,
+			   #C:VARCHAR#,
+			   #D:VARCHAR#,
+			   #E:VARCHAR#,
+			   #N:VARCHAR#,
+			   #O:VARCHAR#,
+			   #SUM:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的考核分配率属性信息 -->
+	<delete id="deleteEmptyScoreInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_SCORE
+		   WHERE EVS_TYPE IS NULL
+		     AND EVS_GRADE IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新考核分配率属性信息 -->
+	<update id="updateScoreInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_SCORE
+		   SET SCORE_TYPE = #SCORE_TYPE:VARCHAR#,
+		       A = NVL(#A:VARCHAR#,0),
+		       B = NVL(#B:VARCHAR#,0),
+		       C = NVL(#C:VARCHAR#,0),
+		       D = NVL(#D:VARCHAR#,0),
+		       E = NVL(#E:VARCHAR#,0),
+		       N = NVL(#N:VARCHAR#,0),
+		       O = NVL(#O:VARCHAR#,0),
+		       SUM = NVL(#SUM:VARCHAR#,0),
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除考核分配率属性信息 -->
+	<delete id="deleteScoreInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_SCORE
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+
+	<!-- 评级基准式 -->
+	<select id="viewEvsFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       CODE_NO,
+			       CODE_NAME,
+			       FORMULA,
+			       REMARK,
+			       ACTIVITY,
+			       ORDERNO,
+			       CPNY_ID,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_FORMULA A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增评级基准式 -->
+	<insert id="addEvsFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_FORMULA
+			  (SEQ,
+			   CODE_NO,
+			   CODE_NAME,
+			   FORMULA,
+			   REMARK,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY,
+			   CPNY_ID)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #CODE_NO:VARCHAR#,
+			   #CODE_NAME:VARCHAR#,
+			   #FORMULA:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   #interCpnyID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 更新评级基准式 -->
+	<update id="updateEvsFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_FORMULA
+		   SET CODE_NAME = #CODE_NAME:VARCHAR#,
+		       FORMULA = #FORMULA:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除评级基准式 -->
+	<update id="deleteEvsFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_FORMULA
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!--评价者规则信息 -->
+	<select id="viewAffirmRuleList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       EVS_STEP,
+			       GET_CODE_NAME(EVS_STEP,#interLanguage:VARCHAR#) EVS_STEP_NAME,
+			       EVS_GROUP,
+			       (SELECT CODE_NAME FROM EVS_PARAM WHERE CODE_NO = A.EVS_GROUP AND PARAM_TYPE = 'GROUP' AND RESUME_SEQ = A.RESUME_SEQ) EVS_GROUP_NAME,
+			       RULE_ID,
+			       GET_CODE_NAME(RULE_ID,#interLanguage:VARCHAR#) RULE_ID_NAME,
+			       ACTIVITY,
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_AFFIRM_RULE A
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增评价者规则信息 -->
+	<insert id="addAffirmRuleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_AFFIRM_RULE
+			  (SEQ,
+			   RESUME_SEQ,
+			   EVS_STEP,
+			   EVS_GROUP,
+			   RULE_ID,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #EVS_STEP:VARCHAR#,
+			   #EVS_GROUP:VARCHAR#,
+			   #RULE_ID:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的评价者规则信息 -->
+	<delete id="deleteEmptyAffirmRuleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_AFFIRM_RULE
+		   WHERE EVS_STEP IS NULL
+		     AND EVS_GROUP IS NULL
+		     AND RULE_ID IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新评价者规则信息 -->
+	<update id="updateAffirmRuleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_AFFIRM_RULE
+		   SET EVS_STEP = GET_CODE_NO(#EVS_STEP_NAME:VARCHAR#,'14015060',#interCpnyID:VARCHAR#,'CODE'),
+		       EVS_GROUP = GET_CODE_NO(#EVS_GROUP_NAME:VARCHAR#,RESUME_SEQ,'GROUP','EVS_PARAM'),
+		       RULE_ID = GET_CODE_NO(#RULE_ID_NAME:VARCHAR#,'14015172',#interCpnyID:VARCHAR#,'CODE'),
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除评价者规则信息 -->
+	<delete id="deleteAffirmRuleInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_AFFIRM_RULE
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!--评价运营基准配置信息 -->
+	<select id="viewParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+				   PARAM_TYPE,
+			       RESUME_SEQ,
+			       CODE_NO,
+			       CODE_NAME,
+			       FORMULA,
+			       (SELECT CODE_NAME FROM EVS_FORMULA WHERE SEQ = A.FORMULA) FORMULA_NAME,
+			       REMARK,
+			       ACTIVITY,
+			       ORDERNO,
+			       START_STEP,
+			       GET_CODE_NAME(START_STEP,#interLanguage:VARCHAR#) START_STEP_NAME,
+			       LIST_TYPE,
+			       EVS_SCORE,
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_PARAM A
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+			   AND PARAM_TYPE = #PARAM_TYPE#
+		]]>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增评价运营基准配置信息 -->
+	<insert id="addParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_PARAM
+			  (SEQ,
+			   RESUME_SEQ,
+			   PARAM_TYPE,
+			   CODE_NO,
+			   CODE_NAME,
+			   FORMULA,
+			   REMARK,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY,
+			   START_STEP,
+			   LIST_TYPE)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #PARAM_TYPE:VARCHAR#,
+			   #CODE_NO:VARCHAR#,
+			   #CODE_NAME:VARCHAR#,
+			   #FORMULA:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   #START_STEP:VARCHAR#,
+			   NVL(#LIST_TYPE:VARCHAR#,0))
+		]]>
+	</insert>
+	
+	<!-- 删除空的评价运营基准配置信息 -->
+	<delete id="deleteEmptyParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_PARAM
+		   WHERE CODE_NO IS NULL
+		     AND CODE_NAME IS NULL
+		     AND FORMULA IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		     AND PARAM_TYPE = #PARAM_TYPE#
+		]]>
+	</delete>
+	
+	<!-- 更新评价运营基准配置信息 -->
+	<update id="updateParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE EVS_PARAM
+			   SET CODE_NO = #CODE_NO:VARCHAR#,
+			       CODE_NAME = #CODE_NAME:VARCHAR#,
+			       FORMULA = GET_CODE_NO(#FORMULA_NAME:VARCHAR#,'',#interCpnyID:VARCHAR#,'EVS_FORMULA'),
+			       REMARK = #REMARK:VARCHAR#,
+			       START_STEP = GET_CODE_NO(#START_STEP_NAME:VARCHAR#,'14015351',#interCpnyID:VARCHAR#,'CODE'),
+			       LIST_TYPE = NVL(#LIST_TYPE:VARCHAR#,0),
+			       EVS_SCORE = #EVS_SCORE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除评价运营基准配置信息 -->
+	<delete id="deleteParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_PARAM
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!--评价对象类型定义信息 -->
+	<select id="viewParamObjectList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       CODE_NO,
+			       CODE_NAME,
+			       FORMULA,
+			       (SELECT CODE_NAME FROM EVS_FORMULA WHERE SEQ = A.FORMULA) FORMULA_NAME,
+			       IS_INCLUDE,
+			       EVS_TYPE,
+			       GET_CODE_NAME(EVS_TYPE,#interLanguage:VARCHAR#) EVS_TYPE_NAME,
+			       EVS_GRADE,
+			       GET_CODE_NAME(EVS_GRADE,#interLanguage:VARCHAR#) EVS_GRADE_NAME,
+			       ACTIVITY,
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_PARAM_OBJECT A
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 评价对象类型定义信息 -->
+	<insert id="addParamObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_PARAM_OBJECT
+			  (SEQ,
+			   RESUME_SEQ,
+			   CODE_NO,
+			   CODE_NAME,
+			   FORMULA,
+			   IS_INCLUDE,
+			   EVS_TYPE,
+			   EVS_GRADE,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #CODE_NO:VARCHAR#,
+			   #CODE_NAME:VARCHAR#,
+			   #FORMULA:VARCHAR#,
+			   NVL(#IS_INCLUDE:VARCHAR#,0),
+			   #EVS_TYPE:VARCHAR#,
+			   #EVS_GRADE:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的评价对象类型定义信息 -->
+	<delete id="deleteEmptyParamObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_PARAM_OBJECT
+		   WHERE CODE_NO IS NULL
+		     AND CODE_NAME IS NULL
+		     AND FORMULA IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新评价对象类型定义信息 -->
+	<update id="updateParamObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE EVS_PARAM_OBJECT
+			   SET CODE_NO = #CODE_NO:VARCHAR#,
+			       CODE_NAME = #CODE_NAME:VARCHAR#,
+			       FORMULA = GET_CODE_NO(#FORMULA_NAME:VARCHAR#,'',#interCpnyID:VARCHAR#,'EVS_FORMULA'),
+			       IS_INCLUDE = NVL(#IS_INCLUDE:VARCHAR#,0),
+			       EVS_TYPE = GET_CODE_NO(#EVS_TYPE_NAME:VARCHAR#,'14015137',#interCpnyID:VARCHAR#,'CODE'),
+			       EVS_GRADE = GET_CODE_NO(#EVS_GRADE_NAME:VARCHAR#,'14015161',#interCpnyID:VARCHAR#,'CODE'),
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除评价对象类型定义信息 -->
+	<delete id="deleteParamObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_PARAM_OBJECT
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!--力量项目定义信息 -->
+	<select id="viewEvsItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       GROUP_NO,
+			       GET_CODE_NAME(GROUP_NO, #interLanguage:VARCHAR#) GROUP_NAME,
+			       ITEM_CODE,
+			       ITEM_NAME,
+			       ITEM_NAME_KO,
+			       REMARK,
+			       REMARK_KO,
+			       ACTIVITY,
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM EVS_ITEM A
+			 WHERE ACTIVITY <> 2
+			   AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+				A.GROUP_NO = #GROUP_NO#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增力量项目定义信息 -->
+	<insert id="addEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_ITEM
+			  (SEQ,
+			   RESUME_SEQ,
+			   GROUP_NO,
+			   ITEM_CODE,
+			   ITEM_NAME,
+			   REMARK,
+			   ITEM_NAME_KO,
+			   REMARK_KO,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #GROUP_NO:VARCHAR#,
+			   #ITEM_CODE:VARCHAR#,
+			   #ITEM_NAME:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   #ITEM_NAME_KO:VARCHAR#,
+			   #REMARK_KO:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的力量项目定义信息 -->
+	<delete id="deleteEmptyEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_ITEM
+		   WHERE GROUP_NO IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新力量项目定义信息 -->
+	<update id="updateEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE EVS_ITEM
+			   SET GROUP_NO = GET_CODE_NO(#GROUP_NAME:VARCHAR#,'14015376',#interCpnyID:VARCHAR#,'CODE'),
+			       ITEM_CODE = #ITEM_CODE:VARCHAR#,
+			       ITEM_NAME = #ITEM_NAME:VARCHAR#,
+			       ITEM_NAME_KO = #ITEM_NAME_KO:VARCHAR#,
+			       REMARK = #REMARK:VARCHAR#,
+			       REMARK_KO = #REMARK_KO:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除力量项目定义 -->
+	<delete id="deleteEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_ITEM
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 指定力量项目信息 -->
+	<select id="viewEvsItemParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PARAM.SEQ,
+			       PARAM.RESUME_SEQ,
+			       ITEM.ITEM_NAME,
+			       ITEM.ITEM_CODE ITEM_CODE_ITEM,
+			       ITEM.REMARK ITEM_REMARK,
+			       get_code_name(ITEM.GROUP_NO,#interLanguage:VARCHAR#) GROUP_NAME,
+			       PKG_EVS_PROCESS.GET_EVS_PARAM_NAME(PARAM.RESUME_SEQ,'GROUP',PARAM.EVS_GROUP) EVS_GROUP_NAME,
+			       PKG_EVS_PROCESS.GET_EVS_PARAM_NAME(PARAM.RESUME_SEQ,'FAMILY',PARAM.EVS_OCC_GROUP) EVS_OCC_GROUP_NAME,
+			       PARAM.ITEM_CODE,
+			       PARAM.EVS_GROUP,
+			       PARAM.EVS_OCC_GROUP,
+			       PARAM.REMARK,
+			       PARAM.ITEM_SCORE,
+			       PARAM.ACTIVITY,
+			       TO_CHAR(PARAM.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(PARAM.UPDATED_BY) || ' ' || PARAM.UPDATED_IP UPDATED_BY
+			  FROM EVS_ITEM_PARAM PARAM,
+			       EVS_ITEM ITEM
+			WHERE PARAM.RESUME_SEQ = ITEM.RESUME_SEQ(+)
+			  AND PARAM.ITEM_CODE = ITEM.ITEM_CODE(+)
+			  AND PARAM.ACTIVITY <> 2
+			  AND PARAM.RESUME_SEQ = #RESUME_SEQ#
+		]]>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+				ITEM.GROUP_NO = #GROUP_NO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GROUP">
+			<![CDATA[
+				PARAM.EVS_GROUP in ( $EVS_GROUP$ )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_OCC_GROUP">
+			<![CDATA[
+				PARAM.EVS_OCC_GROUP in ( $EVS_OCC_GROUP$ )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY TO_NUMBER(PARAM.SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增力量项目定义信息 -->
+	<insert id="addEvsItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_ITEM_PARAM
+			  (SEQ,
+			   RESUME_SEQ,
+			   ITEM_CODE,
+			   EVS_GROUP,
+			   EVS_OCC_GROUP,
+			   REMARK,
+			   ITEM_SCORE,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #EVS_GROUP:VARCHAR#,
+			   #ITEM_CODE:VARCHAR#,
+			   #EVS_OCC_GROUP:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   #ITEM_SCORE:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的力量项目定义信息 -->
+	<delete id="deleteEmptyEvsItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_ITEM_PARAM
+		   WHERE ITEM_CODE IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新力量项目定义信息 -->
+	<update id="updateEvsItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE EVS_ITEM_PARAM
+			   SET ITEM_CODE = GET_CODE_NO(#ITEM_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'','EVS_ITEM'),
+			       EVS_GROUP = GET_CODE_NO(#EVS_GROUP_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'GROUP','EVS_PARAM'),
+			       EVS_OCC_GROUP = GET_CODE_NO(#EVS_OCC_GROUP_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'FAMILY','EVS_PARAM'),
+			       REMARK = #REMARK:VARCHAR#,
+			       ITEM_SCORE = #ITEM_SCORE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除力量项目定义 -->
+	<delete id="deleteEvsItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_ITEM_PARAM
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!--评价对象List -->
+	<select id="viewObjectList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+                   POST_GRADE_NAME,
+                   MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT_TYPE,
+                   OBJECT_TYPE_NAME,
+			       TO_CHAR(DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       
+			       LIST_TYPE_NAME,
+			       EVS_GROUP_NAME,
+			       
+			       EVS_OCC_GROUP,
+			       EVS_OCC_GROUP_NAME,
+			       
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'LOCAL_NAME') LOCAL_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'LOCAL_NAME') LOCAL_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'POST_GRADE_NAME') POST_GRADE_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'POST_GRADE_NAME') POST_GRADE_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'POST_GRADE_NAME') POST_GRADE_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'POST_GRADE_NAME') POST_GRADE_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'POST_GRADE_NAME') POST_GRADE_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRMOR_ID') PERSON_ID1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRMOR_ID') PERSON_ID2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'AFFIRMOR_ID') PERSON_ID3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'AFFIRMOR_ID') PERSON_ID4
+			       
+			  FROM EVS_OBJECT A
+			WHERE A.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.PERSON_ID ASC
+		]]>
+	</select>
+	
+	<!--评价未登记对象List -->
+	<select id="viewObjectListNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+                   POST_GRADE_NAME,
+                   MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT_TYPE,
+                   OBJECT_TYPE_NAME,
+			       TO_CHAR(DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       
+			       LIST_TYPE_NAME,
+			       EVS_GROUP_NAME,
+			       
+			       EVS_OCC_GROUP,
+			       EVS_OCC_GROUP_NAME
+			       
+			  FROM EVS_OBJECT_BAK A
+			 WHERE A.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			   AND A.PERSON_ID NOT IN (
+					SELECT PERSON_ID FROM EVS_OBJECT EVS WHERE RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+				)
+		]]>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.PERSON_ID ASC
+		]]>
+	</select>
+	
+	<!--评价对象List -->
+	<select id="viewObjectListForItem" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+                   POST_GRADE_NAME,
+                   MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT_TYPE,
+                   OBJECT_TYPE_NAME,
+			       TO_CHAR(DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       
+			       LIST_TYPE_NAME,
+			       EVS_GROUP_NAME,
+			       ACTIVITY,
+			       GET_CODE_NAME(ACTIVITY,#interLanguage:VARCHAR#) ACTIVITY_NAME,
+			       
+			       EVS_ITEM_CNT,
+			       EVS_SCORE_SUM,
+			       
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			       
+			  FROM EVS_OBJECT A,
+			       (SELECT ITEM.EVS_OBJECT_SEQ, COUNT(1) EVS_ITEM_CNT, SUM(ITEM.ITEM_SCORE) EVS_SCORE_SUM
+					  FROM EVS_ITEM_SST ITEM
+					 WHERE ITEM.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+					 GROUP BY ITEM.EVS_OBJECT_SEQ) AFF
+			WHERE A.SEQ = AFF.EVS_OBJECT_SEQ(+)
+			  AND A.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				A.PERSON_ID = #PERSON_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GROUP">
+			<![CDATA[
+				EVS_GROUP IN ( $EVS_GROUP$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.PERSON_ID ASC
+		]]>
+	</select>
+	
+	<!--评价结果List -->
+	<select id="viewEvsResultList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+			       POST_GRADE_NAME,
+			       MAIN_BUSINESS,
+			       GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+			       OBJECT_TYPE,
+			       OBJECT_TYPE_NAME,
+			       DATE_STARTED,
+			       ACTIVITY,
+			       GET_CODE_NAME(ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY_NAME,
+			       DECODE(FINAL_GRADE,'A','EX','B','VG','C','GD','D','NI','E','UN') FINAL_GRADE,
+			       FINAL_GRADE  FINAL_GRADE_OR,
+			       FINAL_AFFIRM_CONTENT,
+			       
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+			       ORDERNO,
+			       
+			       DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME0,
+			       DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME1,
+			       DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME2,
+			       DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME3,
+			       DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'LOCAL_NAME') LOCAL_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'LOCAL_NAME') LOCAL_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'POST_GRADE_NAME') POST_GRADE_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'POST_GRADE_NAME') POST_GRADE_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'POST_GRADE_NAME') POST_GRADE_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'POST_GRADE_NAME') POST_GRADE_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'POST_GRADE_NAME') POST_GRADE_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'SEQ') SEQ0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'SEQ') SEQ1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'SEQ') SEQ2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'SEQ') SEQ3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'SEQ') SEQ4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'EVS_POINT') EVS_POINT0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_POINT') EVS_POINT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_POINT') EVS_POINT2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'EVS_POINT') EVS_POINT3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'EVS_POINT') EVS_POINT4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'EVS_GRADE') EVS_GRADE0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') EVS_GRADE1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') EVS_GRADE2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'EVS_GRADE') EVS_GRADE3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'EVS_GRADE') EVS_GRADE4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_CONTENT') || '<br>' ||
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_CONTENT2') AFFIRM_CONTENT0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRM_CONTENT') AFFIRM_CONTENT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRM_CONTENT') AFFIRM_CONTENT2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'AFFIRM_CONTENT') AFFIRM_CONTENT3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'AFFIRM_CONTENT') AFFIRM_CONTENT4
+			  FROM EVS_OBJECT A
+			 WHERE A.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				A.PERSON_ID = #PERSON_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GROUP">
+			<![CDATA[
+				EVS_GROUP IN ( $EVS_GROUP$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.PERSON_ID ASC
+		]]>
+	</select>
+	
+	<!-- 考核状态变更  -->
+	<update id="changeEvsActivity" parameterClass="linkMap">
+		<![CDATA[
+		 	UPDATE EVS_OBJECT SET ACTIVITY = #evsActivity#
+		 	WHERE SEQ IN ( $empIds$ )
+		]]>
+	</update>
+	
+	<!--评价对象信息 -->
+	<select id="viewEvsObjectInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT OBJECT.SEQ,
+				   RESUME.EVS_YEAR,
+			       OBJECT.RESUME_SEQ,
+			       OBJECT.LOCAL_NAME,
+                   OBJECT.POST_GRADE_NAME,
+                   OBJECT.MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(OBJECT.MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT.OBJECT_TYPE,
+                   OBJECT.OBJECT_TYPE_NAME,
+			       GET_DEPT_NAME(OBJECT.DEPTNO , #interLanguage:VARCHAR#) DEPTNAME,
+			       TO_CHAR(OBJECT.DATE_STARTED,'DD/MM/YYYY') DATE_STARTED,
+			       OBJECT.ACTIVITY,
+			       TO_CHAR(TO_DATE(RESUME.EVS_START_DATE,'DD/MM/YYYY'),'DD/MM/YYYY') EVS_START_DATE,
+			       TO_CHAR(TO_DATE(RESUME.EVS_END_DATE, 'DD/MM/YYYY'),'DD/MM/YYYY') EVS_END_DATE,
+			       TO_NUMBER(DECODE(AR_DETAIL.KUANGGONG,0,NULL,AR_DETAIL.KUANGGONG)) KUANGGONG,
+			       TO_NUMBER(DECODE(AR_DETAIL.BINGJIA,0,NULL,AR_DETAIL.BINGJIA)) BINGJIA,
+			       TO_NUMBER(DECODE(AR_DETAIL.CHANJIA,0,NULL,AR_DETAIL.CHANJIA)) CHANJIA,
+			       TO_NUMBER(DECODE(AR_DETAIL.TINGGONG,0,NULL,AR_DETAIL.TINGGONG)) TINGGONG,
+			       TO_NUMBER(DECODE(AR_DETAIL.HUNSANG,0,NULL,AR_DETAIL.HUNSANG)) HUNSANG,
+			       TO_NUMBER(DECODE(AR_DETAIL.NIANJIA,0,NULL,AR_DETAIL.NIANJIA)) NIANJIA,
+			       TO_NUMBER(DECODE(AR_DETAIL.CHIDAO,0,NULL,AR_DETAIL.CHIDAO)) CHIDAO,
+			       TO_NUMBER(DECODE(AR_DETAIL.ZAOTUI,0,NULL,AR_DETAIL.ZAOTUI)) ZAOTUI,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'LOCAL_NAME') LOCAL_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'LOCAL_NAME') LOCAL_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'LOCAL_NAME') LOCAL_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'LOCAL_NAME') LOCAL_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'LOCAL_NAME') LOCAL_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'SEQ')  SEQ0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'SEQ')  SEQ1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'SEQ')  SEQ2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'SEQ')  SEQ3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'SEQ')  SEQ4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'EVS_POINT')  EVS_POINT0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'EVS_POINT')  EVS_POINT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'EVS_POINT')  EVS_POINT2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'EVS_POINT')  EVS_POINT3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'EVS_POINT')  EVS_POINT4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'EVS_GRADE')  EVS_GRADE0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'EVS_GRADE')  EVS_GRADE1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'EVS_GRADE')  EVS_GRADE2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'EVS_GRADE')  EVS_GRADE3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'EVS_GRADE')  EVS_GRADE4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'AFFIRM_CONTENT') || '<br>' ||
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'AFFIRM_CONTENT2')  AFFIRM_CONTENT0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'AFFIRM_CONTENT')  AFFIRM_CONTENT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'AFFIRM_CONTENT')  AFFIRM_CONTENT2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'AFFIRM_CONTENT')  AFFIRM_CONTENT3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'AFFIRM_CONTENT')  AFFIRM_CONTENT4,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'AFFIRM_COMMENT')  AFFIRM_COMMENT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'AFFIRM_COMMENT')  AFFIRM_COMMENT2
+			
+			  FROM EVS_RESUME_INFO RESUME,
+			       EVS_OBJECT OBJECT,
+			       EVS_AR_DETAIL AR_DETAIL
+			 WHERE RESUME.SEQ = OBJECT.RESUME_SEQ
+			   AND OBJECT.SEQ = AR_DETAIL.EVS_OBJECT_SEQ(+)
+			   AND RESUME.SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="EVS_PERSON_ID_BATCH">
+			<![CDATA[
+				OBJECT.SEQ IN ( $EVS_PERSON_ID_BATCH$ )
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="EVS_PERSON_ID_BATCH">
+			<isNotEmpty prepend="AND" property="EVS_PERSON_ID">
+				<![CDATA[
+					OBJECT.PERSON_ID = #EVS_PERSON_ID#
+				]]>
+			</isNotEmpty>
+			<isEmpty prepend="AND" property="EVS_PERSON_ID">
+				<![CDATA[
+					OBJECT.PERSON_ID = #adminID#
+				]]>
+			</isEmpty>
+		</isEmpty>
+		<![CDATA[
+			ORDER BY OBJECT.PERSON_ID ASC
+		]]>
+	</select>
+	
+	<!--评价对象信息 -->
+	<select id="getEvsObjectEvalutorTemp" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT GET_PERSON_ID(EMPLOYEE_ID) EMPLOYEE_ID, 
+			       GET_PERSON_ID(EVALUATOR_ID_1) EVALUATOR_ID_1, 
+			       GET_PERSON_ID(EVALUATOR_ID_2) EVALUATOR_ID_2
+			  FROM EVS_OBJECT_EVALUTOR_TEMP OBJECT,
+			       HR_EMPLOYEE HR
+			 WHERE OBJECT.EMPLOYEE_ID = HR.EMPID
+			   AND OBJECT.UPLOAD_BY = #UPLOAD_BY:VARCHAR#
+			   AND OBJECT.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+	</select>
+	
+	<!--考核项目信息 -->
+	<select id="viewSSTEvsItem" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       EVS_OBJECT_SEQ,
+			       ITEM_NAME,
+			       ITEM_CONTENT,
+			       ITEM_CONTENT ITEM_CONTENT_TEXT,
+			       NVL(ITEM_SCORE,0) ITEM_SCORE,
+			       NVL(EVS_SCORE,0) EVS_SCORE,
+			       NVL(EVS_SCORE1,0) EVS_SCORE1,
+			       NVL(EVS_SCORE2,0) EVS_SCORE2,
+			       NVL(AFFIRM_SCORE,0) AFFIRM_SCORE,
+			       TO_CHAR(START_DATE, 'DD/MM/YYYY') START_DATE,
+			   	   TO_CHAR(END_DATE, 'DD/MM/YYYY') END_DATE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       CREATED_IP,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       UPDATED_IP,
+			       ACTIVITY
+			  FROM EVS_ITEM_SST
+			 WHERE EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!--考核项目信息 -->
+	<select id="viewEvsItemAbility" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT ITEM.SEQ,
+				   GET_CODE_NAME(ITEM.GROUP_NO,#interLanguage:VARCHAR#) GROUP_NAME,
+			       ITEM.ITEM_CODE,
+			       ITEM.ITEM_NAME,
+			       ITEM.REMARK,
+			       ITEM.ITEM_NAME_KO,
+			       ITEM.REMARK_KO,
+			       PARAM.ITEM_SCORE,
+			       EVS.EVS_OCC_GROUP_NAME,
+			       (SELECT SCORE.EVS_SCORE
+			          FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+			         WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+			           AND SCORE.ITEM_SEQ = ITEM.SEQ
+			           AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+			           AND AFFIRM.AFFIRM_LEVEL = 0) EVS_SCORE0,
+			       (SELECT SCORE.EVS_SCORE
+			          FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+			         WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+			           AND SCORE.ITEM_SEQ = ITEM.SEQ
+			           AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+			           AND AFFIRM.AFFIRM_LEVEL = 1) EVS_SCORE1,
+			           (SELECT SCORE.EVS_SCORE
+			          FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+			         WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+			           AND SCORE.ITEM_SEQ = ITEM.SEQ
+			           AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+			           AND AFFIRM.AFFIRM_LEVEL = 2) EVS_SCORE2
+			  FROM EVS_OBJECT EVS, EVS_ITEM ITEM, EVS_ITEM_PARAM PARAM
+			 WHERE ITEM.RESUME_SEQ = PARAM.RESUME_SEQ
+			   AND ITEM.ITEM_CODE = PARAM.ITEM_CODE
+			   AND PARAM.RESUME_SEQ = EVS.RESUME_SEQ
+			   AND PARAM.EVS_OCC_GROUP = EVS.EVS_OCC_GROUP
+			   AND PARAM.EVS_GROUP = EVS.EVS_GROUP
+			   AND EVS.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			   AND PARAM.ACTIVITY <> 2
+			   AND EVS.PERSON_ID = #APPLY_PERSON_ID:VARCHAR#
+			 ORDER BY TO_NUMBER(ITEM.SEQ)
+		]]>
+	</select>
+	
+	<!-- 删除考核项目  -->
+	<delete id="deleteSSTEvsItem" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_ITEM_SST
+		   WHERE EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 考核项目注册  -->
+	<insert id="addSSTEvsItem" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_ITEM_SST
+			  (SEQ,
+			   RESUME_SEQ,
+			   EVS_OBJECT_SEQ,
+			   ITEM_NAME,
+			   ITEM_CONTENT,
+			   ITEM_SCORE,
+			   EVS_SCORE,
+			   START_DATE,
+			   END_DATE,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   CREATED_IP,
+			   UPDATE_DATE,
+			   UPDATED_BY,
+			   UPDATED_IP,
+			   ACTIVITY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #EVS_OBJECT_SEQ:VARCHAR#,
+			   #ITEM_NAME:VARCHAR#,
+			   #ITEM_CONTENT:VARCHAR#,
+			   #ITEM_SCORE:VARCHAR#,
+			   #EVS_SCORE:VARCHAR#,
+			   #START_DATE:VARCHAR#,
+			   #END_DATE:VARCHAR#,
+			   SYSDATE,
+			   #adminID:VARCHAR#,
+			   #adminIP:VARCHAR#,
+			   SYSDATE,
+			   #adminID:VARCHAR#,
+			   #adminIP:VARCHAR#,
+   			   1)
+		]]>
+	</insert>
+	
+	<!-- 更新自我评价分数  -->
+	<update id="modifySSTEvsItemBySelf" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_ITEM_SST EVS SET EVS.EVS_SCORE = #EVS_SCORE# WHERE SEQ = #SEQ#
+		]]>
+	</update>
+	
+	<!-- 更新考评者评价分数  -->
+	<update id="modifySSTEvsItemByAffirmor" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_ITEM_SST EVS SET EVS.AFFIRM_SCORE = #AFFIRM_SCORE# WHERE SEQ = #SEQ#
+		]]>
+	</update>
+	
+	<!-- 更新考评者评价分数  -->
+	<update id="modifySSTEvsItemScore" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_ITEM_SST EVS SET 
+		  EVS.UPDATE_DATE = SYSDATE,
+		  EVS.UPDATED_IP = #adminIP:VARCHAR#,
+		  EVS.UPDATED_BY = #adminID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="," property="EVS_SCORE1">
+			<![CDATA[
+				EVS.EVS_SCORE1 = #EVS_SCORE1:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="EVS_SCORE2">
+			<![CDATA[
+				EVS.EVS_SCORE2 = #EVS_SCORE2:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		  WHERE SEQ = #SEQ#
+		]]>
+	</update>
+	
+	<!-- 更新自我评价分数  -->
+	<update id="modifyEvsAffirmBySelf" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_AFFIRM
+		   SET AFFIRM_FLAG = 1,
+		       AFFIRM_CONTENT = #AFFIRM_CONTENT:VARCHAR#,
+		       AFFIRM_CONTENT2 = #AFFIRM_CONTENT2:VARCHAR#,
+		       CREATE_DATE = SYSDATE,
+		       CREATED_BY = #adminID:VARCHAR#,
+		       CREATED_IP = #adminIP:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#,
+		       ACTIVITY = 1,
+		       EVS_POINT = #EVS_POINT:VARCHAR#,
+		       EVS_GRADE = #EVS_GRADE:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 目标确认 -->
+	<select id="viewConfirmTarget" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+                   POST_GRADE_NAME,
+                   MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT_TYPE,
+                   OBJECT_TYPE_NAME,
+			       DATE_STARTED,
+			       ACTIVITY,
+			       GET_CODE_NAME(ACTIVITY,#interLanguage:VARCHAR#) ACTIVITY_NAME,
+			       CREATE_DATE,
+			       CREATED_IP,
+			       CREATED_BY,
+			       UPDATE_DATE,
+			       UPDATED_IP,
+			       UPDATED_BY,
+			       ORDERNO
+			  FROM EVS_OBJECT A
+			 WHERE SEQ IN (
+			       SELECT AFF.EVS_OBJECT_SEQ
+			         FROM EVS_AFFIRM AFF
+			        WHERE AFF.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			          AND AFF.AFFIRMOR_ID = #adminID:VARCHAR#
+			          AND AFF.AFFIRM_LEVEL = #AFFIRM_LEVEL:VARCHAR#
+			 )
+		]]>
+		<isNotEmpty prepend="AND" property="EVS_DEPT">
+			<![CDATA[
+				DEPTNO IN ( $EVS_DEPT$ )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GROUP">
+			<![CDATA[
+				EVS_GROUP IN ( $EVS_GROUP$ )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.ORDERNO_DEPT,A.ORDERNO,A.DATE_STARTED
+		]]>
+	</select>
+	
+	<!-- 目标确认 -->
+	<select id="viewConfirmTargetCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM EVS_OBJECT
+			 WHERE SEQ IN (
+			       SELECT AFF.EVS_OBJECT_SEQ
+			         FROM EVS_AFFIRM AFF
+			        WHERE AFF.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			          AND AFF.AFFIRMOR_ID = #adminID:VARCHAR#
+			          AND AFF.AFFIRM_LEVEL = #AFFIRM_LEVEL:VARCHAR#
+			 )
+		]]>
+	</select>
+	
+	<!-- 考核对象 -->
+	<select id="viewAffirmTarget" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT OBJECT.SEQ,
+			       OBJECT.RESUME_SEQ,
+			       OBJECT.PERSON_ID,
+			       OBJECT.EMPID,
+			       OBJECT.LOCAL_NAME,
+			       OBJECT.DEPTNO,
+			       GET_DEPT_NAME(OBJECT.DEPTNO , #interLanguage:VARCHAR#) DEPTNAME,
+			       OBJECT.POST_GRADE_NO,
+                   OBJECT.POST_GRADE_NAME,
+                   OBJECT.MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(OBJECT.MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT.OBJECT_TYPE,
+                   OBJECT.OBJECT_TYPE_NAME,
+                   OBJECT.LIST_TYPE,
+                   OBJECT.LIST_TYPE_NAME,
+                   OBJECT.EVS_GROUP_NAME,
+                   TO_CHAR(OBJECT.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       OBJECT.ACTIVITY,
+			       GET_CODE_NAME(OBJECT.ACTIVITY,#interLanguage:VARCHAR#) ACTIVITY_NAME,
+			       OBJECT.CREATE_DATE,
+			       OBJECT.CREATED_IP,
+			       OBJECT.CREATED_BY,
+			       OBJECT.UPDATE_DATE,
+			       OBJECT.UPDATED_IP,
+			       OBJECT.UPDATED_BY,
+			       OBJECT.ORDERNO,
+			       
+			       TO_NUMBER(DECODE(AR_DETAIL.KUANGGONG,0,NULL,AR_DETAIL.KUANGGONG)) KUANGGONG,
+			       TO_NUMBER(DECODE(AR_DETAIL.BINGJIA,0,NULL,AR_DETAIL.BINGJIA)) BINGJIA,
+			       TO_NUMBER(DECODE(AR_DETAIL.CHANJIA,0,NULL,AR_DETAIL.CHANJIA)) CHANJIA,
+			       TO_NUMBER(DECODE(AR_DETAIL.TINGGONG,0,NULL,AR_DETAIL.TINGGONG)) TINGGONG,
+			       TO_NUMBER(DECODE(AR_DETAIL.HUNSANG,0,NULL,AR_DETAIL.HUNSANG)) HUNSANG,
+			       TO_NUMBER(DECODE(AR_DETAIL.NIANJIA,0,NULL,AR_DETAIL.NIANJIA)) NIANJIA,
+			       TO_NUMBER(DECODE(AR_DETAIL.CHIDAO,0,NULL,AR_DETAIL.CHIDAO)) CHIDAO,
+			       TO_NUMBER(DECODE(AR_DETAIL.ZAOTUI,0,NULL,AR_DETAIL.ZAOTUI)) ZAOTUI,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'SEQ')  SEQ0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'SEQ')  SEQ1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'SEQ')  SEQ2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'SEQ')  SEQ3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'SEQ')  SEQ4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'EVS_POINT')  EVS_POINT0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'EVS_POINT')  EVS_POINT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'EVS_POINT')  EVS_POINT2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'EVS_POINT')  EVS_POINT3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'EVS_POINT')  EVS_POINT4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'EVS_GRADE')  EVS_GRADE0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'EVS_GRADE')  EVS_GRADE1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'EVS_GRADE')  EVS_GRADE2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'EVS_GRADE')  EVS_GRADE3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'EVS_GRADE')  EVS_GRADE4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'AFFIRM_CONTENT') || '<br>' ||
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,0,'AFFIRM_CONTENT2')  AFFIRM_CONTENT0,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,1,'AFFIRM_CONTENT')  AFFIRM_CONTENT1,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,2,'AFFIRM_CONTENT')  AFFIRM_CONTENT2,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,3,'AFFIRM_CONTENT')  AFFIRM_CONTENT3,
+			       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ,4,'AFFIRM_CONTENT')  AFFIRM_CONTENT4
+			  FROM EVS_OBJECT OBJECT,
+			       EVS_AR_DETAIL AR_DETAIL
+			 WHERE OBJECT.SEQ = AR_DETAIL.EVS_OBJECT_SEQ(+)
+			   AND OBJECT.SEQ IN (
+			       SELECT AFF.EVS_OBJECT_SEQ
+			         FROM EVS_AFFIRM AFF
+			        WHERE AFF.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			          AND AFF.AFFIRMOR_ID = #adminID:VARCHAR#
+			          AND AFF.AFFIRM_LEVEL = #AFFIRM_LEVEL:VARCHAR#
+			 	)
+		]]>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					OBJECT.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GROUP">
+			<![CDATA[
+				OBJECT.EVS_GROUP IN ( $EVS_GROUP$ )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY OBJECT.ORDERNO_DEPT,OBJECT.ORDERNO,OBJECT.DATE_STARTED
+		]]>
+	</select>
+	
+	
+	<!-- 考核对象 -->
+	<select id="viewAffirmTargetCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM EVS_OBJECT
+			 WHERE SEQ IN (
+			       SELECT AFF.EVS_OBJECT_SEQ
+			         FROM EVS_AFFIRM AFF
+			        WHERE AFF.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			          AND AFF.AFFIRMOR_ID = #adminID:VARCHAR#
+			          AND AFF.AFFIRM_LEVEL = #AFFIRM_LEVEL:VARCHAR#
+			 	)
+		]]>
+	</select>
+	
+	<!-- 获取考核者考评信息 -->
+	<select id="viewEvsAffirmInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       EVS_OBJECT_SEQ,
+			       CONFIRM_FLAG,
+			       AFFIRM_FLAG,
+			       AFFIRM_LEVEL,
+			       AFFIRMOR_ID,
+			       AFFIRM_CONTENT,
+			       AFFIRM_CONTENT2,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       CREATED_IP,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       UPDATED_IP,
+			       ACTIVITY,
+			       EVS_POINT,
+			       EVS_GRADE
+			  FROM EVS_AFFIRM EVS
+			 WHERE EVS.AFFIRM_LEVEL = #AFFIRM_LEVEL#
+			   AND EVS.AFFIRMOR_ID = #adminId#
+			   AND EVS.EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ#
+		]]>
+	</select>
+	
+	<!-- 考核状态修改  -->
+	<procedure id="modifyObjectActivity" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
+						#EVS_OBJECT_SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#FLAG:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 考核状态修改  -->
+	<procedure id="modifyProbationActivity" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_MODIFY_PROBATION_ACTIVITY(
+						#RESUME_SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#FLAG:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 保存人事等级 -->
+	<update id="saveConfirmFinalGrade" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_OBJECT
+		    SET UPDATE_DATE = SYSDATE,
+		        UPDATED_IP = #adminIP:VARCHAR#,
+		        UPDATED_BY = #adminID:VARCHAR#,
+		        FINAL_GRADE = #FINAL_GRADE:VARCHAR#,
+		        FINAL_AFFIRM_CONTENT = #FINAL_AFFIRM_CONTENT:VARCHAR#
+		  WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 考核状态修改  -->
+	<procedure id="PR_MODIFY_AFFIRM_INFO" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_MODIFY_AFFIRM_INFO(
+						#RESUME_SEQ:VARCHAR#,
+						#EVS_OBJECT_SEQ:VARCHAR#,
+						#AFFIRM_ID:VARCHAR#,
+						#AFFIRM_LEVEL:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 考核确认者修改  -->
+	<procedure id="PR_MODIFY_CONFIRM_INFO" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_MODIFY_CONFIRM_INFO(
+						#RESUME_SEQ:VARCHAR#,
+						#EVS_OBJECT_SEQ:VARCHAR#,
+						#AFFIRM_ID:VARCHAR#,
+						#AFFIRM_LEVEL:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 删除考核对象 -->
+	<update id="deleteEvsObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_OBJECT
+		 	WHERE SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除考核对象考核者信息 -->
+	<update id="deleteEvsAffirmInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_AFFIRM
+		 	WHERE EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 修改考核对象信息 -->
+	<update id="modifyObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EVS_OBJECT
+		   SET LIST_TYPE = GET_CODE_NO(#LIST_TYPE_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'LIST','EVS_PARAM'),
+		       LIST_TYPE_NAME = #LIST_TYPE_NAME:VARCHAR#,
+		       EVS_GROUP = GET_CODE_NO(#EVS_GROUP_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'GROUP','EVS_PARAM'),
+		       EVS_GROUP_NAME = #EVS_GROUP_NAME:VARCHAR#,
+		       EVS_OCC_GROUP = GET_CODE_NO(#EVS_OCC_GROUP_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'FAMILY','EVS_PARAM'),
+		       EVS_OCC_GROUP_NAME = #EVS_OCC_GROUP_NAME:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	
+	<!-- 删除力量考核项目分数  -->
+	<delete id="deleteSSTEvsItemAbility" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_ITEM_SCORE WHERE AFFIRM_SEQ = #SEQ#
+		]]>
+	</delete>
+	
+	<!-- 保存力量考核项目分数  -->
+	<insert id="addSSTEvsItemAbility" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_ITEM_SCORE
+		        (SEQ,
+		         RESUME_SEQ,
+		         AFFIRM_SEQ,
+		         ITEM_SEQ,
+		         EVS_SCORE,
+		         ACTIVITY,
+		         CREATE_DATE,
+		         CREATED_IP,
+		         CREATED_BY,
+		         UPDATE_DATE,
+		         UPDATED_IP,
+		         UPDATED_BY)
+		      VALUES
+		        (EVS_PARAM_SEQ.NEXTVAL,
+		         #RESUME_SEQ#,
+		         #SEQ#,
+		         #ITEM_SEQ#,
+		         #EVS_SCORE#,
+		         1,
+			     SYSDATE,
+			     #adminIP:VARCHAR#,
+			     #adminID:VARCHAR#,
+			     SYSDATE,
+			     #adminIP:VARCHAR#,
+			     #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 复制考核等级  -->
+	<procedure id="copyEvsGrade" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.PR_COPY_EVS_GRADE(
+						#SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#EVS_STEP:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- partner考核结果 management -->
+	<select id="viewManageEvsResultEmpTSTO" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EMPID,
+		            LOCAL_NAME,
+		            GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+		          	EVS_YEAR,
+		             MAX(EVS_MONTH1) EVS_MONTH1,
+		             MAX(EVS_MONTH2) EVS_MONTH2,
+		             MAX(EVS_MONTH3) EVS_MONTH3,
+		             MAX(EVS_MONTH4) EVS_MONTH4,
+		             MAX(EVS_MONTH5) EVS_MONTH5,
+		             MAX(EVS_MONTH6) EVS_MONTH6,
+		             MAX(EVS_MONTH7) EVS_MONTH7,
+		             MAX(EVS_MONTH8) EVS_MONTH8,
+		             MAX(EVS_MONTH9) EVS_MONTH9,
+		             MAX(EVS_MONTH10) EVS_MONTH10,
+		             MAX(EVS_MONTH11) EVS_MONTH11,
+		             MAX(EVS_MONTH12) EVS_MONTH12,
+		             MAX(EVS_MONTH13) EVS_MONTH13
+		        FROM (
+		      SELECT EMPID,
+		            LOCAL_NAME,
+		           DEPTNO,
+		           ORDERNO,
+		           EVS_YEAR,
+		             DECODE(EVS_MONTH,'14015045',MAX(FINAL_GRADE)) EVS_MONTH1,
+		             DECODE(EVS_MONTH,'14015046',MAX(FINAL_GRADE)) EVS_MONTH2,
+		             DECODE(EVS_MONTH,'14015047',MAX(FINAL_GRADE)) EVS_MONTH3,
+		             DECODE(EVS_MONTH,'14015048',MAX(FINAL_GRADE)) EVS_MONTH4,
+		             DECODE(EVS_MONTH,'14015049',MAX(FINAL_GRADE)) EVS_MONTH5,
+		             DECODE(EVS_MONTH,'14015050',MAX(FINAL_GRADE)) EVS_MONTH6,
+		             DECODE(EVS_MONTH,'14015051',MAX(FINAL_GRADE)) EVS_MONTH7,
+		             DECODE(EVS_MONTH,'14015052',MAX(FINAL_GRADE)) EVS_MONTH8,
+		             DECODE(EVS_MONTH,'14015053',MAX(FINAL_GRADE)) EVS_MONTH9,
+		             DECODE(EVS_MONTH,'14015054',MAX(FINAL_GRADE)) EVS_MONTH10,
+		             DECODE(EVS_MONTH,'14015055',MAX(FINAL_GRADE)) EVS_MONTH11,
+		             DECODE(EVS_MONTH,'14015056',MAX(FINAL_GRADE)) EVS_MONTH12,
+		             DECODE(EVS_MONTH,'ability',MAX(FINAL_GRADE)) EVS_MONTH13
+		        FROM (SELECT HRE.EMPID,
+		            HRE.LOCAL_NAME,
+		            HRE.DEPTNO,
+		            SC.ORDERNO,EVS.EVS_YEAR,
+		             DECODE(EVS.EVS_TYPE,'ability','ability',
+		             DECODE(EVS.EVS_MONTH,'14015058','14015050','14015059','14015056',EVS.EVS_MONTH)) EVS_MONTH,
+		             EVS.FINAL_GRADE
+		        FROM EVS_OBJECT EVS,HR_EMPLOYEE HRE,SY_CODE SC
+		       WHERE EVS.PERSON_ID = HRE.PERSON_ID
+		         AND HRE.POST_GRADE_NO = SC.CODE_NO(+)
+		         AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ,#LIMIT:VARCHAR#) = 1
+	    ]]>
+		<isNotEmpty prepend="AND" property="EVS_YEAR">
+		<![CDATA[
+				 EVS.EVS_YEAR = #EVS_YEAR:VARCHAR#
+        ]]>
+		</isNotEmpty>
+		 <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO =#DEPT_NO:VARCHAR#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       )
+        ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO in (
+                               SELECT HRD.DEPTID
+                               FROM HR_DEPARTMENT HRD
+                               WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#
+                         ) 
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+							  FROM AR_SUPERVISOR_INFO
+							 WHERE AR_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+							   AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #adminID:VARCHAR#
+							     AND SUD.DEPTNO=HRE.DEPTNO)
+        ]]>
+		</isEmpty>
+		<!-- 部门查询条件 end -->
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	          ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		         AND HRE.EMPID NOT LIKE '11111%'
+		         AND EVS.ACTIVITY = '14015361')
+		        GROUP BY EMPID,LOCAL_NAME,DEPTNO,ORDERNO,EVS_YEAR,EVS_MONTH)
+		      GROUP BY EMPID,LOCAL_NAME,DEPTNO,ORDERNO,EVS_YEAR
+	    ]]>
+		<![CDATA[
+       		ORDER BY DEPTNO,ORDERNO,EMPID,EVS_YEAR
+	    ]]>
+	</select>
+		<!-- partner考核结果 management -->
+	<select id="viewManageEvsResultEmpHTSV" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EMPID,
+		            LOCAL_NAME,
+		            GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+		          	EVS_YEAR,
+		             MAX(EVS_MONTH1) EVS_MONTH1,
+		             MAX(EVS_MONTH2) EVS_MONTH2,
+		             MAX(EVS_MONTH3) EVS_MONTH3,
+		             MAX(EVS_MONTH4) EVS_MONTH4,
+		             MAX(EVS_MONTH5) EVS_MONTH5,
+		             MAX(EVS_MONTH6) EVS_MONTH6,
+		             MAX(EVS_MONTH7) EVS_MONTH7,
+		             MAX(EVS_MONTH8) EVS_MONTH8,
+		             MAX(EVS_MONTH9) EVS_MONTH9,
+		             MAX(EVS_MONTH10) EVS_MONTH10,
+		             MAX(EVS_MONTH11) EVS_MONTH11,
+		             MAX(EVS_MONTH12) EVS_MONTH12,
+		             MAX(EVS_MONTH13) EVS_MONTH13
+		        FROM (
+		      SELECT EMPID,
+		            LOCAL_NAME,
+		           DEPTNO,
+		           ORDERNO,
+		           EVS_YEAR,
+		             DECODE(EVS_MONTH,'14015045',MAX(FINAL_GRADE)) EVS_MONTH1,
+		             DECODE(EVS_MONTH,'14015046',MAX(FINAL_GRADE)) EVS_MONTH2,
+		             DECODE(EVS_MONTH,'14015047',MAX(FINAL_GRADE)) EVS_MONTH3,
+		             DECODE(EVS_MONTH,'14015048',MAX(FINAL_GRADE)) EVS_MONTH4,
+		             DECODE(EVS_MONTH,'14015049',MAX(FINAL_GRADE)) EVS_MONTH5,
+		             DECODE(EVS_MONTH,'14015050',MAX(FINAL_GRADE)) EVS_MONTH6,
+		             DECODE(EVS_MONTH,'14015051',MAX(FINAL_GRADE)) EVS_MONTH7,
+		             DECODE(EVS_MONTH,'14015052',MAX(FINAL_GRADE)) EVS_MONTH8,
+		             DECODE(EVS_MONTH,'14015053',MAX(FINAL_GRADE)) EVS_MONTH9,
+		             DECODE(EVS_MONTH,'14015054',MAX(FINAL_GRADE)) EVS_MONTH10,
+		             DECODE(EVS_MONTH,'14015055',MAX(FINAL_GRADE)) EVS_MONTH11,
+		             DECODE(EVS_MONTH,'14015057',MAX(FINAL_GRADE)) EVS_MONTH12,
+		             DECODE(EVS_MONTH,'ability',MAX(FINAL_GRADE)) EVS_MONTH13
+		        FROM (SELECT HRE.EMPID,
+		            HRE.LOCAL_NAME,
+		            HRE.DEPTNO,
+		            SC.ORDERNO,EVS.EVS_YEAR,
+		             DECODE(EVS.EVS_TYPE,'ability','ability',
+		             DECODE(EVS.EVS_MONTH,'14015058','14015050','14015059','14015057',EVS.EVS_MONTH)) EVS_MONTH,
+		             CASE WHEN EVS.FINAL_GRADE = 'A' THEN 'EX'
+                         WHEN EVS.FINAL_GRADE = 'B' THEN 'VG'
+                         WHEN EVS.FINAL_GRADE = 'C' THEN 'GD'
+                         WHEN EVS.FINAL_GRADE = 'D' THEN 'NI'
+                         WHEN EVS.FINAL_GRADE = 'E' THEN 'UN'
+                         ELSE EVS.FINAL_GRADE END FINAL_GRADE
+		        FROM EVS_OBJECT EVS,HR_EMPLOYEE HRE,SY_CODE SC
+		       WHERE EVS.PERSON_ID = HRE.PERSON_ID
+		         AND HRE.POST_GRADE_NO = SC.CODE_NO(+)
+		         AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ,#LIMIT:VARCHAR#) = 1
+	    ]]>
+		<isNotEmpty prepend="AND" property="EVS_YEAR">
+		<![CDATA[
+				 EVS.EVS_YEAR = #EVS_YEAR:VARCHAR#
+        ]]>
+		</isNotEmpty>
+		 <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO =#DEPT_NO:VARCHAR#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       )
+        ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO in (
+                               SELECT HRD.DEPTID
+                               FROM HR_DEPARTMENT HRD
+                               WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#
+                         ) 
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+							  FROM AR_SUPERVISOR_INFO
+							 WHERE AR_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+							   AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #adminID:VARCHAR#
+							     AND SUD.DEPTNO=HRE.DEPTNO)
+        ]]>
+		</isEmpty>
+		<!-- 部门查询条件 end -->
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	          ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		         AND HRE.EMPID NOT LIKE '11111%'
+		         AND EVS.ACTIVITY = '14015361')
+		        GROUP BY EMPID,LOCAL_NAME,DEPTNO,ORDERNO,EVS_YEAR,EVS_MONTH)
+		      GROUP BY EMPID,LOCAL_NAME,DEPTNO,ORDERNO,EVS_YEAR
+	    ]]>
+		<![CDATA[
+       		ORDER BY DEPTNO,ORDERNO,EMPID,EVS_YEAR
+	    ]]>
+	</select>
+			<!-- partner考核结果 management -->
+	<select id="viewManageEvsResultEmpHAE" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EMPID,
+		            LOCAL_NAME,
+		            GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+		          	EVS_YEAR,
+		             MAX(EVS_MONTH1) EVS_MONTH1,
+		             MAX(EVS_MONTH2) EVS_MONTH2,
+		             MAX(EVS_MONTH3) EVS_MONTH3,
+		             MAX(EVS_MONTH4) EVS_MONTH4,
+		             MAX(EVS_MONTH5) EVS_MONTH5,
+		             MAX(EVS_MONTH6) EVS_MONTH6,
+		             MAX(EVS_MONTH7) EVS_MONTH7,
+		             MAX(EVS_MONTH8) EVS_MONTH8,
+		             MAX(EVS_MONTH9) EVS_MONTH9,
+		             MAX(EVS_MONTH10) EVS_MONTH10,
+		             MAX(EVS_MONTH11) EVS_MONTH11,
+		             MAX(EVS_MONTH12) EVS_MONTH12,
+		             MAX(EVS_MONTH13) EVS_MONTH13
+		        FROM (
+		      SELECT EMPID,
+		            LOCAL_NAME,
+		           DEPTNO,
+		           ORDERNO,
+		           EVS_YEAR,
+		             DECODE(EVS_MONTH,'14015045',MAX(FINAL_GRADE)) EVS_MONTH1,
+		             DECODE(EVS_MONTH,'14015046',MAX(FINAL_GRADE)) EVS_MONTH2,
+		             DECODE(EVS_MONTH,'14015047',MAX(FINAL_GRADE)) EVS_MONTH3,
+		             DECODE(EVS_MONTH,'14015048',MAX(FINAL_GRADE)) EVS_MONTH4,
+		             DECODE(EVS_MONTH,'14015049',MAX(FINAL_GRADE)) EVS_MONTH5,
+		             DECODE(EVS_MONTH,'14015050',MAX(FINAL_GRADE)) EVS_MONTH6,
+		             DECODE(EVS_MONTH,'14015051',MAX(FINAL_GRADE)) EVS_MONTH7,
+		             DECODE(EVS_MONTH,'14015052',MAX(FINAL_GRADE)) EVS_MONTH8,
+		             DECODE(EVS_MONTH,'14015053',MAX(FINAL_GRADE)) EVS_MONTH9,
+		             DECODE(EVS_MONTH,'14015054',MAX(FINAL_GRADE)) EVS_MONTH10,
+		             DECODE(EVS_MONTH,'14015055',MAX(FINAL_GRADE)) EVS_MONTH11,
+		             DECODE(EVS_MONTH,'14015056',MAX(FINAL_GRADE)) EVS_MONTH12,
+		             DECODE(EVS_MONTH,'ability',MAX(FINAL_GRADE)) EVS_MONTH13
+		        FROM (SELECT HRE.EMPID,
+		            HRE.LOCAL_NAME,
+		            HRE.DEPTNO,
+		            SC.ORDERNO,EVS.EVS_YEAR,
+		             DECODE(EVS.EVS_TYPE,'ability','ability',
+		             DECODE(EVS.EVS_MONTH,'14015058','14015050','14015059','14015056',EVS.EVS_MONTH)) EVS_MONTH,
+		             EVS.FINAL_GRADE
+		        FROM EVS_OBJECT EVS,HR_EMPLOYEE HRE,SY_CODE SC
+		       WHERE EVS.PERSON_ID = HRE.PERSON_ID
+		         AND HRE.POST_GRADE_NO = SC.CODE_NO(+)
+		         AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ,#LIMIT:VARCHAR#) = 1
+	    ]]>
+		<isNotEmpty prepend="AND" property="EVS_YEAR">
+		<![CDATA[
+				 EVS.EVS_YEAR = #EVS_YEAR:VARCHAR#
+        ]]>
+		</isNotEmpty>
+		 <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO =#DEPT_NO:VARCHAR#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       )
+        ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO in (
+                               SELECT HRD.DEPTID
+                               FROM HR_DEPARTMENT HRD
+                               WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#
+                         ) 
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+							  FROM AR_SUPERVISOR_INFO
+							 WHERE AR_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+							   AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #adminID:VARCHAR#
+							     AND SUD.DEPTNO=HRE.DEPTNO)
+        ]]>
+		</isEmpty>
+		<!-- 部门查询条件 end -->
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	          ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		         AND HRE.EMPID NOT LIKE '11111%'
+		         AND EVS.ACTIVITY = '14015361')
+		        GROUP BY EMPID,LOCAL_NAME,DEPTNO,ORDERNO,EVS_YEAR,EVS_MONTH)
+		      GROUP BY EMPID,LOCAL_NAME,DEPTNO,ORDERNO,EVS_YEAR
+	    ]]>
+		<![CDATA[
+       		ORDER BY DEPTNO,ORDERNO,EMPID,EVS_YEAR
+	    ]]>
+	</select>
+	<select id="viewManageEvsResultEmpSST" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EVS_YEAR,HRE.EMPID,
+		            HRE.LOCAL_NAME,
+		            GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPT_NAME,
+            		   DECODE(EVS_TYPE,'performance','业绩','力量') EVS_TYPE_NAME,
+				       GET_CODE_NAME(EVS_MONTH,#interLanguage:VARCHAR#) EVS_CYCLE_NAME,
+				       EVS.FINAL_GRADE
+				  FROM EVS_OBJECT EVS,HR_EMPLOYEE HRE
+		       WHERE EVS.PERSON_ID = HRE.PERSON_ID
+		         AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ,#LIMIT:VARCHAR#) = 1
+	    ]]>
+		<isNotEmpty prepend="AND" property="EVS_YEAR">
+		<![CDATA[
+				 EVS.EVS_YEAR = #EVS_YEAR:VARCHAR#
+        ]]>
+		</isNotEmpty>
+		 <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO =#DEPT_NO:VARCHAR#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       )
+        ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT B1.DEPTNO
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HRE.DEPTNO
+				         START WITH B1.DEPTNO in (
+                               SELECT HRD.DEPTID
+                               FROM HR_DEPARTMENT HRD
+                               WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#
+                         ) 
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				       UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+							  FROM AR_SUPERVISOR_INFO
+							 WHERE AR_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+							   AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #adminID:VARCHAR#
+							     AND SUD.DEPTNO=HRE.DEPTNO)
+        ]]>
+		</isEmpty>
+		<!-- 部门查询条件 end -->
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	          ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		         AND HRE.EMPID NOT LIKE '11111%'
+		         AND EVS.ACTIVITY = '14015361'
+	    ]]>
+		<![CDATA[
+       		ORDER BY HRE.DEPTNO,HRE.EMPID,EVS_YEAR
+	    ]]>
+	</select>
+	
+	<!-- partner考核结果 -->
+	<select id="viewEvsResultEmp" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				SELECT EVS_YEAR,
+				       MAX(EVS_MONTH1) EVS_MONTH1,
+				       MAX(EVS_MONTH2) EVS_MONTH2,
+				       MAX(EVS_MONTH3) EVS_MONTH3,
+				       MAX(EVS_MONTH4) EVS_MONTH4,
+				       MAX(EVS_MONTH5) EVS_MONTH5,
+				       MAX(EVS_MONTH6) EVS_MONTH6,
+				       MAX(EVS_MONTH7) EVS_MONTH7,
+				       MAX(EVS_MONTH8) EVS_MONTH8,
+				       MAX(EVS_MONTH9) EVS_MONTH9,
+				       MAX(EVS_MONTH10) EVS_MONTH10,
+				       MAX(EVS_MONTH11) EVS_MONTH11,
+				       MAX(EVS_MONTH12) EVS_MONTH12,
+				       MAX(EVS_MONTH13) EVS_MONTH13
+				  FROM (
+				SELECT EVS_YEAR,
+				       DECODE(EVS_MONTH,'14015045',MAX(FINAL_GRADE)) EVS_MONTH1,
+				       DECODE(EVS_MONTH,'14015046',MAX(FINAL_GRADE)) EVS_MONTH2,
+				       DECODE(EVS_MONTH,'14015047',MAX(FINAL_GRADE)) EVS_MONTH3,
+				       DECODE(EVS_MONTH,'14015048',MAX(FINAL_GRADE)) EVS_MONTH4,
+				       DECODE(EVS_MONTH,'14015049',MAX(FINAL_GRADE)) EVS_MONTH5,
+				       DECODE(EVS_MONTH,'14015050',MAX(FINAL_GRADE)) EVS_MONTH6,
+				       DECODE(EVS_MONTH,'14015051',MAX(FINAL_GRADE)) EVS_MONTH7,
+				       DECODE(EVS_MONTH,'14015052',MAX(FINAL_GRADE)) EVS_MONTH8,
+				       DECODE(EVS_MONTH,'14015053',MAX(FINAL_GRADE)) EVS_MONTH9,
+				       DECODE(EVS_MONTH,'14015054',MAX(FINAL_GRADE)) EVS_MONTH10,
+				       DECODE(EVS_MONTH,'14015055',MAX(FINAL_GRADE)) EVS_MONTH11,
+				       DECODE(EVS_MONTH,'14015057',MAX(FINAL_GRADE)) EVS_MONTH12,
+				       DECODE(EVS_MONTH,'ability',MAX(FINAL_GRADE)) EVS_MONTH13
+				  FROM (SELECT EVS.EVS_YEAR,
+				       DECODE(EVS.EVS_TYPE,'ability','ability',
+				       DECODE(EVS.EVS_MONTH,'14015058','14015050','14015059','14015057',EVS.EVS_MONTH)) EVS_MONTH,
+				       CASE WHEN EVS.FINAL_GRADE = 'A' THEN 'EX'
+                            WHEN EVS.FINAL_GRADE = 'B' THEN 'VG'
+                            WHEN EVS.FINAL_GRADE = 'C' THEN 'GD'
+                            WHEN EVS.FINAL_GRADE = 'D' THEN 'NI'
+                            WHEN EVS.FINAL_GRADE = 'E' THEN 'UN'
+                            ELSE EVS.FINAL_GRADE
+                            END FINAL_GRADE
+				  FROM EVS_OBJECT EVS
+				 WHERE PERSON_ID = #adminID:VARCHAR#
+				   AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ,#LIMIT:VARCHAR#) = 1
+				   AND ACTIVITY = '14015361')
+				  GROUP BY EVS_YEAR,EVS_MONTH)
+				GROUP BY EVS_YEAR
+        		ORDER BY EVS_YEAR
+		    ]]>
+		
+	</select>
+	
+	<!-- partner考核结果 -->
+	<select id="viewEvsResultPerson" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				SELECT EVS_YEAR,
+				       MAX(EVS_MONTH1) EVS_MONTH1,
+				       MAX(EVS_MONTH2) EVS_MONTH2,
+				       MAX(EVS_MONTH3) EVS_MONTH3,
+				       MAX(EVS_MONTH4) EVS_MONTH4,
+				       MAX(EVS_MONTH5) EVS_MONTH5,
+				       MAX(EVS_MONTH6) EVS_MONTH6,
+				       MAX(EVS_MONTH7) EVS_MONTH7,
+				       MAX(EVS_MONTH8) EVS_MONTH8,
+				       MAX(EVS_MONTH9) EVS_MONTH9,
+				       MAX(EVS_MONTH10) EVS_MONTH10,
+				       MAX(EVS_MONTH11) EVS_MONTH11,
+				       MAX(EVS_MONTH12) EVS_MONTH12,
+				       MAX(EVS_MONTH13) EVS_MONTH13
+				  FROM (
+				SELECT EVS_YEAR,
+				       DECODE(EVS_MONTH,'14015045',MAX(FINAL_GRADE)) EVS_MONTH1,
+				       DECODE(EVS_MONTH,'14015046',MAX(FINAL_GRADE)) EVS_MONTH2,
+				       DECODE(EVS_MONTH,'14015047',MAX(FINAL_GRADE)) EVS_MONTH3,
+				       DECODE(EVS_MONTH,'14015048',MAX(FINAL_GRADE)) EVS_MONTH4,
+				       DECODE(EVS_MONTH,'14015049',MAX(FINAL_GRADE)) EVS_MONTH5,
+				       DECODE(EVS_MONTH,'14015050',MAX(FINAL_GRADE)) EVS_MONTH6,
+				       DECODE(EVS_MONTH,'14015051',MAX(FINAL_GRADE)) EVS_MONTH7,
+				       DECODE(EVS_MONTH,'14015052',MAX(FINAL_GRADE)) EVS_MONTH8,
+				       DECODE(EVS_MONTH,'14015053',MAX(FINAL_GRADE)) EVS_MONTH9,
+				       DECODE(EVS_MONTH,'14015054',MAX(FINAL_GRADE)) EVS_MONTH10,
+				       DECODE(EVS_MONTH,'14015055',MAX(FINAL_GRADE)) EVS_MONTH11,
+				       DECODE(EVS_MONTH,'14015057',MAX(FINAL_GRADE)) EVS_MONTH12,
+				       DECODE(EVS_MONTH,'ability',MAX(FINAL_GRADE)) EVS_MONTH13
+				  FROM (SELECT EVS.EVS_YEAR,
+				       DECODE(EVS.EVS_TYPE,'ability','ability',
+				       DECODE(EVS.EVS_MONTH,'14015058','14015050','14015059','14015057',EVS.EVS_MONTH)) EVS_MONTH,
+				       CASE WHEN EVS.FINAL_GRADE = 'A' THEN 'EX'
+                            WHEN EVS.FINAL_GRADE = 'B' THEN 'VG'
+                            WHEN EVS.FINAL_GRADE = 'C' THEN 'GD'
+                            WHEN EVS.FINAL_GRADE = 'D' THEN 'NI'
+                            WHEN EVS.FINAL_GRADE = 'E' THEN 'UN'
+                            ELSE EVS.FINAL_GRADE
+                            END FINAL_GRADE
+				  FROM EVS_OBJECT EVS
+				 WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+				   AND ACTIVITY = '14015361')
+				  GROUP BY EVS_YEAR,EVS_MONTH)
+				GROUP BY EVS_YEAR
+        		ORDER BY EVS_YEAR DESC
+		    ]]>
+	</select>
+	<!--评价对象List -->
+	<select id="viewObjectConfirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+                   POST_GRADE_NAME,
+                   MAIN_BUSINESS,
+                   GET_GLOBAL_NAME(MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+                   OBJECT_TYPE,
+                   OBJECT_TYPE_NAME,
+			       DATE_STARTED,
+			       
+			       LIST_TYPE_NAME,
+			       EVS_GROUP_NAME,
+			       
+			       EVS_OCC_GROUP,
+			       EVS_OCC_GROUP_NAME,
+			       
+			       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 3, 'LOCAL_NAME') LOCAL_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 4, 'LOCAL_NAME') LOCAL_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 0, 'POST_GRADE_NAME') POST_GRADE_NAME0,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 1, 'POST_GRADE_NAME') POST_GRADE_NAME1,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 2, 'POST_GRADE_NAME') POST_GRADE_NAME2,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 3, 'POST_GRADE_NAME') POST_GRADE_NAME3,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 4, 'POST_GRADE_NAME') POST_GRADE_NAME4,
+			       
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 1, 'AFFIRMOR_ID') PERSON_ID1,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 2, 'AFFIRMOR_ID') PERSON_ID2,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 3, 'AFFIRMOR_ID') PERSON_ID3,
+			       PKG_EVS_PROCESS.GET_EVS_CONFIRM_INFO(SEQ, 4, 'AFFIRMOR_ID') PERSON_ID4
+			       
+			  FROM EVS_OBJECT_CONFIRM A
+			WHERE A.RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					A.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.ORDERNO_DEPT,A.ORDERNO,A.DATE_STARTED
+		]]>
+	</select>
+	
+	<!-- 概要信息 -->
+	<select id="viewHrResumeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       TITLE,
+			       REMARK,
+			       NAME,
+				   SEX,
+				   GET_CODE_NAME(SEX,#interLanguage:VARCHAR#) SEX_NAME,
+				   AGE,
+				   DEPT,
+				   get_dept_name(DEPT,#interLanguage:VARCHAR#) DEPT_NAME,
+				   PHONE,
+			       ACTIVITY,
+			       LANGUAGE_TYPE,
+			       GET_CODE_NAME(LANGUAGE_TYPE,#interLanguage:VARCHAR#) LANGUAGE_TYPE_NAME,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM HR_RESUME_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				(A.TITLE LIKE '%$KEY$%' OR A.REMARK LIKE '%$KEY$%'
+				OR A.NAME LIKE '%$KEY$%' OR A.DEPT LIKE '%$KEY$%'
+				OR A.PHONE LIKE '%$KEY$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.SEQ DESC
+		]]>
+	</select>
+	
+	<!-- 新增概要 -->
+	<insert id="addHrResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_RESUME_INFO
+			  (SEQ,
+			   TITLE,
+			   REMARK,
+			       NAME,
+				   SEX,
+				   AGE,
+				   DEPT,
+				   PHONE,
+				   LANGUAGE_TYPE,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY,
+			   CPNY_ID)
+			VALUES
+			  (HR_RESUME_INFO_SEQ.NEXTVAL,
+			   #TITLE:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   #NAME:VARCHAR#,
+			   #SEX:VARCHAR#,
+			   #AGE:VARCHAR#,
+			   #DEPT:VARCHAR#,
+			   #PHONE:VARCHAR#,
+			   #LANGUAGE_TYPE:VARCHAR#,
+			   '1',
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   #interCpnyID:VARCHAR#)
+		]]>
+		<selectKey resultClass="string" keyProperty="id" >
+	    	SELECT HR_RESUME_INFO_SEQ.CURRVAL AS ID FROM DUAL
+	   	</selectKey>
+	</insert>
+	
+	<!-- 更新概要 -->
+	<update id="updateHrResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_RESUME_INFO
+		   SET TITLE = #TITLE:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+			       NAME = #NAME:VARCHAR#,
+				   SEX = #SEX:VARCHAR#,
+				   AGE = #AGE:VARCHAR#,
+				   DEPT = #DEPT:VARCHAR#,
+				   PHONE = #PHONE:VARCHAR#,
+				   LANGUAGE_TYPE = #LANGUAGE_TYPE:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除概要 -->
+	<update id="deleteHrResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_RESUME_INFO
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 概要信息 -->
+	<select id="viewActivityList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+				   NAME,
+				   PARTICIPANTS,
+				   PERSON_NUMBER,
+				   START_DATE,
+				   END_DATE,
+				   REMARK,
+				   EMAIL_CONTENT,
+			       ACTIVITY,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM HR_ACTIVITY_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				(A.NAME LIKE '%$KEY$%' OR A.REMARK LIKE '%$KEY$%' OR A.EMAIL_CONTENT LIKE '%$KEY$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.SEQ DESC
+		]]>
+	</select>
+	
+	<!-- 新增概要 -->
+	<insert id="addActivityInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_ACTIVITY_INFO
+			  (SEQ,
+			   NAME,
+			   PARTICIPANTS,
+			   PERSON_NUMBER,
+			   START_DATE,
+			   END_DATE,
+			   REMARK,
+			   EMAIL_CONTENT,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY,
+			   CPNY_ID)
+			VALUES
+			  (HR_ACTIVITY_INFO_SEQ.NEXTVAL,
+			   #NAME:VARCHAR#,
+			   #PARTICIPANTS:VARCHAR#,
+			   #PERSON_NUMBER:VARCHAR#,
+			   #START_DATE:VARCHAR#,
+			   #END_DATE:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   #EMAIL_CONTENT:VARCHAR#,
+			   '1',
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   #interCpnyID:VARCHAR#)
+		]]>
+		<selectKey resultClass="string" keyProperty="id" >
+	    	SELECT HR_ACTIVITY_INFO_SEQ.CURRVAL AS ID FROM DUAL
+	   	</selectKey>
+	</insert>
+	
+	<!-- 更新概要 -->
+	<update id="updateActivityInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_ACTIVITY_INFO
+		   SET NAME = #NAME:VARCHAR#,
+		   	   PARTICIPANTS = #PARTICIPANTS:VARCHAR#,
+		   	   PERSON_NUMBER = #PERSON_NUMBER:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       START_DATE = #START_DATE:VARCHAR#,
+		       END_DATE = #END_DATE:VARCHAR#,
+		       EMAIL_CONTENT = #EMAIL_CONTENT:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除概要 -->
+	<update id="deleteActivityInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_ACTIVITY_INFO
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 概要信息 -->
+	<select id="viewActivityEmpList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       ACTIVITY_SEQ,
+			       PERSON_ID,
+			       EMPID,
+			       LOCAL_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       POST_GRADE_NO,
+			       POST_GRADE_NAME,
+			       DATE_STARTED
+			  FROM HR_ACTIVITY_OBJECT
+			 WHERE ACTIVITY = 1
+			   AND ACTIVITY_SEQ = #ACTIVITY_SEQ#
+		]]>
+		<![CDATA[
+			 ORDER BY SEQ DESC
+		]]>
+	</select>
+	
+	<!-- 更新活动对象信息  -->
+	<procedure id="updateActivityEmpInfo" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_EVS_PROCESS.UPDATE_ACTIVITY_EMP_INFO(#ACTIVITY_SEQ:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 新增概要 -->
+	<insert id="addActivityEmpInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_ACTIVITY_OBJECT
+			  (SEQ,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (HR_ACTIVITY_INFO_SEQ.NEXTVAL,
+			   '1',
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除概要 -->
+	<update id="deleteActivityEmpInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM HR_ACTIVITY_OBJECT
+		   WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 活动邮件信息 -->
+	<select id="viewActivityEmailList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HRA.SEQ,HRA.NAME EMAIL_TITLE,HRA.EMAIL_CONTENT,HRP.EMAIL
+			  FROM HR_ACTIVITY_INFO HRA,HR_ACTIVITY_OBJECT HR, HR_PERSONAL_INFO HRP
+			 WHERE HRA.SEQ = HR.ACTIVITY_SEQ
+			   AND HR.PERSON_ID = HRP.PERSON_ID
+			   AND HRP.EMAIL IS NOT NULL
+			   AND HRA.SEQ = #ACTIVITY_SEQ#
+		]]>
+	</select>
+	
+	<!--试用期考核项目 -->
+	<select id="viewProbationEvsItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       ITEM_CONTENT,
+			       NVL(ITEM_SCORE,0) ITEM_SCORE,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+			       ACTIVITY
+			  FROM EVS_ITEM_PROBATION
+			 WHERE RESUME_SEQ = #RESUME_SEQ:VARCHAR#
+			 ORDER BY TO_NUMBER(SEQ)
+		]]>
+	</select>
+	
+	<!-- 新增力量项目定义信息 -->
+	<insert id="addProbationEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_ITEM_PROBATION
+			  (SEQ,
+			   RESUME_SEQ,
+			   ITEM_CONTENT,
+			   ITEM_SCORE,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY)
+			VALUES
+			  (EVS_PARAM_SEQ.NEXTVAL,
+			   #RESUME_SEQ:VARCHAR#,
+			   #ITEM_CONTENT:VARCHAR#,
+			   #ITEM_SCORE:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<!-- 删除空的力量项目定义信息 -->
+	<delete id="deleteEmptyProbationEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_ITEM_PROBATION
+		   WHERE ITEM_CONTENT IS NULL
+		     AND RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</delete>
+	
+	<!-- 更新力量项目定义信息 -->
+	<update id="updateProbationEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE EVS_ITEM_PROBATION
+			   SET ITEM_CONTENT = #ITEM_CONTENT:VARCHAR#,
+			       ITEM_SCORE = #ITEM_SCORE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除力量项目定义 -->
+	<delete id="deleteProbationEvsItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_ITEM_PROBATION
+		   WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 删除试用期考核考核者  -->
+	<delete id="deleteProbationEvsAffirm" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM EVS_AFFIRM
+		   WHERE EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		     AND AFFIRM_LEVEL <> 0
+		]]>
+	</delete>
+	
+	<!-- 插入试用期考核者  -->
+	<insert id="addProbationEvsAffirm" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EVS_AFFIRM
+		        (SEQ,
+		         RESUME_SEQ,
+		         EVS_OBJECT_SEQ,
+		         CONFIRM_FLAG,
+		         AFFIRM_FLAG,
+		         AFFIRM_LEVEL,
+		         AFFIRM_TYPE,
+		         AFFIRMOR_ID,
+		         CREATE_DATE,
+		         UPDATE_DATE,
+		         ACTIVITY,
+		         EMPID,
+		         LOCAL_NAME,
+		         POST_GRADE_NO,
+		         POST_GRADE_NAME,
+		         DEPTNO,
+		         DEPTNAME)
+		        SELECT EVS_PARAM_SEQ.NEXTVAL,
+		               #RESUME_SEQ:VARCHAR#,
+		               #EVS_OBJECT_SEQ:VARCHAR#,
+		               0,
+		               0,
+		               #AFFIRM_LEVEL:VARCHAR#,
+		               #AFFIRM_TYPE:VARCHAR#,
+		               #AFFIRMOR_ID:VARCHAR#,
+		               SYSDATE,
+		               SYSDATE,
+		               DECODE(#AFFIRM_LEVEL:VARCHAR#,'1',0,3),
+		               EVS.EMPID,
+		               EVS.LOCAL_NAME,
+		               EVS.POST_GRADE_NO,
+		               GET_CODE_NAME(EVS.POST_GRADE_NO, #interLanguage:VARCHAR#),
+		               EVS.DEPTNO,
+		               GET_DEPT_NAME(EVS.DEPTNO, #interLanguage:VARCHAR#)
+		          FROM HR_EMPLOYEE EVS
+		         WHERE EVS.PERSON_ID = #AFFIRMOR_ID:VARCHAR#
+		]]>
+	</insert>
+	
+	<!--试用期考核者列表 -->
+	<select id="viewProbationEvsAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       EVS_OBJECT_SEQ,
+			       CONFIRM_FLAG,
+			       AFFIRM_FLAG,
+			       AFFIRM_LEVEL,
+			       AFFIRMOR_ID,
+			       AFFIRM_CONTENT,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       CREATED_IP,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       UPDATED_IP,
+			       ACTIVITY,
+			       EVS_POINT,
+			       EVS_GRADE,
+			       EMPID,
+			       LOCAL_NAME,
+			       POST_GRADE_NO,
+			       POST_GRADE_NAME,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       AFFIRM_CONTENT2,
+			       AFFIRM_TYPE,
+			       AFFIRM_RAT,
+			       '[' || EMPID || ']-' || LOCAL_NAME AFFIRMOR,
+			       LOCAL_NAME || '/' || POST_GRADE_NAME || '/' || DEPTNAME AFFIRMOR_INFO
+			  FROM EVS_AFFIRM
+			 WHERE EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		       AND AFFIRM_LEVEL <> 0
+			 ORDER BY TO_NUMBER(AFFIRM_LEVEL)
+		]]>
+	</select>
+	
+	<!--试用期考核分数查询 -->
+	<select id="viewProbationEvsAffirmScore" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_SEQ,
+			       AFFIRM_SEQ,
+			       ITEM_SEQ,
+			       EVS_SCORE,
+			       ORDERNO
+			  FROM EVS_ITEM_SCORE
+			 WHERE RESUME_SEQ = #RESUME_SEQ#
+		]]>
+	</select>
+	
+	<!-- 试用期考核结果保存 -->
+	<update id="saveProbationAffirmRat" parameterClass="linkMap">
+		<![CDATA[
+		  	UPDATE EVS_AFFIRM
+			   SET AFFIRM_RAT = #AFFIRM_RAT:VARCHAR#
+			 WHERE SEQ = #AFFIRM_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 评价者通过或否决目标设定意见 -->
+	<update id = "updateAffirmComment" parameterClass = "linkMap">
+		<![CDATA[
+			UPDATE EVS_AFFIRM
+			   SET AFFIRM_COMMENT = #AFFIRM_COMMENT:VARCHAR#
+			 WHERE AFFIRM_LEVEL = #LEVEL:VARCHAR#
+			   AND EVS_OBJECT_SEQ = #EVS_OBJECT_SEQ:VARCHAR#
+		]]>	
+	</update>
+	
+	<!-- 试用期考核结果保存 -->
+	<update id="saveProbationResult" parameterClass="linkMap">
+		<![CDATA[
+		  	UPDATE EVS_PROBATION_RESUME_INFO
+			   SET FINAL_POINT = #FINAL_POINT:VARCHAR#,
+			       FINAL_GRADE = #FINAL_GRADE:VARCHAR#
+			 WHERE SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 试用期考核结束 -->
+	<update id="finishProbationResult" parameterClass="linkMap">
+		<![CDATA[
+		  	UPDATE EVS_PROBATION_RESUME_INFO
+			   SET ACTIVITY = 4,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #RESUME_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!--获取奖励信息 -->
+	<select id="getEvsRewardInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TO_CHAR(R.REWARD_DATE, 'DD/MM/YYYY') || '->' ||
+			       GET_GLOBAL_NAME(R.REWARD_TYPE, #interLanguage:VARCHAR#) LOCAL_NAME
+			  FROM HR_REWARD R
+			 WHERE R.ACTIVITY = '1'
+			   AND R.PERSON_ID = #PERSON_ID#
+			   AND TO_CHAR(R.REWARD_DATE, 'DD/MM/YYYY') BETWEEN #DATE_STARTED# AND #PROBATION_END_DATE#
+		]]>
+	</select>
+	
+	<!--获取惩戒信息 -->
+	<select id="getEvsPunishmentInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TO_CHAR(P.PUNISH_DATE, 'DD/MM/YYYY') || '->' ||
+			       GET_GLOBAL_NAME(P.PUNISH_CODE, #interLanguage:VARCHAR#) LOCAL_NAME
+			  FROM HR_PUNISHMENT P
+			 WHERE P.ACTIVITY = '1'
+			   AND P.PERSON_ID = #PERSON_ID#
+			   AND TO_CHAR(P.PUNISH_DATE, 'DD/MM/YYYY') BETWEEN #DATE_STARTED# AND #PROBATION_END_DATE#
+		]]>
+	</select>
+	
+	<!--获取评价历史信息 -->
+	<select id="viewEvsResultHistory" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID,
+			       HR.LOCAL_NAME,
+			       get_dept_name(HR.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       get_global_name(HR.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       EVS.EVS_YEAR,
+			       EVS_MONTH1,
+			       EVS_MONTH2,
+			       EVS_MONTH3,
+			       EVS_MONTH4,
+			       EVS_MONTH5,
+			       EVS_MONTH6,
+			       EVS_MONTH7,
+			       EVS_MONTH8,
+			       EVS_MONTH9,
+			       EVS_MONTH10,
+			       EVS_MONTH11,
+			       EVS_MONTH12,
+			       EVS_MONTH13
+			  FROM (
+			SELECT EMPID,
+			       EVS_YEAR,
+			       MAX(EVS_MONTH1) EVS_MONTH1,
+			       MAX(EVS_MONTH2) EVS_MONTH2,
+			       MAX(EVS_MONTH3) EVS_MONTH3,
+			       MAX(EVS_MONTH4) EVS_MONTH4,
+			       MAX(EVS_MONTH5) EVS_MONTH5,
+			       MAX(EVS_MONTH6) EVS_MONTH6,
+			       MAX(EVS_MONTH7) EVS_MONTH7,
+			       MAX(EVS_MONTH8) EVS_MONTH8,
+			       MAX(EVS_MONTH9) EVS_MONTH9,
+			       MAX(EVS_MONTH10) EVS_MONTH10,
+			       MAX(EVS_MONTH11) EVS_MONTH11,
+			       MAX(EVS_MONTH12) EVS_MONTH12,
+			       MAX(EVS_MONTH13) EVS_MONTH13
+			  FROM (SELECT EMPID,
+			               EVS_YEAR,
+			               DECODE(EVS_MONTH, '14015045', MAX(FINAL_GRADE)) EVS_MONTH1,
+			               DECODE(EVS_MONTH, '14015046', MAX(FINAL_GRADE)) EVS_MONTH2,
+			               DECODE(EVS_MONTH, '14015047', MAX(FINAL_GRADE)) EVS_MONTH3,
+			               DECODE(EVS_MONTH, '14015048', MAX(FINAL_GRADE)) EVS_MONTH4,
+			               DECODE(EVS_MONTH, '14015049', MAX(FINAL_GRADE)) EVS_MONTH5,
+			               DECODE(EVS_MONTH, '14015050', MAX(FINAL_GRADE)) EVS_MONTH6,
+			               DECODE(EVS_MONTH, '14015051', MAX(FINAL_GRADE)) EVS_MONTH7,
+			               DECODE(EVS_MONTH, '14015052', MAX(FINAL_GRADE)) EVS_MONTH8,
+			               DECODE(EVS_MONTH, '14015053', MAX(FINAL_GRADE)) EVS_MONTH9,
+			               DECODE(EVS_MONTH, '14015054', MAX(FINAL_GRADE)) EVS_MONTH10,
+			               DECODE(EVS_MONTH, '14015055', MAX(FINAL_GRADE)) EVS_MONTH11,
+			               DECODE(EVS_MONTH, '14015056', MAX(FINAL_GRADE)) EVS_MONTH12,
+			               DECODE(EVS_MONTH, 'ability', MAX(FINAL_GRADE)) EVS_MONTH13
+			          FROM (SELECT EVS.EVS_YEAR,
+			                       EVS.EMPID,
+			                       DECODE(EVS.EVS_TYPE,
+			                              'ability',
+			                              'ability',
+			                              DECODE(EVS.EVS_MONTH,
+			                                     '14015058',
+			                                     '14015050',
+			                                     '14015059',
+			                                     '14015056',
+			                                     EVS.EVS_MONTH)) EVS_MONTH,
+			                       EVS.FINAL_GRADE
+			                  FROM EVS_OBJECT EVS
+			                 WHERE ACTIVITY = '14015361'
+			                   )
+			         GROUP BY EVS_YEAR,
+			                  EVS_MONTH,
+			                  EMPID)
+			 GROUP BY EMPID, EVS_YEAR) EVS,
+			 HR_EMPLOYEE HR,
+			 HR_DEPARTMENT HRD
+			WHERE EVS.EMPID = HR.EMPID
+			  AND HR.DEPTNO = HRD.DEPTNO
+			  AND HR.CPNY_ID = HRD.CPNY_ID
+			  AND HR.CPNY_ID = #interCpnyID#
+		]]>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HR.EMP_OFFICE IN ( $EMP_OFFICE$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_YEAR">
+			<![CDATA[
+				EVS.EVS_YEAR >= #START_YEAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_YEAR">
+			<![CDATA[
+				EVS.EVS_YEAR <= #END_YEAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE_STARTED">
+			<![CDATA[
+				HR.DATE_STARTED >= TO_DATE(#START_DATE_STARTED#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE_STARTED">
+			<![CDATA[
+				HR.DATE_STARTED <= TO_DATE(#END_DATE_STARTED#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE_LEFT">
+			<![CDATA[
+				HR.DATE_LEFT >= TO_DATE(#START_DATE_LEFT#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE_LEFT">
+			<![CDATA[
+				HR.DATE_LEFT <= TO_DATE(#END_DATE_LEFT#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HR.PERSON_ID = #PERSON_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HR.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HR.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			ORDER BY HRD.ORDER_NO,HRD.PARENT_DEPT_NO,HR.EMPID,EVS.EVS_YEAR DESC
+		]]>
+	</select>
+	
+	<!-- 插入评价邮件  -->
+	<update id="insertEvsMail" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO SY_EMAIL
+				  (SEQ,
+				   EMAIL,
+				   EMAIL_TITLE,
+				   EMAIL_CONTENT,
+				   SEND_FLAG,
+				   MAIL_LOGIN_EMPID,
+				   ACTIVITY,
+				   CREATE_DATE)
+				  SELECT SY_EMAIL_SEQ.NEXTVAL,
+				         EMAIL,
+				         EVS.LOCAL_NAME || '试用期评价',
+				         '您的试用期评价已结束，请登录<a href="http://{MAIL_LOGIN_HOST}?reqSysType=Partner&' ||
+				         'reqCpny=SST&' ||
+				         'emp_number=[MAIL_LOGIN_EMPID]" style="text-decorationnone;">CHR系统查看~</a>',
+				         '0',
+				         EVS.EMPID,
+				         1,
+				         SYSDATE
+				    FROM HR_PERSONAL_INFO HR, EVS_AFFIRM EVS, EVS_PROBATION_RESUME_INFO PRO
+				   WHERE HR.PERSON_ID = EVS.AFFIRMOR_ID
+				     AND EVS.RESUME_SEQ = PRO.SEQ
+				     AND PRO.SEQ = #RESUME_SEQ#
+				     AND EVS.AFFIRM_LEVEL = 0
+		]]>
+	</update>
+	<!-- 概要信息 -->
+	<select id="viewFileRoomList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       TITLE,
+			       REMARK,
+			       ACTIVITY,
+			       CPNY_ID,
+			       TO_CHAR(CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM SY_FILE_ROOM A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.CREATE_DATE > TO_DATE(#START_DATE#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.CREATE_DATE < TO_DATE(#END_DATE#,'DD/MM/YYYY') + 1
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( A.TITLE LIKE '%$KEY$%' OR A.REMARK LIKE '%$KEY$%' )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(A.SEQ) DESC
+		]]>
+	</select>
+	<!-- 新增概要 -->
+	<insert id="addFileRoomInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO SY_FILE_ROOM
+			  (SEQ,
+			   TITLE,
+			   REMARK,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_IP,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_IP,
+			   UPDATED_BY,
+			   CPNY_ID)
+			VALUES
+			  (SY_FILE_ROOM_SEQ.NEXTVAL,
+			   #TITLE:VARCHAR#,
+			   #REMARK:VARCHAR#,
+			   '1',
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   SYSDATE,
+			   #adminIP:VARCHAR#,
+			   #adminID:VARCHAR#,
+			   #interCpnyID:VARCHAR#)
+	]]>
+	<selectKey resultClass="string" keyProperty="id" >
+    	SELECT SY_FILE_ROOM_SEQ.CURRVAL AS ID FROM DUAL
+   	</selectKey>
+	</insert>
+	
+	<!-- 更新概要 -->
+	<update id="updateFileRoomInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE SY_FILE_ROOM
+		   SET TITLE = #TITLE:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 删除概要 -->
+	<update id="deleteFileRoomInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE SY_FILE_ROOM
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+</sqlMap>

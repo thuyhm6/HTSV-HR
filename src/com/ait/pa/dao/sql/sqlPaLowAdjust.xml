@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.lowadjust">
+	
+	<select id="getPaLowAdjustList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_SUMMARY.PA_MONTH,
+				   PA_SUMMARY.EMPID,
+			       PA_SUMMARY.PERSON_ID,
+			       PA_SUMMARY.LOCAL_NAME,
+			       PA_SUMMARY.DEPT_NAME,
+			       PA_LOW_ADJUST.ADJUST_BEF,
+			       PA_LOW_ADJUST.ADJUST_AFT,
+			       PA_LOW_ADJUST.ACTIVITY,
+			       PA_LOW_ADJUST.CONTENT,
+			       (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) BENYUEBINGJIATIANSHU,
+		             (PA_SUMMARY.P_IS_AJUST_COR + PA_SUMMARY.P_IS_AJUST_PER) BAOXIANBUKOUJINE,
+		             PA_SUMMARY.Gross_Pay BENYUEYINGFAGONGZI,
+		             PA_SUMMARY.Net_Pay BENYUESHIFAGONGZI,
+		             PA_LOW_STANDARD.Low_Salary_Standard * 0.8 ZUIDIGONGZIBIAOZHUN1,
+		             PA_LOW_STANDARD.Low_Salary_Standard ZUIDIGONGZIBIAOZHUN2,
+		             CASE WHEN (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) >= PA_SUMMARY.SCHEDULED_DAYS THEN
+		             PA_LOW_STANDARD.Low_Salary_Standard * 0.8 - PA_SUMMARY.Net_Pay
+		             ELSE
+		             PA_LOW_STANDARD.Low_Salary_Standard - PA_SUMMARY.Net_Pay
+		             END XITONGJISUANTIAOZHENGJINE,
+		             PA_LOW_ADJUST.ADJUST_AFT SHIJITIAOZHENGJINE,
+		             S1.CONTENT FULIDIQU,
+		             PA_SUMMARY.NET_PAY,
+		             DECODE(PA_LOW_ADJUST.ACTIVITY,'1', (PA_SUMMARY.Net_Pay - PA_LOW_ADJUST.ADJUST_AFT),PA_SUMMARY.NET_PAY) TIAOZHENGQIANSHIFA
+			  FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST,
+			  		PA_LOW_STANDARD PA_LOW_STANDARD,
+			  		sy_global_name S1
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_STANDARD.PERSON_ID(+)
+			  	AND PA_SUMMARY.Net_Pay < PA_LOW_STANDARD.LOW_SALARY_STANDARD
+			  	AND PA_SUMMARY.insrarea_id = S1.NO(+)
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="interLanguage">
+			<![CDATA[
+		 		  S1.language(+)=#interLanguage:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  NVL(PA_LOW_ADJUST.ACTIVITY,'0') = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY PA_SUMMARY.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaLowAdjustCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST,
+			  		PA_LOW_STANDARD PA_LOW_STANDARD
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_STANDARD.PERSON_ID(+)
+			  	AND PA_SUMMARY.Net_Pay < PA_LOW_STANDARD.LOW_SALARY_STANDARD
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  PA_LOW_ADJUST.ACTIVITY = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<delete id="deletePaLowAdjust" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE PA_LOW_ADJUST
+			 WHERE PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<insert id="insertPaLowAdjust" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_LOW_ADJUST
+				(
+					PA_MONTH,
+					PERSON_ID,
+					ADJUST_BEF,
+					ADJUST_AFT,
+					ACTIVITY,
+					CONTENT,
+					CPNY_ID,
+					PQD_QUFEN
+				)
+			VALUES
+				(
+					#PA_MONTH:VARCHAR#,
+					#PERSON_ID:VARCHAR#,
+					#ADJUST_BEF:NUMERIC#,
+					#ADJUST_AFT:NUMERIC#,
+					1,
+					#CONTENT:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					#QUFEN:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<select id="getPaLowAdjustCuList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_SUMMARY.PA_MONTH,
+				   PA_SUMMARY.EMPID,
+			       PA_SUMMARY.PERSON_ID,
+			       PA_SUMMARY.LOCAL_NAME,
+			       PA_SUMMARY.DEPT_NAME,
+			       PA_SUMMARY.SCHEDULED_DAYS,
+			       PA_SUMMARY.ACTUAL_WORK_DAYS,
+			       PA_LOW_ADJUST.ADJUST_BEF,
+			       PA_LOW_ADJUST.ADJUST_AFT,
+			       PA_LOW_ADJUST.ACTIVITY,
+			       PA_LOW_ADJUST.CONTENT,
+			       (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) BENYUEBINGJIATIANSHU,
+		             (PA_SUMMARY.IS_AJUST_COR) BAOXIANBUKOUJINE,
+		             PA_SUMMARY.Gross_Pay BENYUEYINGFAGONGZI,
+		             PA_SUMMARY.Net_Pay BENYUESHIFAGONGZI,
+		             F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) * 0.8 ZUIDIGONGZIBIAOZHUN1,
+		             F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) ZUIDIGONGZIBIAOZHUN2,
+		             CASE WHEN (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) >= PA_SUMMARY.SCHEDULED_DAYS THEN
+		             	F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) * 0.8 - PA_SUMMARY.Net_Pay
+		             ELSE
+		             	F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) - PA_SUMMARY.Net_Pay
+		             END XITONGJISUANTIAOZHENGJINE,
+		             PA_LOW_ADJUST.ADJUST_AFT SHIJITIAOZHENGJINE,
+		             S1.CONTENT FULIDIQU,
+		             PA_SUMMARY.NET_PAY,
+		             DECODE(PA_LOW_ADJUST.ACTIVITY,'1', (PA_SUMMARY.Net_Pay - PA_LOW_ADJUST.ADJUST_AFT),PA_SUMMARY.NET_PAY) TIAOZHENGQIANSHIFA,
+		             F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) QUFEN
+			  FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST,
+			  		sy_global_name S1
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND (CASE WHEN F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) = 'SQ' THEN
+			  			PA_SUMMARY.Gross_Pay
+			  		 ELSE
+			  		 	PA_SUMMARY.Net_Pay
+			  		 END
+			  		) < F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID)
+			  	AND PA_SUMMARY.insrarea_id = S1.NO(+)
+			  	AND PA_SUMMARY.EMP_TYPE_CODE IN ('211316','211804','211814','210651','210711',
+			  		'210864','210865')
+			  	AND F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) IS NOT NULL
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="interLanguage">
+			<![CDATA[
+		 		  S1.language(+)=#interLanguage:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  NVL(PA_LOW_ADJUST.ACTIVITY,'0') = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY PA_SUMMARY.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaLowAdjustCuForTAList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_SUMMARY.PA_MONTH,
+				   PA_SUMMARY.EMPID,
+			       PA_SUMMARY.PERSON_ID,
+			       PA_SUMMARY.LOCAL_NAME,
+			       PA_SUMMARY.DEPT_NAME,
+			       PA_SUMMARY.SCHEDULED_DAYS,
+			       PA_SUMMARY.ACTUAL_WORK_DAYS,
+			       PA_LOW_ADJUST.ADJUST_BEF,
+			       PA_LOW_ADJUST.ADJUST_AFT,
+			       PA_LOW_ADJUST.ACTIVITY,
+			       PA_LOW_ADJUST.CONTENT,
+			       (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) BENYUEBINGJIATIANSHU,
+		             PA_SUMMARY.Gross_Pay BENYUEYINGFAGONGZI,
+		             PA_SUMMARY.Net_Pay BENYUESHIFAGONGZI,
+		             F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) * 0.8 ZUIDIGONGZIBIAOZHUN1,
+		             F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) ZUIDIGONGZIBIAOZHUN2,
+		             CASE WHEN (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) >= PA_SUMMARY.SCHEDULED_DAYS THEN
+		             	F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) * 0.8 - PA_SUMMARY.Net_Pay
+		             ELSE
+		             	F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) - PA_SUMMARY.Net_Pay
+		             END XITONGJISUANTIAOZHENGJINE,
+		             PA_LOW_ADJUST.ADJUST_AFT SHIJITIAOZHENGJINE,
+		             S1.CONTENT FULIDIQU,
+		             PA_SUMMARY.NET_PAY,
+		             DECODE(PA_LOW_ADJUST.ACTIVITY,'1', (PA_SUMMARY.Net_Pay - PA_LOW_ADJUST.ADJUST_AFT),PA_SUMMARY.NET_PAY) TIAOZHENGQIANSHIFA,
+		             F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) QUFEN
+			  FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST,
+			  		sy_global_name S1
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND (CASE WHEN F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) = 'SQ' THEN
+			  			PA_SUMMARY.Gross_Pay
+			  		 ELSE
+			  		 	PA_SUMMARY.Net_Pay
+			  		 END
+			  		) < F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID)
+			  	AND PA_SUMMARY.insrarea_id = S1.NO(+)
+			  	AND PA_SUMMARY.EMP_TYPE_CODE IN ('211316','211804','211814','210651','210711',
+			  		'210864','210865')
+			  	AND F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) IS NOT NULL
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="interLanguage">
+			<![CDATA[
+		 		  S1.language(+)=#interLanguage:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  NVL(PA_LOW_ADJUST.ACTIVITY,'0') = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY PA_SUMMARY.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaLowAdjustCuCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND (CASE WHEN F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) = 'SQ' THEN
+			  			PA_SUMMARY.Gross_Pay
+			  		 ELSE
+			  		 	PA_SUMMARY.Net_Pay
+			  		 END
+			  		) < F_GET_PROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID)
+			  	AND PA_SUMMARY.EMP_TYPE_CODE IN ('211316','211804','211814','210651','210711',
+			  		'210864','210865')
+			    AND F_GET_PROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.EMPID) IS NOT NULL
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  PA_LOW_ADJUST.ACTIVITY = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaLowAdjustFeiCuList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_SUMMARY.PA_MONTH,
+           PA_SUMMARY.EMPID,
+             PA_SUMMARY.PERSON_ID,
+             PA_SUMMARY.LOCAL_NAME,
+             PA_SUMMARY.DEPT_NAME,
+             PA_SUMMARY.SCHEDULED_DAYS,
+             PA_SUMMARY.ACTUAL_WORK_DAYS,
+             PA_LOW_ADJUST.ADJUST_BEF,
+             PA_LOW_ADJUST.ADJUST_AFT,
+             PA_LOW_ADJUST.ACTIVITY,
+             PA_LOW_ADJUST.CONTENT,
+             (get_column_value('BINGJIA_ZS',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH) + get_column_value('BINGJIA_SY',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH)) BENYUEBINGJIATIANSHU,
+                 (get_column_value('IS_AJUST_COR',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH)) BAOXIANBUKOUJINE,
+                 PA_SUMMARY.Gross_Pay BENYUEYINGFAGONGZI,
+                 PA_SUMMARY.Net_Pay BENYUESHIFAGONGZI,
+                 F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) * 0.8 ZUIDIGONGZIBIAOZHUN1,
+                 F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) ZUIDIGONGZIBIAOZHUN2,
+                 CASE WHEN (get_column_value('BINGJIA_ZS',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH) + get_column_value('BINGJIA_SY',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH)) >= PA_SUMMARY.SCHEDULED_DAYS THEN
+                   F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) * 0.8 - PA_SUMMARY.Net_Pay
+                 ELSE
+                   F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) - PA_SUMMARY.Net_Pay
+                 END XITONGJISUANTIAOZHENGJINE,
+                 PA_LOW_ADJUST.ADJUST_AFT SHIJITIAOZHENGJINE,
+                 S1.CONTENT FULIDIQU,
+                 PA_SUMMARY.NET_PAY,
+                 DECODE(PA_LOW_ADJUST.ACTIVITY,'1', (PA_SUMMARY.Net_Pay - PA_LOW_ADJUST.ADJUST_AFT),PA_SUMMARY.NET_PAY) TIAOZHENGQIANSHIFA,
+                 F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) QUFEN
+        FROM PA_SUMMARY_HTSV PA_SUMMARY,
+            PA_LOW_ADJUST PA_LOW_ADJUST,
+            sy_global_name S1,
+            (SELECT 'PA_SUMMARY_HTSV' TABLE_NAME FROM DUAL) D
+        WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+          AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+          AND (CASE WHEN F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) = 'SQ' THEN
+              PA_SUMMARY.Gross_Pay
+             ELSE
+               PA_SUMMARY.Net_Pay
+             END
+            ) < F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID)
+          AND PA_SUMMARY.insrarea_id = S1.NO(+)
+          AND PA_SUMMARY.EMP_TYPE_CODE NOT IN ('211316','211804','211814','210651','210711',
+            '210864','210865')
+          AND F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) IS NOT NULL
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="interLanguage">
+			<![CDATA[
+		 		  S1.language(+)=#interLanguage:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  NVL(PA_LOW_ADJUST.ACTIVITY,'0') = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY PA_SUMMARY.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	<select id="getPaLowAdjustFeiCuTRList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_SUMMARY.PA_MONTH,
+           PA_SUMMARY.EMPID,
+             PA_SUMMARY.PERSON_ID,
+             PA_SUMMARY.LOCAL_NAME,
+             PA_SUMMARY.DEPT_NAME,
+             PA_SUMMARY.SCHEDULED_DAYS,
+             PA_SUMMARY.ACTUAL_WORK_DAYS,
+             PA_LOW_ADJUST.ADJUST_BEF,
+             PA_LOW_ADJUST.ADJUST_AFT,
+             PA_LOW_ADJUST.ACTIVITY,
+             PA_LOW_ADJUST.CONTENT,
+             (get_column_value('BINGJIA_ZS',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH) + get_column_value('BINGJIA_SY',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH)) BENYUEBINGJIATIANSHU,
+                 (PA_SUMMARY.IS_AJUST_COR) BAOXIANBUKOUJINE,
+                 PA_SUMMARY.Gross_Pay BENYUEYINGFAGONGZI,
+                 PA_SUMMARY.Net_Pay BENYUESHIFAGONGZI,
+                 F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) * 0.8 ZUIDIGONGZIBIAOZHUN1,
+                 F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) ZUIDIGONGZIBIAOZHUN2,
+                 CASE WHEN (get_column_value('BINGJIA_ZS',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH) + get_column_value('BINGJIA_SY',D.TABLE_NAME,PA_SUMMARY.PERSON_ID,PA_SUMMARY.PA_MONTH)) >= PA_SUMMARY.SCHEDULED_DAYS THEN
+                   F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) * 0.8 - PA_SUMMARY.Net_Pay
+                 ELSE
+                   F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) - PA_SUMMARY.Net_Pay
+                 END XITONGJISUANTIAOZHENGJINE,
+                 PA_LOW_ADJUST.ADJUST_AFT SHIJITIAOZHENGJINE,
+                 S1.CONTENT FULIDIQU,
+                 PA_SUMMARY.NET_PAY,
+                 DECODE(PA_LOW_ADJUST.ACTIVITY,'1', (PA_SUMMARY.Net_Pay - PA_LOW_ADJUST.ADJUST_AFT),PA_SUMMARY.NET_PAY) TIAOZHENGQIANSHIFA,
+                 F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) QUFEN
+        FROM PA_SUMMARY_HTSV PA_SUMMARY,
+            PA_LOW_ADJUST PA_LOW_ADJUST,
+            HR_EMPLOYEE HR,
+            sy_global_name S1,
+            (SELECT 'PA_SUMMARY_HTSV' TABLE_NAME FROM DUAL) D
+        WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+          AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+          AND HR.PERSON_ID=PA_SUMMARY.PERSON_ID
+          AND hr.emp_office='15119'
+          AND (CASE WHEN F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) = 'SQ' THEN
+              PA_SUMMARY.Gross_Pay
+             ELSE
+               PA_SUMMARY.Net_Pay
+             END
+            ) < F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID)
+          AND PA_SUMMARY.insrarea_id = S1.NO(+)
+          AND PA_SUMMARY.EMP_TYPE_CODE NOT IN ('211316','211804','211814','210651','210711',
+            '210864','210865')
+          AND F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) IS NOT NULL
+         
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="interLanguage">
+			<![CDATA[
+		 		  S1.language(+)=#interLanguage:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  NVL(PA_LOW_ADJUST.ACTIVITY,'0') = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY PA_SUMMARY.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	<select id="getPaLowAdjustFeiCuForTAList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_SUMMARY.PA_MONTH,
+				   PA_SUMMARY.EMPID,
+			       PA_SUMMARY.PERSON_ID,
+			       PA_SUMMARY.LOCAL_NAME,
+			       PA_SUMMARY.DEPT_NAME,
+			       PA_SUMMARY.SCHEDULED_DAYS,
+			       PA_SUMMARY.ACTUAL_WORK_DAYS,
+			       PA_LOW_ADJUST.ADJUST_BEF,
+			       PA_LOW_ADJUST.ADJUST_AFT,
+			       PA_LOW_ADJUST.ACTIVITY,
+			       PA_LOW_ADJUST.CONTENT,
+			       (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) BENYUEBINGJIATIANSHU,
+		             PA_SUMMARY.Gross_Pay BENYUEYINGFAGONGZI,
+		             PA_SUMMARY.Net_Pay BENYUESHIFAGONGZI,
+		             F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) * 0.8 ZUIDIGONGZIBIAOZHUN1,
+		             F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) ZUIDIGONGZIBIAOZHUN2,
+		             CASE WHEN (PA_SUMMARY.Bingjia_Zs + PA_SUMMARY.Bingjia_Sy) >= PA_SUMMARY.SCHEDULED_DAYS THEN
+		             	F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) * 0.8 - PA_SUMMARY.Net_Pay
+		             ELSE
+		             	F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) - PA_SUMMARY.Net_Pay
+		             END XITONGJISUANTIAOZHENGJINE,
+		             PA_LOW_ADJUST.ADJUST_AFT SHIJITIAOZHENGJINE,
+		             S1.CONTENT FULIDIQU,
+		             PA_SUMMARY.NET_PAY,
+		             DECODE(PA_LOW_ADJUST.ACTIVITY,'1', (PA_SUMMARY.Net_Pay - PA_LOW_ADJUST.ADJUST_AFT),PA_SUMMARY.NET_PAY) TIAOZHENGQIANSHIFA,
+		             F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) QUFEN
+			  FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST,
+			  		sy_global_name S1
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND (CASE WHEN F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) = 'SQ' THEN
+			  			PA_SUMMARY.Gross_Pay
+			  		 ELSE
+			  		 	PA_SUMMARY.Net_Pay
+			  		 END
+			  		) < F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID)
+			  	AND PA_SUMMARY.insrarea_id = S1.NO(+)
+			  	AND PA_SUMMARY.EMP_TYPE_CODE NOT IN ('211316','211804','211814','210651','210711',
+			  		'210864','210865')
+			    AND F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) IS NOT NULL
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="interLanguage">
+			<![CDATA[
+		 		  S1.language(+)=#interLanguage:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  NVL(PA_LOW_ADJUST.ACTIVITY,'0') = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY PA_SUMMARY.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaLowAdjustFeiCuCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND (CASE WHEN F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) = 'SQ' THEN
+			  			PA_SUMMARY.Gross_Pay
+			  		 ELSE
+			  		 	PA_SUMMARY.Net_Pay
+			  		 END
+			  		) < F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID)
+			  	AND PA_SUMMARY.EMP_TYPE_CODE NOT IN ('211316','211804','211814','210651','210711',
+			  		'210864','210865')
+			  	AND F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) IS NOT NULL
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  PA_LOW_ADJUST.ACTIVITY = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getFeiCuLowSalaryListTRCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM PA_SUMMARY_HTSV PA_SUMMARY,
+			  		PA_LOW_ADJUST PA_LOW_ADJUST,
+			  		HR_EMPLOYEE HR
+			  WHERE PA_SUMMARY.PA_MONTH = PA_LOW_ADJUST.PA_MONTH(+)
+			  	AND PA_SUMMARY.PERSON_ID = PA_LOW_ADJUST.PERSON_ID(+)
+			  	AND HR.PERSON_ID = PA_SUMMARY.PERSON_ID
+                AND hr.emp_office='15119'
+			  	AND (CASE WHEN F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) = 'SQ' THEN
+			  			PA_SUMMARY.Gross_Pay
+			  		 ELSE
+			  		 	PA_SUMMARY.Net_Pay
+			  		 END
+			  		) < F_GET_UNPROMO_LOWS_SALARY(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID)
+			  	AND PA_SUMMARY.EMP_TYPE_CODE NOT IN ('211316','211804','211814','210651','210711',
+			  		'210864','210865')
+			  	AND F_GET_UNPROMO_LOWS_DIS(PA_SUMMARY.PA_MONTH,PA_SUMMARY.CPNY_ID,PA_SUMMARY.INSRAREA_ID) IS NOT NULL
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA_SUMMARY.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_SUMMARY.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA_LOW_ADJUST.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( PA_SUMMARY.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(PA_SUMMARY.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR PA_SUMMARY.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				  PA_LOW_ADJUST.ACTIVITY = #ACTIVITY:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = PA_SUMMARY.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+	</select>
+</sqlMap>

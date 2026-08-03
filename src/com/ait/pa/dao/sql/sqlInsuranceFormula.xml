@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.insuranceFormula">
+	
+	<sql id="getInsuranceFormulaListCondition" >
+	
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FORMULAR_NO">
+			<![CDATA[
+		 		  FORMULAR_NO = #FORMULAR_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+	</sql>
+	
+	<select id="getInsuranceFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT FORMULAR_NO,
+					ITEM_NO,
+					CONDITION,
+					FORMULAR,
+					CONDITION_SEQ
+			   FROM IS_FORMULAR T
+		]]>
+		
+		<dynamic prepend="WHERE">
+			<include refid="getInsuranceFormulaListCondition"/>
+		 </dynamic>
+		 
+	
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY CONDITION_SEQ DESC
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+		<select id="getInsuranceFormulaForCNList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT    II.ITEM_ID AS ID,
+				       SY.CONTENT AS NAME
+				  FROM IS_ITEM        II,
+				       SY_GLOBAL_NAME SY
+				 WHERE II.ITEM_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				UNION
+				SELECT DISTINCT IPI.PARAM_ID,
+				                SY.CONTENT
+				  FROM IS_PARAM_ITEM  IPI,
+				       SY_GLOBAL_NAME SY
+				 WHERE IPI.PARAM_ITEM_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				UNION
+				SELECT PDL.DISTINCT_FIELD,
+				       SY.CONTENT
+				  FROM PA_DISTINCT_LIST PDL,
+				       SY_GLOBAL_NAME   SY
+				 WHERE PDL.ID = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				UNION
+				SELECT PBI.ITEM_ID,
+				       SY.CONTENT
+				  FROM PA_BASIC_ITEM  PBI,
+				       SY_GLOBAL_NAME SY
+				 WHERE PBI.ITEM_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				UNION
+				SELECT PI.ITEM_ID AS ID,
+				       SY.CONTENT AS NAME
+				  FROM PA_ITEM        PI,
+				       SY_GLOBAL_NAME SY
+				 WHERE PI.ITEM_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				UNION
+				SELECT DISTINCT PPI.PARAM_ITEM_ID,
+				                SY.CONTENT
+				  FROM PA_PARAM_ITEM  PPI,
+				       SY_GLOBAL_NAME SY
+				 WHERE PPI.PARAM_ITEM_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				UNION 
+				SELECT ASI.STA_ITEM_ID,
+						SY.CONTENT 
+					FROM AR_STA_ITEM ASI,
+					     SY_GLOBAL_NAME SY
+				WHERE ASI.ITEM_NO = SY.NO(+)
+				  AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+
+	</select>
+
+	<update id="updateIsFormularByCalcuOrderOne" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_FORMULAR 
+			 SET CONDITION_SEQ = #CONDITIONSEQ:NUMERIC#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+				  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updateIsFormularByCalcuOrderTwo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_FORMULAR 
+			 SET CONDITION_SEQ = #ORDER:VARCHAR#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE ITEM_NO = #ITEM_NO:VARCHAR#
+				  AND CONDITION_SEQ = #CALORDER:VARCHAR#
+				  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updateIsFormularByCalcuOrderThree" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_FORMULAR SET
+					CONDITION_SEQ = #CALORDER:VARCHAR#,
+			 	 	UPDATE_DATE = SYSDATE,
+			 	 	UPDATED_BY = #UPDATED_BY:VARHCAR#
+			WHERE CONDITION_SEQ = 0
+			  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getInsuranceFormulaInfo" resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[
+					SELECT T.FORMULAR_NO,
+					       T.ITEM_NO,
+					       T.CONDITION,
+					       T.FORMULAR,
+					       T.CPNY_ID
+					  FROM IS_FORMULAR T
+					 WHERE T.FORMULAR_NO = #FORMULAR_NO#
+		]]>
+	</select>
+	
+	<insert id="addInsuranceFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_FORMULAR (
+				FORMULAR_NO,
+				ITEM_NO,
+				CONDITION,
+				FORMULAR,
+				CONDITION_SEQ,
+				CREATE_DATE,
+				CREATED_BY,
+				CPNY_ID,
+				ORDERNO
+			)
+			VALUES(
+				PA_INSURANCE_FORMULAR_SEQ.NEXTVAL,
+				#ITEM_NO:NUMERIC#,
+				#CONDITION:VARCHAR#,
+				#FORMULAR:VARCHAR#,
+				(SELECT NVL(MAX(CONDITION_SEQ), 0) + 1 AS CONDITION_SEQ
+				  FROM IS_FORMULAR
+				 WHERE ITEM_NO = #ITEM_NO:NUMERIC#
+				 AND CPNY_ID = #CPNY_ID#),
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#,
+			    #CPNY_ID:VARCHAR#,
+			    (SELECT MAX(NVL(ORDERNO,0))+1 FROM IS_FORMULAR)
+			)
+		]]>
+	</insert>
+	
+	<update id="updateInsuranceFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_FORMULAR SET
+				CONDITION = #CONDITION:VARCHAR#,
+				FORMULAR = #FORMULAR:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR# 
+			WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</update>
+	
+	<delete id="deleteInsuranceFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_FORMULAR  WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</delete>
+</sqlMap>

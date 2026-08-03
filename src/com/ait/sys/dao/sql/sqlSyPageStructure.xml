@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.syPageStructure">
+
+	<select id="getIsCanBeBuildPage"   resultClass="linkMap">
+		<![CDATA[
+		    select
+			menu_code MENU_CODE_ID,
+			menu_intro MENU_INTRO_NAME
+			from sy_menu
+			where is_can_be_build = 1
+			 
+		]]>
+	</select>
+		<select id="getPageStructureInfoList" parameterClass="linkMap"  resultClass="linkMap">
+		<![CDATA[
+		    SELECT T.RT_NO,
+		       T.MENU_CODE,
+		       T.TABLE_NAME,
+		       T.TABLE_EN_NAME,
+		       T.TABLE_KOR_NAME,
+		       T.REPORT_TYPE,
+		       T.VIEW_MODEL
+		    FROM REPORT_TABLE T
+		 WHERE T.MENU_CODE = #MENU_CODE#
+			 
+		]]>
+	</select>
+	
+    <select id="getAddPageStructureDetail" parameterClass="linkMap"  resultClass="linkMap">
+		<![CDATA[
+		   select  t.*,rownum item_no from report_item_reference t where table_name = UPPER(#TABLE_NAME#) 
+            and item_id not in(select ri.ref_item_id from report_item ri where rt_no = #RT_NO#)     
+           order by order_no
+			 
+		]]>
+	</select>
+	 <select id="getAddPageStructureDetailCnt" parameterClass="linkMap"  resultClass="int">
+		<![CDATA[
+		   select   count(*) from report_item_reference t where table_name = UPPER(#TABLE_NAME#) 
+            and item_id not in(select ri.ref_item_id from report_item ri where rt_no = #RT_NO#)     
+           order by order_no
+			 
+		]]>
+	</select>
+	
+	
+	
+	<insert id="addPageStructure" parameterClass="linkMap"  >
+		<![CDATA[
+		   
+			 INSERT INTO REPORT_TABLE
+				(
+				  RT_NO,
+				  MENU_CODE,
+				  TABLE_NAME,
+				  TABLE_EN_NAME,
+				  TABLE_KOR_NAME,
+				  REPORT_TYPE,
+				  VIEW_MODEL,
+				  CREATE_BY ,
+				  CREATE_DATE   
+				  
+				)VALUES
+				(
+				  SEQ_REPORT_RT_NO.NEXTVAL,
+				  #MENU_CODE#,
+				  #TABLE_NAME#,
+				  #TABLE_EN_NAME#,
+				  #TABLE_KOR_NAME#,
+				  #REPORT_TYPE#,
+				  #VIEW_MODEL#,
+				  #CREATE_BY#,
+				  SYSDATE
+				)
+		]]>
+	</insert>
+	
+	<update id="updatePageStructureDetailInfo" parameterClass="linkMap"  >
+		<![CDATA[
+				UPDATE REPORT_ITEM  SET
+		         ITEM_NAME=#ITEM_NAME#,
+		         ITEM_EN_NAME=#ITEM_EN_NAME#,
+		         ITEM_KOR_NAME=#ITEM_KOR_NAME#,
+		         ORDER_NO=#ORDER_NO#,
+		         UPDATE_BY=#UPDATE_BY#,
+		         UPDATE_DATE=SYSDATE
+		         WHERE  RI_NO=#RI_NO#
+	
+		]]>
+	</update>
+	
+	
+	<insert id="AddPageStructureDetailInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO REPORT_ITEM  
+				( 
+				 RI_NO,
+				 RT_NO,
+				 ITEM_NAME,
+				 ITEM_EN_NAME,
+				 ITEM_KOR_NAME,
+				 REF_TABLE_NAME,
+				 REF_ITEM_NO,
+				 REF_ITEM_ID,
+				 CREATE_BY,
+				 CREATE_DATE
+			 )VALUES
+				(
+				REPORT_RI_NO_SEQ.NEXTVAL,
+				#RT_NO#,
+				#ITEM_NAME#,
+				#ITEM_EN_NAME#,
+				#ITEM_KOR_NAME#,
+				#TABLE_NAME#,
+				#REF_ITEM_NO#,
+				#REF_ITEM_ID#,
+				#CREATE_BY#,
+				SYSDATE
+				 )
+	
+	     ]]>
+	</insert>
+	 <select id="getUpdatePageStructureDetail" parameterClass="linkMap"  resultClass="linkMap">
+		<![CDATA[
+	        SELECT  RI_NO,
+	         RT_NO,
+	         ITEM_NAME,
+	         ITEM_EN_NAME,
+	         ITEM_KOR_NAME,
+	         REF_TABLE_NAME,
+	         REF_ITEM_NO,
+	         REF_ITEM_ID,
+	         ORDER_NO
+	         FROM REPORT_ITEM  
+	         WHERE  RT_NO=#RT_NO#
+	         ORDER BY  ORDER_NO , RI_NO
+	
+	]]>
+	</select>
+	 <select id="getUpdatePageStructureDetailCnt" parameterClass="linkMap"  resultClass="int">
+		<![CDATA[
+	        SELECT   COUNT(*)
+		         FROM REPORT_ITEM  
+		         WHERE  RT_NO=#RT_NO#
+		          
+	
+	]]>
+	</select>
+	
+	<delete id="deletePageStructureDetail" parameterClass="linkMap"   >
+		<![CDATA[
+		   
+		  DELETE FROM REPORT_ITEM T  
+		      WHERE T.RI_NO = #RI_NO#
+			 
+		]]>
+	</delete> 
+	<delete id="deletePageStructure" parameterClass="linkMap"   >
+		<![CDATA[
+		   
+		   DELETE FROM REPORT_TABLE T 
+		      WHERE T.RT_NO = #RT_NO#
+			 
+		]]>
+	</delete>
+	<delete id="deletePageStructureInfo" parameterClass="linkMap" >
+		<![CDATA[
+		    DELETE FROM REPORT_ITEM T  
+		      WHERE T.RT_NO = #RT_NO#
+			 
+		]]>
+	</delete>
+	
+</sqlMap>

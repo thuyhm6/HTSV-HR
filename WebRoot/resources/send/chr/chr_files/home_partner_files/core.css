@@ -1,0 +1,2916 @@
+HTML {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+BODY {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+DIV {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+APPLET {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+OBJECT {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+IFRAME {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+H1 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+H2 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+H3 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+H4 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+H5 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+H6 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+P {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+BLOCKQUOTE {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+PRE {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+A {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+ABBR {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+ACRONYM {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+ADDRESS {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+BIG {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+CITE {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+CODE {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+DEL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+DFN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+EM {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+FONT {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+IMG {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+INS {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+KBD {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+Q {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+S {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+SAMP {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+SMALL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+STRIKE {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+STRONG {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+SUB {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+SUP {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TT {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+VAR {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+DL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+DT {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+DD {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+OL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+UL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+LI {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+FIELDSET {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+FORM {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+LABEL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+LEGEND {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TABLE {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+CAPTION {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TBODY {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TFOOT {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+THEAD {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TR {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TH {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+TD {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 100%; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: Arial, sans-serif; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+:focus {
+	OUTLINE-STYLE: none; OUTLINE-COLOR: invert; OUTLINE-WIDTH: 0px
+}
+HTML {
+	TEXT-ALIGN: center; WIDTH: 100%; HEIGHT: 100%; COLOR: black; OVERFLOW: hidden
+}
+BODY {
+	TEXT-ALIGN: center; WIDTH: 100%; HEIGHT: 100%; COLOR: black; OVERFLOW: hidden
+}
+UL {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+OL {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+TABLE {
+	BORDER-SPACING: 0; BORDER-COLLAPSE: separate
+}
+CAPTION {
+	TEXT-ALIGN: left; FONT-WEIGHT: normal
+}
+TH {
+	TEXT-ALIGN: left; FONT-WEIGHT: normal
+}
+TD {
+	TEXT-ALIGN: left; FONT-WEIGHT: normal
+}
+BLOCKQUOTE:before {
+	CONTENT: ""
+}
+BLOCKQUOTE:after {
+	CONTENT: ""
+}
+Q:before {
+	CONTENT: ""
+}
+Q:after {
+	CONTENT: ""
+}
+BLOCKQUOTE {
+	QUOTES: "" ""
+}
+Q {
+	QUOTES: "" ""
+}
+IMG {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+A {
+	COLOR: #000; TEXT-DECORATION: none
+}
+A:hover {
+	TEXT-DECORATION: underline
+}
+.panel {
+	DISPLAY: block; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px 100%
+}
+.panel .panelHeader {
+	PADDING-LEFT: 5px; DISPLAY: block; BACKGROUND-POSITION: 0px 0px; HEIGHT: 28px
+}
+.panel .panelHeaderContent {
+	POSITION: relative; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -50px; HEIGHT: 28px
+}
+.panel .panelHeaderContent H1 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 28px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -100px; HEIGHT: 28px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+.panel .panelContent {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 1px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; OVERFLOW: auto; BORDER-TOP: 0px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 5px
+}
+.panel .panelFooter {
+	PADDING-LEFT: 5px; DISPLAY: block; BACKGROUND-POSITION: 0px -150px; HEIGHT: 5px; OVERFLOW: hidden
+}
+.panel .panelFooterContent {
+	PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -200px; HEIGHT: 5px; OVERFLOW: hidden
+}
+.panel .collapsable {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 20px; DISPLAY: block; HEIGHT: 21px; OVERFLOW: hidden; TOP: 4px; RIGHT: 4px
+}
+.panel .expandable {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 20px; DISPLAY: block; HEIGHT: 21px; OVERFLOW: hidden; TOP: 4px; RIGHT: 4px
+}
+.panel .collapsable:hover {
+	BACKGROUND-POSITION: 0px -50px
+}
+.panel .expandable {
+	BACKGROUND-POSITION: 0px -100px
+}
+.panel .expandable:hover {
+	BACKGROUND-POSITION: 0px -150px
+}
+.user_photo {
+	TEXT-ALIGN: center; WIDTH: 110px; PADDING-RIGHT: 6px; VERTICAL-ALIGN: top
+}
+.user_photo P {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: 110px; PADDING-RIGHT: 0px; DISPLAY: block; HEIGHT: 150px; PADDING-TOP: 0px
+}
+.user_photo P IMG {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 110px; HEIGHT: 150px; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+.td_title {
+	PADDING-BOTTOM: 3px; LINE-HEIGHT: 18px; PADDING-LEFT: 5px; PADDING-RIGHT: 3px; WHITE-SPACE: nowrap; PADDING-TOP: 3px
+}
+.th_title {
+	TEXT-ALIGN: center; PADDING-BOTTOM: 3px; LINE-HEIGHT: 18px; PADDING-LEFT: 5px; WIDTH: 70px; PADDING-RIGHT: 3px; WHITE-SPACE: nowrap; PADDING-TOP: 3px
+}
+.td_type {
+	PADDING-BOTTOM: 3px; LINE-HEIGHT: 18px; PADDING-LEFT: 5px; PADDING-RIGHT: 3px; COLOR: #333; PADDING-TOP: 3px
+}
+.clear {
+	CLEAR: both
+}
+.date {
+	DISPLAY: block; FLOAT: left; MARGIN-RIGHT: 2px
+}
+.tabs {
+	BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px 100%
+}
+.tabs .tabsHeader {
+	PADDING-LEFT: 5px; DISPLAY: block; BACKGROUND-POSITION: 0px 0px; HEIGHT: 28px; OVERFLOW: hidden
+}
+.tabs .tabsHeaderContent {
+	PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -50px; HEIGHT: 28px; OVERFLOW: hidden
+}
+.tabs .tabsHeader UL {
+	DISPLAY: block; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -100px; HEIGHT: 28px
+}
+.tabs .tabsHeader LI {
+	DISPLAY: block; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -250px; FLOAT: left; HEIGHT: 28px; CURSOR: pointer; MARGIN-RIGHT: 2px
+}
+.tabs .tabsHeader LI A {
+	PADDING-LEFT: 5px; DISPLAY: block; BACKGROUND-POSITION: 0px -150px; FLOAT: left; HEIGHT: 28px
+}
+.tabs .tabsHeader LI A:hover {
+	TEXT-DECORATION: none
+}
+.tabs .tabsHeader LI SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 25px; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; DISPLAY: block; BACKGROUND-POSITION: 100% -200px; FLOAT: left; HEIGHT: 28px; OVERFLOW: hidden; CURSOR: pointer; PADDING-TOP: 2px
+}
+.tabs .tabsHeader LI.hover {
+	BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -400px
+}
+.tabs .tabsHeader LI.hover A {
+	BACKGROUND-POSITION: 0px -300px
+}
+.tabs .tabsHeader LI.hover SPAN {
+	BACKGROUND-POSITION: 100% -350px
+}
+.tabs .tabsHeader LI.selected {
+	BACKGROUND-POSITION: 0px -550px
+}
+.tabs .tabsHeader LI.selected A {
+	BACKGROUND-POSITION: 0px -450px
+}
+.tabs .tabsHeader LI.selected SPAN {
+	BACKGROUND-POSITION: 100% -500px; FONT-WEIGHT: bold
+}
+.tabs .tabsContent {
+	BORDER-BOTTOM: #b8d0d6 0px solid; BORDER-LEFT: #b8d0d6 1px solid; PADDING-BOTTOM: 1px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND: #fff; OVERFLOW: auto; BORDER-TOP: #b8d0d6 0px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 5px
+}
+.tabs .tabsFooter {
+	DISPLAY: block; BACKGROUND-POSITION: 0px -600px; HEIGHT: 5px; OVERFLOW: hidden
+}
+.tabs .tabsFooterContent {
+	DISPLAY: block; BACKGROUND-POSITION: 100% -650px; HEIGHT: 5px; OVERFLOW: hidden
+}
+.tabsPage .tabsPageHeader {
+	BACKGROUND-IMAGE: none; POSITION: relative; PADDING-LEFT: 5px; DISPLAY: block; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: left bottom; HEIGHT: 27px
+}
+.tabsPage .tabsPageHeaderContent {
+	POSITION: relative; DISPLAY: block; HEIGHT: 27px; OVERFLOW: hidden; MARGIN-RIGHT: 19px
+}
+.tabsPage .tabsPageHeaderMargin {
+	MARGIN: 0px 34px 0px 17px
+}
+.tabsPage .tabsPageHeader UL {
+	Z-INDEX: 1; POSITION: absolute; WIDTH: 10000px; DISPLAY: block; HEIGHT: 27px
+}
+.tabsPage .tabsPageHeader LI {
+	POSITION: relative; DISPLAY: block; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -100px; FLOAT: left; HEIGHT: 27px; CURSOR: pointer; MARGIN-RIGHT: 2px
+}
+.tabsPage .tabsPageHeader LI A {
+	LINE-HEIGHT: 25px; PADDING-LEFT: 5px; DISPLAY: block; BACKGROUND-POSITION: 0px 0px; FLOAT: left; HEIGHT: 27px; OVERFLOW: hidden
+}
+.tabsPage .tabsPageHeader LI A:hover {
+	TEXT-DECORATION: none
+}
+.tabsPage .tabsPageHeader LI SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 10px; PADDING-RIGHT: 20px; DISPLAY: block; BACKGROUND-POSITION: 100% -50px; FLOAT: left; HEIGHT: 24px; OVERFLOW: hidden; CURSOR: pointer; PADDING-TOP: 3px
+}
+.tabsPage .tabsPageHeader LI.hover {
+	BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -250px
+}
+.tabsPage .tabsPageHeader LI.hover A {
+	BACKGROUND-POSITION: 0px -150px
+}
+.tabsPage .tabsPageHeader LI.hover SPAN {
+	BACKGROUND-POSITION: 100% -200px
+}
+.tabsPage .tabsPageHeader LI.selected {
+	BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -400px
+}
+.tabsPage .tabsPageHeader LI.selected A {
+	BACKGROUND-POSITION: 0px -300px; FONT-WEIGHT: bold
+}
+.tabsPage .tabsPageHeader LI.selected SPAN {
+	BACKGROUND-POSITION: 100% -350px
+}
+.tabsPage .tabsPageHeader LI .close {
+	POSITION: absolute; PADDING-BOTTOM: 0px; TEXT-INDENT: -1000px; PADDING-LEFT: 0px; WIDTH: 11px; PADDING-RIGHT: 0px; DISPLAY: block; HEIGHT: 11px; OVERFLOW: hidden; TOP: 3px; RIGHT: 2px; PADDING-TOP: 0px
+}
+.tabsPage .tabsPageHeader LI .close:hover {
+	BACKGROUND-POSITION: 0px -50px
+}
+.tabsPage .tabsPageHeader LI.main SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 3px; PADDING-RIGHT: 20px; PADDING-TOP: 3px
+}
+.tabsPage .tabsPageHeader LI .home_icon {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 15px; WIDTH: auto; PADDING-RIGHT: 0px; BACKGROUND-POSITION: 0px 3px; PADDING-TOP: 0px
+}
+.tabsPage .tabsPageHeader LI.main .home_icon {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 15px; WIDTH: auto; PADDING-RIGHT: 0px; BACKGROUND-POSITION: 0px 3px; PADDING-TOP: 0px
+}
+.tabsPage .tabsMove {
+	Z-INDEX: 2; POSITION: absolute; HEIGHT: 25px; TOP: 0px; RIGHT: 0px
+}
+.tabsPage .tabsLeft {
+	Z-INDEX: 2; POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 17px; DISPLAY: block; HEIGHT: 23px; OVERFLOW: hidden
+}
+.tabsPage .tabsRight {
+	Z-INDEX: 2; POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 17px; DISPLAY: block; HEIGHT: 23px; OVERFLOW: hidden
+}
+.tabsPage .tabsMore {
+	Z-INDEX: 2; POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 17px; DISPLAY: block; HEIGHT: 23px; OVERFLOW: hidden
+}
+.tabsPage .tabsLeft {
+	BACKGROUND-POSITION: 0px 0px; TOP: 1px; CURSOR: pointer; LEFT: 0px
+}
+.tabsPage .tabsLeftHover {
+	BACKGROUND-POSITION: 0px -50px
+}
+.tabsPage .tabsLeftDisabled {
+	BACKGROUND-POSITION: 0px -100px; TOP: 1px; CURSOR: default; LEFT: 0px
+}
+.tabsPage .tabsRight {
+	BACKGROUND-POSITION: 0px -150px; TOP: 1px; CURSOR: pointer; RIGHT: 17px
+}
+.tabsPage .tabsRightHover {
+	BACKGROUND-POSITION: 0px -200px
+}
+.tabsPage .tabsRightDisabled {
+	BACKGROUND-POSITION: 0px -250px; TOP: 1px; CURSOR: default; RIGHT: 17px
+}
+.tabsPage .tabsMore {
+	BACKGROUND-POSITION: 0px -300px; TOP: 1px; CURSOR: pointer; RIGHT: 0px
+}
+.tabsPage .tabsMoreHover {
+	BACKGROUND-POSITION: 0px -350px
+}
+.tabsPage .tabsMoreList {
+	Z-INDEX: 3; BORDER-BOTTOM: 0px solid; POSITION: absolute; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 170px; PADDING-RIGHT: 2px; DISPLAY: none; OVERFLOW: hidden; BORDER-TOP: 1px solid; TOP: 24px; RIGHT: 0px; BORDER-RIGHT: 0px solid; PADDING-TOP: 2px
+}
+.tabsPage .tabsMoreList LI {
+	LINE-HEIGHT: 21px; DISPLAY: block; HEIGHT: 23px; OVERFLOW: hidden
+}
+.tabsPage .tabsMoreList LI A {
+	BORDER-BOTTOM: #fff 1px solid; BORDER-LEFT: #fff 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 10px; WIDTH: 148px; PADDING-RIGHT: 10px; DISPLAY: block; WHITE-SPACE: nowrap; HEIGHT: 21px; BORDER-TOP: #fff 1px solid; BORDER-RIGHT: #fff 1px solid; PADDING-TOP: 0px
+}
+.tabsPage .tabsMoreList LI A:hover {
+	BORDER-BOTTOM-COLOR: #ececec; BORDER-TOP-COLOR: #ececec; BACKGROUND: #f5f5f5; BORDER-RIGHT-COLOR: #ececec; BORDER-LEFT-COLOR: #ececec; TEXT-DECORATION: none
+}
+.tabsPage .tabsMoreList LI.selected A {
+	BORDER-BOTTOM-COLOR: #dfe5ed; BORDER-TOP-COLOR: #dfe5ed; BACKGROUND: #e8edf3; BORDER-RIGHT-COLOR: #dfe5ed; BORDER-LEFT-COLOR: #dfe5ed; FONT-WEIGHT: bold
+}
+.tabsPage .tabsPageContent {
+	BORDER-BOTTOM: 0px solid; POSITION: relative; BORDER-LEFT: 0px solid; DISPLAY: block; OVERFLOW: auto; BORDER-TOP: 1px solid; BORDER-RIGHT: 0px solid
+}
+.alert {
+	Z-INDEX: 1011; POSITION: absolute; WIDTH: 300px; DISPLAY: block; MARGIN-LEFT: -150px; OVERFLOW: hidden; TOP: 0px; LEFT: 50%
+}
+.alert .alertContent {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 1px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; OVERFLOW: hidden; BORDER-TOP: 0px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 5px
+}
+.alert .alertInner {
+	BORDER-BOTTOM: 1px solid; TEXT-ALIGN: left; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 9px; PADDING-LEFT: 9px; PADDING-RIGHT: 9px; DISPLAY: block; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 0px
+}
+.alert .alertInner .msg {
+	LINE-HEIGHT: 1.3em; MARGIN: 10px; MAX-HEIGHT: 200px; OVERFLOW: auto
+}
+.alert H1 {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 0px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 30px; PADDING-LEFT: 25px; PADDING-RIGHT: 0px; DISPLAY: block; MARGIN-BOTTOM: 10px; HEIGHT: 30px; OVERFLOW: hidden; BORDER-TOP: 0px solid; BORDER-RIGHT: 0px solid; PADDING-TOP: 0px
+}
+.alert .error H1 {
+	BACKGROUND-POSITION: 2px -42px
+}
+.alert .info H1 {
+	BACKGROUND-POSITION: 2px 8px
+}
+.alert .warn H1 {
+	BACKGROUND-POSITION: 2px 8px
+}
+.alert .correct H1 {
+	BACKGROUND-POSITION: 2px -92px
+}
+.alert .confirm H1 {
+	BACKGROUND-POSITION: 2px 8px
+}
+.alert P {
+	MARGIN: 10px
+}
+.alert .toolBar {
+	TEXT-ALIGN: right; DISPLAY: block; HEIGHT: 25px; OVERFLOW: hidden; PADDING-TOP: 5px
+}
+.alert .toolBar UL {
+	FLOAT: right
+}
+.alert .toolBar LI {
+	FLOAT: left
+}
+.alert .toolBar .button {
+	MARGIN-LEFT: 5px
+}
+.alert .toolBar .buttonActive {
+	MARGIN-LEFT: 5px
+}
+.alert .alertFooter_c {
+	DISPLAY: block; HEIGHT: 5px; OVERFLOW: hidden
+}
+.alert .alertFooter {
+	PADDING-LEFT: 5px; BACKGROUND-POSITION: 0px 0px
+}
+.alert .alertFooter_r {
+	PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -50px
+}
+.alert .alertFooter_c {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -100px; PADDING-TOP: 0px
+}
+.dialog {
+	Z-INDEX: 42; POSITION: absolute; TEXT-ALIGN: left; DISPLAY: block
+}
+.dialog .dialogHeader {
+	DISPLAY: block; HEIGHT: 28px; OVERFLOW: hidden
+}
+.dialog .dialogHeader_r {
+	DISPLAY: block; HEIGHT: 28px; OVERFLOW: hidden
+}
+.dialog .dialogHeader_c {
+	DISPLAY: block; HEIGHT: 28px; OVERFLOW: hidden
+}
+.dialog .dialogHeader .close {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 19px; DISPLAY: block; HEIGHT: 19px; OVERFLOW: hidden; TOP: 5px
+}
+.dialog .dialogHeader .maximize {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 19px; DISPLAY: block; HEIGHT: 19px; OVERFLOW: hidden; TOP: 5px
+}
+.dialog .dialogHeader .restore {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 19px; DISPLAY: block; HEIGHT: 19px; OVERFLOW: hidden; TOP: 5px
+}
+.dialog .dialogHeader .minimize {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 19px; DISPLAY: block; HEIGHT: 19px; OVERFLOW: hidden; TOP: 5px
+}
+.dialog .dialogHeader H1 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 28px; PADDING-LEFT: 20px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 0px -450px; HEIGHT: 28px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+.dialog .dialogHeader {
+	POSITION: relative; PADDING-LEFT: 5px; BACKGROUND-POSITION: 0px 0px; CURSOR: move
+}
+.dialog .dialogHeader_r {
+	PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -50px
+}
+.dialog .dialogHeader_c {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -100px; PADDING-TOP: 0px
+}
+.dialog .dialogHeader .close {
+	BACKGROUND-POSITION: 0px 0px; RIGHT: 4px
+}
+.dialog .dialogHeader .close:hover {
+	BACKGROUND-POSITION: 0px -50px
+}
+.dialog .dialogHeader .maximize {
+	BACKGROUND-POSITION: 0px -100px; RIGHT: 23px
+}
+.dialog .dialogHeader .maximize:hover {
+	BACKGROUND-POSITION: 0px -150px
+}
+.dialog .dialogHeader .restore {
+	DISPLAY: none; BACKGROUND-POSITION: 0px -200px; RIGHT: 23px
+}
+.dialog .dialogHeader .restore:hover {
+	BACKGROUND-POSITION: 0px -250px
+}
+.dialog .dialogHeader .minimize {
+	BACKGROUND-POSITION: 0px -300px; RIGHT: 42px
+}
+.dialog .dialogHeader .minimize:hover {
+	BACKGROUND-POSITION: 0px -350px
+}
+.dialog .dialogContent {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 1px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; OVERFLOW: hidden; BORDER-TOP: 0px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 5px
+}
+.dialog .panelFooter_r {
+	DISPLAY: block; HEIGHT: 5px; OVERFLOW: hidden
+}
+.dialog .dialogFooter_c {
+	DISPLAY: block; HEIGHT: 5px; OVERFLOW: hidden
+}
+.dialog .dialogFooter {
+	PADDING-LEFT: 5px; BACKGROUND-POSITION: 0px -150px
+}
+.dialog .dialogFooter_r {
+	PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -200px
+}
+.dialog .dialogFooter_c {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px -250px; PADDING-TOP: 0px
+}
+.dialogProxy {
+	FILTER: alpha(opacity=80); opacity: 0.8
+}
+.dialog .resizable_f_r {
+	WIDTH: 11px; BACKGROUND-POSITION: 0px -400px; HEIGHT: 11px
+}
+.resizable {
+	Z-INDEX: 100; BORDER-BOTTOM: 1px dashed; POSITION: absolute; FILTER: alpha(opacity=50); BORDER-LEFT: 1px dashed; DISPLAY: none; OVERFLOW: hidden; BORDER-TOP: 1px dashed; TOP: 0px; BORDER-RIGHT: 1px dashed; LEFT: 0px; opacity: 0.5
+}
+.resizable_h_l {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_h_r {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_h_c {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_c_l {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_c_r {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_f_l {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_f_r {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_f_c {
+	POSITION: absolute; WIDTH: 6px; DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.resizable_h_l {
+	Z-INDEX: 2; TOP: 0px; CURSOR: nw-resize; LEFT: 0px
+}
+.resizable_h_r {
+	Z-INDEX: 2; TOP: 0px; CURSOR: ne-resize; RIGHT: 0px
+}
+.resizable_h_c {
+	Z-INDEX: 1; WIDTH: 100%; TOP: 0px; CURSOR: n-resize; LEFT: 0px
+}
+.resizable_c_l {
+	Z-INDEX: 1; TOP: 0px; CURSOR: w-resize; LEFT: 0px
+}
+.resizable_c_r {
+	Z-INDEX: 1; TOP: 0px; CURSOR: e-resize; RIGHT: 0px
+}
+.resizable_f_l {
+	Z-INDEX: 2; BOTTOM: 0px; CURSOR: sw-resize; LEFT: 0px
+}
+.resizable_f_r {
+	Z-INDEX: 2; BOTTOM: 0px; CURSOR: se-resize; RIGHT: 0px
+}
+.resizable_f_c {
+	Z-INDEX: 1; WIDTH: 100%; BOTTOM: 0px; CURSOR: s-resize; LEFT: 0px
+}
+.shadow {
+	Z-INDEX: 41; POSITION: absolute; DISPLAY: none; OVERFLOW: hidden
+}
+.shadow .shadow_h {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_h_l {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_h_r {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_h_c {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_f {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_f_l {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_f_r {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_f_c {
+	DISPLAY: block; HEIGHT: 6px; OVERFLOW: hidden
+}
+.shadow .shadow_h {
+	POSITION: relative
+}
+.shadow .shadow_c {
+	POSITION: relative
+}
+.shadow .shadow_f {
+	POSITION: relative
+}
+.shadow .shadow_h_l {
+	POSITION: absolute; WIDTH: 6px; TOP: 0px; LEFT: 0px
+}
+.shadow .shadow_c_l {
+	POSITION: absolute; WIDTH: 6px; TOP: 0px; LEFT: 0px
+}
+.shadow .shadow_f_l {
+	POSITION: absolute; WIDTH: 6px; TOP: 0px; LEFT: 0px
+}
+.shadow .shadow_h_r {
+	POSITION: absolute; WIDTH: 6px; TOP: 0px; RIGHT: 0px
+}
+.shadow .shadow_c_r {
+	POSITION: absolute; WIDTH: 6px; TOP: 0px; RIGHT: 0px
+}
+.shadow .shadow_f_r {
+	POSITION: absolute; WIDTH: 6px; TOP: 0px; RIGHT: 0px
+}
+.shadow .shadow_h_c {
+	MARGIN: 0px 6px
+}
+.shadow .shadow_c_c {
+	MARGIN: 0px 6px
+}
+.shadow .shadow_f_c {
+	MARGIN: 0px 6px
+}
+.shadow .shadow_c {
+	DISPLAY: block; HEIGHT: 100%; OVERFLOW: hidden
+}
+.shadow .shadow_c_l {
+	DISPLAY: block; HEIGHT: 100%; OVERFLOW: hidden
+}
+.shadow .shadow_c_r {
+	DISPLAY: block; HEIGHT: 100%; OVERFLOW: hidden
+}
+.shadow .shadow_c_c {
+	DISPLAY: block; HEIGHT: 100%; OVERFLOW: hidden
+}
+.tree LI {
+	LINE-HEIGHT: 22px; DISPLAY: block; CLEAR: both; CURSOR: pointer
+}
+.tree DIV {
+	LINE-HEIGHT: 22px; DISPLAY: inherit; HEIGHT: 22px
+}
+.tree A {
+	LINE-HEIGHT: 22px; DISPLAY: inherit; HEIGHT: 22px
+}
+.tree SPAN {
+	LINE-HEIGHT: 22px; DISPLAY: inherit; HEIGHT: 22px
+}
+.tree DIV {
+	DISPLAY: block; OVERFLOW: hidden
+}
+.tree DIV DIV {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 22px; DISPLAY: block; BACKGROUND-POSITION: 0px -100px; FLOAT: left; HEIGHT: 22px; OVERFLOW: hidden; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+.tree A {
+	TEXT-DECORATION: none
+}
+.tree A:hover {
+	TEXT-DECORATION: none
+}
+.tree .collapsable {
+	BACKGROUND-POSITION: 0px -300px
+}
+.tree .first_collapsable {
+	BACKGROUND-POSITION: 0px -250px
+}
+.tree .last_collapsable {
+	BACKGROUND-POSITION: 0px -350px
+}
+.tree .expandable {
+	BACKGROUND-POSITION: 0px -100px
+}
+.tree .first_expandable {
+	BACKGROUND-POSITION: 0px -50px
+}
+.tree .last_expandable {
+	BACKGROUND-POSITION: 0px -150px
+}
+.tree .end_expandable {
+	BACKGROUND-POSITION: 0px 0px
+}
+.tree .end_collapsable {
+	BACKGROUND-POSITION: 0px -200px
+}
+.tree .indent {
+	BACKGROUND: none transparent scroll repeat 0% 0%
+}
+.tree .line {
+	BACKGROUND-POSITION: 0px -400px
+}
+.tree .node {
+	BACKGROUND-POSITION: 0px -450px
+}
+.tree .last .node {
+	BACKGROUND-POSITION: 0px -500px
+}
+.tree .folder_expandable {
+	BACKGROUND: url(/resources/images/add.png) no-repeat center center
+}
+.tree .folder_collapsable {
+	BACKGROUND: url(/resources/images/del.png) no-repeat center center
+}
+.tree .file {
+	BACKGROUND-POSITION: 0px -100px
+}
+.tree .unchecked {
+	BACKGROUND-POSITION: 0px 0px
+}
+.tree .hover .unchecked {
+	BACKGROUND-POSITION: 0px -50px
+}
+.tree .checked {
+	BACKGROUND-POSITION: 0px -100px
+}
+.tree .hover .checked {
+	BACKGROUND-POSITION: 0px -150px
+}
+.tree .indeterminate {
+	BACKGROUND-POSITION: 0px -200px
+}
+.tree .hover .indeterminate {
+	BACKGROUND-POSITION: 0px -250px
+}
+.accordionContent .tree LI {
+	BORDER-BOTTOM: #bfddee 1px solid; LINE-HEIGHT: 26px; DISPLAY: block; CLEAR: both; CURSOR: pointer
+}
+.accordionContent .tree DIV {
+	LINE-HEIGHT: 26px; DISPLAY: inherit; HEIGHT: 26px
+}
+.accordionContent .tree A {
+	LINE-HEIGHT: 26px; DISPLAY: inherit; HEIGHT: 26px
+}
+.tree SPAN {
+	LINE-HEIGHT: 26px; DISPLAY: inherit; HEIGHT: 26px
+}
+.accordionContent .tree LI LI DIV {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 24px; DISPLAY: inherit; HEIGHT: 24px; PADDING-TOP: 0px
+}
+.accordionContent .tree LI LI A {
+	LINE-HEIGHT: 24px; DISPLAY: inherit; HEIGHT: 24px
+}
+.tree LI LI SPAN {
+	LINE-HEIGHT: 24px; DISPLAY: inherit; HEIGHT: 24px
+}
+.accordionContent .tree DIV {
+	DISPLAY: block; OVERFLOW: hidden
+}
+.accordionContent .tree DIV DIV {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 22px; DISPLAY: block; BACKGROUND: none transparent scroll repeat 0% 0%; FLOAT: left; HEIGHT: 22px; OVERFLOW: hidden; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+.accordionContent .tree LI LI {
+	BORDER-BOTTOM: 0px; LINE-HEIGHT: 24px
+}
+.accordionContent .tree LI LI DIV DIV {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 22px; DISPLAY: block; BACKGROUND-POSITION: 0px -100px; FLOAT: left; HEIGHT: 22px; OVERFLOW: hidden; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+.accordionContent .tree A {
+	TEXT-DECORATION: none
+}
+.accordionContent .tree A:hover {
+	TEXT-DECORATION: none
+}
+.accordionContent .tree LI LI A {
+	PADDING-BOTTOM: 1px; PADDING-TOP: 1px
+}
+.accordionContent .tree .collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-left.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .first_collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-left.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .last_collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-left.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .end_collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-left.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .expandable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-right.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree LI LI .collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/-.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .first_collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/-.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .last_collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/-.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .expandable {
+	BACKGROUND-IMAGE: url(/resources/images/+.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .first_expandable {
+	BACKGROUND-IMAGE: url(/resources/images/+.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .last_expandable {
+	BACKGROUND-IMAGE: url(/resources/images/+.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .end_expandable {
+	BACKGROUND-IMAGE: url(/resources/images/+.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree LI LI .end_collapsable {
+	BACKGROUND-IMAGE: url(/resources/images/-.gif); BACKGROUND-POSITION: 7px 7px; LEFT: 0px
+}
+.accordionContent .tree .first_expandable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-right.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .last_expandable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-right.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .end_expandable {
+	BACKGROUND-IMAGE: url(/resources/images/arrow-right.png); POSITION: relative; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px 7px; LEFT: 90%
+}
+.accordionContent .tree .indent {
+	BACKGROUND: none transparent scroll repeat 0% 0%
+}
+.accordionContent .tree .line {
+	BACKGROUND: none transparent scroll repeat 0% 0%
+}
+.accordionContent .tree .node {
+	DISPLAY: none; BACKGROUND-POSITION: 0px -450px
+}
+.accordionContent .tree .last .node {
+	DISPLAY: none; BACKGROUND-POSITION: 0px -500px
+}
+.accordionContent .tree .folder_expandable {
+	DISPLAY: none
+}
+.accordionContent .tree .folder_collapsable {
+	DISPLAY: none
+}
+.accordionContent .tree .file {
+	BACKGROUND-IMAGE: url(themes/default/images/left/icon.png)
+}
+.accordionContent .tree .unchecked {
+	BACKGROUND-POSITION: 0px 0px
+}
+.accordionContent .tree .hover .unchecked {
+	BACKGROUND-POSITION: 0px -50px
+}
+.accordionContent .tree .checked {
+	BACKGROUND-POSITION: 0px -100px
+}
+.accordionContent .tree .hover .checked {
+	BACKGROUND-POSITION: 0px -150px
+}
+.accordionContent .tree .indeterminate {
+	BACKGROUND-POSITION: 0px -200px
+}
+.accordionContent .tree .hover .indeterminate {
+	BACKGROUND-POSITION: 0px -250px
+}
+.accordion {
+	DISPLAY: block
+}
+.accordion .accordionHeader {
+	DISPLAY: block; BACKGROUND-REPEAT: repeat-x; OVERFLOW: hidden; CURSOR: pointer
+}
+.accordion .accordionHeader H2 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 24px; PADDING-LEFT: 5px; PADDING-RIGHT: 25px; DISPLAY: block; HEIGHT: 25px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+.accordion .accordionHeader H2 SPAN {
+	TEXT-INDENT: -1000px; WIDTH: 20px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden
+}
+.accordion .accordionContent {
+	DISPLAY: block; OVERFLOW: auto
+}
+.accordion .hover.accordionHeader {
+	BACKGROUND-POSITION: 0px -25px
+}
+.accordion .accordionHeader H2 {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% -50px
+}
+.accordion .hover.accordionHeader H2 {
+	BACKGROUND-POSITION: 100% -75px
+}
+.accordion .accordionHeader .collapsable {
+	BACKGROUND-POSITION: 100% -100px
+}
+.accordion .hover.accordionHeader .collapsable {
+	BACKGROUND-POSITION: 100% -125px
+}
+.accordion .accordionHeader H2 SPAN {
+	BACKGROUND-POSITION: 0px -150px
+}
+.accordion .t1 {
+	BACKGROUND-REPEAT: repeat-x; OVERFLOW: hidden; CURSOR: pointer
+}
+.accordion .t1 .accordionHeader1 {
+	DISPLAY: block; BACKGROUND-REPEAT: repeat-x; OVERFLOW: hidden; CURSOR: pointer
+}
+.accordion .t1 .accordionHeader1 H2 {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 24px; PADDING-LEFT: 5px; PADDING-RIGHT: 25px; DISPLAY: block; HEIGHT: 25px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+.accordion .t1 .accordionHeader1 H2 SPAN {
+	TEXT-INDENT: -1000px; WIDTH: 20px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden
+}
+.accordion .t1 .accordionContent1 {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 0px solid; DISPLAY: block; OVERFLOW: auto; BORDER-TOP: 0px solid; BORDER-RIGHT: 0px solid
+}
+.accordion .t1 .hover.accordionHeader1 {
+	BACKGROUND-POSITION: 0px -25px
+}
+.accordion .t1 .accordionHeader1 H2 {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% -50px
+}
+.accordion .t1 .hover.accordionHeader1 H2 {
+	BACKGROUND-POSITION: 100% -75px
+}
+.accordion .t1 .accordionHeader1 .collapsable {
+	BACKGROUND-POSITION: 100% -100px
+}
+.accordion .t1 .hover.accordionHeader1 .collapsable {
+	BACKGROUND-POSITION: 100% -125px
+}
+.accordion .t1 .accordionHeader1 H2 SPAN {
+	BACKGROUND-POSITION: 0px -150px
+}
+.panel .grid {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 1px solid; BORDER-TOP: 0px solid; BORDER-RIGHT: 1px solid
+}
+.panel .panelBar {
+	BORDER-RIGHT-WIDTH: 1px; BORDER-TOP-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 1px; BORDER-LEFT-WIDTH: 1px
+}
+.panelBar {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 0px solid; DISPLAY: block; BACKGROUND-REPEAT: repeat-x; HEIGHT: 25px; OVERFLOW: hidden; BORDER-TOP: 1px solid; BORDER-RIGHT: 0px solid
+}
+.panelBar UL {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 1px; PADDING-RIGHT: 1px; PADDING-TOP: 1px
+}
+.panelBar LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 23px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+.panelBar LI.hover {
+	BACKGROUND-POSITION: 0px -100px
+}
+.panelBar LI.hover A {
+	BACKGROUND-POSITION: 100% -150px
+}
+.panelBar .toolBar LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 0px; BACKGROUND-POSITION: 0px -100px; PADDING-TOP: 0px
+}
+.panelBar .toolBar LI.hover {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 0px; BACKGROUND-POSITION: 0px -100px; PADDING-TOP: 0px
+}
+.panelBar .toolBar A {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -150px; FLOAT: left; OVERFLOW: hidden; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.panelBar .toolBar LI.hover A {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -150px; FLOAT: left; OVERFLOW: hidden; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.panelBar .toolBar SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 23px; PADDING-LEFT: 20px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 23px; OVERFLOW: hidden; CURSOR: pointer; PADDING-TOP: 0px
+}
+.panelBar .toolBar LI.hover SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 23px; PADDING-LEFT: 20px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 23px; OVERFLOW: hidden; CURSOR: pointer; PADDING-TOP: 0px
+}
+.panelBar .toolBar A.add SPAN {
+	BACKGROUND-POSITION: 0px -696px
+}
+.panelBar .toolBar A.delete SPAN {
+	BACKGROUND-POSITION: 0px -746px
+}
+.panelBar .toolBar A.edit SPAN {
+	BACKGROUND-POSITION: 0px -796px
+}
+.panelBar .toolBar A.icon SPAN {
+	BACKGROUND-POSITION: 0px -846px
+}
+.panelBar .toolBar LI.line {
+	PADDING-BOTTOM: 0px; TEXT-INDENT: -1000px; PADDING-LEFT: 0px; WIDTH: 12px; PADDING-RIGHT: 0px; DISPLAY: block; BACKGROUND-POSITION: 5px -200px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+.panelBar .pages {
+	PADDING-BOTTOM: 2px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; FLOAT: left; HEIGHT: 21px; OVERFLOW: hidden; PADDING-TOP: 2px
+}
+.panelBar .pages SPAN {
+	LINE-HEIGHT: 21px; FLOAT: left
+}
+.panelBar .pages SELECT {
+	MARGIN: 0px 3px; FLOAT: left; FONT-SIZE: 12px
+}
+.pagination {
+	PADDING-LEFT: 7px; BACKGROUND-POSITION: 0px -199px; FLOAT: right
+}
+.pagination LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 0px; BACKGROUND-POSITION: 0px -100px; PADDING-TOP: 0px
+}
+.pagination LI.hover {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 0px; BACKGROUND-POSITION: 0px -100px; PADDING-TOP: 0px
+}
+.pagination A {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 23px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -150px; FLOAT: left; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.pagination LI.hover A {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 23px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -150px; FLOAT: left; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.pagination LI SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 23px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; DISPLAY: block; BACKGROUND-POSITION: 100% -150px; FLOAT: left; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.pagination LI.selected A {
+	COLOR: red; FONT-WEIGHT: bold
+}
+.pagination SPAN {
+	LINE-HEIGHT: 23px; DISPLAY: block; FLOAT: left; HEIGHT: 23px; CURSOR: pointer
+}
+.pagination LI.hover SPAN {
+	LINE-HEIGHT: 23px; DISPLAY: block; FLOAT: left; HEIGHT: 23px; CURSOR: pointer
+}
+.pagination LI .first SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 10px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+.panelBar LI .previous SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 10px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+.pagination LI .next SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 10px; PADDING-TOP: 0px
+}
+.panelBar LI .last SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 10px; PADDING-TOP: 0px
+}
+.pagination LI .first SPAN {
+	BACKGROUND-POSITION: 0px -244px
+}
+.pagination LI .previous SPAN {
+	BACKGROUND-POSITION: 0px -294px
+}
+.pagination LI .next SPAN {
+	BACKGROUND-POSITION: 100% -344px
+}
+.pagination LI .last SPAN {
+	BACKGROUND-POSITION: 100% -394px
+}
+.pagination LI .last {
+	MARGIN-RIGHT: 5px
+}
+.pagination LI.disabled {
+	BACKGROUND: none transparent scroll repeat 0% 0%
+}
+.pagination LI.disabled SPAN {
+	BACKGROUND-POSITION: 0px 100px; CURSOR: default
+}
+.grid .pagination LI.disabled A {
+	BACKGROUND-POSITION: 0px 100px; CURSOR: default
+}
+.pagination LI.disabled SPAN SPAN {
+	COLOR: #666
+}
+.pagination LI.disabled .first SPAN {
+	BACKGROUND-POSITION: 0px -444px
+}
+.pagination LI.disabled .previous SPAN {
+	BACKGROUND-POSITION: 0px -494px
+}
+.pagination LI.disabled .next SPAN {
+	BACKGROUND-POSITION: 100% -544px
+}
+.pagination LI.disabled .last SPAN {
+	BACKGROUND-POSITION: 100% -594px
+}
+.pagination LI.disabled .last {
+	MARGIN-RIGHT: 5px
+}
+.pagination LI.jumpto {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 7px; PADDING-RIGHT: 2px; BACKGROUND-POSITION: 0px -200px; PADDING-TOP: 2px
+}
+.pagination LI.jumpto .textInput {
+	BORDER-BOTTOM-COLOR: #acaeaf; PADDING-BOTTOM: 1px; BORDER-TOP-COLOR: #acaeaf; PADDING-LEFT: 1px; WIDTH: 30px; PADDING-RIGHT: 1px; FLOAT: left; BORDER-RIGHT-COLOR: #acaeaf; BORDER-LEFT-COLOR: #acaeaf; PADDING-TOP: 1px
+}
+.pagination LI.jumpto .goto {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; TEXT-INDENT: -1000px; WIDTH: 16px; DISPLAY: block; BACKGROUND-POSITION: 0px -650px; FLOAT: left; HEIGHT: 19px; OVERFLOW: hidden; BORDER-TOP: 0px; CURSOR: pointer; BORDER-RIGHT: 0px
+}
+.grid {
+	POSITION: relative; BORDER-RIGHT-WIDTH: 1px; WIDTH: 100%; DISPLAY: block; BORDER-TOP-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; OVERFLOW: hidden; BORDER-LEFT-WIDTH: 1px
+}
+.grid .gridHeader {
+	WIDTH: auto; DISPLAY: block; OVERFLOW: hidden
+}
+.grid .gridThead {
+	BORDER-TOP: #ededed 1px solid
+}
+.grid .gridScroller {
+	POSITION: relative; DISPLAY: block; OVERFLOW: auto
+}
+.grid .gridTbody {
+	
+}
+.grid TABLE {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BORDER-COLLAPSE: collapse; TABLE-LAYOUT: fixed; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+.grid .gridHeader TH {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 0px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; WHITE-SPACE: nowrap; VERTICAL-ALIGN: top; BORDER-TOP: 0px solid; CURSOR: default; BORDER-RIGHT: 1px solid; PADDING-TOP: 0px
+}
+.grid .gridHeader TH.hover {
+	BACKGROUND-POSITION: 0px -50px
+}
+.grid .gridHeader TH.thSelected {
+	BACKGROUND-POSITION: 0px -50px
+}
+.grid .gridTbody TD {
+	BORDER-BOTTOM: #ededed 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; VERTICAL-ALIGN: middle; OVERFLOW: hidden; BORDER-RIGHT: #ededed 1px solid; PADDING-TOP: 0px
+}
+.grid .gridTbody TD DIV {
+	LINE-HEIGHT: 21px; DISPLAY: block; WHITE-SPACE: nowrap; HEIGHT: 21px; OVERFLOW: hidden
+}
+.grid .gridTbody TD DIV A {
+	LINE-HEIGHT: 21px
+}
+.grid .gridRow {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 0px solid; BORDER-TOP: 0px solid; CURSOR: default; BORDER-RIGHT: 0px solid
+}
+.grid .gridRow TD.tdLast {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 4px; BORDER-RIGHT: 1px solid; PADDING-TOP: 0px
+}
+.grid .gridCol {
+	TEXT-ALIGN: center; LINE-HEIGHT: 21px; WIDTH: 100%; DISPLAY: block; WHITE-SPACE: nowrap; HEIGHT: 21px; OVERFLOW: hidden
+}
+.td_left {
+	TEXT-ALIGN: left
+}
+.td_center {
+	TEXT-ALIGN: center
+}
+.td_right {
+	TEXT-ALIGN: right
+}
+.grid .gridTbody .selected TD {
+	BORDER-BOTTOM: 1px dotted
+}
+.grid .gridTbody .selected .tdSelected {
+	
+}
+.grid .gridTbody .tdSelected {
+	
+}
+.grid .resizeMarker {
+	POSITION: absolute; WIDTH: 1px; DISPLAY: block; OVERFLOW: hidden
+}
+.grid .resizeProxy {
+	POSITION: absolute; WIDTH: 1px; DISPLAY: block; OVERFLOW: hidden
+}
+.grid .left {
+	TEXT-ALIGN: left
+}
+.grid .right {
+	TEXT-ALIGN: right
+}
+.grid .center {
+	TEXT-ALIGN: center
+}
+TABLE.list {
+	BORDER-BOTTOM: #ededed 1px solid; BORDER-LEFT: #ededed 1px solid; BORDER-COLLAPSE: collapse; BORDER-TOP: #ededed 1px solid; BORDER-RIGHT: #ededed 1px solid
+}
+TABLE.list THEAD TR {
+	BACKGROUND-COLOR: #f0eff0; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px 0px
+}
+TABLE.list TH {
+	BORDER-BOTTOM: #d0d0d0 1px solid; TEXT-ALIGN: center; PADDING-BOTTOM: 1px; LINE-HEIGHT: 21px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-RIGHT: #d0d0d0 1px solid; PADDING-TOP: 1px
+}
+TABLE.list TD {
+	BORDER-BOTTOM: #f1f3f2 1px solid; PADDING-BOTTOM: 1px; LINE-HEIGHT: 21px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-RIGHT: #f1f3f2 1px solid; PADDING-TOP: 1px
+}
+TABLE.list TH.asc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+TABLE.table TH.asc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+TABLE.tablea TH.asc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+.grid .gridHeader TH.asc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+TABLE.list TH.desc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+TABLE.table TH.desc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+TABLE.tablea TH.desc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+.grid .gridHeader TH.desc {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; CURSOR: pointer
+}
+TABLE.list TBODY TR {
+	
+}
+TABLE.list .right {
+	TEXT-ALIGN: right
+}
+TABLE.list .trbg {
+	BACKGROUND-COLOR: #f8f8f8
+}
+TABLE.list .hot {
+	BACKGROUND-COLOR: #fff5c0
+}
+TABLE.list .hover {
+	BACKGROUND-COLOR: #e4f5ff
+}
+TABLE.list .selected {
+	BORDER-BOTTOM-COLOR: #b8d0d6; BACKGROUND-COLOR: #7cc5e5; BORDER-TOP-COLOR: #b8d0d6; BORDER-RIGHT-COLOR: #b8d0d6; BORDER-LEFT-COLOR: #b8d0d6
+}
+TABLE.list A {
+	LINE-HEIGHT: 20px; COLOR: #3c7fb1; FONT-SIZE: 11px
+}
+TABLE.list A:hover {
+	LINE-HEIGHT: 20px; TEXT-DECORATION: underline
+}
+TABLE.list TD SPAN.error {
+	Z-INDEX: -1
+}
+TABLE.nowrap TBODY TR {
+	BORDER-BOTTOM: #ededed 1px solid
+}
+TABLE.orderList {
+	BORDER-BOTTOM: #ededed 1px solid; BORDER-LEFT: #ededed 1px solid; BORDER-COLLAPSE: collapse; BORDER-TOP: #ededed 1px solid; BORDER-RIGHT: #ededed 1px solid
+}
+TABLE.orderList THEAD TR {
+	BACKGROUND-COLOR: #f0eff0; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px 0px
+}
+TABLE.orderList TH {
+	BORDER-BOTTOM: #d0d0d0 1px solid; TEXT-ALIGN: center; PADDING-BOTTOM: 1px; LINE-HEIGHT: 21px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-RIGHT: #d0d0d0 1px solid; PADDING-TOP: 1px
+}
+TABLE.orderList TD {
+	BORDER-BOTTOM: #f1f3f2 1px solid; PADDING-BOTTOM: 1px; LINE-HEIGHT: 21px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-RIGHT: #f1f3f2 1px solid; PADDING-TOP: 1px
+}
+TABLE.orderList TBODY TR {
+	
+}
+TABLE.orderList TBODY TR:hover {
+	BACKGROUND-COLOR: #aaccf6
+}
+TABLE.orderList .even {
+	BACKGROUND-COLOR: #f1f3f2
+}
+TABLE.orderList .odd {
+	BACKGROUND-COLOR: #fff
+}
+TABLE.orderList .selected {
+	BORDER-BOTTOM-COLOR: #b8d0d6; BACKGROUND-COLOR: #aaccf6; BORDER-TOP-COLOR: #b8d0d6; BORDER-RIGHT-COLOR: #b8d0d6; BORDER-LEFT-COLOR: #b8d0d6
+}
+TABLE.orderList A {
+	LINE-HEIGHT: 20px; COLOR: #3c7fb1; FONT-SIZE: 11px
+}
+TABLE.orderList A:hover {
+	LINE-HEIGHT: 20px; TEXT-DECORATION: underline
+}
+TABLE.orderList TD SPAN.error {
+	Z-INDEX: -1
+}
+TABLE.nowrap TBODY TR {
+	BORDER-BOTTOM: #ededed 1px solid
+}
+TABLE.evsList {
+	BORDER-BOTTOM: #ededed 1px solid; BORDER-LEFT: #ededed 1px solid; BORDER-COLLAPSE: collapse; BORDER-TOP: #ededed 1px solid; BORDER-RIGHT: #ededed 1px solid
+}
+TABLE.evsList THEAD TR {
+	BACKGROUND-COLOR: #f0eff0; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-REPEAT: repeat-x; BACKGROUND-POSITION: 0px 0px
+}
+TABLE.evsList TH {
+	BORDER-BOTTOM: #d0d0d0 1px solid; TEXT-ALIGN: center; PADDING-BOTTOM: 1px; LINE-HEIGHT: 21px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-RIGHT: #d0d0d0 1px solid; PADDING-TOP: 1px
+}
+TABLE.evsList TD {
+	BORDER-BOTTOM: #f1f3f2 1px solid; PADDING-BOTTOM: 1px; LINE-HEIGHT: 21px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-RIGHT: #f1f3f2 1px solid; PADDING-TOP: 1px
+}
+TABLE.evsList TBODY TR {
+	
+}
+TABLE.evsList .even {
+	BACKGROUND-COLOR: #f1f3f2
+}
+TABLE.evsList .odd {
+	BACKGROUND-COLOR: #fff
+}
+.sorting_asc {
+	BACKGROUND: url(../../images/sort_asc.png) no-repeat right center
+}
+.sorting_desc {
+	BACKGROUND: url(../../images/sort_desc.png) no-repeat right center
+}
+.sorting {
+	BACKGROUND: url(../../images/sort_both.png) no-repeat right center
+}
+.sorting_asc_disabled {
+	BACKGROUND: url(../../images/sort_asc_disabled.png) no-repeat right center
+}
+.sorting_desc_disabled {
+	BACKGROUND: url(../../images/sort_desc_disabled.png) no-repeat right center
+}
+TABLE.display THEAD TH:active {
+	OUTLINE-STYLE: none; OUTLINE-COLOR: invert; OUTLINE-WIDTH: medium
+}
+TABLE.display THEAD TD:active {
+	OUTLINE-STYLE: none; OUTLINE-COLOR: invert; OUTLINE-WIDTH: medium
+}
+#taskbar {
+	Z-INDEX: 30; BORDER-BOTTOM: #0f3255 0px solid; POSITION: absolute; BORDER-LEFT: #0f3255 0px solid; BACKGROUND-COLOR: #112746; BACKGROUND-REPEAT: repeat-x; HEIGHT: 29px; OVERFLOW: hidden; BORDER-TOP: #0f3255 0px solid; BORDER-RIGHT: #0f3255 0px solid
+}
+#taskbar .taskbarContent {
+	POSITION: relative; DISPLAY: block; HEIGHT: 29px; OVERFLOW: hidden
+}
+#taskbar .taskbarMargin {
+	MARGIN: 0px 20px
+}
+#taskbar UL {
+	POSITION: absolute; WIDTH: 10000px
+}
+#taskbar LI {
+	POSITION: relative; PADDING-LEFT: 5px; BACKGROUND-POSITION: 0px -50px; FLOAT: left; HEIGHT: 27px; MARGIN-LEFT: 2px; CURSOR: pointer
+}
+#taskbar LI .taskbutton {
+	DISPLAY: block; BACKGROUND-POSITION: 100% -100px; FLOAT: left; HEIGHT: 27px; OVERFLOW: hidden
+}
+#taskbar LI .taskbutton SPAN {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 29px; PADDING-LEFT: 20px; WIDTH: 70px; PADDING-RIGHT: 25px; DISPLAY: block; BACKGROUND-POSITION: 3px -42px; HEIGHT: 27px; OVERFLOW: hidden; PADDING-TOP: 0px
+}
+#taskbar .selected {
+	BACKGROUND-POSITION: 0px -250px
+}
+#taskbar .selected .taskbutton {
+	BACKGROUND-POSITION: 100% -300px
+}
+#taskbar .hover {
+	BACKGROUND-POSITION: 0px -150px
+}
+#taskbar .hover .taskbutton {
+	BACKGROUND-POSITION: 100% -200px
+}
+#taskbar .close {
+	POSITION: absolute; PADDING-BOTTOM: 0px; TEXT-INDENT: -1000px; PADDING-LEFT: 0px; WIDTH: 11px; PADDING-RIGHT: 0px; DISPLAY: block; HEIGHT: 11px; OVERFLOW: hidden; TOP: 5px; PADDING-TOP: 0px
+}
+#taskbar .restore {
+	POSITION: absolute; PADDING-BOTTOM: 0px; TEXT-INDENT: -1000px; PADDING-LEFT: 0px; WIDTH: 11px; PADDING-RIGHT: 0px; DISPLAY: block; HEIGHT: 11px; OVERFLOW: hidden; TOP: 5px; PADDING-TOP: 0px
+}
+#taskbar .minimize {
+	POSITION: absolute; PADDING-BOTTOM: 0px; TEXT-INDENT: -1000px; PADDING-LEFT: 0px; WIDTH: 11px; PADDING-RIGHT: 0px; DISPLAY: block; HEIGHT: 11px; OVERFLOW: hidden; TOP: 5px; PADDING-TOP: 0px
+}
+#taskbar .close {
+	RIGHT: 3px
+}
+#taskbar .closeHover {
+	BACKGROUND-POSITION: 0px -50px
+}
+#taskbar .restore {
+	BACKGROUND-POSITION: 0px -100px; RIGHT: 14px
+}
+#taskbar .restoreHover {
+	BACKGROUND-POSITION: 0px -150px
+}
+#taskbar .minimize {
+	BACKGROUND-POSITION: 0px -200px; RIGHT: 14px
+}
+#taskbar .minimizeHover {
+	BACKGROUND-POSITION: 0px -250px
+}
+#taskbar .taskbarLeft {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 18px; DISPLAY: block; HEIGHT: 29px; OVERFLOW: hidden; TOP: 0px
+}
+#taskbar .taskbarRight {
+	POSITION: absolute; TEXT-INDENT: -1000px; WIDTH: 18px; DISPLAY: block; HEIGHT: 29px; OVERFLOW: hidden; TOP: 0px
+}
+#taskbar .taskbarLeft {
+	BACKGROUND-POSITION: 0px 0px; CURSOR: pointer; LEFT: 2px
+}
+#taskbar .taskbarLeftHover {
+	BACKGROUND-POSITION: 0px -50px
+}
+#taskbar .taskbarLeftDisabled {
+	BACKGROUND-POSITION: 0px -100px; CURSOR: default
+}
+#taskbar .taskbarRight {
+	BACKGROUND-POSITION: 0px -150px; CURSOR: pointer; RIGHT: 2px
+}
+#taskbar .taskbarRightHover {
+	BACKGROUND-POSITION: 0px -200px
+}
+#taskbar .taskbarRightDisabled {
+	BACKGROUND-POSITION: 0px -250px; CURSOR: default
+}
+.progressBar {
+	Z-INDEX: 2001; POSITION: absolute; TEXT-ALIGN: left; PADDING-BOTTOM: 10px; LINE-HEIGHT: 27px; MARGIN-TOP: -14px; PADDING-LEFT: 50px; WIDTH: 148px; PADDING-RIGHT: 10px; DISPLAY: block; HEIGHT: 28px; MARGIN-LEFT: -74px; TOP: 50%; FONT-WEIGHT: bold; PADDING-TOP: 10px; LEFT: 50%
+}
+.background {
+	Z-INDEX: 2000; POSITION: absolute; FILTER: alpha(opacity=40); WIDTH: 100%; DISPLAY: block; BACKGROUND: #fff; HEIGHT: 100%; TOP: 0px; LEFT: 0px; opacity: 0.4
+}
+.alertBackground {
+	Z-INDEX: 1010; POSITION: absolute; FILTER: alpha(opacity=40); WIDTH: 100%; DISPLAY: none; BACKGROUND: #fff; HEIGHT: 100%; TOP: 0px; LEFT: 0px; opacity: 0.4
+}
+.dialogBackground {
+	Z-INDEX: 900; POSITION: absolute; FILTER: alpha(opacity=40); WIDTH: 100%; DISPLAY: none; BACKGROUND: #fff; HEIGHT: 100%; TOP: 0px; LEFT: 0px; opacity: 0.4
+}
+.textInput {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+INPUT.focus {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+INPUT.required {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+INPUT.error {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+INPUT.readonly {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+INPUT.disabled {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+TEXTAREA.focus {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+TEXTAREA.required {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+TEXTAREA.error {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+TEXTAREA.readonly {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+TEXTAREA.disabled {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 2px; LINE-HEIGHT: 15px; MARGIN: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; FONT-SIZE: 12px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid; PADDING-TOP: 2px
+}
+.textInputNew {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+INPUT.focus {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+INPUT.required {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+INPUT.error {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+INPUT.readonly {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+INPUT.disabled {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+TEXTAREA.focus {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+TEXTAREA.required {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+TEXTAREA.error {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+TEXTAREA.readonly {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+TEXTAREA.disabled {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; BACKGROUND-COLOR: #fff; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid; PADDING-TOP: 0px
+}
+INPUT.required {
+	BACKGROUND-POSITION: 100% 0px
+}
+TEXTAREA.required {
+	BACKGROUND-POSITION: 100% 0px
+}
+INPUT.gray {
+	COLOR: gray
+}
+TEXTAREA.gray {
+	COLOR: gray
+}
+SELECT {
+	BORDER-BOTTOM: #b8d0d6 1px solid; BORDER-LEFT: #a2bac0 1px solid; BORDER-TOP: #a2bac0 1px solid; BORDER-RIGHT: #b8d0d6 1px solid
+}
+.inputButton {
+	TEXT-INDENT: -1000px; WIDTH: 16px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; OVERFLOW: hidden
+}
+.inputButton:hover {
+	BACKGROUND-POSITION: 0px -50px
+}
+.inputDateButton {
+	TEXT-INDENT: -1000px; WIDTH: 16px; DISPLAY: block; BACKGROUND-POSITION: 0px -100px; FLOAT: left; HEIGHT: 21px; OVERFLOW: hidden
+}
+.inputDateButton:hover {
+	BACKGROUND-POSITION: 0px -150px
+}
+SPAN.error {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 3px; WIDTH: 165px; PADDING-RIGHT: 3px; DISPLAY: none; HEIGHT: 21px; COLOR: #fff; OVERFLOW: hidden; TOP: 5px; PADDING-TOP: 0px; LEFT: 318px
+}
+LABEL.alt {
+	POSITION: absolute; LINE-HEIGHT: 20px; DISPLAY: block; OVERFLOW: hidden
+}
+.button {
+	PADDING-LEFT: 5px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden
+}
+.buttonActive {
+	PADDING-LEFT: 5px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden
+}
+.buttonDisabled {
+	PADDING-LEFT: 5px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden
+}
+.button SPAN {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.buttonDisabled SPAN {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.buttonActive SPAN {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.button .buttonContent {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.buttonHover {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.buttonHover .buttonContent {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.buttonActive .buttonContent {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.buttonDisabled .buttonContent {
+	LINE-HEIGHT: 25px; DISPLAY: block; FLOAT: left; HEIGHT: 25px; OVERFLOW: hidden; FONT-WEIGHT: bold
+}
+.button {
+	BACKGROUND-POSITION: 0px 0px
+}
+.button .buttonContent {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -50px; PADDING-TOP: 0px
+}
+.button SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 10px; BACKGROUND-POSITION: 100% -50px; CURSOR: pointer; PADDING-TOP: 0px
+}
+.button:hover {
+	BACKGROUND-POSITION: 0px -100px; TEXT-DECORATION: none
+}
+.button:hover SPAN {
+	BACKGROUND-POSITION: 100% -150px
+}
+.buttonHover {
+	PADDING-LEFT: 5px; BACKGROUND-POSITION: 0px -100px
+}
+.buttonHover .buttonContent {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -150px; PADDING-TOP: 0px
+}
+.buttonActive {
+	BACKGROUND-POSITION: 0px -200px
+}
+.buttonActive .buttonContent {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -250px; PADDING-TOP: 0px
+}
+.buttonActive SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 10px; BACKGROUND-POSITION: 100% -250px; CURSOR: pointer; PADDING-TOP: 0px
+}
+.buttonActive:hover {
+	BACKGROUND-POSITION: 0px -300px; TEXT-DECORATION: none
+}
+.buttonActive:hover SPAN {
+	BACKGROUND-POSITION: 100% -350px
+}
+.buttonActiveHover {
+	BACKGROUND-POSITION: 0px -300px
+}
+.buttonActiveHover .buttonContent {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -350px; PADDING-TOP: 0px
+}
+.buttonDisabled {
+	BACKGROUND-POSITION: 0px -400px; TEXT-DECORATION: none
+}
+.buttonDisabled:hover {
+	BACKGROUND-POSITION: 0px -400px; TEXT-DECORATION: none
+}
+.buttonDisabled SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 10px; BACKGROUND-POSITION: 100% -450px; CURSOR: default; PADDING-TOP: 0px
+}
+.buttonDisabled:hover SPAN {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 10px; BACKGROUND-POSITION: 100% -450px; CURSOR: default; PADDING-TOP: 0px
+}
+.buttonDisabled .buttonContent {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 5px; BACKGROUND-POSITION: 100% -450px; PADDING-TOP: 0px
+}
+.button BUTTON {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: auto; PADDING-RIGHT: 0px; BACKGROUND: none transparent scroll repeat 0% 0%; HEIGHT: 25px; FONT-SIZE: 12px; BORDER-TOP: 0px; CURSOR: pointer; FONT-WEIGHT: bold; BORDER-RIGHT: 0px; PADDING-TOP: 0px
+}
+.buttonHover BUTTON {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: auto; PADDING-RIGHT: 0px; BACKGROUND: none transparent scroll repeat 0% 0%; HEIGHT: 25px; FONT-SIZE: 12px; BORDER-TOP: 0px; CURSOR: pointer; FONT-WEIGHT: bold; BORDER-RIGHT: 0px; PADDING-TOP: 0px
+}
+.buttonActive BUTTON {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: auto; PADDING-RIGHT: 0px; BACKGROUND: none transparent scroll repeat 0% 0%; HEIGHT: 25px; FONT-SIZE: 12px; BORDER-TOP: 0px; CURSOR: pointer; FONT-WEIGHT: bold; BORDER-RIGHT: 0px; PADDING-TOP: 0px
+}
+.buttonDisabled BUTTON {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: auto; PADDING-RIGHT: 0px; BACKGROUND: none transparent scroll repeat 0% 0%; HEIGHT: 25px; FONT-SIZE: 12px; BORDER-TOP: 0px; CURSOR: pointer; FONT-WEIGHT: bold; BORDER-RIGHT: 0px; PADDING-TOP: 0px
+}
+.buttonDisabled BUTTON {
+	CURSOR: default
+}
+#layout {
+	TEXT-ALIGN: left
+}
+BODY {
+	OVERFLOW: hidden; main: 0px
+}
+#layout {
+	POSITION: relative; DISPLAY: block; HEIGHT: 100%
+}
+#header {
+	Z-INDEX: 30; DISPLAY: block; HEIGHT: 133px; OVERFLOW: hidden
+}
+#leftside {
+	Z-INDEX: 20; POSITION: absolute; PADDING-BOTTOM: 6px; TOP: 70px; LEFT: 0px
+}
+#sidebar {
+	Z-INDEX: 20; POSITION: absolute; WIDTH: 185px; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: center bottom; OVERFLOW: hidden; TOP: 0px; LEFT: 0px
+}
+#sidebar_s {
+	Z-INDEX: 21; POSITION: absolute; WIDTH: 24px; DISPLAY: none; TOP: 0px; LEFT: 0px
+}
+#container {
+	POSITION: absolute; TOP: 70px; RIGHT: 0px; PADDING-TOP: 6px; LEFT: 185px
+}
+#splitBar {
+	Z-INDEX: 20; POSITION: absolute; WIDTH: 5px; DISPLAY: none; OVERFLOW: hidden; TOP: 70px; CURSOR: col-resize; LEFT: 180px
+}
+#splitBarProxy {
+	Z-INDEX: 20; BORDER-BOTTOM: 1px solid; POSITION: absolute; BORDER-LEFT: 1px solid; WIDTH: 3px; DISPLAY: none; OVERFLOW: hidden; BORDER-TOP: 1px solid; TOP: 55px; CURSOR: col-resize; BORDER-RIGHT: 1px solid; LEFT: 205px
+}
+#footer {
+	Z-INDEX: 2; POSITION: absolute; TEXT-ALIGN: center; LINE-HEIGHT: 32px; WIDTH: 100%; BOTTOM: 0px; FONT-FAMILY: Arial; BACKGROUND: #1e6fab; HEIGHT: 32px; COLOR: #fff; FONT-SIZE: 10px; BORDER-TOP: #14548d 1px solid; LEFT: 0px
+}
+#header .headerNav {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 100% 0px; HEIGHT: 36px
+}
+#header .logo {
+	TEXT-INDENT: -1000px; WIDTH: 250px; FLOAT: left; HEIGHT: 66px
+}
+#header .nav {
+	Z-INDEX: 31; POSITION: absolute; PADDING-LEFT: 20px; DISPLAY: block; HEIGHT: 21px; TOP: 0px; RIGHT: 0px
+}
+#header .nav_MyHome {
+	Z-INDEX: 31; POSITION: absolute; PADDING-LEFT: 20px; DISPLAY: block; HEIGHT: 21px; TOP: 0px; RIGHT: 0px
+}
+#header .nav_Coordinator {
+	Z-INDEX: 31; POSITION: absolute; PADDING-LEFT: 20px; DISPLAY: block; HEIGHT: 21px; TOP: 0px; RIGHT: 0px
+}
+#header .nav_Management {
+	Z-INDEX: 31; POSITION: absolute; PADDING-LEFT: 20px; DISPLAY: block; HEIGHT: 21px; TOP: 0px; RIGHT: 0px
+}
+#header .nav_Administrator {
+	Z-INDEX: 31; POSITION: absolute; PADDING-LEFT: 20px; DISPLAY: block; HEIGHT: 21px; TOP: 0px; RIGHT: 0px
+}
+#header .nav LI {
+	POSITION: relative; PADDING-BOTTOM: 0px; LINE-HEIGHT: 14px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; FLOAT: left; HEIGHT: 18px; BORDER-RIGHT: #76a1c1 1px solid; PADDING-TOP: 3px
+}
+#header .nav_MyHome LI {
+	POSITION: relative; PADDING-BOTTOM: 0px; LINE-HEIGHT: 14px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; FLOAT: left; HEIGHT: 18px; BORDER-RIGHT: #76a1c1 1px solid; PADDING-TOP: 3px
+}
+#header .nav_Coordinator LI {
+	POSITION: relative; PADDING-BOTTOM: 0px; LINE-HEIGHT: 14px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; FLOAT: left; HEIGHT: 18px; BORDER-RIGHT: #76a1c1 1px solid; PADDING-TOP: 3px
+}
+#header .nav_Management LI {
+	POSITION: relative; PADDING-BOTTOM: 0px; LINE-HEIGHT: 14px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; FLOAT: left; HEIGHT: 18px; BORDER-RIGHT: #76a1c1 1px solid; PADDING-TOP: 3px
+}
+#header .nav_Administrator LI {
+	POSITION: relative; PADDING-BOTTOM: 0px; LINE-HEIGHT: 14px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; FLOAT: left; HEIGHT: 18px; BORDER-RIGHT: #76a1c1 1px solid; PADDING-TOP: 3px
+}
+#header .nav LI A {
+	LINE-HEIGHT: 18px; CURSOR: pointer
+}
+#header .nav_MyHome LI A {
+	LINE-HEIGHT: 18px; CURSOR: pointer
+}
+#header .nav_Coordinator LI A {
+	LINE-HEIGHT: 18px; CURSOR: pointer
+}
+#header .nav_Management LI A {
+	LINE-HEIGHT: 18px; CURSOR: pointer
+}
+#header .nav_Administrator LI A {
+	LINE-HEIGHT: 18px; CURSOR: pointer
+}
+#header .nav #switchEnvBox {
+	
+}
+#header .nav #logout {
+	TEXT-ALIGN: center; WIDTH: 46px
+}
+#header .nav #logout A {
+	
+}
+#header .nav UL {
+	POSITION: absolute; WIDTH: 115px; DISPLAY: none; OVERFLOW: hidden; TOP: 55px
+}
+#header .nav_MyHome UL {
+	POSITION: absolute; WIDTH: 115px; DISPLAY: none; OVERFLOW: hidden; TOP: 55px
+}
+#header .nav_Coordinator UL {
+	POSITION: absolute; WIDTH: 115px; DISPLAY: none; OVERFLOW: hidden; TOP: 55px
+}
+#header .nav_Management UL {
+	POSITION: absolute; WIDTH: 115px; DISPLAY: none; OVERFLOW: hidden; TOP: 55px
+}
+#header .nav_Administrator UL {
+	POSITION: absolute; WIDTH: 115px; DISPLAY: none; OVERFLOW: hidden; TOP: 55px
+}
+#header .nav #switchEnvBox UL {
+	WIDTH: 80px
+}
+#header .nav #switchEnvBox A {
+	PADDING-LEFT: 10px; WIDTH: 60px
+}
+#header .nav UL LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; WIDTH: 60px; PADDING-RIGHT: 5px; HEIGHT: 21px; BORDER-RIGHT: medium none; PADDING-TOP: 3px; marign: 0px
+}
+#header .nav_MyHome UL LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; WIDTH: 60px; PADDING-RIGHT: 5px; HEIGHT: 21px; BORDER-RIGHT: medium none; PADDING-TOP: 3px; marign: 0px
+}
+#header .nav_Coordinator UL LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; WIDTH: 60px; PADDING-RIGHT: 5px; HEIGHT: 21px; BORDER-RIGHT: medium none; PADDING-TOP: 3px; marign: 0px
+}
+#header .nav_Management UL LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; WIDTH: 60px; PADDING-RIGHT: 5px; HEIGHT: 21px; BORDER-RIGHT: medium none; PADDING-TOP: 3px; marign: 0px
+}
+#header .nav_Administrator UL LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; WIDTH: 60px; PADDING-RIGHT: 5px; HEIGHT: 21px; BORDER-RIGHT: medium none; PADDING-TOP: 3px; marign: 0px
+}
+#header .nav #switchEnvBox UL LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; WIDTH: 80px; PADDING-RIGHT: 0px; HEIGHT: 24px; BORDER-RIGHT: medium none; PADDING-TOP: 0px; marign: 0px
+}
+#header .nav UL LI A {
+	WIDTH: 150px; DISPLAY: block; HEIGHT: 20px
+}
+#header .nav_MyHome UL LI A {
+	WIDTH: 150px; DISPLAY: block; HEIGHT: 20px
+}
+#header .nav_Coordinator UL LI A {
+	WIDTH: 150px; DISPLAY: block; HEIGHT: 20px
+}
+#header .nav_Management UL LI A {
+	WIDTH: 150px; DISPLAY: block; HEIGHT: 20px
+}
+#header .nav_Administrator UL LI A {
+	WIDTH: 150px; DISPLAY: block; HEIGHT: 20px
+}
+#header .nav #switchEnvBox UL LI A {
+	PADDING-BOTTOM: 2px; LINE-HEIGHT: 20px; PADDING-LEFT: 5px; WIDTH: 70px; PADDING-RIGHT: 5px; HEIGHT: 20px; BORDER-RIGHT: medium none; PADDING-TOP: 2px; marign: 0px
+}
+#header .nav #switchEnvBox UL LI A:hover {
+	TEXT-DECORATION: none
+}
+#header .nav .selected UL {
+	DISPLAY: block
+}
+#header .nav_MyHome .selected UL {
+	DISPLAY: block
+}
+#header .nav_Coordinator .selected UL {
+	DISPLAY: block
+}
+#header .nav_Management .selected UL {
+	DISPLAY: block
+}
+#header .nav_Administrator .selected UL {
+	DISPLAY: block
+}
+#header .themeList {
+	POSITION: absolute; DISPLAY: none; TOP: 30px; RIGHT: 10px
+}
+#header .themeList LI {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; FLOAT: left; PADDING-TOP: 0px
+}
+#header .themeList LI DIV {
+	TEXT-INDENT: -100px; WIDTH: 13px; DISPLAY: block; HEIGHT: 11px; OVERFLOW: hidden; CURSOR: pointer
+}
+#header .themeList LI.default DIV {
+	BACKGROUND-POSITION: 0px 0px
+}
+#header .themeList LI.default .selected {
+	BACKGROUND-POSITION: 0px -20px
+}
+#header .themeList LI.green DIV {
+	BACKGROUND-POSITION: -20px 0px
+}
+#header .themeList LI.green .selected {
+	BACKGROUND-POSITION: -20px -20px
+}
+#header .themeList LI.red DIV {
+	BACKGROUND-POSITION: -40px 0px
+}
+#header .themeList LI.red .selected {
+	BACKGROUND-POSITION: -40px -20px
+}
+#header .themeList LI.purple DIV {
+	BACKGROUND-POSITION: -60px 0px
+}
+#header .themeList LI.purple .selected {
+	BACKGROUND-POSITION: -60px -20px
+}
+#header .themeList LI.silver DIV {
+	BACKGROUND-POSITION: -80px 0px
+}
+#header .themeList LI.silver .selected {
+	BACKGROUND-POSITION: -80px -20px
+}
+#header .themeList LI.azure DIV {
+	BACKGROUND-POSITION: -100px 0px
+}
+#header .themeList LI.azure .selected {
+	BACKGROUND-POSITION: -100px -20px
+}
+.toggleCollapse {
+	DISPLAY: block; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: left bottom; HEIGHT: 40px; OVERFLOW: hidden
+}
+.toggleCollapse H2 {
+	LINE-HEIGHT: 30px; PADDING-LEFT: 8px; FLOAT: left; FONT-SIZE: 20px
+}
+.toggleCollapse DIV {
+	TEXT-INDENT: -100px; WIDTH: 25px; DISPLAY: block; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: center center; FLOAT: right; HEIGHT: 25px; OVERFLOW: hidden; CURSOR: pointer
+}
+.toggleCollapse DIV:hover {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: center center
+}
+#sidebar_s .collapse {
+	HEIGHT: 430px; CURSOR: pointer
+}
+#sidebar_s .toggleCollapse {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BACKGROUND: none transparent scroll repeat 0% 0%; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+#sidebar_s .toggleCollapse DIV {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; WIDTH: 22px; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: left top; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+#sidebar_s .toggleCollapse DIV:hover {
+	BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: left top
+}
+#navMenu {
+	BACKGROUND-IMAGE: none; PADDING-LEFT: 184px; DISPLAY: block; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_MyHome {
+	BACKGROUND-IMAGE: none; PADDING-LEFT: 184px; DISPLAY: block; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_Coordinator {
+	BACKGROUND-IMAGE: none; PADDING-LEFT: 184px; DISPLAY: block; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_Management {
+	BACKGROUND-IMAGE: none; PADDING-LEFT: 184px; DISPLAY: block; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_Administrator {
+	BACKGROUND-IMAGE: none; PADDING-LEFT: 184px; DISPLAY: block; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu UL {
+	POSITION: relative; DISPLAY: block; FLOAT: left; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_MyHome UL {
+	POSITION: relative; DISPLAY: block; FLOAT: left; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_Coordinator UL {
+	POSITION: relative; DISPLAY: block; FLOAT: left; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_Management UL {
+	POSITION: relative; DISPLAY: block; FLOAT: left; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu_Administrator UL {
+	POSITION: relative; DISPLAY: block; FLOAT: left; HEIGHT: 30px; OVERFLOW: hidden
+}
+#navMenu LI {
+	POSITION: relative; PADDING-LEFT: 9px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; CURSOR: pointer; MARGIN-RIGHT: 4px
+}
+#navMenu_MyHome LI {
+	POSITION: relative; PADDING-LEFT: 9px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; CURSOR: pointer; MARGIN-RIGHT: 4px
+}
+#navMenu_Coordinator LI {
+	POSITION: relative; PADDING-LEFT: 9px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; CURSOR: pointer; MARGIN-RIGHT: 4px
+}
+#navMenu_Management LI {
+	POSITION: relative; PADDING-LEFT: 9px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; CURSOR: pointer; MARGIN-RIGHT: 4px
+}
+#navMenu_Administrator LI {
+	POSITION: relative; PADDING-LEFT: 9px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; CURSOR: pointer; MARGIN-RIGHT: 4px
+}
+#navMenu LI A {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu LI SPAN {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_MyHome LI A {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_MyHome LI SPAN {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_Coordinator LI A {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_Coordinator LI SPAN {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_Management LI A {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_Management LI SPAN {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_Administrator LI A {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu_Administrator LI SPAN {
+	LINE-HEIGHT: 30px; DISPLAY: inline-block; FLOAT: left; HEIGHT: 30px; FONT-SIZE: 14px; FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+#navMenu LI A {
+	PADDING-RIGHT: 9px
+}
+#navMenu_MyHome LI A {
+	PADDING-RIGHT: 9px
+}
+#navMenu_Coordinator LI A {
+	PADDING-RIGHT: 9px
+}
+#navMenu_Management LI A {
+	PADDING-RIGHT: 9px
+}
+#navMenu_Administrator LI A {
+	PADDING-RIGHT: 9px
+}
+#navMenu LI SPAN {
+	LINE-HEIGHT: 30px; PADDING-LEFT: 21px; PADDING-RIGHT: 7px; BACKGROUND-REPEAT: no-repeat
+}
+#navMenu_MyHome LI SPAN {
+	LINE-HEIGHT: 30px; PADDING-LEFT: 21px; PADDING-RIGHT: 7px; BACKGROUND-REPEAT: no-repeat
+}
+#navMenu_Coordinator LI SPAN {
+	LINE-HEIGHT: 30px; PADDING-LEFT: 21px; PADDING-RIGHT: 7px; BACKGROUND-REPEAT: no-repeat
+}
+#navMenu_Management LI SPAN {
+	LINE-HEIGHT: 30px; PADDING-LEFT: 21px; PADDING-RIGHT: 7px; BACKGROUND-REPEAT: no-repeat
+}
+#navMenu_Administrator LI SPAN {
+	LINE-HEIGHT: 30px; PADDING-LEFT: 21px; PADDING-RIGHT: 7px; BACKGROUND-REPEAT: no-repeat
+}
+#navMenu LI.noselected {
+	Z-INDEX: 3; BACKGROUND-POSITION: 0px 0px
+}
+#navMenu_MyHome LI.noselected {
+	Z-INDEX: 3; BACKGROUND-POSITION: 0px 0px
+}
+#navMenu_Coordinator LI.noselected {
+	Z-INDEX: 3; BACKGROUND-POSITION: 0px 0px
+}
+#navMenu_Management LI.noselected {
+	Z-INDEX: 3; BACKGROUND-POSITION: 0px 0px
+}
+#navMenu_Administrator LI.noselected {
+	Z-INDEX: 3; BACKGROUND-POSITION: 0px 0px
+}
+#navMenu LI.noselected A {
+	BACKGROUND-POSITION: 100% -50px
+}
+#navMenu_MyHome LI.noselected A {
+	BACKGROUND-POSITION: 100% -50px
+}
+#navMenu_Coordinator LI.noselected A {
+	BACKGROUND-POSITION: 100% -50px
+}
+#navMenu_Management LI.noselected A {
+	BACKGROUND-POSITION: 100% -50px
+}
+#navMenu_Administrator LI.noselected A {
+	BACKGROUND-POSITION: 100% -50px
+}
+#navMenu LI.selected {
+	Z-INDEX: 1
+}
+#navMenu_MyHome LI.selected {
+	Z-INDEX: 1
+}
+#navMenu_Coordinator LI.selected {
+	Z-INDEX: 1
+}
+#navMenu_Management LI.selected {
+	Z-INDEX: 1
+}
+#navMenu_Administrator LI.selected {
+	Z-INDEX: 1
+}
+#navMenu LI.selected {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu LI.selected:hover {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_MyHome LI.selected {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_MyHome LI.selected:hover {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_Coordinator LI.selected {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_Coordinator LI.selected:hover {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_Management LI.selected {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_Management LI.selected:hover {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_Administrator LI.selected {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu_Administrator LI.selected:hover {
+	BACKGROUND-POSITION: 0px -100px
+}
+#navMenu LI.selected A {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu LI.selected A:hover {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_MyHome LI.selected A {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_MyHome LI.selected A:hover {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_Coordinator LI.selected A {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_Coordinator LI.selected A:hover {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_Management LI.selected A {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_Management LI.selected A:hover {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_Administrator LI.selected A {
+	BACKGROUND-POSITION: 100% -150px
+}
+#navMenu_Administrator LI.selected A:hover {
+	BACKGROUND-POSITION: 100% -150px
+}
+#nav_hr0000 SPAN {
+	BACKGROUND-POSITION: 0px 8px
+}
+#nav_ar0000 SPAN {
+	BACKGROUND-POSITION: 0px -22px
+}
+#nav_pa0000 SPAN {
+	BACKGROUND-POSITION: 0px -52px
+}
+#nav_ess0000 SPAN {
+	BACKGROUND-POSITION: 0px -82px
+}
+#nav_org0000 SPAN {
+	BACKGROUND-POSITION: 0px -112px
+}
+#nav_sy0000 SPAN {
+	BACKGROUND-POSITION: 0px -144px
+}
+#nav_rpt0000 SPAN {
+	BACKGROUND-POSITION: 0px -82px
+}
+#nav_op0000 SPAN {
+	BACKGROUND-POSITION: 0px -144px
+}
+.quick_menu {
+	Z-INDEX: 100; POSITION: absolute; PADDING-BOTTOM: 0px; MARGIN-TOP: -30px; PADDING-LEFT: 10px; PADDING-RIGHT: 6px; HEIGHT: 22px; OVERFLOW: visible; RIGHT: 0px; PADDING-TOP: 8px
+}
+.quick_menu_MyHome {
+	Z-INDEX: 100; POSITION: absolute; PADDING-BOTTOM: 0px; MARGIN-TOP: -30px; PADDING-LEFT: 10px; PADDING-RIGHT: 6px; HEIGHT: 22px; OVERFLOW: visible; RIGHT: 0px; PADDING-TOP: 8px
+}
+.quick_menu_Coordinator {
+	Z-INDEX: 100; POSITION: absolute; PADDING-BOTTOM: 0px; MARGIN-TOP: -30px; PADDING-LEFT: 10px; PADDING-RIGHT: 6px; HEIGHT: 22px; OVERFLOW: visible; RIGHT: 0px; PADDING-TOP: 8px
+}
+.quick_menu_Management {
+	Z-INDEX: 100; POSITION: absolute; PADDING-BOTTOM: 0px; MARGIN-TOP: -30px; PADDING-LEFT: 10px; PADDING-RIGHT: 6px; HEIGHT: 22px; OVERFLOW: visible; RIGHT: 0px; PADDING-TOP: 8px
+}
+.quick_menu_Administrator {
+	Z-INDEX: 100; POSITION: absolute; PADDING-BOTTOM: 0px; MARGIN-TOP: -30px; PADDING-LEFT: 10px; PADDING-RIGHT: 6px; HEIGHT: 22px; OVERFLOW: visible; RIGHT: 0px; PADDING-TOP: 8px
+}
+.quick_menu UL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 22px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 13px; PADDING-TOP: 0px
+}
+.quick_menu_MyHome UL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 22px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 13px; PADDING-TOP: 0px
+}
+.quick_menu_Coordinator UL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 22px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 13px; PADDING-TOP: 0px
+}
+.quick_menu_Management UL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 22px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 13px; PADDING-TOP: 0px
+}
+.quick_menu_Administrator UL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 22px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 13px; PADDING-TOP: 0px
+}
+.quick_menu UL SPAN {
+	WIDTH: 26px; FLOAT: right; HEIGHT: 22px; CURSOR: pointer; displsy: block
+}
+.quick_menu_MyHome UL SPAN {
+	WIDTH: 26px; FLOAT: right; HEIGHT: 22px; CURSOR: pointer; displsy: block
+}
+.quick_menu_Coordinator UL SPAN {
+	WIDTH: 26px; FLOAT: right; HEIGHT: 22px; CURSOR: pointer; displsy: block
+}
+.quick_menu_Management UL SPAN {
+	WIDTH: 26px; FLOAT: right; HEIGHT: 22px; CURSOR: pointer; displsy: block
+}
+.quick_menu_Administrator UL SPAN {
+	WIDTH: 26px; FLOAT: right; HEIGHT: 22px; CURSOR: pointer; displsy: block
+}
+.quick_menu .show {
+	BACKGROUND-POSITION: 0px -36px
+}
+.quick_menu_MyHome .show {
+	BACKGROUND-POSITION: 0px -36px
+}
+.quick_menu_Coordinator .show {
+	BACKGROUND-POSITION: 0px -36px
+}
+.quick_menu_Management .show {
+	BACKGROUND-POSITION: 0px -36px
+}
+.quick_menu_Administrator .show {
+	BACKGROUND-POSITION: 0px -36px
+}
+.quick_menu .hide {
+	BACKGROUND-POSITION: 0px 4px
+}
+.quick_menu_MyHome .hide {
+	BACKGROUND-POSITION: 0px 4px
+}
+.quick_menu_Coordinator .hide {
+	BACKGROUND-POSITION: 0px 4px
+}
+.quick_menu_Management .hide {
+	BACKGROUND-POSITION: 0px 4px
+}
+.quick_menu_Administrator .hide {
+	BACKGROUND-POSITION: 0px 4px
+}
+.quick_menu UL LI {
+	PADDING-RIGHT: 14px; FLOAT: right
+}
+.quick_menu_MyHome UL LI {
+	PADDING-RIGHT: 14px; FLOAT: right
+}
+.quick_menu_Coordinator UL LI {
+	PADDING-RIGHT: 14px; FLOAT: right
+}
+.quick_menu_Management UL LI {
+	PADDING-RIGHT: 14px; FLOAT: right
+}
+.quick_menu_Administrator UL LI {
+	PADDING-RIGHT: 14px; FLOAT: right
+}
+.quick_menu UL LI DIV {
+	MARGIN-BOTTOM: 1px; HEIGHT: 22px; CLEAR: left
+}
+.quick_menu_MyHome UL LI DIV {
+	MARGIN-BOTTOM: 1px; HEIGHT: 22px; CLEAR: left
+}
+.quick_menu_Coordinator UL LI DIV {
+	MARGIN-BOTTOM: 1px; HEIGHT: 22px; CLEAR: left
+}
+.quick_menu_Management UL LI DIV {
+	MARGIN-BOTTOM: 1px; HEIGHT: 22px; CLEAR: left
+}
+.quick_menu_Administrator UL LI DIV {
+	MARGIN-BOTTOM: 1px; HEIGHT: 22px; CLEAR: left
+}
+.quick_menu UL LI UL {
+	POSITION: absolute; PADDING-BOTTOM: 4px; PADDING-LEFT: 8px; WIDTH: 110px; PADDING-RIGHT: 8px; MARGIN-LEFT: -8px; PADDING-TOP: 4px
+}
+.quick_menu_MyHome UL LI UL {
+	POSITION: absolute; PADDING-BOTTOM: 4px; PADDING-LEFT: 8px; WIDTH: 110px; PADDING-RIGHT: 8px; MARGIN-LEFT: -8px; PADDING-TOP: 4px
+}
+.quick_menu_Coordinator UL LI UL {
+	POSITION: absolute; PADDING-BOTTOM: 4px; PADDING-LEFT: 8px; WIDTH: 110px; PADDING-RIGHT: 8px; MARGIN-LEFT: -8px; PADDING-TOP: 4px
+}
+.quick_menu_Management UL LI UL {
+	POSITION: absolute; PADDING-BOTTOM: 4px; PADDING-LEFT: 8px; WIDTH: 110px; PADDING-RIGHT: 8px; MARGIN-LEFT: -8px; PADDING-TOP: 4px
+}
+.quick_menu_Administrator UL LI UL {
+	POSITION: absolute; PADDING-BOTTOM: 4px; PADDING-LEFT: 8px; WIDTH: 110px; PADDING-RIGHT: 8px; MARGIN-LEFT: -8px; PADDING-TOP: 4px
+}
+.quick_menu UL #end UL {
+	RIGHT: 2px
+}
+.quick_menu_MyHome UL #end UL {
+	RIGHT: 2px
+}
+.quick_menu_Coordinator UL #end UL {
+	RIGHT: 2px
+}
+.quick_menu_Management UL #end UL {
+	RIGHT: 2px
+}
+.quick_menu_Administrator UL #end UL {
+	RIGHT: 2px
+}
+.quick_menu UL LI UL LI {
+	PADDING-BOTTOM: 3px; FLOAT: left; HEIGHT: 18px; FONT-SIZE: 12px; PADDING-TOP: 2px
+}
+.quick_menu_MyHome UL LI UL LI {
+	PADDING-BOTTOM: 3px; FLOAT: left; HEIGHT: 18px; FONT-SIZE: 12px; PADDING-TOP: 2px
+}
+.quick_menu_Coordinator UL LI UL LI {
+	PADDING-BOTTOM: 3px; FLOAT: left; HEIGHT: 18px; FONT-SIZE: 12px; PADDING-TOP: 2px
+}
+.quick_menu_Management UL LI UL LI {
+	PADDING-BOTTOM: 3px; FLOAT: left; HEIGHT: 18px; FONT-SIZE: 12px; PADDING-TOP: 2px
+}
+.quick_menu_Administrator UL LI UL LI {
+	PADDING-BOTTOM: 3px; FLOAT: left; HEIGHT: 18px; FONT-SIZE: 12px; PADDING-TOP: 2px
+}
+.quick_menu UL LI A {
+	DISPLAY: block
+}
+.quick_menu_MyHome UL LI A {
+	DISPLAY: block
+}
+.quick_menu_Coordinator UL LI A {
+	DISPLAY: block
+}
+.quick_menu_Management UL LI A {
+	DISPLAY: block
+}
+.quick_menu_Administrator UL LI A {
+	DISPLAY: block
+}
+.page {
+	WIDTH: 100%; DISPLAY: block; FLOAT: left; OVERFLOW: hidden
+}
+.pageHeader {
+	BORDER-BOTTOM: 1px solid; POSITION: relative; BORDER-LEFT: 0px solid; PADDING-BOTTOM: 5px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; MARGIN-BOTTOM: 1px; OVERFLOW: visible; BORDER-TOP: 0px solid; BORDER-RIGHT: 0px solid; PADDING-TOP: 5px
+}
+.searchBar {
+	OVERFLOW: visible
+}
+.searchBar UL.searchContent {
+	DISPLAY: block; HEIGHT: 25px; OVERFLOW: hidden
+}
+.searchBar UL.searchContent LI {
+	PADDING-BOTTOM: 2px; PADDING-LEFT: 0px; WIDTH: 300px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; OVERFLOW: hidden; PADDING-TOP: 2px
+}
+.searchBar LABEL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 23px; PADDING-LEFT: 5px; WIDTH: 80px; PADDING-RIGHT: 5px; FLOAT: left; PADDING-TOP: 0px
+}
+.searchBar .searchContent TD {
+	PADDING-RIGHT: 20px; WHITE-SPACE: nowrap; HEIGHT: 25px
+}
+.searchBar .subBar {
+	HEIGHT: 25px
+}
+.searchBar .subBar UL {
+	FLOAT: right
+}
+.searchBar .subBar LI {
+	FLOAT: left; MARGIN-LEFT: 5px
+}
+.pageContent {
+	POSITION: relative; DISPLAY: block; OVERFLOW: auto
+}
+.dateRange INPUT {
+	WIDTH: 72px
+}
+.dateRange .limit {
+	TEXT-ALIGN: center; LINE-HEIGHT: 21px; WIDTH: 15px
+}
+.pageForm {
+	DISPLAY: block; OVERFLOW: auto
+}
+.pageFormContent {
+	POSITION: relative; PADDING-BOTTOM: 10px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; DISPLAY: block; OVERFLOW: auto; PADDING-TOP: 10px
+}
+.pageFormContent DIV.unit {
+	POSITION: relative; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; DISPLAY: block; CLEAR: both; PADDING-TOP: 5px
+}
+.pageFormContent P {
+	POSITION: relative; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: 380px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; PADDING-TOP: 5px
+}
+.pageFormContent P.nowrap {
+	HEIGHT: auto
+}
+.pageFormContent .radioGroup {
+	DISPLAY: block; FLOAT: left; OVERFLOW: hidden
+}
+.pageFormContent LABEL {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; WIDTH: 120px; PADDING-RIGHT: 5px; FLOAT: left; PADDING-TOP: 0px
+}
+.pageFormContent LABEL.radioButton {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 0px; WIDTH: auto; PADDING-RIGHT: 10px; FLOAT: left; PADDING-TOP: 0px
+}
+.pageFormContent .textInput {
+	FLOAT: left
+}
+.pageFormContent SELECT {
+	FLOAT: left
+}
+.pageFormContent .inputInfo {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; PADDING-TOP: 0px
+}
+.pageFormContent SPAN.unit {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; PADDING-TOP: 0px
+}
+.pageFormContent A.unit {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; PADDING-TOP: 0px
+}
+.pageFormContent SPAN.info {
+	LINE-HEIGHT: 21px; DISPLAY: block; FLOAT: left; COLOR: #7f7f7f
+}
+.pageFormContent DL {
+	POSITION: relative; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: 380px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; PADDING-TOP: 5px
+}
+.pageFormContent DT {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; WIDTH: 120px; PADDING-RIGHT: 5px; FLOAT: left; PADDING-TOP: 0px
+}
+.pageFormContent DD {
+	LINE-HEIGHT: 21px; WIDTH: 220px; DISPLAY: block; FLOAT: left
+}
+.pageFormContent DL.nowrap {
+	WIDTH: 100%; HEIGHT: auto; CLEAR: both
+}
+.nowrap DL {
+	WIDTH: 100%; HEIGHT: auto; CLEAR: both
+}
+.pageFormContent DL.nowrap DD {
+	WIDTH: 560px
+}
+.nowrap DD {
+	WIDTH: 560px
+}
+FIELDSET {
+	BORDER-BOTTOM: #b8d0d6 1px dotted; BORDER-LEFT: #b8d0d6 1px dotted; PADDING-BOTTOM: 3px; MARGIN: 0px 0px 5px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; BORDER-TOP: #b8d0d6 1px dotted; BORDER-RIGHT: #b8d0d6 1px dotted; PADDING-TOP: 3px
+}
+FIELDSET LEGEND {
+	BORDER-BOTTOM: #b8d0d6 1px dotted; BORDER-LEFT: #b8d0d6 1px dotted; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BORDER-TOP: #b8d0d6 1px dotted; FONT-WEIGHT: bold; BORDER-RIGHT: #b8d0d6 1px dotted; PADDING-TOP: 2px
+}
+FIELDSET LEGEND:hover {
+	BACKGROUND-COLOR: #dddddd
+}
+.formBar {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 0px solid; PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; HEIGHT: 30px; CLEAR: both; BORDER-TOP: 1px solid; BORDER-RIGHT: 0px solid; PADDING-TOP: 5px
+}
+.formBar UL {
+	FLOAT: right
+}
+.formBar LI {
+	FLOAT: left; MARGIN-LEFT: 5px
+}
+.divider {
+	BORDER-BOTTOM: 1px dotted; BORDER-LEFT: 0px dotted; PADDING-BOTTOM: 0px; TEXT-INDENT: -1000px; PADDING-LEFT: 0px; WIDTH: auto; PADDING-RIGHT: 0px; DISPLAY: block; MARGIN-BOTTOM: 5px; HEIGHT: 1px; CLEAR: both; OVERFLOW: hidden; BORDER-TOP: 0px dotted; BORDER-RIGHT: 0px dotted; PADDING-TOP: 4px
+}
+.dialog .pageHeader {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 1px solid; MARGIN: 0px; BORDER-TOP: 1px solid; BORDER-RIGHT: 1px solid
+}
+.dialog .pageContent {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 1px solid; BACKGROUND-COLOR: #fff; BORDER-TOP: 0px solid; BORDER-RIGHT: 1px solid
+}
+.dialog .pageFormContent {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 0px solid; BORDER-TOP: 1px solid; BORDER-RIGHT: 0px solid
+}
+.dialog .viewInfo {
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 0px solid; BORDER-TOP: 1px solid; BORDER-RIGHT: 0px solid
+}
+.dialog .formBar {
+	BORDER-BOTTOM: 1px solid; BORDER-LEFT: 0px solid; BORDER-TOP: 1px solid; BORDER-RIGHT: 0px solid
+}
+.combox {
+	BACKGROUND-POSITION: 100% -25px; FLOAT: left; MARGIN-RIGHT: 3px
+}
+.combox SELECT {
+	DISPLAY: none
+}
+.combox .select {
+	FLOAT: left
+}
+.combox .select A {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 6px; PADDING-RIGHT: 22px; DISPLAY: block; BACKGROUND-POSITION: 100% -50px; FLOAT: left; HEIGHT: 23px; FONT-SIZE: 12px; OVERFLOW: hidden; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.comboxop {
+	Z-INDEX: 1001; BORDER-BOTTOM: 2px solid; POSITION: absolute; BORDER-LEFT: 1px solid; PADDING-BOTTOM: 4px; PADDING-LEFT: 4px; PADDING-RIGHT: 4px; DISPLAY: none; BACKGROUND: #fff; BORDER-TOP: 1px solid; TOP: 22px; BORDER-RIGHT: 2px solid; PADDING-TOP: 4px; LEFT: 1px
+}
+.comboxop A {
+	TEXT-ALIGN: left; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; WIDTH: 50px; PADDING-RIGHT: 5px; BACKGROUND: none transparent scroll repeat 0% 0%; HEIGHT: 21px; COLOR: #000; PADDING-TOP: 0px
+}
+.comboxop A:hover {
+	BACKGROUND: #e0e0e0
+}
+.comboxop .selected {
+	BACKGROUND: #e0e0e0
+}
+.comboxop LI {
+	TEXT-ALIGN: left
+}
+H2.contentTitle {
+	BORDER-BOTTOM: #ccc 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 30px; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; MARGIN-BOTTOM: 10px; FONT-SIZE: 14px; PADDING-TOP: 0px
+}
+H3.contentTitle {
+	BORDER-BOTTOM: #ccc 1px solid; LINE-HEIGHT: 25px; MARGIN-BOTTOM: 5px; CLEAR: both; FONT-SIZE: 13px
+}
+.dialog H2.contentTitle {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+#contextmenu {
+	Z-INDEX: 500; POSITION: absolute; DISPLAY: none; TOP: 0px; LEFT: 0px
+}
+#contextmenu UL {
+	BORDER-BOTTOM: #999 1px solid; BORDER-LEFT: #999 1px solid; PADDING-BOTTOM: 1px; BACKGROUND-COLOR: #fff; LIST-STYLE-TYPE: none; MARGIN: 0px; PADDING-LEFT: 1px; WIDTH: 150px; PADDING-RIGHT: 1px; BORDER-TOP: #999 1px solid; LIST-STYLE-IMAGE: none; BORDER-RIGHT: #999 1px solid; PADDING-TOP: 1px
+}
+#contextmenu LI {
+	BORDER-BOTTOM: #fff 1px solid; TEXT-ALIGN: left; BORDER-LEFT: #fff 1px solid; PADDING-BOTTOM: 3px; BACKGROUND-COLOR: transparent; MARGIN: 0px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; DISPLAY: block; COLOR: #000; BORDER-TOP: #fff 1px solid; CURSOR: default; BORDER-RIGHT: #fff 1px solid; PADDING-TOP: 3px
+}
+#contextmenu LI.hover {
+	BORDER-BOTTOM: #0a246a 1px solid; BORDER-LEFT: #0a246a 1px solid; BACKGROUND-COLOR: #b6bdd2; BORDER-TOP: #0a246a 1px solid; BORDER-RIGHT: #0a246a 1px solid
+}
+#contextmenu LI.disabled {
+	COLOR: #666
+}
+#contextmenuShadow {
+	Z-INDEX: 499; POSITION: absolute; FILTER: alpha(opacity=20); BACKGROUND-COLOR: #000; DISPLAY: none; opacity: 0.2
+}
+#calendar {
+	Z-INDEX: 1001; BORDER-BOTTOM: #b3e4eb 1px solid; POSITION: absolute; BORDER-LEFT: #b3e4eb 1px solid; MARGIN: 0px; WIDTH: 208px; DISPLAY: none; BORDER-TOP: #b3e4eb 1px solid; BORDER-RIGHT: #b3e4eb 1px solid
+}
+#calendar * {
+	PADDING-BOTTOM: 0px; LINE-HEIGHT: 18px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 12px; PADDING-TOP: 0px
+}
+#calendar .main {
+	POSITION: relative; TEXT-ALIGN: center; PADDING-BOTTOM: 2px; MARGIN: auto; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; ZOOM: 1; BACKGROUND: #ffffff; PADDING-TOP: 2px
+}
+#calendar .head {
+	BORDER-BOTTOM: #bee9f0 1px solid; BORDER-LEFT: #bee9f0 1px solid; BACKGROUND: #edf8ff; BORDER-TOP: #bee9f0 1px solid; BORDER-RIGHT: #bee9f0 1px solid
+}
+#calendar .head SELECT {
+	WIDTH: 60px
+}
+#calendar .body {
+	BORDER-BOTTOM: #bee9f0 1px solid; POSITION: relative; BORDER-LEFT: #bee9f0 1px solid; PADDING-BOTTOM: 2px; MARGIN: 2px 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; CLEAR: both; OVERFLOW: hidden; BORDER-TOP: #bee9f0 1px solid; BORDER-RIGHT: #bee9f0 1px solid; PADDING-TOP: 2px
+}
+#calendar .foot {
+	BORDER-BOTTOM: #bee9f0 1px solid; TEXT-ALIGN: right; BORDER-LEFT: #bee9f0 1px solid; PADDING-BOTTOM: 1px; PADDING-LEFT: 1px; PADDING-RIGHT: 1px; BACKGROUND: #edf8ff; BORDER-TOP: #bee9f0 1px solid; BORDER-RIGHT: #bee9f0 1px solid; PADDING-TOP: 1px
+}
+#calendar .nodate .head {
+	DISPLAY: none
+}
+#calendar .nodate .body {
+	DISPLAY: none
+}
+#calendar DL {
+	MARGIN: auto; CLEAR: both; OVERFLOW: hidden
+}
+#calendar DT {
+	BORDER-BOTTOM: #fff 1px solid; BORDER-LEFT: #fff 1px solid; WIDTH: 26px; ZOOM: 1; DISPLAY: block; FLOAT: left; HEIGHT: 18px; OVERFLOW: hidden; BORDER-TOP: #fff 1px solid; BORDER-RIGHT: #fff 1px solid
+}
+#calendar DD {
+	BORDER-BOTTOM: #fff 1px solid; BORDER-LEFT: #fff 1px solid; WIDTH: 26px; ZOOM: 1; DISPLAY: block; FLOAT: left; HEIGHT: 18px; OVERFLOW: hidden; BORDER-TOP: #fff 1px solid; BORDER-RIGHT: #fff 1px solid
+}
+#calendar SPAN {
+	BORDER-BOTTOM: #fff 1px solid; BORDER-LEFT: #fff 1px solid; WIDTH: 26px; ZOOM: 1; DISPLAY: block; FLOAT: left; HEIGHT: 18px; OVERFLOW: hidden; BORDER-TOP: #fff 1px solid; BORDER-RIGHT: #fff 1px solid
+}
+#calendar DT {
+	MARGIN-TOP: 4px; COLOR: #666666; FONT-WEIGHT: bold
+}
+#calendar .days DD {
+	CURSOR: pointer
+}
+#calendar .days DD.other {
+	COLOR: #6a6aff
+}
+#calendar .days DD.slt {
+	BORDER-BOTTOM: #66cccc 1px solid; BORDER-LEFT: #66cccc 1px solid; BACKGROUND: #b3e4eb; BORDER-TOP: #66cccc 1px solid; BORDER-RIGHT: #66cccc 1px solid
+}
+#calendar .days DD:hover {
+	BORDER-BOTTOM: #66cccc 1px solid; BORDER-LEFT: #66cccc 1px solid; BORDER-TOP: #66cccc 1px solid; BORDER-RIGHT: #66cccc 1px solid
+}
+#calendar .close {
+	BORDER-BOTTOM: #ccc 1px solid; TEXT-ALIGN: center; BORDER-LEFT: #ccc 1px solid; WIDTH: 16px; DISPLAY: block; HEIGHT: 16px; FONT-SIZE: 16px; BORDER-TOP: #ccc 1px solid; CURSOR: pointer; BORDER-RIGHT: #ccc 1px solid
+}
+#calendar .clearBut {
+	BORDER-BOTTOM: #38b1b9 1px solid; BORDER-LEFT: #38b1b9 1px solid; BACKGROUND-COLOR: #cfebee; MARGIN-TOP: 2px; WIDTH: 40px; COLOR: #08575b; BORDER-TOP: #38b1b9 1px solid; BORDER-RIGHT: #38b1b9 1px solid
+}
+#calendar .okBut {
+	BORDER-BOTTOM: #38b1b9 1px solid; BORDER-LEFT: #38b1b9 1px solid; BACKGROUND-COLOR: #cfebee; MARGIN-TOP: 2px; WIDTH: 40px; COLOR: #08575b; BORDER-TOP: #38b1b9 1px solid; BORDER-RIGHT: #38b1b9 1px solid
+}
+#calendar .time {
+	BACKGROUND-COLOR: #fff; DISPLAY: none; BORDER-COLLAPSE: collapse; FLOAT: left
+}
+#calendar .time TD {
+	BORDER-BOTTOM: #61cad0 1px solid; BORDER-LEFT: #61cad0 1px solid; LINE-HEIGHT: 16px; BORDER-TOP: #61cad0 1px solid; BORDER-RIGHT: #61cad0 1px solid
+}
+#calendar .time .hh {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 18px; HEIGHT: 16px; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+#calendar .time .mm {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 18px; HEIGHT: 16px; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+#calendar .time .ss {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 18px; HEIGHT: 16px; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+#calendar .time UL {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+#calendar .time .up {
+	BORDER-BOTTOM: #bee9f0 1px solid; BORDER-LEFT: #bee9f0 1px solid; LINE-HEIGHT: 100%; HEIGHT: 8px; FONT-SIZE: 8px; BORDER-TOP: #bee9f0 1px solid; CURSOR: pointer; BORDER-RIGHT: #bee9f0 1px solid
+}
+#calendar .time .down {
+	BORDER-BOTTOM: #bee9f0 1px solid; BORDER-LEFT: #bee9f0 1px solid; LINE-HEIGHT: 100%; HEIGHT: 8px; FONT-SIZE: 8px; BORDER-TOP: #bee9f0 1px solid; CURSOR: pointer; BORDER-RIGHT: #bee9f0 1px solid
+}
+#calendar .tm {
+	
+}
+#calendar .tm .hh {
+	BORDER-BOTTOM: #a3c6c8 1px solid; POSITION: absolute; BORDER-LEFT: #a3c6c8 1px solid; BACKGROUND-COLOR: #ffffc0; WIDTH: 120px; BOTTOM: 1px; DISPLAY: none; BORDER-TOP: #a3c6c8 1px solid; BORDER-RIGHT: #a3c6c8 1px solid; LEFT: 1px
+}
+#calendar .tm .mm {
+	BORDER-BOTTOM: #a3c6c8 1px solid; POSITION: absolute; BORDER-LEFT: #a3c6c8 1px solid; BACKGROUND-COLOR: #ffffc0; WIDTH: 120px; BOTTOM: 1px; DISPLAY: none; BORDER-TOP: #a3c6c8 1px solid; BORDER-RIGHT: #a3c6c8 1px solid; LEFT: 1px
+}
+#calendar .tm .ss {
+	BORDER-BOTTOM: #a3c6c8 1px solid; POSITION: absolute; BORDER-LEFT: #a3c6c8 1px solid; BACKGROUND-COLOR: #ffffc0; WIDTH: 120px; BOTTOM: 1px; DISPLAY: none; BORDER-TOP: #a3c6c8 1px solid; BORDER-RIGHT: #a3c6c8 1px solid; LEFT: 1px
+}
+#calendar .hh .hh {
+	DISPLAY: block
+}
+#calendar .mm .mm {
+	DISPLAY: block
+}
+#calendar .ss .ss {
+	DISPLAY: block
+}
+#calendar .tm .hh LI {
+	LINE-HEIGHT: 21px; WIDTH: 20px; DISPLAY: block; FLOAT: left; CURSOR: pointer
+}
+#calendar .tm .mm LI {
+	LINE-HEIGHT: 21px; WIDTH: 20px; DISPLAY: block; FLOAT: left; CURSOR: pointer
+}
+#calendar .tm .ss LI {
+	LINE-HEIGHT: 21px; WIDTH: 20px; DISPLAY: block; FLOAT: left; CURSOR: pointer
+}
+#calendar .tm .hh LI:hover {
+	BACKGROUND: #b3e4eb
+}
+#calendar .tm .mm LI:hover {
+	BACKGROUND: #b3e4eb
+}
+#calendar .tm .ss LI:hover {
+	BACKGROUND: #b3e4eb
+}
+#suggest {
+	Z-INDEX: 2000; POSITION: absolute; TOP: 0px; LEFT: 0px
+}
+#suggest UL {
+	BORDER-BOTTOM: #999 1px solid; BORDER-LEFT: #999 1px solid; PADDING-BOTTOM: 1px; BACKGROUND-COLOR: #fff; LIST-STYLE-TYPE: none; MARGIN: 0px; PADDING-LEFT: 1px; WIDTH: 150px; PADDING-RIGHT: 1px; BORDER-TOP: #999 1px solid; LIST-STYLE-IMAGE: none; BORDER-RIGHT: #999 1px solid; PADDING-TOP: 1px
+}
+#suggest LI {
+	BORDER-BOTTOM: #fff 1px solid; TEXT-ALIGN: left; BORDER-LEFT: #fff 1px solid; PADDING-BOTTOM: 3px; BACKGROUND-COLOR: transparent; MARGIN: 0px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; DISPLAY: block; COLOR: #000; BORDER-TOP: #fff 1px solid; CURSOR: default; BORDER-RIGHT: #fff 1px solid; PADDING-TOP: 3px
+}
+#suggest LI.selected {
+	BORDER-BOTTOM: #0a246a 1px solid; BORDER-LEFT: #0a246a 1px solid; BACKGROUND-COLOR: #b6bdd2; BORDER-TOP: #0a246a 1px solid; BORDER-RIGHT: #0a246a 1px solid
+}
+A.btnAdd {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnDel {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnView {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnEdit {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnSelect {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnInfo {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnAssign {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnLook {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnAttach {
+	TEXT-INDENT: -1000px; WIDTH: 22px; DISPLAY: block; BACKGROUND: url(../../images/button/imgX.gif) no-repeat; FLOAT: left; HEIGHT: 20px; OVERFLOW: hidden; MARGIN-RIGHT: 3px
+}
+A.btnAdd {
+	BACKGROUND-POSITION: 0px 0px
+}
+A.btnDel {
+	BACKGROUND-POSITION: -23px 0px
+}
+A.btnInfo {
+	BACKGROUND-POSITION: -46px 0px
+}
+A.btnAssign {
+	BACKGROUND-POSITION: -69px 0px
+}
+A.btnView {
+	BACKGROUND-POSITION: -115px 0px
+}
+A.btnEdit {
+	BACKGROUND-POSITION: -138px 0px
+}
+A.btnSelect {
+	BACKGROUND-POSITION: -92px 0px
+}
+A.btnLook {
+	BACKGROUND-POSITION: -161px 0px
+}
+A.btnAttach {
+	BACKGROUND-POSITION: -183px 0px
+}
+.center A.btnAdd {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnDel {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnView {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnEdit {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnSelect {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnInfo {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnAssign {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnLook {
+	DISPLAY: inline-block; FLOAT: none
+}
+.center A.btnAttach {
+	DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnAdd {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnDel {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnView {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnEdit {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnSelect {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnInfo {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnAssign {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnLook {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.right A.btnAttach {
+	TEXT-INDENT: 1000px; DISPLAY: inline-block; FLOAT: none
+}
+.viewInfo {
+	PADDING-BOTTOM: 10px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; PADDING-TOP: 10px
+}
+.viewInfo DL {
+	POSITION: relative; PADDING-BOTTOM: 5px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: 380px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; PADDING-TOP: 5px
+}
+.viewInfo DT {
+	TEXT-ALIGN: right; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 5px; WIDTH: 120px; PADDING-RIGHT: 5px; FLOAT: left; PADDING-TOP: 0px
+}
+.viewInfo DD {
+	BORDER-BOTTOM: #999 1px dotted; LINE-HEIGHT: 21px; MIN-HEIGHT: 21px; WIDTH: 220px; DISPLAY: block; FLOAT: left
+}
+.viewInfo DL.nowrap {
+	WIDTH: 100%; HEIGHT: auto; CLEAR: both
+}
+.viewInfo DL.nowrap DT {
+	
+}
+.viewInfo DL.nowrap DD {
+	WIDTH: auto
+}
+.dialogContent .viewInfo {
+	BACKGROUND-COLOR: #fff
+}
+.pageContent .panel {
+	MARGIN: 5px; CLEAR: both
+}
+.tablea {
+	BORDER-LEFT: #ededed 1px solid; BORDER-TOP: #ededed 1px solid
+}
+.tablea TH {
+	BORDER-BOTTOM: #ededed 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; WHITE-SPACE: nowrap; HEIGHT: 21px; BORDER-RIGHT: #ededed 1px solid; PADDING-TOP: 0px
+}
+.tablea TD {
+	BORDER-BOTTOM: #ededed 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 21px; PADDING-LEFT: 3px; PADDING-RIGHT: 3px; BORDER-RIGHT: #ededed 1px solid; PADDING-TOP: 0px
+}
+.span_left {
+	DISPLAY: inline-block; FLOAT: left; PADDING-TOP: 4px
+}
+.margin_b {
+	MARGIN-BOTTOM: 15px
+}
+.day {
+	PADDING-BOTTOM: 5px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; PADDING-TOP: 5px
+}
+.day FORM {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+.day_nav_table TH {
+	PADDING-BOTTOM: 1px; HEIGHT: 26px; PADDING-TOP: 1px
+}
+.day_table_left_th {
+	PADDING-LEFT: 4px
+}
+.day_table_left_th TD {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 0px
+}
+.day .day_nav_table .day_table_right_th {
+	PADDING-RIGHT: 4px
+}
+.day_right_bottom_corner {
+	PADDING-BOTTOM: 2px; PADDING-LEFT: 0px; PADDING-RIGHT: 2px; PADDING-TOP: 0px
+}
+.bottona_a {
+	PADDING-LEFT: 5px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; OVERFLOW: hidden; CURSOR: pointer; MARGIN-RIGHT: 2px
+}
+.bottona_a SPAN {
+	LINE-HEIGHT: 21px; PADDING-RIGHT: 10px; DISPLAY: block; FLOAT: left; HEIGHT: 21px; OVERFLOW: hidden; CURSOR: pointer
+}
+.icon {
+	PADDING-LEFT: 15px; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 50% 50%
+}
+.day_table_right_line {
+	PADDING-LEFT: 4px; PADDING-RIGHT: 6px
+}
+.day_table {
+	BORDER-RIGHT: #d3d3d3 1px solid
+}
+.day_table TH {
+	TEXT-ALIGN: center; BORDER-LEFT: #96bde9 1px solid; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; HEIGHT: 20px; FONT-WEIGHT: bold; PADDING-TOP: 0px
+}
+.day_table TD {
+	BORDER-BOTTOM: #d3d3d3 1px solid; BORDER-LEFT: #d3d3d3 1px solid
+}
+.day_table TD DIV {
+	HEIGHT: 68px
+}
+.day_table TD DIV P {
+	PADDING-BOTTOM: 13px; LINE-HEIGHT: 24px; PADDING-LEFT: 13px; PADDING-RIGHT: 13px; HEIGHT: 24px; PADDING-TOP: 13px
+}
+.day_table TD DIV P .day_input {
+	POSITION: absolute; MARGIN: -12px 0px 0px -12px; DISPLAY: block; FLOAT: left
+}
+.day_table TD DIV P B {
+	DISPLAY: block; FLOAT: left; FONT-SIZE: 16px
+}
+.day_table TD DIV P B SPAN {
+	DISPLAY: block; FLOAT: left; FONT-SIZE: 16px
+}
+.day_table TD DIV P SPAN B {
+	FLOAT: right; FONT-SIZE: 12px; FONT-WEIGHT: normal
+}
+.day_table TD DIV H4 {
+	TEXT-ALIGN: right; DISPLAY: block; HEIGHT: 18px
+}
+.onwork {
+	LINE-HEIGHT: 24px
+}
+.onwork B FONT {
+	PADDING-RIGHT: 10px
+}
+.nowork {
+	LINE-HEIGHT: 18px; PADDING-LEFT: 25px; DISPLAY: block; BACKGROUND-POSITION: left top; FLOAT: right; HEIGHT: 20px
+}
+.nowork B {
+	LINE-HEIGHT: 18px; PADDING-RIGHT: 4px; DISPLAY: block; HEIGHT: 20px
+}
+.day_table TD DIV H4 SPAN {
+	LINE-HEIGHT: 18px; PADDING-RIGHT: 13px; FONT-WEIGHT: normal
+}
+.day_arrow_left {
+	MARGIN: 3px; WIDTH: 16px; DISPLAY: block; HEIGHT: 20px
+}
+.day_arrow_right {
+	MARGIN: 3px; WIDTH: 16px; DISPLAY: block; HEIGHT: 20px
+}
+.depttree {
+	
+}
+.emp INPUT.depttree {
+	WIDTH: 80px
+}
+.emp INPUT.readonly {
+	WIDTH: 80px
+}
+.new_width {
+	WIDTH: 80px
+}
+.new_width1 {
+	WIDTH: 160px
+}
+.hr0404 {
+	BORDER-BOTTOM: #96bde9 1px solid; BORDER-LEFT: #96bde9 1px solid; PADDING-BOTTOM: 1px; MIN-HEIGHT: 160px; PADDING-LEFT: 1px; WIDTH: 100%; PADDING-RIGHT: 1px; BORDER-TOP: #96bde9 1px solid; BORDER-RIGHT: #96bde9 1px solid; PADDING-TOP: 1px
+}
+.hr0404 TD {
+	BORDER-BOTTOM: #d3d3d3 1px solid
+}
+.hr04_table TH {
+	BORDER-BOTTOM: #fff 1px solid; TEXT-ALIGN: center; PADDING-BOTTOM: 0px; LINE-HEIGHT: 20px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; BACKGROUND: #efefef; HEIGHT: 20px; FONT-WEIGHT: bold; PADDING-TOP: 0px
+}
+.hr04_table TD {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 1px
+}
+.hr04_table .end TD {
+	BORDER-BOTTOM: medium none
+}
+.thisPageStyle_pa0131 {
+	BACKGROUND-IMAGE: url(/resources/css/dwzUI/themes/partner/images/li_prent.jpg); POSITION: relative; BOTTOM: 3px; BACKGROUND-REPEAT: no-repeat
+}
+.titleColor {
+	COLOR: blue
+}

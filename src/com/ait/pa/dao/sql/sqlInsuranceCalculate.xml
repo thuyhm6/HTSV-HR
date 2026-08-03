@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.insuranceCalculate">
+
+	<procedure id="insuranceCalculateLGE" parameterClass="linkMap">
+		<![CDATA[
+			{call IS_PACAL_LGE(#paMonth:VARCHAR#, #ADMINID:VARCHAR#,#CPNY_ID:VARCHAR#,#statNo:VARCHAR#,'NORMAL', 'NONE',#ADMINID:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<!-- calculate insurance  -->
+	<procedure id="insuranceCalculate" parameterClass="linkMap">
+		<![CDATA[
+			{call IS_PACAL_P_NEW(#paMonth:VARCHAR#,'2013/09/20', #ADMINID:VARCHAR#, #CPNY_ID:VARCHAR#,#statNo:VARCHAR#,'NORMAL','NONE',#caltype:VARCHAR#,#supervisorId:VARCHAR#,#deptid:VARCHAR#,#empid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<!-- 新保险计算  -->
+	<procedure id="insuranceCalculateNew" parameterClass="linkMap">
+		<![CDATA[
+			{call IS_PACAL_P_NEW(#paMonth:VARCHAR#,to_char(to_date(#GIVE_DATE:VARCHAR#,'yyyy/mm/dd'),'yyyy/mm/dd'), #ADMINID:VARCHAR#, #CPNY_ID:VARCHAR#,#statNo:VARCHAR#,'NORMAL','NONE',#caltype:VARCHAR#,#supervisorId:VARCHAR#,#deptid:VARCHAR#,#empid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<select id="getSalaryProvideDate" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		  SELECT DISTINCT TO_CHAR(T.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE 
+		  FROM IS_CALC_OBJECT T
+		  WHERE T.PA_MONTH =#paMonth:VARCHAR#
+		  AND T.CPNY_ID =#CPNY_ID:VARCHAR#
+	</select>
+</sqlMap>

@@ -1,0 +1,42 @@
+部门名        							Department Name
+姓名	      							Employee Name
+工号	      							Employee No.
+入职日期      							Hire Date
+年份          							Year
+开始时间      							Begin Time  
+结束时间      							End Time
+年假总数      							Total  
+生成年假      							Normal 
+特殊年假      							Special
+移年年假	  							Unused Of Last Year 
+年假使用	  							Unused
+年假剩余      							Balance
+年假使用现况  							Annual Leave Detail
+没有审批者,不能申请    					You Can't Apply Without the Approver
+考勤异常申请           					Abnormal Attendance Application
+审批          							Approval
+您有未决裁的审批，请尽快                You have pending approval, please approve as soon as possible
+审批 提醒     							Approval Reminder
+加班申请                                OverTime Application
+
+140报表列名:
+	职级
+	旷工迟到早退日期
+	工作形态
+	进门
+	出门
+133报表(特殊):
+    职级
+	工作时间
+	进门卡
+	出门卡
+	加班类型
+	加班时长
+134报表(特殊):
+    考勤明细查询
+    考勤状态
+	考勤时长
+	班组
+check_ot_time_htsv存储
+    包含考勤关闭的时间	
+	该时段或该时段内已申请过加班

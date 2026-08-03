@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.toolMenu">
+
+	<select id="getToolMenu" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SELECTR, 
+			       INSERTR, 
+			       UPDATER, 
+			       DELETER
+			  FROM SY_USER, 
+			       SY_USER_RELATION, 
+			       SY_ROLE_GROUP_RELATION, 
+			       SY_ROLE_RELATION
+			 WHERE SY_USER.USER_NO = SY_USER_RELATION.USER_NO(+)
+			   AND SY_USER_RELATION.ROLE_GROUP_NO =
+			       SY_ROLE_GROUP_RELATION.ROLE_GROUP_NO(+)
+			   AND SY_ROLE_GROUP_RELATION.ROLE_NO = SY_ROLE_RELATION.ROLE_NO
+			   AND SY_USER.USER_NO = #USER_NO:VARCHAR#
+			   AND SY_ROLE_RELATION.MENU_NO = #menuNo:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

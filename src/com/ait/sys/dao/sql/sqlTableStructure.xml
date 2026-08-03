@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.tableStructure">
+
+	<select id="getTableStructureList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TABLE_NO, 
+			       DECODE(TABLE_NAME,
+			              'AR',
+			              '考勤',
+			              'HR',
+			              '人事',
+			              'BN',
+			              '奖金',
+			              'IS',
+			              '保险',
+			              'PA',
+			              '工资',
+			              'SY',
+			              '系统',
+			              TABLE_NAME) TABLE_NAME, 
+			              PARENT_TABLE_NO
+			  FROM (SELECT DISTINCT SUBSTR(TT.TABLE_NAME,
+			                               0,
+			                               INSTR(TT.TABLE_NAME, '_') - 1) TABLE_NAME,
+			                        SUBSTR(TT.TABLE_NAME,
+			                               0,
+			                               INSTR(TT.TABLE_NAME, '_') - 1) TABLE_NO,
+			                        '0' PARENT_TABLE_NO
+			          FROM USER_TAB_COMMENTS T, USER_TABLES TT
+			         WHERE T.TABLE_TYPE = 'TABLE'
+			           AND T.TABLE_NAME = TT.TABLE_NAME
+			           AND T.COMMENTS IS NOT NULL
+			        UNION ALL
+			        SELECT T.COMMENTS TABLE_NAME,
+			               TT.TABLE_NAME TABLE_NO,
+			               SUBSTR(TT.TABLE_NAME, 0, INSTR(TT.TABLE_NAME, '_') - 1) PARENT_TABLE_NO
+			          FROM USER_TAB_COMMENTS T, USER_TABLES TT
+			         WHERE T.TABLE_TYPE = 'TABLE'
+			           AND T.TABLE_NAME = TT.TABLE_NAME
+			           AND T.COMMENTS IS NOT NULL)
+			 ORDER BY TABLE_NO
+		 ]]>	
+	</select>
+	
+	
+</sqlMap>

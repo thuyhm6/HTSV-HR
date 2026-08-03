@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.homeParam">
+	<select id="getHomeParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT A.PARAM_NO, 
+					B.CONTENT AS PARAM_NAME,
+					A.MODULE
+			   FROM SY_MAIN_PARAM_INFO A, 
+			  		SY_GLOBAL_NAME B
+			 WHERE A.PARAM_NO = B.NO(+)
+			   AND B.LANGUAGE(+) =#interLanguage:VARCHAR#	          		 
+		]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				PARAM_NO=#PARAM_NO:NUMERIC#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.ORDERNO
+		]]>
+	</select>
+	<select id="getCpnyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.PARAM_NO, 
+			       B.CONTENT AS PARAM_NAME
+			  FROM SY_MAIN_PARAM_INFO A, 
+			  	   SY_GLOBAL_NAME B
+			 WHERE A.PARAM_NO = B.NO(+)
+			   AND B.LANGUAGE(+) =#interLanguage:VARCHAR#	          		 
+		]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				PARAM_NO=#PARAM_NO:NUMERIC#
+		</isNotEmpty>
+	</select>
+	
+	<select id="getHomeCheckParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+  			SELECT	A.PARAM_NO,
+	             	B.CONTENT AS PARAM_NAME,
+	             	A.CPNY_ID,
+	            	A.PARAM_VALUE,
+	            	C.MODULE
+			   FROM SY_MAIN_PARAM_INFO_PARAM A, 
+			        SY_GLOBAL_NAME B,
+            	    SY_MAIN_PARAM_INFO C
+			  WHERE A.PARAM_NO=C.PARAM_NO
+			    AND B.NO(+) = A.PARAM_NO
+			    AND B.LANGUAGE(+)= #interLanguage:VARCHAR#
+		]]>
+		<!-- 管理员付给法人时，会指定法人 -->
+		<isNotEmpty prepend="AND" property="PARAM_CPNY_ID">
+			A.CPNY_ID=#PARAM_CPNY_ID:VARCHAR#  
+		</isNotEmpty>
+		<isEmpty  prepend="" property="PARAM_CPNY_ID">
+			<isNotEmpty prepend="AND" property="interCpnyID">
+				A.CPNY_ID=#interCpnyID:VARCHAR#  
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			A.PARAM_NO = #PARAM_NO:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.ORDERNO
+		]]>
+	</select>
+	
+	<insert id="insertHomeCheckParamList" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MAIN_PARAM_INFO_PARAM(
+			     PARAM_NO,
+			     CPNY_ID,
+			     CREATE_DATE,
+			     CREATED_BY,
+			     ACTIVITY,
+			     PARAM_VALUE 
+			)VALUES(
+			    #PARAM_NO:VARCHAR#,
+			    #PARAM_CPNY_ID:VARCHAR#,
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#,
+			    #ACTIVITY:NUMERIC#,
+			    #PARAM_VALUE:VARCHAR# 
+			)
+		]]>
+	</insert>
+	
+	<update id="updateHomeParamCpnyInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_MAIN_PARAM_INFO_PARAM
+			   SET PARAM_VALUE = #PARAM_VALUE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:VARCHAR# AND CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateHomeCheckParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_MAIN_PARAM_INFO_PARAM
+			   SET PARAM_VALUE = #PARAM_VALUE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getRoleListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.ROLE_NO,
+			       A.ROLE_ID, 
+			       B.CONTENT AS ROLENAME,
+			       'false' CHECKED
+			  FROM SY_ROLE A,
+			       SY_GLOBAL_NAME B
+			 WHERE A.ROLE_NO = B.NO(+)
+			       AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+			       AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+			       AND A.ACTIVITY = 1
+		]]>
+		<![CDATA[
+			ORDER BY A.ORDERNO
+		]]>
+	</select>
+
+	<select id="getEmpTypeListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SC.CODE_NO EMP_TYPE_CODE,
+			       get_global_name(SC.CODE_NO, 'zh') EMP_TYPE_NAME,
+			       SC.PARENT_CODE_NO,
+			       SP.CPNY_ID
+			  FROM SY_CODE SC, SY_CODE_PARAM SP
+			 WHERE SC.CODE_NO = SP.CODE_NO
+			   AND PARENT_CODE_NO = '1368'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			SP.CPNY_ID = #CPNY_ID:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY SP.CPNY_ID, get_global_name(SC.CODE_NO, 'zh')
+		]]>
+	</select>
+	
+	<select id="getEmpTypeParamListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SC.CODE_NO EMP_TYPE_CODE,
+			       get_global_name(SC.CODE_NO, 'zh') EMP_TYPE_NAME,
+			       SC.PARENT_CODE_NO,
+			       SP.CPNY_ID
+			  FROM SY_CODE SC, SY_CODE_PARAM SP
+			 WHERE SC.CODE_NO = SP.CODE_NO
+			   AND PARENT_CODE_NO = '1368'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SP.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isNotEmpty property="PARAM_NO">
+				<![CDATA[
+			 		SC.CODE_NO IN (SELECT EMP_TYPE
+	                        FROM SY_MAIN_PARAM_EMP_TYPE
+	                       WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                         AND PARAM_NO = #PARAM_NO:VARCHAR#)
+			]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY SP.CPNY_ID, get_global_name(SC.CODE_NO, 'zh')
+		]]>
+	</select>
+	
+	<delete id="deleteHomeParamCpnyAndEmpTypeInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+		       FROM SY_MAIN_PARAM_EMP_TYPE 
+			  WHERE CPNY_ID = #CPNY_ID:VARCHAR# 
+			    AND PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<insert id="insertHomeParamCpnyAndEmpTypeInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MAIN_PARAM_EMP_TYPE(
+			       CPNY_ID,
+		           PARAM_NO,
+		           EMP_TYPE,
+		           
+		           ACTIVITY,
+		           ORDERNO,
+				   CREATE_DATE,
+				   CREATED_BY
+			)VALUES(
+		          #CPNY_ID:VARCHAR#,
+				  #PARAM_NO:VARCHAR#,
+		          #EMP_TYPE:VARCHAR#,
+		          
+		          1,
+		          (SELECT MAX(ORDERNO)+1 FROM SY_MAIN_PARAM_EMP_TYPE),
+				  SYSDATE,
+				  #CREATED_BY:VARCHAR#
+			)
+		]]>
+	</insert>
+</sqlMap>

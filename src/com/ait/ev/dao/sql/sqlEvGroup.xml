@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "sql-map-2.dtd" >
+<sqlMap namespace="ev.basicsetting">
+	<select id="getEvGroupInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.ID,
+			       T.TITLE,
+			       T.CONTENT,
+			       T.PARENT_ID,
+			       (SELECT TITLE FROM ev_group WHERE t.PARENT_ID=ID) PNAME,
+			       T.DEPTH,
+			       T.ACTIVITY,
+			       T.CREATE_DATE,
+			       GET_EMP_LOCAL_NAME(T.CREATE_BY) CREATE_BY,
+			       T.ORDERNO
+			   FROM EV_GROUP T
+			  WHERE T.CPNY_ID = #interCpnyID#
+			    AND T.ACTIVITY = 1
+			  START WITH T.DEPTH = 1
+			  CONNECT BY PRIOR T.ID = T.PARENT_ID
+			  ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	<select id="getEvGroupInfoById" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.ID,
+			       T.TITLE,
+			       T.CONTENT,
+			       T.PARENT_ID,
+			       (SELECT TITLE FROM EV_GROUP WHERE T.PARENT_ID = ID) PNAME,
+			       T.DEPTH,
+			       T.ORDERNO
+			  FROM EV_GROUP T
+			 WHERE T.ID = #ID#
+		]]>
+	</select>
+	<insert id="insertEvGroupInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO EV_GROUP
+				   (ID,
+				    TITLE,
+				    CONTENT,
+				    CPNY_ID,
+				    ACTIVITY,
+				    CREATE_DATE,
+				    CREATE_BY,
+				    ORDERNO,
+				    PARENT_ID,
+				    DEPTH)
+				 VALUES
+				   (EV_EMP_GROUP_SEQ.NEXTVAL,
+				    #TITLE#,
+				    #CONTENT#,
+				    #interCpnyID#,
+				    1,
+				    SYSDATE,
+				    #CREATE_BY#,
+				    #ORDERNO#,
+				    #PARENT_ID:NUMERIC#,
+				    #DEPTH:NUMERIC#)
+		]]>
+	</insert>
+	<update id="updateEvGroupInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE EV_GROUP T
+			   SET T.TITLE       = #TITLE#,
+			   	   T.CONTENT     = #CONTENT#,
+			       T.UPDATE_DATE = SYSDATE,
+			       T.UPDATE_BY   = #UPDATE_BY#,
+			       T.PARENT_ID   = #PARENT_ID:NUMERIC#,
+			       T.DEPTH       = #DEPTH:NUMERIC#,
+			       T.ORDERNO	 = #ORDERNO#
+			 WHERE T.ID = #ID#
+		]]>
+	</update>
+	<delete id="delEvGroupInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM EV_GROUP T WHERE T.ID = #ID#
+		]]>
+	</delete>
+	<select id="getEvGroupTree" parameterClass="linkMap" resultClass="linkMap"
+			remapResults="true">
+		<![CDATA[
+			 SELECT T.ID, T.TITLE, T.PARENT_ID, T.DEPTH + 1 DEPTH
+				   FROM EV_GROUP T
+				  WHERE T.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="interCpnyID"> 
+			<![CDATA[
+				T.CPNY_ID = #interCpnyID#
+			]]>	
+		</isNotEmpty>	
+		<![CDATA[
+			  START WITH T.DEPTH = 1
+			  CONNECT BY PRIOR T.ID = T.PARENT_ID
+			  ORDER SIBLINGS BY T.ORDERNO
+		]]>		
+	</select>
+	<select id="getGroupHasChild" parameterClass="linkMap" resultClass="string" 
+		remapResults="true">
+		<![CDATA[
+			SELECT T.ID
+		   FROM EV_GROUP T
+		  WHERE T.ACTIVITY = 1
+		    AND T.CPNY_ID = #interCpnyID#
+		    AND T.PARENT_ID = #ID#
+		    AND ROWNUM = 1
+		]]>	
+	</select>
+</sqlMap>

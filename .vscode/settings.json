@@ -1,0 +1,11 @@
+{
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-1.8",
+            "path": "C:/Program Files/Java/jdk1.8.0_231",
+            "default": true
+        }
+    ],
+    "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": false
+}

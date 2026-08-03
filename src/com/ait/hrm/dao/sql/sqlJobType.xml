@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.jobType">
+	<!-- 人员类型 -->
+	<select id="getJobTypeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT 
+			    T.JOB_TYPE_SETUP_NO,
+				S1.CONTENT CPNY_NAME,
+				S2.CONTENT JOBTYPE_NAME,
+				S3.CONTENT JOBTYPE_GROUP_NAME,
+    			T.ACTIVITY
+		   FROM HR_JOB_TYPE_SETUP T,
+				HR_COMPANY C,
+				SY_GLOBAL_NAME S1,
+				SY_GLOBAL_NAME S2,
+				SY_GLOBAL_NAME S3
+		  WHERE T.CPNY_ID = C.CPNY_ID
+			AND T.JOBTYPE_NO = S2.NO(+)
+   			AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			AND T.JOBTYPE_GROUP_NO = S3.NO(+)
+   			AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			AND C.CPNY_NO = S1.NO(+)
+   			AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			
+   			
+			
+		]]>
+		<isNotEmpty prepend="AND" property="JOBTYPE_NAME">
+				<![CDATA[
+				 	S2.CONTENT LIKE '%' || #JOBTYPE_NAME:VARCHAR# || '%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOBTYPE_GROUP_NAME">
+				<![CDATA[
+				 	S3.CONTENT LIKE '%' || #JOBTYPE_GROUP_NAME:VARCHAR# || '%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+				 	T.CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_TYPE_SETUP_NO">
+				<![CDATA[
+				 	T.JOB_TYPE_SETUP_NO in ( $ids$ )
+				]]>
+		</isNotEmpty>
+	            <![CDATA[   
+				   ORDER BY T.CPNY_ID
+		]]>
+	</select>
+ 	<select id="getJobTypeCnt" parameterClass="linkMap" resultClass="int"> 
+ 		<![CDATA[ 
+    			SELECT  
+ 				COUNT(*) 
+ 		   FROM HR_JOB_TYPE_SETUP T,
+				HR_COMPANY C,
+				SY_GLOBAL_NAME S1,
+				SY_GLOBAL_NAME S2,
+				SY_GLOBAL_NAME S3
+		  WHERE T.CPNY_ID = C.CPNY_ID
+			AND T.JOBTYPE_NO = S2.NO(+)
+   			AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			AND T.JOBTYPE_GROUP_NO = S3.NO(+)
+   			AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			AND C.CPNY_NO = S1.NO(+)
+   			AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			
+ 		]]>	 
+		<isNotEmpty prepend="AND" property="JOBTYPE_NAME">
+				<![CDATA[
+				 	S2.CONTENT LIKE '%' || #JOBTYPE_NAME:VARCHAR# || '%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOBTYPE_GROUP_NAME">
+				<![CDATA[
+				 	S3.CONTENT LIKE '%' || #JOBTYPE_GROUP_NAME:VARCHAR# || '%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+				 	T.CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_TYPE_SETUP_NO">
+				<![CDATA[
+				 	T.JOB_TYPE_SETUP_NO in ( $ids$ )
+				]]>
+		</isNotEmpty>
+		<![CDATA[   
+				   ORDER BY T.CPNY_ID
+		]]>
+		
+ 	</select> 
+ 	
+ 	
+ 	<select id="getJobTypeNameList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.CODE_NO JOBTYPE_NO,
+                   S.CONTENT JOBTYPE_NAME 
+            FROM SY_CODE T,
+                 SY_GLOBAL_NAME S,
+                 SY_CODE_PARAM TT
+            WHERE T.PARENT_CODE_NO = '1368' 
+            AND T.CODE_NO = S.NO(+)
+   			AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			AND T.CODE_NO = TT.CODE_NO
+   			AND TT.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getJobTypeGroupNameList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.CODE_NO JOBTYPE_GROUP_NO,
+                   S.CONTENT JOBTYPE_GROUP_NAME 
+            FROM SY_CODE T,
+                 SY_GLOBAL_NAME S,
+                 SY_CODE_PARAM TT
+            WHERE T.PARENT_CODE_NO = '211807' 
+            AND T.CODE_NO = S.NO(+)
+   			AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			AND T.CODE_NO = TT.CODE_NO
+   			AND TT.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getJobType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT * FROM
+                 HR_JOB_TYPE_SETUP T
+            WHERE T.JOB_TYPE_SETUP_NO = #NO:VARCHAR#
+		]]>
+	</select>
+	
+ 	<insert id="insertJobType" parameterClass="linkMap"> 
+ 		<![CDATA[ 
+ 			INSERT INTO HR_JOB_TYPE_SETUP ( 
+ 				JOB_TYPE_SETUP_NO,
+ 				JOBTYPE_NO,
+ 				JOBTYPE_GROUP_NO, 
+ 				CPNY_ID, 
+ 				CREATE_DATE, 
+ 				CREATED_BY, 
+ 				ACTIVITY 
+ 			) 
+ 			VALUES( 
+ 				JOB_TYPE_SETUP_NO_SEQ.NEXTVAL,
+ 				#JOBTYPE_NO:VARCHAR#,  
+ 				#JOBTYPE_GROUP_NO:VARCHAR#, 
+ 				#CPNY_ID:VARCHAR#, 
+ 				SYSDATE, 
+ 				#CREATED_BY:VARCHAR#, 
+ 				#ACTIVITY:NUMERIC# 
+ 			) 
+ 		]]> 
+ 	</insert> 
+	
+ 	<update id="updateJobType" parameterClass="linkMap" > 
+ 		<![CDATA[ 
+ 			UPDATE HR_JOB_TYPE_SETUP SET 
+ 	 			JOBTYPE_NO = #JOBTYPE_NO:VARCHAR#, 
+ 	 			JOBTYPE_GROUP_NO = #JOBTYPE_GROUP_NO:VARCHAR#,
+ 				CPNY_ID = #CPNY_ID:VARCHAR#, 
+ 				ACTIVITY = #ACTIVITY:NUMERIC#, 
+ 				UPDATE_DATE = SYSDATE, 
+ 				UPDATED_BY = #UPDATED_BY:VARCHAR# 
+ 			WHERE JOB_TYPE_SETUP_NO = #NO:VARCHAR#  
+ 		]]> 
+ 	</update> 
+ 	<delete id="deleteJobType" parameterClass="linkMap"> 
+ 		<![CDATA[ 
+ 			DELETE HR_JOB_TYPE_SETUP WHERE JOB_TYPE_SETUP_NO = #id# 
+ 		]]> 
+ 	</delete>
+ 	
+ 	<select id="checkJobType" parameterClass="linkMap" resultClass="int"> 
+ 		<![CDATA[ 
+    			SELECT  
+ 				COUNT(*) 
+ 		   FROM HR_JOB_TYPE_SETUP T
+ 			WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+			AND T.JOBTYPE_NO = #JOBTYPE_NO:VARCHAR#
+ 		]]>	
+ 		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+				T.JOB_TYPE_SETUP_NO <> #NO:VARCHAR#
+			]]>
+		</isNotEmpty> 
+ 	</select> 
+ 	
+ 	<select id="getEmpJobTypeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="authorityFlag" compareValue="0">
+		
+				SELECT JOBTYPE_NO CODE_NO,
+       				   GET_CODE_NAME(JOBTYPE_NO,#interLanguage:VARCHAR#) CODE_NAME
+                  FROM HR_JOB_TYPE_SETUP P
+                 WHERE P.JOBTYPE_GROUP_NO IN
+                     (SELECT EMP_TYPE_CODE
+                        FROM SY_SUPERVISOR_EMPTYPE_INFO
+                       WHERE PERSON_ID = #supervisorPersonId#)
+                 AND CPNY_ID = #defaultCpny:VARCHAR#
+		</isEqual>
+		<isEqual property="authorityFlag" compareValue="1">
+			SELECT JOBTYPE_NO CODE_NO, B.CONTENT CODE_NAME 
+			FROM HR_JOB_TYPE_SETUP A, SY_GLOBAL_NAME B
+			 WHERE A.JOBTYPE_NO = B.NO(+)
+			 AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 AND A.CPNY_ID = #defaultCpny:VARCHAR#
+		</isEqual>
+ 		<isNotEmpty prepend="AND" property="EMP_TYPE_GROUP">
+			<![CDATA[
+				JOBTYPE_GROUP_NO = #EMP_TYPE_GROUP#
+			]]>
+		</isNotEmpty> 
+	</select>
+	<!-- 11.20 人员类型组联动查询 修改 -->
+	<select id="getEmpTypeForGroupToList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<isEqual property="type" compareValue="group">
+			<isEqual property="limit" compareValue="hr">
+					SELECT EMP_TYPE_CODE CODE_NO,
+                        GET_CODE_NAME(EMP_TYPE_CODE,#interLanguage#) CODE_NAME
+                        FROM SY_SUPERVISOR_EMPTYPE_INFO
+                       WHERE PERSON_ID = #PERSON_ID#
+			</isEqual>
+			<isEqual property="limit" compareValue="ar">
+				SELECT DISTINCT C.JOBTYPE_GROUP_NO CODE_NO,
+				GET_CODE_NAME(C.JOBTYPE_GROUP_NO,#interLanguage#) CODE_NAME 
+		       FROM AR_SUPERVISOR_EMPTYPE_INFO A,
+		            HR_JOB_TYPE_SETUP C
+		       WHERE  A.EMP_TYPE_CODE = C.JOBTYPE_NO
+		         AND a.person_id = #PERSON_ID#
+		         AND C.CPNY_ID = #CPNYID#
+			</isEqual>
+			<isEqual property="limit" compareValue="pa">
+				SELECT DISTINCT C.JOBTYPE_GROUP_NO CODE_NO,
+					GET_CODE_NAME(C.JOBTYPE_GROUP_NO,#interLanguage#) CODE_NAME
+		       FROM PA_SUPERVISOR_EMPTYPE_INFO A,
+		            HR_JOB_TYPE_SETUP C
+		       WHERE  A.EMP_TYPE_CODE = C.JOBTYPE_NO
+		         AND a.person_id = #PERSON_ID#
+		         AND C.CPNY_ID = #CPNYID#
+			</isEqual>
+			<isEqual property="limit" compareValue="super">
+				SELECT DISTINCT A.JOBTYPE_GROUP_NO CODE_NO, 
+				       GET_CODE_NAME(A.JOBTYPE_GROUP_NO, #interLanguage#) CODE_NAME
+				  FROM HR_JOB_TYPE_SETUP A
+				 WHERE A.CPNY_ID = #CPNYID#
+			</isEqual>
+		</isEqual>
+		<isNotEqual property="type" compareValue="group">
+			<isEqual property="limit" compareValue="hr">
+					SELECT DISTINCT A.JOBTYPE_NO CODE_NO, 
+				       GET_CODE_NAME(A.JOBTYPE_NO, #interLanguage#) CODE_NAME
+				  FROM HR_JOB_TYPE_SETUP A
+				 WHERE A.CPNY_ID = #CPNYID#
+			</isEqual>
+			<isEqual property="limit" compareValue="ar">
+
+				SELECT DISTINCT EMP_TYPE_CODE CODE_NO,
+				GET_CODE_NAME(EMP_TYPE_CODE,#interLanguage#) CODE_NAME 
+		       FROM AR_SUPERVISOR_EMPTYPE_INFO A,
+		            HR_JOB_TYPE_SETUP C
+		       WHERE  A.EMP_TYPE_CODE = C.JOBTYPE_NO
+		         AND a.person_id = #PERSON_ID#
+		         AND C.CPNY_ID = #CPNYID#
+			</isEqual>
+			<isEqual property="limit" compareValue="pa">
+				SELECT DISTINCT EMP_TYPE_CODE CODE_NO,
+					GET_CODE_NAME(EMP_TYPE_CODE,#interLanguage#) CODE_NAME
+		       FROM PA_SUPERVISOR_EMPTYPE_INFO A,
+		            HR_JOB_TYPE_SETUP C
+		       WHERE  A.EMP_TYPE_CODE = C.JOBTYPE_NO
+		         AND a.person_id = #PERSON_ID#
+		         AND C.CPNY_ID = #CPNYID#
+			</isEqual>
+			<isEqual property="limit" compareValue="super">
+				SELECT DISTINCT A.JOBTYPE_NO CODE_NO, 
+				       GET_CODE_NAME(A.JOBTYPE_NO, #interLanguage#) CODE_NAME
+				  FROM HR_JOB_TYPE_SETUP A
+				 WHERE A.CPNY_ID = #CPNYID#
+			</isEqual>
+			<isNotEmpty prepend="AND" property="EMP_TYPE_GROUP">
+				<![CDATA[
+				JOBTYPE_GROUP_NO = #EMP_TYPE_GROUP#
+				]]>
+			</isNotEmpty> 
+		</isNotEqual>
+	</select>
+	
+	<select id="getJobTypeImportTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	   select ht.CPNY_ID,
+                 HRN.CPNY_LOCATION,
+                 HT.JOBTYPE_GROUP_NO,
+                 SY.CONTENT JOBTYPE_GROUP_NAME,
+                 HT.JOBTYPE_NO,
+                 SY1.CONTENT JOBTYPE_NAME,
+                 UPLOAD_ERROR_MSG,
+                 LINE_ID,
+                 RESULT_FLAG,
+                 he.local_name UPLOAD_BY,
+                 to_char(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE
+          from hr_job_type_setup_temp ht,
+               HR_COMPANY HRN,
+               SY_GLOBAL_NAME SY,
+               SY_GLOBAL_NAME SY1,
+               hr_employee he
+         where HT.CPNY_ID = HRN.CPNY_ID
+           AND HT.JOBTYPE_GROUP_NO = SY.NO(+)
+           AND SY.LANGUAGE = #interLanguage:VARCHAR#
+           AND HT.JOBTYPE_NO = SY1.NO(+)
+           AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+            and upload_by = he.person_id
+           and UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getJobTypeImportTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from hr_job_type_setup_temp ht,
+               HR_COMPANY HRN,
+               SY_GLOBAL_NAME SY,
+               SY_GLOBAL_NAME SY1,
+               hr_employee he
+         where HT.CPNY_ID = HRN.CPNY_ID
+           AND HT.JOBTYPE_GROUP_NO = SY.NO(+)
+           AND SY.LANGUAGE = #interLanguage:VARCHAR#
+           AND HT.JOBTYPE_NO = SY1.NO(+)
+           AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+            and upload_by = he.person_id
+           and UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getJobTypeImportTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from hr_job_type_setup_temp ht,
+               HR_COMPANY HRN,
+               SY_GLOBAL_NAME SY,
+               SY_GLOBAL_NAME SY1,
+               hr_employee he
+         where HT.CPNY_ID = HRN.CPNY_ID
+           AND HT.JOBTYPE_GROUP_NO = SY.NO(+)
+           AND SY.LANGUAGE = #interLanguage:VARCHAR#
+           AND HT.JOBTYPE_NO = SY1.NO(+)
+           AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+            and upload_by = he.person_id
+           and UPLOAD_BY = #PERSON_ID:VARCHAR#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	
+	
+	<!-- 写入excel临时表数据验证֤================================ -->
+	<procedure id="importJobTypeFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call $PR_NAME$(
+						 #PERSON_ID:VARCHAR#
+						,#CPNY_ID#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+</sqlMap>

@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.progress">
+	
+	<select id="getPaProgressList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PA_MONTH_STR,
+			       T.ATT_MO_FLAG,
+			       T.ATT_MO_LOCK_FLAG,
+			       T.PA_LOCK_FLAG,
+			       T.PA_OPEN_FLAG,
+			       TO_CHAR(T.LOCK_DATE,'YYYY-MM-DD') AS LOCK_DATE,
+			       T.LOCK_USER_ID,
+			       T.CPNY_ID,
+			       SUBSTR(T.PA_MONTH_STR, 0, 4) YEAR,
+			       SUBSTR(T.PA_MONTH_STR, 5, 6) MONTH,
+			       T.STAT_NO,
+			       GET_GLOBAL_NAME(T.STAT_NO,'zh') STAT_NAME
+			  FROM PA_PROGRESS T
+			  
+		]]>
+		<dynamic prepend="WHERE">  
+			<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+				<![CDATA[
+			 		  T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+			 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="STAT_NO">
+				<![CDATA[
+					  T.STAT_NO = #STAT_NO:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY T.PA_MONTH_STR
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaProgressCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_PROGRESS T
+		]]>
+		<dynamic prepend="WHERE">  
+			<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+				<![CDATA[
+			 		  T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+			 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="STAT_NO">
+				<![CDATA[
+					  T.STAT_NO = #STAT_NO:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY T.PA_MONTH_STR
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- 工资锁定  -->
+	<update id="updatePaProgressInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PROGRESS_PA SET
+				LOCK_USER_ID = #ADMIN_ID:VARCHAR# 
+		]]>
+		
+		<isNotEmpty prepend="" property="PA_LOCK_FLAG">
+			<![CDATA[
+		 		  ,PA_LOCK_FLAG = #PA_LOCK_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="ATT_MO_FLAG">
+			<![CDATA[
+		 		  ,ATT_MO_FLAG = #ATT_MO_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="ATT_MO_LOCK_FLAG">
+			<![CDATA[
+		 		  ,ATT_MO_LOCK_FLAG = #ATT_MO_LOCK_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="PA_OPEN_FLAG">
+			<![CDATA[
+		 		  ,PA_OPEN_FLAG = #PA_OPEN_FLAG:NUMERIC#,
+		 		  PA_OPEN_DATE = SYSDATE
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[		
+				,LOCK_DATE = SYSDATE
+			WHERE PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			 AND  CPNY_ID  = #CPNY_ID:VARCHAR#
+			 AND  STAT_NO  = #STAT_NO:VARCHAR#
+			 AND  GIVE_DATE =TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+		]]>
+	</update>
+
+	<select id="getDeptDistinguishList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT GG.NO DEPT_DISTINGUISH_NO, GG.CONTENT DEPT_DISTINGUISH_NAME
+			  FROM SY_GLOBAL_NAME GG
+			 WHERE GG.LANGUAGE = 'zh'
+			   AND GG.NO IN
+			       (SELECT DISTINCT (HD.DEPT_DISTINGUISH_NO)
+			          FROM HR_DEPARTMENT HD
+			         WHERE 1 = 1
+		]]>			         
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HD.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[			           
+			           AND HD.DEPTNO IN
+			               (SELECT PP.DEPTNO
+			                  FROM PA_SUPERVISOR_INFO PP
+			                 WHERE 1 = 1
+		]]>			              
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[   
+				PP.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[				                   
+			                UNION
+			                SELECT SS.DEPTNO
+			                  FROM SY_USER_DEPT SS
+			                 WHERE SS.USER_NO = (SELECT MIN(UU.USER_NO)
+			                                       FROM SY_USER UU
+			                                      WHERE 1 = 1
+		]]>			                                      
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				UU.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+			 
+		<isNotEmpty prepend="AND" property="USER_NAME">
+			<![CDATA[
+		 		  UU.USER_NAME = #USER_NAME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+				)))
+			ORDER BY GG.CONTENT
+		]]>
+	</select>
+
+	<select id="getPaProgressByDeptList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PA_MONTH_STR,
+			       T.ATT_MO_FLAG,
+			       T.ATT_MO_LOCK_FLAG,
+			       T.PA_LOCK_FLAG,
+			       T.PA_OPEN_FLAG,
+			       TO_CHAR(T.LOCK_DATE,'YYYY-MM-DD') AS LOCK_DATE,
+			       T.LOCK_USER_ID,
+			       T.CPNY_ID,
+			       SUBSTR(T.PA_MONTH_STR, 0, 4) YEAR,
+			       SUBSTR(T.PA_MONTH_STR, 5, 6) MONTH,
+			       T.STAT_NO,
+			       GET_GLOBAL_NAME(T.STAT_NO,'zh') STAT_NAME,
+			       T.DEPT_DISTINGUISH_NO,
+			       GET_GLOBAL_NAME(T.DEPT_DISTINGUISH_NO, 'zh') DEPT_DISTINGUISH_NAME
+			  FROM PA_PROGRESS_DEPT T
+		]]>
+		<dynamic prepend="WHERE">  
+			<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+				<![CDATA[
+			 		  T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+			 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPT_TYPE_NO">
+				<![CDATA[
+					  T.DEPT_DISTINGUISH_NO IN
+			       		(SELECT DEPT_DISTINGUISH_NO
+			          	   FROM HR_DEPARTMENT DD
+			              WHERE DD.DEPT_TYPE = #DEPT_TYPE_NO:VARCHAR#
+			                AND CPNY_ID = 'C01')
+           		]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="STAT_NO">
+				<![CDATA[
+					  T.STAT_NO = #STAT_NO:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					  T.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isNotEmpty prepend="" property="PERSON_ID">
+				<isNotEmpty prepend="" property="USER_NAME">
+					<![CDATA[
+						  T.DEPT_DISTINGUISH_NO IN
+					       (SELECT HD.DEPT_DISTINGUISH_NO
+					          FROM HR_DEPARTMENT HD
+					         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+					           AND HD.DEPTNO IN
+					               (SELECT PP.DEPTNO
+					                  FROM PA_SUPERVISOR_INFO PP
+					                 WHERE PP.PERSON_ID = #PERSON_ID:VARCHAR#
+					                UNION
+					                SELECT UU.DEPTNO
+					                  FROM SY_USER_DEPT UU
+					                 WHERE UU.CPNY_ID = #CPNY_ID:VARCHAR#
+					                   AND UU.USER_NO = (SELECT MIN(SS.USER_NO)
+					                                       FROM SY_USER SS
+					                                      WHERE SS.CPNY_ID = #CPNY_ID:VARCHAR#
+					                                        AND SS.USER_NAME = #USER_NAME:VARCHAR#)))
+					]]>
+				</isNotEmpty>
+			</isNotEmpty>
+		</isNotEmpty>		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY T.PA_MONTH_STR,DEPT_DISTINGUISH_NAME
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaProgressByDeptCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_PROGRESS_DEPT T
+		]]>
+		<dynamic prepend="WHERE">  
+			<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+				<![CDATA[
+			 		  T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+			 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPT_TYPE_NO">
+				<![CDATA[
+					  T.DEPT_DISTINGUISH_NO IN
+			       		(SELECT DEPT_DISTINGUISH_NO
+			          	   FROM HR_DEPARTMENT DD
+			              WHERE DD.DEPT_TYPE = #DEPT_TYPE_NO:VARCHAR#
+			                AND CPNY_ID = 'C01')
+           		]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="STAT_NO">
+				<![CDATA[
+					  T.STAT_NO = #STAT_NO:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					  T.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isNotEmpty prepend="" property="PERSON_ID">
+				<isNotEmpty prepend="" property="USER_NAME">
+					<![CDATA[
+						  T.DEPT_DISTINGUISH_NO IN
+					       (SELECT HD.DEPT_DISTINGUISH_NO
+					          FROM HR_DEPARTMENT HD
+					         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+					           AND HD.DEPTNO IN
+					               (SELECT PP.DEPTNO
+					                  FROM PA_SUPERVISOR_INFO PP
+					                 WHERE PP.PERSON_ID = #PERSON_ID:VARCHAR#
+					                UNION
+					                SELECT UU.DEPTNO
+					                  FROM SY_USER_DEPT UU
+					                 WHERE UU.CPNY_ID = #CPNY_ID:VARCHAR#
+					                   AND UU.USER_NO = (SELECT MIN(SS.USER_NO)
+					                                       FROM SY_USER SS
+					                                      WHERE SS.CPNY_ID = #CPNY_ID:VARCHAR#
+					                                        AND SS.USER_NAME = #USER_NAME:VARCHAR#)))
+					]]>
+				</isNotEmpty>
+			</isNotEmpty>
+		</isNotEmpty>			
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY T.PA_MONTH_STR
+			]]>
+		</isEmpty>
+	</select>
+
+	<update id="updatePaProgressByDept" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PROGRESS_DEPT SET
+				LOCK_USER_ID = #ADMIN_ID:VARCHAR# 
+		]]>
+		
+		<isNotEmpty prepend="" property="PA_LOCK_FLAG">
+			<![CDATA[
+		 		  ,PA_LOCK_FLAG = #PA_LOCK_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="ATT_MO_FLAG">
+			<![CDATA[
+		 		  ,ATT_MO_FLAG = #ATT_MO_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="ATT_MO_LOCK_FLAG">
+			<![CDATA[
+		 		  ,ATT_MO_LOCK_FLAG = #ATT_MO_LOCK_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="PA_OPEN_FLAG">
+			<![CDATA[
+		 		  ,PA_OPEN_FLAG = #PA_OPEN_FLAG:NUMERIC#,
+		 		  PA_OPEN_DATE = SYSDATE
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[		
+				,LOCK_DATE = SYSDATE
+			WHERE PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			  AND CPNY_ID  = #CPNY_ID:VARCHAR#
+			  AND STAT_NO  = #STAT_NO:VARCHAR#
+			  AND DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<!--只允许删除韩方考勤区间，因为门店里一般不存在韩方人员-->
+	<delete id="deletePaProgressByDept" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE PA_PROGRESS_DEPT
+			 WHERE PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			   AND CPNY_ID  = #CPNY_ID:VARCHAR#
+			   AND STAT_NO  = #STAT_NO:VARCHAR#
+			   AND STAT_NO  = '21841'
+			   AND DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="checkPaProgressByDeptCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_PROGRESS_DEPT T
+			 WHERE CPNY_ID = 'C01'
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+		 		  T.PA_MONTH_STR = TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH_STR:VARCHAR#,'YYYYMM'),1),'YYYYMM')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+		 		  T.STAT_NO  = #STAT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+			<![CDATA[
+		 		  T.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="copyToNextMonthPaProgressByDept" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_PROGRESS_DEPT PA(
+			       PA_MONTH_STR,
+				   ATT_MO_FLAG,
+				   ATT_MO_LOCK_FLAG,
+				   PA_LOCK_FLAG,
+				   PA_OPEN_FLAG,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY,
+				   ORDERNO,
+				   STAT_NO,
+				   DEPT_DISTINGUISH_NO )
+				VALUES(
+				   TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH_STR:VARCHAR#,'YYYYMM'),1),'YYYYMM'),
+				   1,
+				   1,
+				   0,
+				   1,
+				   'C01',
+				   SYSDATE,
+				   #ADMIN_ID:VARCHAR#,
+				   1,
+				   1,
+				   #STAT_NO:VARCHAR#,
+				   #DEPT_DISTINGUISH_NO:VARCHAR#
+				 )
+		]]>
+	</insert>
+	
+	<!-- 工资锁定 20131104 -->
+	<select id="getPaProgressListNew" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT PA.PA_MONTH_STR,
+					  PA.ATT_MO_FLAG,
+					  PA.ATT_APPLY_LOCK_FLAG,
+		              PA.ATT_MO_LOCK_FLAG,
+		              PA.PA_APPLY_LOCK_FLAG,
+		              PA.PA_LOCK_FLAG,
+		              PA.IS_LOCK_FLAG,
+					  PA.LOCK_USER_ID,
+					  TO_CHAR(PA.LOCK_DATE,'YYYY-MM-DD') LOCK_DATE,
+					  PA.PA_OPEN_FLAG,
+					  PA.CPNY_ID,
+					  TO_CHAR(PA.PA_OPEN_DATE,'YYYY-MM-DD') PA_OPEN_DATE,
+					  PA.ACTIVITY,
+					  PA.STAT_NO,
+					  S1.CONTENT STAT_NAME,
+					  GET_DEPT_NAME(PA.AR_DEPT_NO,#interLanguage:VARCHAR#) AR_DEPT_NAME,
+					  PA_GET_commission_FLAG(PA.PA_MONTH_STR,PA.STAT_NO,PA.CPNY_ID,PA.AR_DEPT_NO) TICHENG,
+					  PA_GET_TRANSFER_FLAG(PA.PA_MONTH_STR,PA.STAT_NO,PA.CPNY_ID,PA.AR_DEPT_NO) CAIWU,
+					  PA.AR_DEPT_NO
+				 FROM PA_PROGRESS PA,
+				 	  SY_GLOBAL_NAME S1
+				 WHERE 1 = 1
+				   AND PA.STAT_NO = S1.NO(+)
+				   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+	  	]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA.PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  PA.STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				  PA.CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	    <isEqual property="interCpnyID" compareValue='TSTO' >
+	      <isNotEmpty prepend="AND" property="DEPT_NO">
+	        <![CDATA[	
+				   PA.AR_DEPT_NO = #DEPT_NO:VARCHAR#
+			]]>
+			</isNotEmpty>
+	    </isEqual>
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PA.PA_MONTH_STR DESC
+			]]>
+		</isEmpty>
+	</select>
+	
+	
+	<!-- 预提工资锁定状态查看 -->
+	<select id="getPawithholdingProgressList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT PA.PA_MONTH_STR,
+			       PA.ATT_MO_FLAG,
+			       PA.ATT_APPLY_LOCK_FLAG,
+			       PA.ATT_MO_LOCK_FLAG,
+			       PA.PA_APPLY_LOCK_FLAG,
+			       PA.PA_LOCK_FLAG,
+			       PA.LOCK_USER_ID,
+			       TO_CHAR(PA.LOCK_DATE, 'YYYY-MM-DD') LOCK_DATE,
+			       PA.PA_OPEN_FLAG,
+			       PA.CPNY_ID,
+			       TO_CHAR(PA.PA_OPEN_DATE, 'YYYY-MM-DD') PA_OPEN_DATE,
+			       PA.ACTIVITY,
+			       PA.Emp_Type_No,
+			       S1.CONTENT EMPTYPE_NAME,
+			       GET_DEPT_NAME(PA.AR_DEPT_NO, #interLanguage:VARCHAR#) AR_DEPT_NAME,
+			       PA.AR_DEPT_NO,
+			       PA_GET_YINGYEYUAN_FLAG(PA.PA_MONTH_STR,PA.EMP_TYPE_NO,PA.CPNY_ID,PA.AR_DEPT_NO) IFYUTI,
+			       PA.PA_WITHHOLDING_LOCK_FLAG,
+       			   PA.PA_WITHHOLDING_APPLY_LOCK_FLAG
+			  FROM pa_progress_withholding PA, SY_GLOBAL_NAME S1
+			 WHERE 1 = 1
+			   AND PA.Emp_Type_No = S1.NO(+)
+			   AND S1.LANGUAGE(+) =  #interLanguage:VARCHAR#
+	  	]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA.PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA.PA_MONTH_STR = TO_CHAR(SYSDATE,'YYYYMM')-1
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="EMPTYPE">
+			<![CDATA[
+				  PA.Emp_Type_No   = DECODE(#EMPTYPE:VARCHAR#,'211812','219946','211814','219948',#EMPTYPE:VARCHAR#)
+			]]>
+		</isNotEmpty>	 
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				  PA.CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	    <isEqual property="interCpnyID" compareValue='TSTO' >
+	      <isNotEmpty prepend="AND" property="seach_DEPT_NO">
+	        <![CDATA[	
+				   PA.AR_DEPT_NO in ($seach_DEPT_NO$)
+			]]>
+			</isNotEmpty>
+	    </isEqual>
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PA.PA_MONTH_STR DESC
+			]]>
+		</isEmpty>
+	</select>
+	
+	
+	<!-- 工资锁定 根据工资月 确定 发放日期 -->
+	<select id="getSalaryLockDatePa" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		  SELECT DISTINCT TO_CHAR(T.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE 
+		  FROM PA_PROGRESS_PA T
+		  WHERE T.PA_MONTH_STR =#paMonth:VARCHAR#
+		  AND T.CPNY_ID =#CPNY_ID:VARCHAR#
+	</select>
+	
+	<!-- 工资锁定 总 条数 -->
+	<select id="getPaProgressCntNew" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			   SELECT  COUNT(*)
+				 FROM PA_PROGRESS PA,
+				 	  SY_GLOBAL_NAME S1
+				 WHERE 1 = 1
+				   AND PA.STAT_NO = S1.NO(+)
+				   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+	  	]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA.PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  PA.STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				  PA.CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	    <isEqual property="interCpnyID" compareValue='TSTO' >
+	      <isNotEmpty prepend="AND" property="DEPT_NO">
+	        <![CDATA[	
+				   PA.AR_DEPT_NO = #DEPT_NO:VARCHAR#
+			]]>
+			</isNotEmpty>
+	    </isEqual>
+	
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PA.PA_MONTH_STR DESC
+			]]>
+		</isEmpty>
+	</select>
+	
+	
+	<!-- 工资锁定 总 条数 -->
+	<select id="getPawithholdingProgressListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			   SELECT  COUNT(*)
+				 FROM pa_progress_withholding PA,
+				 	  SY_GLOBAL_NAME S1
+				 WHERE 1 = 1
+				   AND PA.Emp_Type_No = S1.NO(+)
+				   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+	  	]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA.PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPTYPE">
+			<![CDATA[
+				    PA.Emp_Type_No  = DECODE(#EMPTYPE:VARCHAR#,'211812','219946','211814','219948',#EMPTYPE:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				  PA.CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	    <isEqual property="interCpnyID" compareValue='TSTO' >
+	      <isNotEmpty prepend="AND" property="seach_DEPT_NO">
+	        <![CDATA[	
+				   PA.AR_DEPT_NO In ( $seach_DEPT_NO$)
+			]]>
+			</isNotEmpty>
+	    </isEqual>
+	
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PA.PA_MONTH_STR DESC
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getSalaryLockStatNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT STA.STAT_NO, 
+				       S1.CONTENT STAT_NAME
+				  FROM PA_PROGRESS_PA STA, 
+				       SY_GLOBAL_NAME S1
+				 WHERE STA.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND STA.STAT_NO = S1.NO(+)
+				   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND STA.ACTIVITY = 1
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="GIVE_DATE">
+				<![CDATA[
+					  STA.GIVE_DATE =TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+				]]>
+			</isNotEmpty>
+		<![CDATA[
+				ORDER BY STA.ORDERNO,STA.STAT_NO
+		]]>
+	</select>
+</sqlMap>

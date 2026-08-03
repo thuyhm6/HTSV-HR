@@ -1,0 +1,12 @@
+create or replace function AR_GET_ATT_EX_CLASH(IN_AR_DATE_STR VARCHAR2,IN_CPNY_ID VARCHAR2) return NUMBER is
+  V_IS_APPLY NUMBER ;
+begin
+  ---考勤关闭判断,批量与个人并用
+    select max(t.ar_lock_flag) INTO V_IS_APPLY
+  from PA_PAY_SCHEDULE t
+  where t.cpny_id = IN_CPNY_ID
+  and t.activity = '1'
+  and TO_DATE(IN_AR_DATE_STR,'YYYY.MM.DD') BETWEEN T.AR_START_DATE AND T.AR_END_DATE;
+
+  return(V_IS_APPLY);
+end ar_get_ATT_EX_clash;

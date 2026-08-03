@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.supervisor">
+
+	<select id="getPaSupervisorList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT 
+					HR.EMPID,
+					T.PERSON_ID,
+			        HR.LOCAL_NAME AS HRNAME,
+			        get_dept_name(HD.deptno,#interLanguage:VARCHAR#) DEPT_NAME,
+			        TO_CHAR(T.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+			        CR_EMP.LOCAL_NAME AS CREATED_NAME
+			  FROM PA_SUPERVISOR T,
+			       HR_EMPLOYEE   HR,
+			       HR_DEPARTMENT HD,
+			       HR_EMPLOYEE   CR_EMP
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HR.CPNY_ID = HD.CPNY_ID(+)
+			   AND T.CREATED_BY = CR_EMP.PERSON_ID(+)
+			   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		   
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  T.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.EMPID, HR.DEPTNO
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaSupervisorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) 
+			  FROM PA_SUPERVISOR T, HR_EMPLOYEE HR
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   
+		]]>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<insert id="addPaSupervisorInfo" parameterClass="linkMap" > 
+		<![CDATA[
+			INSERT INTO PA_SUPERVISOR (
+					PERSON_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY
+				)
+			VALUES(
+				#PERSON_ID:VARCHAR#,
+				SYSDATE,
+				#CREATED_BY:VARCHAR#,
+				1
+			)
+		]]>
+	</insert>
+	<insert id="addPaSupervisorDeptInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO PA_SUPERVISOR_INFO (
+					PA_SUPERVISOR_NO,
+					PERSON_ID,
+					DEPTNO,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+				VALUES(
+					PA_SUPERVISOR_SEQ.NEXTVAL,
+					#PERSON_ID:VARCHAR#,
+					#DEPTNO:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					NULL,
+					1
+				)
+		]]>
+	</insert>
+	
+	
+	<insert id="addPaSupervisorEmpTypeCodeInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO PA_SUPERVISOR_EMPTYPE_INFO (
+					AR_SUPERVISOR_NO,
+					PERSON_ID,
+					EMP_TYPE_CODE,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+				VALUES(
+					AR_SUPERVISOR_NO_SEQ.NEXTVAL,
+					#PERSON_ID:VARCHAR#,
+					#emptypecode:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					NULL,
+					1
+				)
+		]]>
+	</insert>
+	
+	<update id="updatePaSupervisorInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE PA_SUPERVISOR SET 
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR# 
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR# 
+		]]>
+	</update>
+	
+	<delete id="deletePaSupervisorInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_SUPERVISOR WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deletePaSupervisorDeptInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_SUPERVISOR_INFO WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deletePaSupervisorEmpTypeCodeInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_SUPERVISOR_EMPTYPE_INFO WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="getPaSupervisorMaxDeptList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HD.DEPTNO,
+				   HDNAME.CONTENT DEPT_NAME,
+			       HD.PARENT_DEPT_NO,
+			       '0' AS ISCHECKED
+			  FROM HR_DEPARTMENT HD,
+			  	   HR_DEPARTMENT_NAME HDNAME
+			 WHERE HD.PARENT_DEPT_NO = '0'
+			 	AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			 	AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 	AND CPNY_ID = #CPNY_ID:VARCHAR# 
+
+		]]>
+	</select>
+	<select id="getPaSupervisorDeptList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			SELECT HD.DEPTNO,
+				   HDNAME.CONTENT DEPT_NAME,
+			       HD.PARENT_DEPT_NO,
+			       HD.DEPT_LEVEL,
+			      (CASE
+			        WHEN T.DEPTNO IS NOT NULL THEN
+			         1
+			        ELSE
+			         0
+			      END) AS ISCHECKED,
+			      (CASE
+			        WHEN HD.DEPT_LEVEL > 2 THEN
+			         'false'
+			        ELSE
+			         'true'
+			      END) AS ISEXPAND
+			 FROM ( SELECT T.*, ROWNUM RN
+					FROM HR_DEPARTMENT T 
+					WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+					START WITH T.PARENT_DEPT_NO = '0' 
+					CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+					ORDER SIBLINGS BY T.ORDERNO, T.DEPT_LEVEL DESC, T.DEPTID) HD,
+					PA_SUPERVISOR_INFO T,
+					HR_DEPARTMENT_NAME HDNAME
+			 WHERE  HD.DEPTNO = T.DEPTNO(+)
+			    AND T.PERSON_ID(+) = #PERSON_ID:VARCHAR#
+			    AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			    AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+	</select>
+	<select id="getAttendanceDeptList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			SELECT HD.DEPTNO,
+				   HDNAME.CONTENT DEPT_NAME,
+			       HD.PARENT_DEPT_NO,
+			       HD.DEPT_LEVEL,
+				   0 ISCHECKED,
+			      (CASE
+			        WHEN HD.DEPT_LEVEL > 2 THEN
+			         'false'
+			        ELSE
+			         'true'
+			      END) AS ISEXPAND
+			 FROM ( SELECT T.*, ROWNUM RN
+					FROM HR_DEPARTMENT T 
+					WHERE T.CPNY_ID = #CPNY_ID:VARCHAR# AND T.ACTIVITY = 1
+					START WITH T.PARENT_DEPT_NO = '0' 
+					CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+					ORDER SIBLINGS BY T.ORDERNO, T.DEPT_LEVEL DESC, T.DEPTID) HD,
+					HR_DEPARTMENT_NAME HDNAME
+			 WHERE HD.DEPTNO = HDNAME.DEPTNO(+)
+			   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 ORDER BY HD.RN
+		]]>
+	</select>
+	<select id="getPersonListView" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+					HE.PERSON_ID,
+					HE.LOCAL_NAME,
+					HDNAME.CONTENT DEPT_NAME
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD,
+				 HR_DEPARTMENT_NAME HDNAME
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM PA_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #PA_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		HD.DEPTNO IN  
+	             ]]>
+             	<include refid="sys.include.getDataPermission"/>
+             </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+             <isEqual prepend="" property="specialParam" compareValue="general">
+				HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.EMPID 
+		]]>
+	</select>
+	<select id="getPersonListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM PA_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #PA_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		HD.DEPTNO IN  
+	             ]]>
+             	<include refid="sys.include.getDataPermission"/>
+             </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+             <isEqual prepend="" property="specialParam" compareValue="general">
+				HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getEmpCalendarList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+					HE.PERSON_ID,
+					HE.LOCAL_NAME,
+					HDNAME.CONTENT DEPT_NAME,
+					HE.STAT_NO,
+					HD.CPNY_ID
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD,
+				 HR_DEPARTMENT_NAME HDNAME
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM PA_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #PA_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getEmpCalendarCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM PA_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #PA_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDeptTree" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT distinct D.DEPTID,
+                D.ORDERNO,
+                D.DEPT_LEVEL,
+			       D.DEPTNO,
+			       D.PARENT_DEPT_NO,
+			       TO_CHAR(D.DATE_CREATED, 'yyyy-MM-dd') AS DATE_CREATED,
+			       (SELECT get_dept_name(D2.deptno,#interLanguage:VARCHAR#)
+			          FROM HR_DEPARTMENT D2
+			         WHERE D2.DEPTNO = D.PARENT_DEPT_NO
+			           AND D2.CPNY_ID=#interCpnyID:VARCHAR#) AS PARENT_DEPT_NAME,
+			       get_dept_name(D.deptno,#interLanguage:VARCHAR#) AS DEPTNAME,
+			       DECODE(C.DEPTNO,'','false','true') CHECKED
+			  FROM HR_DEPARTMENT D,
+			  		(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_SUPERVISOR_ID:VARCHAR#) C
+			 WHERE (D.DATE_CREATED < SYSDATE AND D.DATE_ENDED > SYSDATE OR
+			       D.DATE_ENDED IS NULL)
+			   AND D.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND D.DEPTNO = C.DEPTNO(+)
+			   AND D.USE_YN='Y'
+			 START WITH D.PARENT_DEPT_NO = '0' AND D.CPNY_ID=#interCpnyID:VARCHAR#
+		        CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO
+		         ORDER SIBLINGS BY D.ORDERNO, D.DEPT_LEVEL DESC, D.DEPTNO 
+		]]>
+	</select>	
+	
+	
+	<select id="getDeptTreeResumeNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT D.DEPTID,
+                	D.ORDERNO,
+                	D.DEPT_LEVEL,
+			       D.DEPTNO,
+			       D.PARENT_DEPT_NO,
+			       TO_CHAR(D.DATE_CREATED, 'yyyy-MM-dd') AS DATE_CREATED,
+			       GET_DEPT_NAME(D.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       'false' CHECKED,
+			       'true' open,
+                 decode(GET_CODE_NAME(D.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_open.png'
+                             ,'Team','/resources/images/dept/t_open.png'
+                             ,'Group','/resources/images/dept/g_open.png'
+                             ,'Part','/resources/images/dept/p_open.png'
+                             ,'Sub-part','/resources/images/dept/s_open.png') ICONOPEN,
+                 decode(GET_CODE_NAME(D.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+                             ,'Team','/resources/images/dept/t_close.png'
+                             ,'Group','/resources/images/dept/g_close.png'
+                             ,'Part','/resources/images/dept/p_close.png'
+                             ,'Sub-part','/resources/images/dept/s_close.png') ICONCLOSE,
+		             decode(GET_CODE_NAME(D.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+		             					  ,'Team','/resources/images/dept/t_close.png'
+		             					  ,'Group','/resources/images/dept/g_close.png'
+		             					  ,'Part','/resources/images/dept/p_close.png'
+		             					  ,'Sub-part','/resources/images/dept/s_close.png') "icon"
+			  FROM ORG_INFO D
+			 WHERE D.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND D.RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND D.ACTIVITY = 1
+			 ORDER BY ORDERNO
+		]]>
+	</select>
+</sqlMap>

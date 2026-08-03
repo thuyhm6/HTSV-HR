@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.change">
+
+<update id="changePassword" parameterClass="linkMap">
+		<![CDATA[
+			   
+			   UPDATE SY_USER SY  SET SY.PASSWORD=#NEW_PS#,
+			   SY.UPDATE_DATE = SYSDATE,
+			   SY.UPDATED_BY = #PERSON_ID#
+			    WHERE SY.PERSON_ID=#PERSON_ID#
+			   AND #PERSON_ID# IS NOT NULL
+			   
+			  ]]>
+	</update>	
+
+<select id="getPersonalInfoByPidNew" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[
+	SELECT 
+ 
+       HI.PERSON_ID,
+      GET_GLOBAL_NAME( HI.FINAL_DEGREE_CODE,#interLanguage:VARCHAR#) FINAL_DEGREE_CODE ,
+   
+       HE.CPNY_ID,
+       GET_GLOBAL_NAME(HI.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_CODE,
+        GET_GLOBAL_NAME(HI.MARITAL_STATUS_CODE,#interLanguage:VARCHAR#) MARITAL_STATUS_CODE,
+      
+      GET_GLOBAL_NAME(HI.REG_TYPE_CODE,#interLanguage:VARCHAR#) REG_TYPE_CODE,
+       HI.REG_PLACE,
+       
+       HD.ORG_NAME_LOCAL,
+       GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+       HE.LOCAL_NAME,
+       substr(HE.PROMOTION_DAY,0,7) PROMOTION_DAY,
+       HE.EMPID,
+       GET_GLOBAL_NAME(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NO,
+       SY.PASSWORD,
+       SY.USER_NAME
+       
+  FROM HR_PERSONAL_INFO HI,HR_DEPARTMENT HD,HR_EMPLOYEE HE,SY_USER SY
+  WHERE HI.PERSON_ID=#PERSON_ID_ID#
+  AND HD.DEPTNO=HE.DEPTNO
+  AND HE.PERSON_ID=SY.PERSON_ID
+  AND HI.PERSON_ID=HE.PERSON_ID
+  AND HI.ACTIVITY=1
+
+		 ]]>
+		
+	</select>
+
+</sqlMap>

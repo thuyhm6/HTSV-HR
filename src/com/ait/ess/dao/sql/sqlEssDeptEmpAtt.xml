@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.deptEmpAtt">
+	<select id="getArShiftGroupList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  HRE.LOCAL_NAME,
+				       HRE.EMPID,
+				       get_dept_name(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+				       get_global_name(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POST_GRADE,
+				       ARSM.PERSON_ID,
+				       ARSM.SHIFT_NO,
+				       get_global_name(ARSM.SHIFT_NO,#interLanguage:VARCHAR#)SHIFT_NO_NAME,
+				       get_global_name(ARSM.BEFOR_SHIFT_NO,#interLanguage:VARCHAR#)BEFOR_SHIFT_NO,
+				       TO_CHAR(ARSM.START_DATE,'DD/MM/YYYY')START_DATE,
+				       ARSM.REMARK,
+       				   HRE.DEPTNO,
+       				   ARSM.AR_SHIFTGROUP_MANAGE_NO,
+       				   get_emp_local_name(ARSM.CREATED_BY,#interCpnyID:VARCHAR#) || ' '||ARSM.CREATED_IP CREATED_BY,
+       				   TO_CHAR(ARSM.CREATE_DATE,'DD/MM/YYYY HH24:MI')CREATE_DATE,
+       				    get_emp_local_name(ARSM.UPDATED_BY,#interCpnyID:VARCHAR#) || ' '||ARSM.UPDATED_IP UPDATED_BY,
+       				   TO_CHAR(ARSM.UPDATE_DATE,'DD/MM/YYYY HH24:MI')UPDATE_DATE
+				FROM AR_SHIFTGROUP_MANAGEMENT ARSM,HR_EMPLOYEE HRE,SY_CODE SC     
+				WHERE ARSM.PERSON_ID = HRE.PERSON_ID AND ARSM.ACTIVITY = 1
+				AND HRE.POST_GRADE_NO = SC.CODE_NO(+)
+				AND HRE.EMPID NOT LIKE '11111%'
+       			AND (HRE.DATE_LEFT IS NULL OR HRE.DATE_LEFT >= SYSDATE)
+       			AND HRE.EMP_TYPE_CODE <> '10418'
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+		 		  TO_CHAR(ARSM.START_DATE,'DD/MM/YYYY') = #START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  ARSM.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  HRE.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="includeHistoryYN">
+			<![CDATA[
+		 		  ( ARSM.PERSON_ID,ARSM.CREATE_DATE) IN(
+			 		  SELECT TT.PERSON_ID,MAX(TT.CREATE_DATE)
+			 		  FROM AR_SHIFTGROUP_MANAGEMENT TT
+			 		  WHERE TT.ACTIVITY = 1
+			 		  GROUP BY TT.PERSON_ID
+		 		  )
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_Multi">
+			<![CDATA[
+				HRE.DEPTNO in ($DEPTNO_Multi$)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY HRE.DEPTNO,SC.ORDERNO,HRE.EMPID,ARSM.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getArShiftChangeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  HRE.LOCAL_NAME,
+				       HRE.EMPID,
+				       get_dept_name(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+				       get_global_name(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POST_GRADE,
+				       ARSM.PERSON_ID,
+				       ARSM.SHIFT_NO,
+				       get_global_name(ARSM.SHIFT_NO,#interLanguage:VARCHAR#)SHIFT_NO_NAME,
+				       get_global_name((SELECT shift_no FROM AR_CALENDER WHERE ddate = to_date(ARSM.AR_DATE_STR, 'YYYY/MM/DD') AND CPNY_ID = #interCpnyID:VARCHAR#),#interLanguage:VARCHAR#)BEFOR_SHIFT_NO,
+				       TO_CHAR(TO_DATE(ARSM.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY')START_DATE,
+				       
+       				   HRE.DEPTNO,
+       				   get_emp_local_name(ARSM.CREATED_BY,#interCpnyID:VARCHAR#) || ' '||ARSM.CREATED_IP CREATED_BY,
+       				   TO_CHAR(ARSM.CREATE_DATE,'DD/MM/YYYY HH24:MI')CREATE_DATE,
+       				    get_emp_local_name(ARSM.UPDATED_BY,#interCpnyID:VARCHAR#) || ' '||ARSM.UPDATED_IP UPDATED_BY,
+       				   TO_CHAR(ARSM.UPDATE_DATE,'DD/MM/YYYY HH24:MI')UPDATE_DATE
+				FROM AR_SCHEDULE_HTSV ARSM,HR_EMPLOYEE HRE,SY_CODE SC     
+				WHERE ARSM.PERSON_ID = HRE.PERSON_ID 
+				AND HRE.POST_GRADE_NO = SC.CODE_NO(+)
+				AND HRE.EMPID NOT LIKE '11111%'
+       			AND (HRE.DATE_LEFT IS NULL OR HRE.DATE_LEFT >= SYSDATE)
+       			AND HRE.EMP_TYPE_CODE <> '10418'
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+		 		  ARSM.AR_DATE_STR >= TO_CHAR(TO_DATE(#START_DATE:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+		 		  ARSM.AR_DATE_STR <= TO_CHAR(TO_DATE(#END_DATE:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  GET_GLOBAL_NAME(ARSM.SHIFT_NO,'vi') = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  HRE.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_Multi">
+			<![CDATA[
+				HRE.DEPTNO in ($DEPTNO_Multi$)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY HRE.DEPTNO,SC.ORDERNO,HRE.EMPID,ARSM.AR_DATE_STR DESC
+		]]>
+	</select>
+	
+	<select id="getArShiftGroupCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(ARSM.PERSON_ID)
+				FROM AR_SHIFTGROUP_MANAGEMENT ARSM,HR_EMPLOYEE HRE
+				WHERE ARSM.PERSON_ID = HRE.PERSON_ID AND ARSM.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+		 		  TO_CHAR(ARSM.START_DATE,'YYYY-MM-DD') = #START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  ARSM.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="includeHistoryYN">
+			<![CDATA[
+		 		  ( ARSM.PERSON_ID,ARSM.START_DATE) IN(
+			 		  SELECT TT.PERSON_ID,MAX(TT.START_DATE)
+			 		  FROM AR_SHIFTGROUP_MANAGEMENT TT
+			 		  WHERE TT.ACTIVITY = 1
+			 		  GROUP BY TT.PERSON_ID
+		 		  )
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			   
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<procedure id="execShiftGroupChangeP" parameterClass="linkMap">
+		<![CDATA[
+			{call AR_SHIFTGROUP_CHANGE_P(
+						#PERSON_ID:VARCHAR#,
+						#BEFOR_SHIFT_NO:VARCHAR#,
+						#SHIFT_NO:VARCHAR#,
+						TO_CHAR(TO_DATE(#START_DATE:VARCHAR#,'DD/MM/YYYY'),'YYYY-MM-DD'),
+						#REMARK:VARCHAR#,
+						#CREATED_BY:VARCHAR#,
+						#CREATED_IP:VARCHAR#) }
+		]]>
+	</procedure>
+	<update id="updateArShiftGroupInfo" parameterClass="linkMap">
+		UPDATE	AR_SHIFTGROUP_MANAGEMENT
+			SET ACTIVITY = 0,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY#,
+				UPDATED_IP = #UPDATED_IP#
+			WHERE AR_SHIFTGROUP_MANAGE_NO = #SEQ#
+	</update>
+	
+</sqlMap>

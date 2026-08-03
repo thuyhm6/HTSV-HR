@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.arAffirm">
+	<select id="getArAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT  APPLY_PARAM_NO,
+				             REFERENCN_FLAG,
+				             REFERENCN_FROM_FLAG,
+				             REFERENCN_FROM_OFFSET,
+				             REFERENCN_FROM_RELATION,
+				             REFERENCN_TO_FLAG,
+				             REFERENCN_TO_OFFSET,
+				             REFERENCN_TO_RELATION,
+				             APPLY_TYPE,
+				             AFFIRM_LEVEL, 
+				             ESS.ACTIVITY,			
+				             EMP_TYPE,	              
+				             DECODE(EMP_TYPE,'Q','全部','G','管理职','其他') EMP_TYPE_NAME,
+				             DUTY_NO,
+				             DECODE(DUTY_NO,'Q','全部',GET_GLOBAL_NAME(DUTY_NO,'zh')) DUTY_NAME, 
+				             GET_CODE_NAME(ESS.APPLY_TYPE,#interLanguage:VARCHAR#) APPLY_NAME,
+				             TO_CHAR(ESS.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+				             ESS.CREATED_BY,
+				             TO_CHAR(ESS.UPDATE_DATE, 'YYYY-MM-DD') AS UPDATE_DATE,
+				             ESS.UPDATED_BY,
+			       			 (SELECT GET_GLOBAL_NAME( DUTY,#interLanguage:VARCHAR#) FROM SY_AFFIRM_LEVEL_SETUP WHERE AFFIRM_LEVEL = LOW_LEVEL AND CPNY_ID = #interCpnyID:VARCHAR#) LOW_LEVEL,
+			       			 (SELECT GET_GLOBAL_NAME( DUTY,#interLanguage:VARCHAR#) FROM SY_AFFIRM_LEVEL_SETUP WHERE AFFIRM_LEVEL = HIGH_LEVEL AND CPNY_ID = #interCpnyID:VARCHAR# ) HIGH_LEVEL
+				         FROM ESS_LEAVE_APPLY_PARAM ESS
+				        WHERE ESS.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+        <isEqual prepend="AND" property="TYPE" compareValue="ar">
+			TYPE = 'ar'
+        </isEqual>
+        <isEqual prepend="AND" property="TYPE" compareValue="pa">
+			TYPE = 'pa'
+        </isEqual>
+		<isNotEmpty prepend="AND" property="APPLY_PARAM_NO">
+			APPLY_PARAM_NO = #APPLY_PARAM_NO:NUMERIC#
+		</isNotEmpty>
+		<![CDATA[ ORDER BY APPLY_TYPE,APPLY_PARAM_NO	]]>
+	</select>
+	<select id="getArAffirmListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT  count(*)
+				         FROM ESS_LEAVE_APPLY_PARAM ESS,
+				              SY_CODE               SY,				              
+				              SY_GLOBAL_NAME        SG
+				          WHERE SG.NO(+) = SY.CODE_NO
+				             AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+					      	 AND ESS.APPLY_TYPE = SY.CODE_NO(+)
+					         AND ESS.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+        <isEqual prepend="AND" property="TYPE" compareValue="ar">
+			TYPE = 'ar'
+        </isEqual>
+        <isEqual prepend="AND" property="TYPE" compareValue="pa">
+			TYPE = 'pa'
+        </isEqual>
+		<isNotEmpty prepend="AND" property="APPLY_PARAM_NO">
+			APPLY_PARAM_NO = #APPLY_PARAM_NO:NUMERIC#
+		</isNotEmpty>
+	</select>
+	<select id="getApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.CODE_NO AS CODE_NO, 
+			        S.CONTENT AS CODENAME
+			  FROM SY_CODE A, 
+			       SY_CODE_PARAM SC, 
+			       SY_GLOBAL_NAME S
+			 WHERE EXISTS (SELECT C.CODE_NO
+			          FROM SY_CODE C, SY_CODE_PARAM P
+			         WHERE C.PARENT_CODE_NO = 16413
+			           AND C.CODE_NO = P.CODE_NO
+			           AND P.CPNY_ID = #interCpnyID:VARCHAR#
+			           AND C.ACTIVITY=1
+			           AND C.CODE_NO = A.PARENT_CODE_NO)
+			   AND A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.ACTIVITY=1
+			   ORDER BY  A.PARENT_CODE_NO,A.ORDERNO
+		]]>
+	</select>
+	<select id="getPostList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT DISTINCT(
+			          S.DUTY_NO), 
+			          SG.CONTENT AS POSTNAME,
+			          S.ORDERNO
+			     FROM SY_AFFIRMOR_LIST S, 
+			          SY_GLOBAL_NAME SG,
+			          HR_DEPARTMENT_NAME HD
+			    WHERE S.DUTY_NO = SG.NO(+)
+			      AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			      AND S.DEPT_NO = HD.DEPTNO(+)
+			      AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			      AND S.CPNY_ID = #interCpnyID:VARCHAR#
+			    ORDER BY S.ORDERNO
+		]]>
+	</select>
+	<select id="getDutyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT T.DUTY_NO,SG.CONTENT DUTYNAME
+				  FROM HR_DUTY T, 
+				  SY_GLOBAL_NAME SG
+				WHERE T.DUTY_NO = SG.NO(+)
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND CPNY_ID =#interCpnyID:VARCHAR#
+				   AND T.ACTIVITY=1
+		]]>
+	</select>
+	<select id="getEssLeaveApplyParamNo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT  ESS_LEAVE_APPLY_PARAM_SEQ.NEXTVAL FROM DUAL		
+		]]>
+	</select>
+	<insert id="saveArAffirmInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  ESS_LEAVE_APPLY_PARAM ( 
+				   APPLY_PARAM_NO,
+			       REFERENCN_FLAG,
+			       REFERENCN_FROM_FLAG,
+			       REFERENCN_FROM_OFFSET,
+			       REFERENCN_FROM_RELATION,
+			       REFERENCN_TO_FLAG,
+			       REFERENCN_TO_OFFSET,
+			       REFERENCN_TO_RELATION,
+			       APPLY_TYPE,
+			       DUTY_NO,
+			       AFFIRM_LEVEL,
+			       ACTIVITY,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       CPNY_ID,
+			       LOW_LEVEL,
+			       HIGH_LEVEL,
+			       TYPE,
+			       EMP_TYPE
+			 ) VALUES
+			 (
+			 	   Ess_Leave_Apply_Param_Seq.NEXTVAL,
+			       #REFERENCN_FLAG:NUMERIC#,
+			       #REFERENCN_FROM_FLAG:NUMERIC#,
+			       #REFERENCN_FROM_OFFSET:NUMERIC#,
+			       #REFERENCN_FROM_RELATION:VARCHAR#,
+			       #REFERENCN_TO_FLAG:NUMERIC#,
+			       #REFERENCN_TO_OFFSET:NUMERIC#,
+			       #REFERENCN_TO_RELATION:VARCHAR#,
+			       #APPLY_TYPE:VARCHAR#,
+			       #DUTY_NO:VARCHAR#,
+			       #AFFIRM_LEVEL:VARCHAR#,
+			       1,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #interCpnyID:VARCHAR#,
+			       #LOW_LEVEL#,
+			       #HIGH_LEVEL#,
+			       #TYPE#,
+			       #EMP_TYPE#
+			 )   
+    	]]>
+	</insert>
+	
+	 <insert id="saveArAffirmParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  ESS_LEAVE_APPLY_AFFIRM_PARAM (
+					APPLY_AFFIRM_PARAM_NO,
+					APPLY_PARAM_NO,
+					AFFIRM_LEVEL,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					CPNY_ID,
+					DUTY_NO
+			 ) VALUES
+			 (
+			 	   ESS_L_A_AFFIRM_PARAM_SEQ.NEXTVAL,
+				   #APPLY_PARAM_NO:NUMERIC#,
+			       #AFFIRM_LEVEL:VARCHAR#,
+			       1,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #interCpnyID:VARCHAR#,
+			       #DUTY_NO:VARCHAR#
+			 )    
+    	]]>
+	</insert>
+	
+	<select id="getDetailParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT distinct(S.DUTY_NO) DUTY_NO,T.APPLY_AFFIRM_PARAM_NO,
+		             T.APPLY_PARAM_NO,
+		             T.AFFIRM_LEVEL,
+		             T.CPNY_ID, 
+		             SG.CONTENT AS DUTY_NAME 
+			  FROM ESS_LEAVE_APPLY_AFFIRM_PARAM T,
+			       SY_GLOBAL_NAME               SG,
+			       SY_AFFIRMOR_LIST             S
+			 WHERE T.DUTY_NO= S.DUTY_NO
+			   AND S.DUTY_NO = SG.NO(+)
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.APPLY_PARAM_NO=#APPLY_PARAM_NO:VARCHAR#	
+			   order by T.AFFIRM_LEVEL
+		]]>
+	</select>  
+	<delete id="deleteArApplyInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_LEAVE_APPLY_PARAM WHERE APPLY_PARAM_NO=#APPLY_PARAM_NO:NUBRIC#         
+		]]>
+	</delete> 
+	<update id="updateArAffirmInfo" parameterClass="linkMap">
+	     UPDATE ESS_LEAVE_APPLY_PARAM 
+	           SET REFERENCN_FLAG=#REFERENCN_FLAG:NUMERIC# ,
+			       REFERENCN_FROM_FLAG=#REFERENCN_FROM_FLAG:NUMERIC#,
+			       REFERENCN_FROM_OFFSET=#REFERENCN_FROM_OFFSET:NUMERIC#,
+			       REFERENCN_FROM_RELATION=#REFERENCN_FROM_RELATION:VARCHAR#,
+			       REFERENCN_TO_FLAG=#REFERENCN_TO_FLAG:NUMERIC#,
+			       REFERENCN_TO_OFFSET=#REFERENCN_TO_OFFSET:NUMERIC#,
+			       REFERENCN_TO_RELATION=#REFERENCN_TO_RELATION:VARCHAR#,
+			       APPLY_TYPE=#APPLY_TYPE:VARCHAR#,
+			       EMP_TYPE=#EMP_TYPE:VARCHAR#,
+			       DUTY_NO=#DUTY_NO:VARCHAR#,
+			       AFFIRM_LEVEL=#AFFIRM_LEVEL:VARCHAR#,
+			       UPDATE_DATE=SYSDATE,
+			       UPDATED_BY=#UPDATED_BY:VARCHAR#,
+			       LOW_LEVEL=#LOW_LEVEL:VARCHAR#,
+			       HIGH_LEVEL=#HIGH_LEVEL:VARCHAR#
+		WHERE APPLY_PARAM_NO=#APPLY_PARAM_NO:VARCHAR#
+	</update>
+	<delete id="deleteArApplyAffirmParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_LEAVE_APPLY_AFFIRM_PARAM WHERE APPLY_PARAM_NO=#APPLY_PARAM_NO:NUBRIC#         
+		]]>
+	</delete> 
+	 
+	 <select id="getApplyTypeNoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.CODE_NO AS CODE_NO, 
+			        S.CONTENT AS CODENAME
+			  FROM SY_CODE A, 
+			       SY_CODE_PARAM SC, 
+			       SY_GLOBAL_NAME S
+			 WHERE A.PARENT_CODE_NO = 16413
+			   AND A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.ACTIVITY=1
+			   ORDER BY  A.PARENT_CODE_NO,A.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getApplyTypeCodeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.CODE_NO AS CODE_NO, 
+			        S.CONTENT AS CODENAME
+			  FROM SY_CODE A, 
+			       SY_CODE_PARAM SC, 
+			       SY_GLOBAL_NAME S
+			 WHERE A.PARENT_CODE_NO = #APPLY_TYPE_NO:VARCHAR#
+			   AND A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.ACTIVITY=1
+			   ORDER BY  A.PARENT_CODE_NO,A.ORDERNO
+		]]>
+	</select>
+	 
+	 <select id="getArAffirmFinalList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT  APPLY_PARAM_NO,
+				             REFERENCN_FLAG,
+				             REFERENCN_FROM_FLAG,
+				             REFERENCN_FROM_OFFSET,
+				             REFERENCN_FROM_RELATION,
+				             REFERENCN_TO_FLAG,
+				             REFERENCN_TO_OFFSET,
+				             REFERENCN_TO_RELATION,
+				             APPLY_TYPE,
+				             AFFIRM_LEVEL, 
+				             ESS.ACTIVITY,				              
+				             GET_CODE_NAME(ESS.APPLY_TYPE,#interLanguage:VARCHAR#) APPLY_NAME,
+				             TO_CHAR(ESS.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+				             ESS.CREATED_BY,
+				             TO_CHAR(ESS.UPDATE_DATE, 'YYYY-MM-DD') AS UPDATE_DATE,
+				             ESS.UPDATED_BY
+				         FROM ESS_LEAVE_APPLY_PARAM_FINAL ESS
+				        WHERE ESS.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+        <isEqual prepend="AND" property="TYPE" compareValue="ar">
+			TYPE = 'ar'
+        </isEqual>
+        <isEqual prepend="AND" property="TYPE" compareValue="pa">
+			TYPE = 'pa'
+        </isEqual>
+		<isNotEmpty prepend="AND" property="APPLY_PARAM_NO">
+			APPLY_PARAM_NO = #APPLY_PARAM_NO:NUMERIC#
+		</isNotEmpty>
+		<![CDATA[ ORDER BY APPLY_TYPE	]]>
+	</select>
+	<select id="getArAffirmFinalListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT  count(*)
+				         FROM ESS_LEAVE_APPLY_PARAM_FINAL ESS,
+				              SY_CODE               SY,				              
+				              SY_GLOBAL_NAME        SG
+				          WHERE SG.NO(+) = SY.CODE_NO
+				             AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+					      	 AND ESS.APPLY_TYPE = SY.CODE_NO(+)
+					         AND ESS.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+        <isEqual prepend="AND" property="TYPE" compareValue="ar">
+			TYPE = 'ar'
+        </isEqual>
+        <isEqual prepend="AND" property="TYPE" compareValue="pa">
+			TYPE = 'pa'
+        </isEqual>
+		<isNotEmpty prepend="AND" property="APPLY_PARAM_NO">
+			APPLY_PARAM_NO = #APPLY_PARAM_NO:NUMERIC#
+		</isNotEmpty>
+	</select>
+	
+	<insert id="saveArAffirmFinalInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  ESS_LEAVE_APPLY_PARAM_FINAL ( 
+				   APPLY_PARAM_NO,
+			       REFERENCN_FLAG,
+			       REFERENCN_FROM_FLAG,
+			       REFERENCN_FROM_OFFSET,
+			       REFERENCN_FROM_RELATION,
+			       REFERENCN_TO_FLAG,
+			       REFERENCN_TO_OFFSET,
+			       REFERENCN_TO_RELATION,
+			       APPLY_TYPE,
+			       AFFIRM_LEVEL,
+			       ACTIVITY,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       CPNY_ID,
+			       TYPE
+			 ) VALUES
+			 (
+			 	   Ess_Leave_Apply_Param_Seq.NEXTVAL,
+			       #REFERENCN_FLAG:NUMERIC#,
+			       #REFERENCN_FROM_FLAG:NUMERIC#,
+			       #REFERENCN_FROM_OFFSET:NUMERIC#,
+			       #REFERENCN_FROM_RELATION:VARCHAR#,
+			       #REFERENCN_TO_FLAG:NUMERIC#,
+			       #REFERENCN_TO_OFFSET:NUMERIC#,
+			       #REFERENCN_TO_RELATION:VARCHAR#,
+			       #APPLY_TYPE:VARCHAR#,
+			       #AFFIRM_LEVEL:VARCHAR#,
+			       1,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #interCpnyID:VARCHAR#,
+			       #TYPE#
+			 )   
+    	]]>
+	</insert>
+	<delete id="deleteArApplyInfoFinal" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_LEAVE_APPLY_PARAM_FINAL WHERE APPLY_PARAM_NO=#APPLY_PARAM_NO:NUBRIC#         
+		]]>
+	</delete> 
+	<update id="updateArAffirmFinalInfo" parameterClass="linkMap">
+	     UPDATE ESS_LEAVE_APPLY_PARAM_FINAL 
+	           SET REFERENCN_FLAG=#REFERENCN_FLAG:NUMERIC# ,
+			       REFERENCN_FROM_FLAG=#REFERENCN_FROM_FLAG:NUMERIC#,
+			       REFERENCN_FROM_OFFSET=#REFERENCN_FROM_OFFSET:NUMERIC#,
+			       REFERENCN_FROM_RELATION=#REFERENCN_FROM_RELATION:VARCHAR#,
+			       REFERENCN_TO_FLAG=#REFERENCN_TO_FLAG:NUMERIC#,
+			       REFERENCN_TO_OFFSET=#REFERENCN_TO_OFFSET:NUMERIC#,
+			       REFERENCN_TO_RELATION=#REFERENCN_TO_RELATION:VARCHAR#,
+			       APPLY_TYPE=#APPLY_TYPE:VARCHAR#,
+			       AFFIRM_LEVEL=#AFFIRM_LEVEL:VARCHAR#,
+			       UPDATE_DATE=SYSDATE,
+			       UPDATED_BY=#UPDATED_BY:VARCHAR#
+		WHERE APPLY_PARAM_NO=#APPLY_PARAM_NO:VARCHAR#
+	</update>
+</sqlMap>

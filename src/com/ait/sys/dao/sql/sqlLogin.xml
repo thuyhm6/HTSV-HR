@@ -1,0 +1,2246 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.login">
+
+	<select id="findUserSpecial" parameterClass="linkMap"
+		resultClass="AdminBean">
+		<![CDATA[
+			SELECT S.USER_NO AS userNo,
+			       S.USER_NAME AS username,
+			       S.PASSWORD  AS password,
+			       S.PERSON_ID  AS personId,
+			       #cpny_id:VARCHAR#   AS cpnyId,
+			       get_global_name(cpny_no,'zh') cpnyName,
+			       S.SPECIAL_PARAM AS specialParam,
+			       HO.OPERATION_CODE_NO operationCodeNo
+			 FROM SY_USER S,
+			 	  HR_COMPANY HC,
+			 	  HR_OPERATION HO
+			 WHERE S.CPNY_ID = HC.CPNY_ID
+			   AND HC.OPERATION_ID = HO.OPERATION_ID
+			   AND S.USER_NAME = #username:VARCHAR#
+			   AND (S.PASSWORD = #password:VARCHAR# OR S.PASSWORD_OLD = #password:VARCHAR#)
+			   AND S.ACTIVITY = 1
+		]]>
+		<isNotEqual property="SPECIAL_PARAM" prepend="AND"
+			compareProperty="administrator">
+		<![CDATA[
+		   S.CPNY_ID = #cpny_id:VARCHAR#
+		]]>
+		</isNotEqual>
+		<isNotEqual property="SPECIAL_PARAM" prepend="AND"
+			compareValue="administrator">
+			<![CDATA[
+			   S.CPNY_ID = #cpny_id:VARCHAR#
+			]]>
+		</isNotEqual>
+	</select>
+	<select id="findUser" parameterClass="linkMap" resultClass="AdminBean">
+		<![CDATA[
+		  SELECT S.USER_NO AS userNo,
+		  	   HR.PHOTO_PATH AS photo_path,
+               E.PERSON_ID  AS adminID,
+               E.INCUMBENCY AS incumbency,
+               E.DATE_LAST_UP AS datelastup,
+               E.PERSON_ID AS personId,
+               get_global_name(E.POST_GRADE_NO,#language:VARCHAR#)  AS postGradeName,
+               S.SPECIAL_PARAM AS specialParam , 
+               S.USER_NAME  AS username,
+               S.PASSWORD   AS password,
+               E.Local_Name as localName,
+               D.DEPTNO     AS deptNo,
+               D.CPNY_ID AS cpnyId,
+               get_global_name(cpny_no,'zh') AS cpnyName,
+               get_dept_name(E.DEPTNO,#language:VARCHAR#)    AS content,
+               E.EMPID      AS empID,
+               GET_AR_STATNO(E.PERSON_ID,E.CPNY_ID)  AS statNo,
+               HO.OPERATION_CODE_NO AS operationCodeNo,
+			   E.DUTY_NO AS dutyNo,
+			   get_global_name(E.DUTY_NO,#language:VARCHAR#) AS dutyNoName,
+               GET_GLOBAL_NAME(E.POSITION_NO, #language:VARCHAR#) AS positionNoName,
+               E.POST_FAMILY AS postFamily,
+               GET_GLOBAL_NAME(E.POST_FAMILY, #language:VARCHAR#) AS postFamilyName,
+               TO_CHAR(E.DATE_STARTED, 'DD/MM/YYYY') dateSrarted,
+               GET_DEPT_MANAGER_INFO(E.DEPTNO) headDepartment,
+               CASE WHEN HR.NATIONALITY_CODE = '872' THEN
+                 0
+                 ELSE
+                 1
+                 END nationalty,
+                 S.PERSONAL_DATA_FLAG AS personalDataFlag,
+                 S.PERSONAL_SEND_DATA_FLAG AS personalSendDataFlag,
+                 F_CHECK_USER_EMP_AUTH(E.EMP_TYPE_CODE, E.PERSON_ID, E.CPNY_ID, 'CHECK_PASSWORD') as checkPassword,
+               CASE WHEN TO_CHAR(HR.DOB,'MMDD') = TO_CHAR(SYSDATE,'MMDD') THEN
+                 1
+                 ELSE
+                 0
+                 END isDob
+          FROM HR_EMPLOYEE        E,
+               HR_DEPARTMENT      D,
+               SY_USER            S,
+               HR_COMPANY         HC,
+			   HR_OPERATION       HO,
+			   HR_PERSONAL_INFO   HR
+          WHERE S.CPNY_ID = HC.CPNY_ID
+          	AND HR.PERSON_ID(+)=E.PERSON_ID
+			AND HC.OPERATION_ID = HO.OPERATION_ID
+			AND S.PERSON_ID = E.PERSON_ID
+            AND E.DEPTNO = D.DEPTNO
+            AND E.CPNY_ID=D.CPNY_ID
+			AND S.USER_NAME = #username:VARCHAR#
+			AND (S.PASSWORD = #password:VARCHAR# OR S.PASSWORD_OLD = #password:VARCHAR#)
+			AND S.CPNY_ID = #cpny_id:VARCHAR#
+			AND E.ACTIVITY=1
+			AND E.EMP_OFFICE <> 15120
+			AND E.CPNY_ID=D.CPNY_ID
+			AND S.ACTIVITY = 1
+		]]>
+	</select>
+	
+	<select id="findCpnyIdByUser" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+		  SELECT 
+               S.CPNY_ID AS cpnyId
+          FROM SY_USER S
+          WHERE S.USER_NAME = #username:VARCHAR#
+            AND ACTIVITY = 1 
+            AND rownum=1
+		]]>
+	</select>
+	
+	<select id="findPasswordByUser" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+		  SELECT PASSWORD
+          FROM SY_USER S
+          WHERE S.USER_NAME = #username:VARCHAR#
+            AND S.ACTIVITY = 1
+            AND rownum=1
+		]]>
+	</select>
+	
+	<select id="getLeftMenuForPartner" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		SELECT * FROM(
+		      SELECT T.MENU_CODE,
+		             S.CONTENT AS MENU_NAME,
+		             T.MENU_URL,
+		             T.DEPTH,
+		             T.MENU_NO,
+		             T.ORDERNO,
+		             T.MENU_PARENT_NO
+		        FROM SY_MENU T, SY_GLOBAL_NAME S
+		       WHERE T.ACTIVITY = 1
+		         AND T.MENU_NO = S.NO(+)
+		         AND S.LANGUAGE(+) = #language:VARCHAR#
+		         AND T.MENU_NO IN
+		             (SELECT A.MENU_NO
+		                FROM SY_ROLE_RELATION A
+		               WHERE A.SELECTR = 1
+		                 AND A.ROLE_NO IN
+		                     (SELECT SRGR.ROLE_NO
+                          FROM SY_ROLE_GROUP_RELATION SRGR,SY_ROLE_GROUP SRG
+                         WHERE SRGR.ROLE_GROUP_NO = SRG.ROLE_GROUP_NO
+                         AND SRG.CPNY_ID = #CPNY_ID:VARCHAR#
+                         AND SRG.ROLE_GROUP_ID = #roleGroupId:VARCHAR#))) TT
+		         CONNECT BY PRIOR TT.MENU_NO = TT.MENU_PARENT_NO
+		         START WITH TT.MENU_PARENT_NO = '0'    
+				 ORDER SIBLINGS BY TT.ORDERNO
+		]]>
+	</select>
+
+	<select id="getLeftMenu" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		SELECT * FROM(
+		      SELECT T.MENU_CODE,
+		             S.CONTENT AS MENU_NAME,
+		             T.MENU_URL,
+		             T.DEPTH,
+		             T.MENU_NO,
+		             T.ORDERNO,
+		             T.MENU_PARENT_NO
+		        FROM SY_MENU T, SY_GLOBAL_NAME S
+		       WHERE T.ACTIVITY = 1
+		         AND T.MENU_NO = S.NO(+)
+		         AND S.LANGUAGE(+) = #language:VARCHAR#
+		         AND T.MENU_NO in (select MENU_NO from SY_MENU_PARAM where CPNY_ID = #CPNY_ID:VARCHAR#)
+		         AND T.MENU_NO IN
+		             (SELECT A.MENU_NO
+		                FROM SY_ROLE_RELATION A
+		               WHERE A.SELECTR = 1
+		                 AND A.ROLE_NO IN
+		                     (SELECT T.ROLE_NO
+		                        FROM SY_ROLE_GROUP_RELATION T
+		                       WHERE T.ROLE_GROUP_NO IN
+		                             (SELECT ROLE_GROUP_NO
+		                                FROM SY_USER_RELATION
+		                               WHERE USER_NO = #USERNO#)))
+		      ) TT
+		         CONNECT BY PRIOR TT.MENU_NO = TT.MENU_PARENT_NO
+		         START WITH TT.MENU_PARENT_NO = '0'    
+				 ORDER SIBLINGS BY TT.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getRoleGroupListByPersonId" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		select srg.role_group_id,get_global_name(srg.role_group_no,'en') role_group_name,
+		get_global_name(srg.role_group_no,'en')role_group_ENG_name
+		from SY_USER_RELATION sur,sy_role_group srg
+		where sur.role_group_no = srg.role_group_no
+		and srg.sys_type = 1
+		and srg.activity=1
+		and sur.user_no =
+		(select su.user_no from sy_user su where su.person_id = #personId:VARCHAR#)
+		]]>
+	</select>
+
+
+	<select id="getMenuLoad" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT REPLACE(WM_CONCAT(MENU_INTRO),',',' >> ') FROM (
+				SELECT  (CASE WHEN #language# = 'en' THEN
+					NVL(T.MENU_EN_INTRO, ' ')
+				ELSE
+			       T.MENU_INTRO
+			    END) AS MENU_INTRO  FROM SY_MENU T  
+				CONNECT BY　T.MENU_NO = PRIOR T.MENU_PARENT_NO
+				START WITH  T.MENU_CODE = #tid#
+				ORDER BY T.DEPTH)
+		]]>
+	</select>
+
+	<insert id="addLoginInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_LOGIN_INFO(NO,PERSON_ID,
+						IP,
+						LOGIN_DATE,
+						MAC) 
+						
+				VALUES(
+					LOGIN_INFO_SEQ.NEXTVAL,
+					#PERSON_ID#,
+					#ip#,
+					sysdate,
+					#mac#
+				)
+		]]>
+	</insert>
+
+
+	<select id="getLimitsMap" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			  SELECT A.MENU_NO,
+			        MAX(A.SELECTR) AS SELECTR,
+			        MAX(A.INSERTR) AS INSERTR,
+			        MAX(A.UPDATER) AS UPDATER,
+			        MAX(A.DELETER) AS DELETER
+			  FROM SY_ROLE_RELATION A
+			  WHERE A.ROLE_NO IN
+			        (SELECT T.ROLE_NO
+			           FROM SY_ROLE_GROUP_RELATION T
+			          WHERE T.ROLE_GROUP_NO IN
+			                (SELECT ROLE_GROUP_NO
+			                   FROM SY_USER_RELATION
+			                  WHERE USER_NO = #USERNO#))
+			  GROUP BY A.MENU_NO
+			
+    	]]>
+	</select>
+
+	<select id="getTopMenuByRoleGroupId" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+		select 
+			sm.MENU_CODE, 
+			get_global_name(sm.MENU_NO,#language:VARCHAR#) AS MENU_NAME, 
+			sm.MENU_URL,
+			sm.DEPTH,
+			sm.MENU_NO 
+			from sy_menu sm
+			where sm.depth = 1 and sm.activity = 1 
+			and sm.menu_no in(
+			select srr.menu_no from SY_ROLE_RELATION srr,SY_ROLE_GROUP_RELATION srgr,
+			SY_ROLE_GROUP srg
+			where srr.role_no = srgr.role_no
+			and srgr.role_group_no = srg.role_group_no
+			and srg.role_group_id = #roleGroupId:VARCHAR#
+			and srg.sys_type = 1
+			and srg.cpny_id = #CPNY_ID:VARCHAR#
+			and srr.selectr = 1
+			)
+			order by sm.orderno
+		]]>
+	</select>
+
+	<select id="getTopMenu" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+		SELECT T.MENU_CODE, get_global_name(T.MENU_NO,#language:VARCHAR#) AS MENU_NAME, T.MENU_URL, T.DEPTH, T.MENU_NO
+		  FROM SY_MENU T, SY_MENU_PARAM T2
+		 WHERE T.DEPTH = 0
+		   AND T.ACTIVITY = 1
+		   AND T2.ACTIVITY = 1
+		   AND T.MENU_NO = T2.MENU_NO
+		   AND T2.CPNY_ID = #CPNY_ID:VARCHAR#
+		   AND EXISTS 
+		       (SELECT 1
+		          FROM SY_ROLE_RELATION A,
+		               SY_ROLE_GROUP_RELATION T,
+		               SY_USER_RELATION SY
+		         WHERE A.ROLE_NO = T.ROLE_NO
+		           AND T.ROLE_GROUP_NO = SY.ROLE_GROUP_NO
+		           AND A.MENU_NO = T.MENU_NO
+		           AND A.SELECTR = 1
+		           AND SY.USER_NO = #USERNO#)
+		 ORDER BY T.ORDERNO
+		]]>
+	</select>
+
+	<select id="getDefaultMenu" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.MENU_CODE,
+			       S.CONTENT AS MENU_NAME,
+			       T.MENU_URL,
+			       T.DEPTH,
+			       T.MENU_NO
+			  FROM SY_MENU T, SY_MENU_PARAM T2,SY_GLOBAL_NAME S
+			 WHERE T.ACTIVITY = 1
+			   AND T2.ACTIVITY = 1
+			   AND T.MENU_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #language:VARCHAR#
+			   AND T.MENU_NO = T2.MENU_NO
+			   AND T2.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.MENU_NO IN
+			       (SELECT A.MENU_NO
+			              FROM SY_ROLE_RELATION A
+			             WHERE A.SELECTR=1 AND A.ROLE_NO IN
+			                   (SELECT T.ROLE_NO
+			                      FROM SY_ROLE_GROUP_RELATION T
+			                     WHERE T.ROLE_GROUP_NO IN
+			                           (SELECT ROLE_GROUP_NO
+			                              FROM SY_USER_RELATION
+			                             WHERE USER_NO =#USERNO#)))
+			 START WITH T.MENU_PARENT_NO = 0 AND T2.CPNY_ID = #CPNY_ID:VARCHAR# AND T.MENU_CODE = #MENU_CODE:VARCHAR#
+			CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO and T2.CPNY_ID = #CPNY_ID:VARCHAR#
+			 ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getUserpass" parameterClass="linkMap" resultClass="linkMap"  >  
+	<![CDATA[
+	
+	  select MAX(PASSWORD) PASSWORD from sy_user where user_name='admin' and ACTIVITY = 1 AND cpny_id=#CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	
+	<!-- 获取预转正日期-->
+	<select id="getPerConversionList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT /*+ ordered*/
+				HR.PERSON_ID,
+				   HR.EMPID,
+			       HR.LOCAL_NAME,
+			       HRD.CONTENT DEPT_NAME,
+			       HR.DUTY_NO DUTY_NAME,
+			       NVL(HR.POSITION_NO,' ') POSITION,
+			       HR.EMP_TYPE_CODE EMP_TYPE_NAME,
+			       TO_CHAR(HR.PROB_STRT_DATE,'YYYY-MM-DD') PROB_STRT_DATE,
+			       TO_CHAR(HR.END_PROBATION_DATE,'YYYY-MM-DD') END_PROBATION_DATE,
+			       HRP.PROB_PAY_RAT PROB_PAY_RAT,
+			       TO_CHAR(HR.END_PROBATION_DATE + 1,'YYYY-MM-DD') BEFORE_END_PROBATION_DATE,
+			       ROUND(END_PROBATION_DATE - SYSDATE) DAYS
+			       FROM HR_EMPLOYEE HR,
+			       		HR_EMP_PA_INFO HRP,
+			       		HR_DEPARTMENT_NAME HRD
+			       WHERE HR.PERSON_ID = HRP.PERSON_ID
+			       AND HR.DEPTNO = HRD.DEPTNO
+			       AND HRD.LANGUAGE = #language:VARCHAR#
+			       AND HR.END_PROBATION_DATE BETWEEN SYSDATE AND SYSDATE + 30
+			       AND HR.EMP_OFFICE <> '15120'
+		]]>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (
+					SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=HR.DEPTNO
+	                 	START WITH B1.DEPTNO = #DEPTNO#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(HR.PERSON_ID = #PERSON_ID:VARCHAR# OR HR.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	            <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+
+	<!-- 获取预转正数量-->
+	<select id="getPerConversionListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT COUNT(1)
+			       FROM HR_EMPLOYEE HR
+			       WHERE HR.END_PROBATION_DATE BETWEEN SYSDATE AND ADD_MONTHS(SYSDATE,1)
+			       AND HR.EMP_OFFICE <> '15120'
+		]]>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (
+					SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=HR.DEPTNO
+	                 	START WITH B1.DEPTNO = #DEPTNO#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(HR.PERSON_ID = #PERSON_ID:VARCHAR# OR HR.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	            <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<!-- AND C.RENEWABLE = 1 -->
+	<select id="getContractList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+			       <!-- get_city_name(H.WORK_AREA) WORK_AREA_NAME, -->
+		<![CDATA[ 
+			SELECT H.EMPID,
+			       H.PERSON_ID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.ENGLISH_NAME,
+			       NVL(H.POSITION_NO,' ') POSITION,
+			       GET_DEPT_NAME(H.DEPTNO, #language:VARCHAR#) DEPARTMENT_NAME,
+			       TO_CHAR(C.START_CONTRACT_DATE, 'YYYY-MM-DD') START_CONTRACT_DATE,
+			       TO_CHAR(C.END_CONTRACT_DATE, 'YYYY-MM-DD') END_CONTRACT_DATE,
+			       ROUND(C.END_CONTRACT_DATE - SYSDATE) DAYS
+			  FROM (SELECT PERSON_ID,
+			               START_CONTRACT_DATE,
+			               END_CONTRACT_DATE,
+			               ACTIVITY,
+			               ROW_NUMBER() OVER(PARTITION BY HRC.PERSON_ID ORDER BY TOTAL_PERIOD DESC) CN
+			          FROM HR_CONTRACT HRC
+			         WHERE HRC.ACTIVITY <> 2
+					   AND HRC.CPNY_ID = #CPNY_ID:VARCHAR#) C,
+			   HR_EMPLOYEE H
+			 WHERE C.PERSON_ID = H.PERSON_ID
+			   AND EXISTS(select 1 from sy_user_dept sud where H.DEPTNO = SUD.DEPTNO AND sud.user_no = #userNo:VARCHAR#)
+			   AND EXISTS (SELECT 1
+			        FROM HR_JOB_TYPE_SETUP P,
+			             SY_SUPERVISOR_EMPTYPE_INFO SY
+			       WHERE P.JOBTYPE_GROUP_NO = SY.EMP_TYPE_CODE
+			         AND P.JOBTYPE_NO = H.EMP_TYPE_CODE
+			         AND SY.PERSON_ID = #supervisorPersonId:VARCHAR#
+			   AND P.CPNY_ID = #CPNY_ID:VARCHAR#)
+			   AND C.END_CONTRACT_DATE IS NOT NULL
+			   AND C.END_CONTRACT_DATE <= ADD_MONTHS(SYSDATE, 2)
+			   AND H.EMP_OFFICE <> '15120'
+			   AND C.ACTIVITY = 1
+			   AND C.CN = 1
+  	 	]]>
+	</select>
+	<!-- AND C.RENEWABLE = 1 -->
+	<select id="getContractCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1) 
+			  FROM (SELECT CASE WHEN TOTAL_PERIOD = '1' THEN '14014303'
+                            WHEN TOTAL_PERIOD = '2' THEN '123203'
+                            WHEN TOTAL_PERIOD > '2' THEN '14014305' END CONTRACT_TYPE_CODE,
+                            HRC.END_CONTRACT_DATE,
+                            HRC.PERSON_ID,
+                            HRC.ACTIVITY,
+                 ROW_NUMBER() OVER(PARTITION BY HRC.PERSON_ID ORDER BY START_CONTRACT_DATE DESC) CN 
+            FROM HR_CONTRACT HRC
+           WHERE HRC.ACTIVITY = 1) C,
+			   HR_EMPLOYEE H
+			 WHERE C.PERSON_ID = H.PERSON_ID
+			   AND C.END_CONTRACT_DATE IS NOT NULL
+			   AND C.END_CONTRACT_DATE <= ADD_MONTHS(SYSDATE, 2)
+			   AND H.EMP_OFFICE <> '15120'
+			   AND H.CPNY_ID = #interCpnyID#
+			   AND H.EMPID NOT LIKE '111111%'
+			   AND ((C.CONTRACT_TYPE_CODE = '14014302' AND C.END_CONTRACT_DATE <= SYSDATE + 7)
+            		OR (C.CONTRACT_TYPE_CODE = '123204' AND C.END_CONTRACT_DATE <= SYSDATE + 14)
+               		OR (C.CONTRACT_TYPE_CODE NOT IN ('123204','14014302') AND C.END_CONTRACT_DATE <= ADD_MONTHS(SYSDATE,1)))
+               AND C.ACTIVITY = 1
+			   AND C.CN = 1
+  	 	]]>
+		
+		<isEqual prepend="AND" property="interCpnyID" compareValue="SPC_SH">
+			<![CDATA[ 
+			 	 C.CONTRACT_TYPE <> '80000274'
+			  ]]>
+		</isEqual>
+	</select>
+	
+	<select id="getIdCardCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		SELECT COUNT(1)
+		  FROM HR_PERSONAL_INFO HP, HR_EMPLOYEE HE
+		 WHERE HE.CPNY_ID = #interCpnyID#
+		   AND HE.PERSON_ID = HP.PERSON_ID
+		   AND TO_DATE(IDCARD_EXPIRE_DATE,'YYYY/MM/DD') - 60 < SYSDATE
+		   AND HE.EMP_OFFICE <> '15120'
+  	 	]]>
+	</select>
+	
+	<select id="getPaNotImportCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(HRE.PERSON_ID)
+			   FROM HR_EMPLOYEE HRE
+			  WHERE HRE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND HRE.EMPID NOT LIKE '11111%'
+			  AND TO_CHAR(HRE.DATE_STARTED,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM')
+			  AND HRE.EMP_TYPE_CODE NOT IN ('14015552','14015550')
+			  AND (GET_PA_REMIND_STR(HRE.PERSON_ID,HRE.WAGE_TYPE,HRE.CPNY_ID) IS NOT NULL OR GET_PA_REMIND_STR(HRE.PERSON_ID,HRE.WAGE_TYPE,HRE.CPNY_ID) <> '')
+		    ]]>
+	</select>
+	
+	<!-- 转正提醒条数 -->
+	<select id="getBecomeRegulerWarn" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+		 SELECT COUNT(HRE.EMPID)
+  				FROM HR_EMPLOYEE HRE, HR_PERSONAL_INFO HRP
+ 				WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+  				 AND HRE.PERSON_ID = HRP.PERSON_ID
+  				 AND HRE.EMPID NOT LIKE '11111%'
+  				 AND HRE.EMP_TYPE_CODE = '10420'
+  				 AND HRE.EMP_OFFICE <> '15120'
+   				 AND HRE.END_PROBATION_DATE IS NOT NULL 
+ 			     AND ((HRE.POST_FAMILY in ('14015813','14015814') AND TO_CHAR(HRE.END_PROBATION_DATE + 1, 'YYYYMMDD') <= TO_CHAR(SYSDATE + 14, 'YYYYMMDD') )
+              		OR (HRE.POST_FAMILY = '14015815' AND TO_CHAR(HRE.END_PROBATION_DATE + 1, 'YYYYMMDD') <= TO_CHAR(SYSDATE + 7, 'YYYYMMDD')))
+		    ]]>
+	</select>
+	
+	<select id="getLeaveConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1)
+				FROM ESS_LEAVE_APPLY_TB ESS,HR_EMPLOYEE HR
+				WHERE ESS.AFFIRM_FLAG = '14014308'
+				AND (ESS.CONFIRM_FLAG = '0' OR ESS.CONFIRM_FLAG IS NULL)
+       			AND ESS.ACTIVITY = '1'
+       			AND ESS.CPNY_ID = #interCpnyID#
+       			AND ESS.PERSON_ID = HR.PERSON_ID 
+       			AND ESS.PERSON_ID NOT LIKE '111111%' 
+       			AND EXISTS (SELECT B1.DEPTID
+                FROM HR_DEPARTMENT B1
+               WHERE B1.DEPTNO = HR.DEPTNO
+               START WITH B1.DEPTNO in
+                          (SELECT HRD.DEPTID
+                             FROM HR_DEPARTMENT HRD
+                            WHERE HRD.MANAGER_EMP_ID = #adminID#)
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT AR_SUPERVISOR_INFO.DEPTNO
+                FROM AR_SUPERVISOR_INFO
+               WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#)
+  	 	]]>
+	</select>
+	
+	<select id="getSickLeaveProofConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1)
+			  FROM ESS_LEAVE_APPLY_TB ESS, HR_EMPLOYEE HR
+			 WHERE ESS.AFFIRM_FLAG NOT IN ('14014309','14014310')
+			   AND ESS.LEAVE_TYPE_CODE IN ('15821','14015956','14013816')
+			   AND ESS.ACTIVITY = '1'
+			   AND ESS.CONFIRM_FLAG <> '2'
+			   AND ESS.CPNY_ID = #interCpnyID#
+			   AND ESS.PERSON_ID = HR.PERSON_ID
+			   AND ESS.PERSON_ID NOT LIKE '111111%'
+			   AND ESS.PROOF_YN = 0
+			   AND EXISTS (SELECT B1.DEPTID
+			          FROM HR_DEPARTMENT B1
+			         WHERE B1.DEPTNO = HR.DEPTNO
+			         START WITH B1.DEPTNO in
+			                    (SELECT HRD.DEPTID
+			                       FROM HR_DEPARTMENT HRD
+			                      WHERE HRD.MANAGER_EMP_ID = #adminID#)
+			        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+			        UNION
+			        SELECT AR_SUPERVISOR_INFO.DEPTNO
+			          FROM AR_SUPERVISOR_INFO
+			         WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+			           AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#)
+  	 	]]>
+	</select>
+	
+		<select id="getStartedLeftConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1)
+  FROM HR_EMPLOYEE_LEFT_INFO HR_LEFT, HR_EMPLOYEE HR
+ WHERE HR_LEFT.PERSON_ID = HR.PERSON_ID
+ AND HR.CPNY_ID = #interCpnyID#
+   AND HR_LEFT.ACTIVITY = '0'
+   AND EXISTS (SELECT B1.DEPTID
+                FROM HR_DEPARTMENT B1
+               WHERE B1.DEPTNO = HR.DEPTNO
+               START WITH B1.DEPTNO in
+                          (SELECT HRD.DEPTID
+                             FROM HR_DEPARTMENT HRD
+                            WHERE HRD.MANAGER_EMP_ID = #adminID#)
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT AR_SUPERVISOR_INFO.DEPTNO
+                FROM AR_SUPERVISOR_INFO
+               WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#)
+  	 	]]>
+	</select>
+	
+			<select id="getChangeDeptConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1)
+			  FROM HR_EMPLOYEE HR,
+			  	   ESS_CHANGE_SHOP SHOP
+			 WHERE HR.PERSON_ID = SHOP.PERSON_ID
+			   AND HR.CPNY_ID = #interCpnyID#
+			   AND SHOP.ACTIVITY = 1
+			   AND SHOP.CHANGE_TYPE = 2
+			   AND SHOP.CONFIRM_FLAG = 0
+			   AND PKG_TEMP_EMP_PROCESS.GET_DEPT_FLAG(SHOP.DEPTNO) <> PKG_TEMP_EMP_PROCESS.GET_DEPT_FLAG(SHOP.OLD_DEPTNO)
+			   AND SHOP.OLD_DEPTNO IS NOT NULL
+			   AND EXISTS
+	           (SELECT B1.DEPTID
+	                    FROM HR_DEPARTMENT B1
+	                   WHERE B1.DEPTNO = SHOP.DEPTNO
+	                   START WITH B1.DEPTNO in
+	                              (SELECT HRD.DEPTID
+	                                 FROM HR_DEPARTMENT HRD
+	                                WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#)
+	                  CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	              UNION
+	              SELECT AR_SUPERVISOR_INFO.DEPTNO
+	                FROM AR_SUPERVISOR_INFO
+	               WHERE AR_SUPERVISOR_INFO.DEPTNO = SHOP.DEPTNO
+	                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+	                  )    
+  	 	]]>
+	</select>
+	
+	<select id="getOtConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1)
+				FROM ESS_APPLY_OT EA,HR_EMPLOYEE HR
+				WHERE EA.AFFIRM_FLAG = '14014308'
+				AND (EA.CONFIRM_FLAG = '0'OR EA.CONFIRM_FLAG IS NULL)
+       			AND EA.ACTIVITY = '1'
+       			AND EA.CPNY_ID = #interCpnyID#
+       			AND EA.PERSON_ID NOT LIKE '111111%' 
+       			AND EA.PERSON_ID = HR.PERSON_ID 
+       			AND EXISTS (SELECT B1.DEPTID
+                FROM HR_DEPARTMENT B1
+               WHERE B1.DEPTNO = HR.DEPTNO
+               START WITH B1.DEPTNO in
+                          (SELECT HRD.DEPTID
+                             FROM HR_DEPARTMENT HRD
+                            WHERE HRD.MANAGER_EMP_ID = #adminID#)
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT AR_SUPERVISOR_INFO.DEPTNO
+                FROM AR_SUPERVISOR_INFO
+               WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#)
+  	 	]]>
+	</select>
+	
+	<select id="getArExConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			  SELECT COUNT(1)
+		        FROM ESS_CARD_APPLY_TB EA,HR_EMPLOYEE HR
+		        WHERE EA.AFFIRM_FLAG = '14014308'
+		        AND (EA.CONFIRM_FLAG = '0' OR EA.CONFIRM_FLAG IS NULL)
+		             AND EA.ACTIVITY = '1'
+		             AND EA.CPNY_ID = #interCpnyID#
+		             AND EA.PERSON_ID NOT LIKE '111111%' 
+		             AND EA.PERSON_ID = HR.PERSON_ID 
+		             AND EXISTS (SELECT B1.DEPTID
+		                        FROM HR_DEPARTMENT B1
+		                       WHERE B1.DEPTNO = HR.DEPTNO
+		                       START WITH B1.DEPTNO in
+		                                  (SELECT HRD.DEPTID
+		                                     FROM HR_DEPARTMENT HRD
+		                                    WHERE HRD.MANAGER_EMP_ID = #adminID#)
+		                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+		                      UNION
+		                      SELECT AR_SUPERVISOR_INFO.DEPTNO
+		                        FROM AR_SUPERVISOR_INFO
+		                       WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+		                         AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#)
+  	 	]]>
+	</select>
+	
+	<select id="getTempConfirmCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+			SELECT COUNT(1) 
+			FROM HR_TEMP_EMPLOYEE HR 
+			WHERE HR.ACTIVITY = '0' 
+			AND CPNY_ID = #interCpnyID# 
+			 AND EXISTS (SELECT B1.DEPTID
+                FROM HR_DEPARTMENT B1
+               WHERE B1.DEPTNO = HR.DEPTNO
+               START WITH B1.DEPTNO in
+                          (SELECT HRD.DEPTID
+                             FROM HR_DEPARTMENT HRD
+                            WHERE HRD.MANAGER_EMP_ID = #adminID#)
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT AR_SUPERVISOR_INFO.DEPTNO
+                FROM AR_SUPERVISOR_INFO
+               WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#)
+             ]]>
+	</select>
+
+	<select id="getHrCredentialList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true"> 
+		
+		<![CDATA[
+		
+			SELECT H.EMPID,
+			       H.PERSON_ID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.ENGLISH_NAME,
+			       H.KOREAN_NAME,
+			       HD.CONTENT DEPARTMENT_NAME,
+			       SY1.CONTENT POSITION_NAME,
+			       SY2.CONTENT POST_NAME,
+			       SY3.CONTENT CREDENTIAL_TYPE_NAME,
+			       TO_CHAR(T.CREDENTIAL_BEGIN_DATE, 'yyyy-mm-dd') CREDENTIAL_BEGIN_DATE,
+			       TO_CHAR(T.CREDENTIAL_END_DATE,  'YYYY-MM-DD') CREDENTIAL_END_DATE,
+			       ROUND(T.CREDENTIAL_END_DATE - SYSDATE) DAYS
+			  FROM HR_EMPLOYEE        H,
+			       HR_DEPARTMENT_NAME HD,
+			       SY_GLOBAL_NAME     SY1,
+			       SY_GLOBAL_NAME     SY2,
+			       HR_CREDENTIAL      T,
+			       SY_GLOBAL_NAME     SY3
+			 WHERE H.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #language:VARCHAR#
+			   AND H.POSITION_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+			   AND H.POST_NO = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+			   AND H.PERSON_ID = T.PERSON_ID
+			   AND T.CREDENTIAL_TYPE = SY3.NO(+)
+			   AND SY3.LANGUAGE = #language:VARCHAR#
+			   
+		]]>
+
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		   		H.STATUS_CODE <> #STATUS_CODE:VARCHAR#
+             ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="alertHrCredentialDays">
+			<![CDATA[
+		   		T.CREDENTIAL_END_DATE <=
+			       SYSDATE + TO_NUMBER(#alertHrCredentialDays:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		H.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			 <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				H.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="viewHrCredentialDays">
+			<![CDATA[
+		   		ROWNUM <= #viewHrCredentialDays:NUMERIC#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY H.DATE_STARTED, H.DEPTNO
+		]]>
+	</select>
+	
+	<select id="getIsCanInHub" resultClass="int"
+		parameterClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT COUNT(SU.USER_NO)
+				FROM SY_USER SU,SY_USER_RELATION SUR,SY_ROLE_GROUP SRG
+				WHERE SU.USER_NO = SUR.USER_NO
+				AND SUR.ROLE_GROUP_NO = SRG.ROLE_GROUP_NO
+				AND SRG.SYS_TYPE = 0
+				AND SU.USER_NAME = #username:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getIsCanInHubByIP" resultClass="int"
+		parameterClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT COUNT(SHI.ACTIVITY)
+				FROM SY_HUB_IP SHI
+				WHERE SHI.CPNY_ID = #CPNYID:VARCHAR#
+				AND SHI.IP_ADDRESS = #checkIp:VARCHAR#
+				AND SHI.ACTIVITY = 1
+		]]>
+	</select>
+	
+	<select id="getHrCredentialCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT COUNT(H.EMPID)
+			  FROM HR_EMPLOYEE        H,
+			       HR_DEPARTMENT_NAME HD,
+			       SY_GLOBAL_NAME     SY1,
+			       SY_GLOBAL_NAME     SY2,
+			       HR_CREDENTIAL      T,
+			       SY_GLOBAL_NAME     SY3
+			 WHERE H.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #language:VARCHAR#
+			   AND H.POSITION_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+			   AND H.POST_NO = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+			   AND H.PERSON_ID = T.PERSON_ID
+			   AND T.CREDENTIAL_TYPE = SY3.NO(+)
+			   AND SY3.LANGUAGE = #language:VARCHAR#
+			   
+		]]>
+
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		   		H.STATUS_CODE <> #STATUS_CODE:VARCHAR#
+             ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="alertHrCredentialDays">
+			<![CDATA[
+		   		T.CREDENTIAL_END_DATE <=
+			       SYSDATE + TO_NUMBER(#alertHrCredentialDays:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		H.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			 <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				H.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="viewHrCredentialDays">
+			<![CDATA[
+		   		ROWNUM <= #viewHrCredentialDays:NUMERIC#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY H.DATE_STARTED, H.DEPTNO
+		]]>
+	</select>
+
+	<select id="getHealthList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true"> 
+		<![CDATA[
+			    SELECT H.EMPID,
+			    	   HD.CONTENT DEPARTMENT_NAME,
+			    	   T.HEALTH_NO,
+				       T.PERSON_ID,
+				       TO_CHAR(T.PHYSICAL_DATE, 'yyyy-MM-dd') PHYSICAL_DATE,
+				       T.PHYSICAL_TYPE_CODE,
+				       SY.CONTENT PHYSICAL_TYPE_NAME,
+				       T.INDUSTRY_DISTINGUISH_CODE,
+				       SY1.CONTENT INDUSTRY_DISTINGUISH_NAME,
+				       TO_CHAR(T.EFFECTIVE_DATE, 'yyyy-MM-dd') EFFECTIVE_DATE,
+				       T.CHECK_YN,
+				       T.GENERAL_HEALTH,
+				       SY3.CONTENT GENRAL_HEALTH_NAME,
+				       T.BLOOD_TYPE_CODE,
+				       SY2.CONTENT BLOOD_TYPE_NAME,
+				       T.HEALTH_CERTIFICATE_YN,
+				       T.REMARK
+				  FROM HR_HEALTH      T,
+				  	   HR_EMPLOYEE    H,
+				  	   HR_DEPARTMENT_NAME HD,
+				       SY_GLOBAL_NAME SY,
+				       SY_GLOBAL_NAME SY1,
+				       SY_GLOBAL_NAME SY2,
+				       SY_GLOBAL_NAME SY3
+				 WHERE T.PERSON_ID = H.PERSON_ID
+				   AND H.DEPTNO = HD.DEPTNO(+)
+			       AND HD.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.PHYSICAL_TYPE_CODE = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.INDUSTRY_DISTINGUISH_CODE = SY1.NO(+)
+				   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.BLOOD_TYPE_CODE = SY2.NO(+)
+				   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.GENERAL_HEALTH = SY3.NO(+)
+				   AND SY3.LANGUAGE(+) = #language:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="alertHealthListDays">
+			<![CDATA[
+		   		T.EFFECTIVE_DATE <=
+			       SYSDATE + TO_NUMBER(#alertHealthListDays:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		   		H.STATUS_CODE <> #STATUS_CODE:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		H.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			 <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				H.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="viewHealthListDays">
+			<![CDATA[
+		   		ROWNUM <= #viewHealthListDays:NUMERIC#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+	   		ORDER BY H.PERSON_ID,H.DATE_STARTED
+        ]]>
+	</select>
+	
+	<select id="getHealthCnt" parameterClass="linkMap" resultClass="int"
+		remapResults="true"> 
+		<![CDATA[
+			    SELECT COUNT(H.EMPID)
+				  FROM HR_HEALTH      T,
+				  	   HR_EMPLOYEE    H,
+				  	   HR_DEPARTMENT_NAME HD,
+				       SY_GLOBAL_NAME SY,
+				       SY_GLOBAL_NAME SY1,
+				       SY_GLOBAL_NAME SY2,
+				       SY_GLOBAL_NAME SY3
+				 WHERE T.PERSON_ID = H.PERSON_ID
+				   AND H.DEPTNO = HD.DEPTNO(+)
+			       AND HD.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.PHYSICAL_TYPE_CODE = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.INDUSTRY_DISTINGUISH_CODE = SY1.NO(+)
+				   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.BLOOD_TYPE_CODE = SY2.NO(+)
+				   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+				   AND T.GENERAL_HEALTH = SY3.NO(+)
+				   AND SY3.LANGUAGE(+) = #language:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="alertHealthListDays">
+			<![CDATA[
+		   		T.EFFECTIVE_DATE <=
+			       SYSDATE + TO_NUMBER(#alertHealthListDays:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		   		H.STATUS_CODE <> #STATUS_CODE:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		H.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			 <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				H.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="viewHealthListDays">
+			<![CDATA[
+		   		ROWNUM <= #viewHealthListDays:NUMERIC#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+	   		ORDER BY H.PERSON_ID,H.DATE_STARTED
+        ]]>
+	</select>
+
+	<select id="getBirthdayList" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			
+			select 
+       DISTINCT    H.EMPID,
+             H.PERSON_ID,
+             H.LOCAL_NAME,
+             H.CHINESE_PINYIN,
+             H.ENGLISH_NAME,
+             T.EMAIL,
+             TO_CHAR(T.DOB, 'mm-dd') DOB,
+             get_dept_name(H.DEPTNO,#language:VARCHAR#) DEPARTMENT_NAME,
+             NVL(H.POSITION_NO,' ') DUTY_NAME,
+             NVL(GET_CODE_NAME(H.EMP_TYPE_CODE, #language:VARCHAR#),' ') EMP_TYPE_NAME
+        FROM HR_EMPLOYEE        H,
+             HR_PERSONAL_INFO   T,
+             HR_DEPARTMENT HD
+       WHERE T.PERSON_ID = H.PERSON_ID
+         AND     H.DEPTNO=HD.DEPTNO
+         AND (H.DATE_LEFT IS NULL OR H.DATE_LEFT >= SYSDATE)  
+      AND TO_CHAR(T.DOB, 'MM/dd') BETWEEN TO_CHAR(SYSDATE-5, 'MM/dd') AND TO_CHAR(SYSDATE+30, 'MM/dd')    
+               
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		H.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+		 START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				       CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO
+			 ORDER BY TO_CHAR(T.DOB, 'mm-dd')
+		]]>
+	</select>
+	
+	
+	<select id="getInsurancePowerList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			 SELECT DISTINCT GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') ROLE_GROUP_NAME, SUR.ROLE_GROUP_NO
+			  FROM SY_ROLE_GROUP_RELATION SRGR, SY_USER_RELATION SUR, SY_USER SU
+			 WHERE (GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') LIKE '%工资%' OR
+			        GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') LIKE '%薪资%' OR
+			        GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') LIKE '%保险%' OR
+			        GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') LIKE '%社保%' )
+			   AND SRGR.ROLE_GROUP_NO = SUR.ROLE_GROUP_NO
+			   AND SUR.USER_NO = SU.USER_NO
+			   AND SU.PERSON_ID = #ADMIN_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getInsurancePowerManList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			 SELECT DISTINCT GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') ROLE_GROUP_NAME, SUR.ROLE_GROUP_NO
+			  FROM SY_ROLE_GROUP_RELATION SRGR, SY_USER_RELATION SUR, SY_USER SU
+			 WHERE (GET_GLOBAL_NAME(SRGR.ROLE_NO, 'zh') LIKE '%法人管理%')
+			   AND SRGR.ROLE_GROUP_NO = SUR.ROLE_GROUP_NO
+			   AND SUR.USER_NO = SU.USER_NO
+			   AND SU.PERSON_ID = #ADMIN_ID:VARCHAR#
+		]]>
+	</select>
+	
+	
+	
+	<select id="getInsuranceList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			 SELECT DISTINCT GET_GLOBAL_NAME(HC.CPNY_NO, #language:VARCHAR#) CPNY_NAME,
+	                GET_GLOBAL_NAME(IIP.PARAM_ITEM_NO, #language:VARCHAR#) ITEM_NAME,
+	                IPDOA.START_MONTH,
+	                IPDOA.END_MONTH,
+	                IPDOA.RETURN_VALUE,
+	                IPDOA.URL_STR,
+	                IPDOA.REMARK,
+                	TO_CHAR(IPDOA.CREATE_DATE, 'yyyy-mm-dd') CREATE_DATE,
+	                (SELECT DISTINCT GET_GLOBAL_NAME(ID, #language:VARCHAR#)
+	                   FROM PA_DISTINCT_LIST
+	                  WHERE DISTINCT_FIELD = IIP.DISTINCT_FIELD) FIELD1_NAME,
+	                GET_GLOBAL_NAME(IPDOA.FIELD1_VALUE, #language:VARCHAR#) FIELD1_VALUE,
+	                (SELECT DISTINCT GET_GLOBAL_NAME(ID, #language:VARCHAR#)
+	                   FROM PA_DISTINCT_LIST
+	                  WHERE DISTINCT_FIELD = IIP.DISTINCT_FIELD_2ND) FIELD2_NAME,
+	                GET_GLOBAL_NAME(IPDOA.FIELD2_VALUE, #language:VARCHAR#) FIELD2_VALUE
+			  FROM IS_APPLY_INFORM           IAI,
+			       IS_PARAM_DATA_OTHER_APPLY IPDOA,
+			       HR_COMPANY                HC,
+			       IS_PARAM_ITEM_PARAM             IIP
+			 WHERE IIP.PARAM_NO = IPDOA.PARAM_NO
+			   AND IAI.PARAM_DATA_NO = IPDOA.PARAM_DATA_NO
+			   AND IPDOA.CPNY_ID = HC.CPNY_ID
+			   
+		]]>
+		<isEmpty prepend="AND" property="MANAGERYN">
+			<![CDATA[
+				   IAI.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND IAI.DEPTNO IN
+			       (SELECT DEPTNO 
+			       	FROM PA_SUPERVISOR_INFO 
+			       	WHERE PERSON_ID = #ADMIN_ID:VARCHAR#)
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<select id="activityLanguage" parameterClass="linkMap"
+		resultClass="int" remapResults="true"> 
+		<![CDATA[
+			 SELECT COUNT(*)
+				  FROM SY_LANGUAGE
+				 WHERE ACTIVITY = 1
+				   AND LANGUAGE = #language:VARCHAR#
+		]]>
+	</select>
+
+	<select id="getLanguageList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			 SELECT SY_LANGUAGE.LANGUAGE, 
+			 		SY_LANGUAGE.DESCRIPTION
+          		FROM SY_LANGUAGE
+          		WHERE 1 = 1
+		]]>
+
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		   		SY_LANGUAGE.ACTIVITY = #ACTIVITY:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+	   		ORDER BY SY_LANGUAGE.LANGUAGE
+        ]]>
+	</select>
+	<!-- A.EMP_TYPE_CODE <> '14890' -->
+	<select id="getNotExistsContractList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		     SELECT /*+ ordered*/
+		     		A.EMPID,
+			       A.PERSON_ID,
+			       A.LOCAL_NAME,
+			       C.CONTENT DEPARTMENT_NAME,
+			       A.POSITION_NO POSITION_NAME,
+			       A.DUTY_NO DUTY_NAME,
+			       A.WORK_AREA,
+			       get_city_name(A.WORK_AREA) WORK_AREA_NAME, 
+			       TO_CHAR( A.prob_strt_date  , 'YYYY-MM-DD') START_DATE,
+			       TO_CHAR( A.end_probation_date , 'YYYY-MM-DD') END_DATE,
+			       TO_CHAR(A.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(add_months(A.DATE_STARTED , 36) , 'YYYY-MM-DD') DATE_END,
+			       trunc(Months_Between (A.end_probation_date , A.prob_strt_date)) MONTH_TOTAL,
+			       HRP.PROB_PAY_RAT
+			  FROM HR_EMPLOYEE        A,
+			       HR_DEPARTMENT_NAME C,
+			       HR_EMP_PA_INFO     HRP
+			 WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.DEPTNO = C.DEPTNO(+)
+			   AND C.LANGUAGE(+) = #language:VARCHAR#
+			   AND A.PERSON_ID = HRP.PERSON_ID(+)
+			   AND A.EMP_OFFICE <> '15120'
+               AND A.EMP_TYPE_CODE NOT IN ( '211292','211801','210741','210745')
+			   
+  	 	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		A.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(A.PERSON_ID = #supervisorPersonId:VARCHAR# OR A.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( A.PERSON_ID = #supervisorPersonId:VARCHAR# OR A.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    A.PERSON_ID = #supervisorPersonId:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="singlePerson_id">
+			<![CDATA[
+		 		  A.PERSON_ID = #singlePerson_id:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+	   		ORDER BY A.DATE_STARTED DESC, A.PERSON_ID ASC
+        ]]>
+	</select>
+	
+	<select id="getNotExistsContractListForLogin" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+			       <!-- get_city_name(A.WORK_AREA) WORK_AREA_NAME, -->
+		<![CDATA[ 
+		     SELECT 
+		     		A.EMPID,
+			       A.PERSON_ID,
+			       A.LOCAL_NAME,
+			       C.CONTENT DEPARTMENT_NAME,
+			       A.POSITION_NO POSITION_NAME,
+			       A.DUTY_NO DUTY_NAME,
+			       A.WORK_AREA,
+			       '' WORK_AREA_NAME,
+			       NVL(TO_CHAR( A.prob_strt_date  , 'YYYY-MM-DD'),' ') START_DATE,
+			       NVL(TO_CHAR( A.end_probation_date , 'YYYY-MM-DD'),' ') END_DATE,
+			       NVL(TO_CHAR(A.DATE_STARTED, 'YYYY-MM-DD'),' ') DATE_STARTED,
+			       NVL(TO_CHAR(add_months(A.DATE_STARTED , 36) , 'YYYY-MM-DD'),' ') DATE_END,
+			       trunc(Months_Between (A.end_probation_date , A.prob_strt_date)) MONTH_TOTAL,
+			       NVL(HRP.PROB_PAY_RAT,1) PROB_PAY_RAT
+			  FROM HR_EMPLOYEE        A,
+			       HR_DEPARTMENT_NAME C,
+			       HR_EMP_PA_INFO     HRP
+			 WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.DEPTNO = C.DEPTNO(+)
+			   AND C.LANGUAGE(+) = #language:VARCHAR#
+			   AND A.PERSON_ID = HRP.PERSON_ID(+)
+			   AND A.EMP_OFFICE <> '15120'
+               AND A.EMP_TYPE_CODE NOT IN ( '211292','211801','210741','210745')
+			   
+                   AND exists (
+                       select 1 from sy_user_dept syd
+                       where syd.deptno = a.deptno
+                         and syd.user_no = #userNo#
+                         and rownum = 1
+                   )
+                   AND exists (
+                          select 1 from HR_JOB_TYPE_SETUP P,
+                             SY_SUPERVISOR_EMPTYPE_INFO sy
+                             where P.JOBTYPE_GROUP_NO = sy.EMP_TYPE_CODE
+                             and p.JOBTYPE_NO = A.EMP_TYPE_CODE 
+                             and p.cpny_id = #CPNY_ID:VARCHAR#
+                             and sy.PERSON_ID = #supervisorPersonId:VARCHAR#
+                             and rownum = 1
+                       )
+  	 	]]>
+		<isNotEmpty prepend="AND" property="singlePerson_id">
+			<![CDATA[
+		 		  A.PERSON_ID = #singlePerson_id:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getNotExistsContractCntForLogin" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+           SELECT count(1)
+          	FROM HR_EMPLOYEE   A
+           WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.EMP_OFFICE <> '15120'
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.EMPID NOT LIKE '111111%'
+  	 	]]>
+	</select>
+	
+	<select id="getNotExistsContractCnt" resultClass="int" parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		     SELECT /*+ ordered*/
+		     COUNT(A.EMPID)
+			  FROM HR_EMPLOYEE        A,
+			       HR_DEPARTMENT_NAME C,
+			       SY_GLOBAL_NAME     SY1,
+			       SY_GLOBAL_NAME     SY2
+			 WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.DEPTNO = C.DEPTNO(+)
+			   AND C.LANGUAGE(+) = #language:VARCHAR#
+			   AND A.POSITION_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+			   AND A.POST_NO = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+			   AND A.EMP_OFFICE <> '15120'
+               AND A.EMP_TYPE_CODE NOT IN ( '211292','211801','210741','210745')
+  	 	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		A.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(A.PERSON_ID = #supervisorPersonId:VARCHAR# OR A.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( A.PERSON_ID = #supervisorPersonId:VARCHAR# OR A.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    A.PERSON_ID = #supervisorPersonId:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="singlePerson_id">
+			<![CDATA[
+		 		  A.PERSON_ID = #singlePerson_id:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+
+	<insert id="addContract" parameterClass="linkMap">
+		<![CDATA[
+			insert into HR_CONTRACT
+   			(
+	   			 CONTRACT_NO,
+	   			 PERSON_ID, 
+	   			 CONTRACT_TYPE_CODE, 
+	   			 START_CONTRACT_DATE, 
+	   			 END_CONTRACT_DATE,
+	   			 WORK_AREA,
+	   			 REMARK,
+	   			 TOTAL_PERIOD,
+	   			 CREATE_DATE,
+	   			 CREATED_BY,
+	   			 ACTIVITY
+   			)
+ 			values
+ 			(
+ 				HR_CONTRACT_SEQ.NEXTVAL,
+ 				#PERSON_ID#,
+ 				#CONTRACT_TYPE_CODE:VARCHAR#,
+ 				TO_DATE(#START_CONTRACT_DATE:DATE#,'YYYY-MM-DD'),
+ 				TO_DATE(#END_CONTRACT_DATE:DATE#,'YYYY-MM-DD'),
+ 				#WORK_AREA:VARCHAR#,
+ 				#REMARK:VARCHAR#,
+ 				1,
+ 				SYSDATE,
+ 				#CREATED_BY:VARCHAR#,
+ 				1
+ 			)
+		]]>
+	</insert>
+	
+	<select id="getUpgradeList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+
+		
+		<![CDATA[ 
+		     SELECT HE.EMPID,
+			       HEI.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HDN.CONTENT DEPARTMENT_NAME,
+			       SY1.CONTENT POSITION_NAME,
+			       SY2.CONTENT POST_NAME,
+			       SY3.CONTENT TRANS_NO_NAME,
+			       SY4.CONTENT TRANS_CODE_NAME,
+			       TO_CHAR(HEI.START_DATE,  'YYYY-MM-DD') START_DATE
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       SY1,
+			       SY_GLOBAL_NAME       SY2,
+			       SY_GLOBAL_NAME       SY3,
+			       SY_GLOBAL_NAME       SY4
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.POSITION_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.POST_NO = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.TRANS_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.TRANS_CODE = SY4.NO(+)
+			   AND SY4.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.ACTIVITY = 1
+			   
+  	 	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		HE.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="alertUpgradeDays">
+			<![CDATA[
+		   		HEI.START_DATE BETWEEN (SYSDATE - TO_NUMBER(#alertUpgradeDays:VARCHAR#)) AND SYSDATE
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		HE.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			  <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="viewUpgradeDays">
+			<![CDATA[
+		   		ROWNUM <= #viewUpgradeDays:NUMERIC#
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+	   		ORDER BY HEI.START_DATE,HE.PERSON_ID
+        ]]>
+	</select>
+	
+	<select id="getUpgradeCnt" resultClass="INT"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		     SELECT COUNT(HE.EMPID)
+			   FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       SY1,
+			       SY_GLOBAL_NAME       SY2,
+			       SY_GLOBAL_NAME       SY3,
+			       SY_GLOBAL_NAME       SY4
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.POSITION_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.POST_NO = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.TRANS_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.TRANS_CODE = SY4.NO(+)
+			   AND SY4.LANGUAGE(+) = #language:VARCHAR#
+			   AND HEI.ACTIVITY = 1
+			   
+  	 	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		HE.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="alertUpgradeDays">
+			<![CDATA[
+		   		HEI.START_DATE BETWEEN (SYSDATE - TO_NUMBER(#alertUpgradeDays:VARCHAR#)) AND SYSDATE
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		HE.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			  <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+	</select>
+
+	<select id="getAlertDaysList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		
+		<![CDATA[ 
+		     SELECT A.PARAM_NO,
+			       B.CONTENT AS PARAM_NAME,
+			       A.CPNY_ID,
+			       A.PARAM_VALUE,
+			       C.MODULE
+			     
+			  FROM SY_PARAM_INFO_PARAM A, SY_GLOBAL_NAME B, SY_PARAM_INFO C
+			 WHERE A.PARAM_NO = C.PARAM_NO
+			   AND B.NO(+) = A.PARAM_NO
+			 
+			   AND B.LANGUAGE(+) = #language:VARCHAR#
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+			   
+  	 	]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		   		A.PARAM_NO IN $PARAM_NO$
+             ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+	   		ORDER BY A.PARAM_NO
+        ]]>
+	</select>
+	
+	<select id="getMenuMemoList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		
+		<![CDATA[
+			SELECT T.MENU_CODE,
+			       S.CONTENT AS MENU_NAME,
+			       T.MENU_URL,
+			       T.DEPTH,
+			       T.MENU_NO
+			  FROM SY_MENU T, SY_MENU_PARAM T2,SY_GLOBAL_NAME S
+			 WHERE T.ACTIVITY = 1
+			   AND T2.ACTIVITY = 1
+			   AND T.MENU_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #language:VARCHAR#
+			   AND T.MENU_NO = T2.MENU_NO
+			   AND T2.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.MENU_PARENT_NO IN $parentNo$
+			   AND T.MENU_NO IN
+			       (SELECT A.MENU_NO
+			              FROM SY_ROLE_RELATION A
+			             WHERE A.SELECTR=1 AND A.ROLE_NO IN
+			                   (SELECT T.ROLE_NO
+			                      FROM SY_ROLE_GROUP_RELATION T
+			                     WHERE T.ROLE_GROUP_NO IN
+			                           (SELECT ROLE_GROUP_NO
+			                              FROM SY_USER_RELATION
+			                             WHERE USER_NO =#USERNO:VARCHAR#)))
+			 ORDER BY T.ORDERNO
+		]]>	  
+	</select>
+	<!-- 返回对应国际化语言的TITLE名称 -->
+	<select id="getTitleName" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  	SELECT SY.CONTENT TATLENAME,
+			  	 (
+					SELECT ME.MENU_CODE
+  					FROM SY_MENU ME
+ 					WHERE ME.MENU_NO = 
+ 						(SELECT N.MENU_NO
+                 		 FROM (SELECT ROWNUM NO, MENU_NO
+                          		FROM SY_MENU M
+                          		WHERE M.MENU_NO<> 0
+                        		CONNECT BY PRIOR M.MENU_PARENT_NO = M.MENU_NO
+                        		 START WITH M.MENU_NO = #menuNo:VARCHAR#
+                         			ORDER BY NO DESC) N
+                 		 WHERE ROWNUM=1)
+                  ) MENU_CODE,
+			  	 (
+			  	 	 SELECT GL.CONTENT
+          			 FROM SY_GLOBAL_NAME GL
+           			 WHERE GL.NO = (SELECT N.MENU_NO
+                      			    FROM (SELECT ROWNUM NO, MENU_NO
+                              			  FROM SY_MENU M
+                              			  WHERE M.MENU_NO<> 0
+                            			  CONNECT BY PRIOR M.MENU_PARENT_NO = M.MENU_NO
+                             			  START WITH M.MENU_NO = #menuNo:VARCHAR#
+                               			  ORDER BY NO DESC) N
+                      					  WHERE ROWNUM=1)
+          			 AND GL.LANGUAGE = #language:VARCHAR#
+			  	 ) MENU_NAME
+				FROM SY_GLOBAL_NAME SY
+				WHERE SY.LANGUAGE = #language:VARCHAR#
+				AND SY.NO =#menuNo:VARCHAR#
+		]]>	
+   </select>
+   
+   <!-- 返回对应国际化语言的TITLE名称和父级menu_no和menu_name（home_partner.jsp使用） -->
+	<select id="getTitleNamePartner" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  	SELECT SY.CONTENT TATLENAME,
+			  	 (
+					SELECT ME.MENU_CODE
+  					FROM SY_MENU ME
+ 					WHERE ME.MENU_NO = 
+ 						(SELECT N.MENU_NO
+                 		 FROM (SELECT ROWNUM NO, MENU_NO
+                          		FROM SY_MENU M
+                          		WHERE M.MENU_NO<> 0
+                          		AND M.MENU_CODE NOT LIKE '%0000%'
+                        		CONNECT BY PRIOR M.MENU_PARENT_NO = M.MENU_NO
+                        		 START WITH M.MENU_NO = #menuNo:VARCHAR#
+                         			ORDER BY NO DESC) N
+                 		 WHERE ROWNUM=1)
+                  ) MENU_CODE,
+			  	 (
+			  	 	 SELECT GL.CONTENT
+          			 FROM SY_GLOBAL_NAME GL
+           			 WHERE GL.NO = (SELECT N.MENU_NO
+                      			    FROM (SELECT ROWNUM NO, MENU_NO
+                              			  FROM SY_MENU M
+                              			  WHERE M.MENU_NO<> 0
+                              			  AND M.MENU_CODE NOT LIKE '%0000%'
+                            			  CONNECT BY PRIOR M.MENU_PARENT_NO = M.MENU_NO
+                             			  START WITH M.MENU_NO = #menuNo:VARCHAR#
+                               			  ORDER BY NO DESC) N
+                      					  WHERE ROWNUM=1)
+          			 AND GL.LANGUAGE = #language:VARCHAR#
+			  	 ) MENU_NAME
+				FROM SY_GLOBAL_NAME SY
+				WHERE SY.LANGUAGE = #language:VARCHAR#
+				AND SY.NO =#menuNo:VARCHAR#
+		]]>	
+   </select>
+   
+   <select id="getNoticeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT 	T.ID,
+			  				T.TITLE,
+			               T.CONTENT,
+			               TO_CHAR(T.FROM_DATE, 'YYYY.MM.DD') FROM_DATE,
+			               TO_CHAR(T.TO_DATE, 'YYYY.MM.DD') TO_DATE
+			          FROM NOTICE_INFO T
+			         WHERE SYSDATE >= T.FROM_DATE
+			           AND SYSDATE <= T.TO_DATE
+			           AND T.CPNY_ID = #interCpnyID#
+			           AND T.ACTIVITY = 1
+			        UNION ALL
+			        SELECT HR.SEQ,HR.NAME, HR.EMAIL_CONTENT, HR.START_DATE, HR.END_DATE
+			          FROM HR_ACTIVITY_INFO HR
+			         WHERE HR.START_DATE >= TO_CHAR(SYSDATE, 'YYYY.MM.DD')
+			           AND HR.CPNY_ID = #interCpnyID#
+			           AND HR.ACTIVITY = 1)
+			 ORDER BY FROM_DATE DESC
+		]]>
+	</select>
+   
+   <select id="getAssignmentList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT 
+			HR.PERSON_ID,
+           HR.LOCAL_NAME,
+		   HRAS.SUBSIDIARY_CODE,
+		   HRAS.EMPLOYEE_NUMBER,
+		   to_char(HRAS.ASSIGNMENT_START_DATE,'YYYY-MM-DD') ASSIGNMENT_START_DATE,
+		   HRAS.ASSIGNMENT_ID,
+		   HRAS.ASSIGNMENT_TYPE_1ST ASSIGNMENT_TYPE_1ST,
+		   HRAS.ASSIGNMENT_TYPE_2ND ASSIGNMENT_TYPE_2ND,
+		   NVL(HRAS.ASSIGNMENT_TYPE_2ND,HRAS.ASSIGNMENT_TYPE_1ST) ASSIGNMENT_TYPE,
+		   HRAS.ASSIGNMENT_REASON,
+		   HRAS.ORGANIZATION_ID,
+		   HRAS.ORG_NAME_ENG,
+		   NVL(HRAS.ORG_NAME_LOCAL,' ') ORG_NAME_LOCAL,
+		   HRAS.LOCATION_NAME,
+		   HRAS.ACC_DIV_CODE,
+		   HRAS.ACC_ORG_CODE,
+		   HRAS.GRADE_TYPE GRADE_TYPE,
+		   HRAS.GRADE GRADE,
+		   HRAS.GRADE_TITLE,
+		   HRAS.GRADE_SENIORITY,
+		   HRAS.TITLE_SENIORITY,
+		   HRAS.JOB_FAMILY JOB_FAMILY,
+		   HRAS.JOB_GROUP JOB_GROUP,
+		   HRAS.JOB_DETAIL JOB_DETAIL,
+		   NVL(HRAS.POSITION,' ') POSITION,
+		   get_code_name(HR.EMP_TYPE_CODE,#language#) EMP_TYPE_NAME,
+		   HRAS.SUPERVISOR,
+		   HRAS.FSE_YN,
+		   HRAS.ASSIGNMENT_CATEGORY
+		  FROM HR_ASSIGNMENT HRAS,HR_EMPLOYEE HR
+		  WHERE HRAS.SUBSIDIARY_CODE = HR.CPNY_ID
+		  AND HRAS.EMPLOYEE_NUMBER = HR.EMPID
+		  AND HRAS.ACTIVITY = 1
+		  AND HRAS.ASSIGNMENT_START_DATE BETWEEN ADD_MONTHS(SYSDATE,-1) AND SYSDATE
+	 	]]>
+	 	<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		   		HR.CPNY_ID = #CPNY_ID:VARCHAR#
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    HR.PERSON_ID = #supervisorPersonId:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+	</select>  
+	<select id="viewApprovalInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT S.SEQ,
+			       S.AFFIRM_TYPE,
+			       S.APPLY_NO,
+			       S.APPLY_TYPE,
+			       S.APPLY_PERSON_ID,
+			       S.AFFIRM_PERSON_ID,
+			       S.TITLE,
+			       S.AFFIRM_LEVEL,
+			       S.AFFIRM_FLAG,
+			       S.AFFIRM_URL,
+			       S.APPLY_FLAG,
+			       S.APPLY_TYPE_CODE,
+			       S.APPLY_PERSON_INFO,
+			       GET_CODE_NAME(APPLY_AFFIRM_FLAG,#interLanguage#) APPLY_AFFIRM_FLAG,
+			       TO_CHAR(S.UPDATE_DATE,'YYYY.MM.DD HH24:MI') UPDATE_DATE,
+			       S.ACTIVITY,
+			       S.READ_FLAG,
+			       HR.EMPID,
+			       HR.DEPTNO,
+			       GET_DEPT_NAME(HR.DEPTNO,#interLanguage#) DEPT_NAME
+			  FROM SY_AFFIRM_EMAIL S,HR_EMPLOYEE HR
+			 WHERE S.APPLY_PERSON_ID = HR.PERSON_ID 
+			   AND S.ACTIVITY = 0
+		       AND AFFIRM_PERSON_ID = #adminID#
+		       AND APPLY_AFFIRM_FLAG NOT IN ('14014310','14014309','14014308')
+		       AND NOT EXISTS (SELECT 1 FROM ESS_LEAVE_APPLY_TB TB WHERE TB.APPLY_NO = S.APPLY_NO AND TB.BATCH_YN = 2)
+		       AND NOT EXISTS (SELECT 1 FROM ESS_APPLY_OT OT WHERE OT.APPLY_NO = S.APPLY_NO AND OT.BATCH_YN = 2)
+			ORDER BY S.CREATE_DATE DESC
+		]]>
+	</select>
+	<select id="viewBatchApprovalInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT TB.BATCH_NO,
+			       GET_LOCAL_NAME_BY_PERSONID(TB.CREATED_BY,#interCpnyID#) CREATED_BY,
+			       GET_DEPT_NAME(GET_DEPT_NO(TB.CREATED_BY),#interLanguage#) DEPT_NAME,
+			       TB.CREATED_IP,
+			       TO_CHAR(MAX(TB.APPLY_TIME),'DD/MM/YYYY HH24:MI:SS') APPLY_TIME,
+			       TO_CHAR(MAX(TB.APPLY_TIME), 'YYYY/MM/DD HH24:MI:SS') ORDER_TIME,
+			       EM.APPLY_TYPE_CODE,
+			       GET_GLOBAL_NAME(EM.APPLY_TYPE_CODE,#interLanguage#) APPLY_TYPE_NAME,
+			       MIN(EM.READ_FLAG) READ_FLAG,
+			       COUNT(TB.APPLY_NO) BATCH_NUM,
+			       MIN(EM.ACTIVITY) ACTIVITY
+			  FROM SY_AFFIRM_EMAIL EM,ESS_LEAVE_APPLY_TB TB
+			 WHERE EM.APPLY_NO = TB.APPLY_NO
+			       AND TB.BATCH_YN = 2
+			       AND EM.ACTIVITY = 0
+			       AND TB.ACTIVITY = 1
+			       AND AFFIRM_PERSON_ID = #adminID#
+			       AND APPLY_AFFIRM_FLAG NOT IN ('14014310','14014309','14014308')
+			  GROUP BY TB.BATCH_NO,TB.CREATED_BY,TB.CREATED_IP,EM.APPLY_TYPE_CODE
+			  
+			  union all
+			
+			SELECT TB.BATCH_NO,
+			       GET_LOCAL_NAME_BY_PERSONID(TB.CREATED_BY,#interCpnyID#) CREATED_BY,
+			       GET_DEPT_NAME(GET_DEPT_NO(TB.CREATED_BY),#interLanguage#) DEPT_NAME,
+			       TB.CREATED_IP,
+			       TO_CHAR(MAX(TB.APPLY_TIME),'DD/MM/YYYY HH24:MI:SS') APPLY_TIME,
+			       TO_CHAR(MAX(TB.APPLY_TIME), 'YYYY/MM/DD HH24:MI:SS') ORDER_TIME,
+			       EM.APPLY_TYPE_CODE,
+			       GET_GLOBAL_NAME(EM.APPLY_TYPE_CODE,#interLanguage#) APPLY_TYPE_NAME,
+			       MIN(EM.READ_FLAG) READ_FLAG,
+			       COUNT(TB.APPLY_NO) BATCH_NUM,
+			       MIN(EM.ACTIVITY) ACTIVITY
+			  FROM SY_AFFIRM_EMAIL EM,ESS_APPLY_OT TB
+			 WHERE EM.APPLY_NO = TB.APPLY_NO
+			       AND TB.BATCH_YN = 2
+			       AND EM.ACTIVITY = 0
+			       AND TB.ACTIVITY = 1
+			       AND AFFIRM_PERSON_ID = #adminID#
+			       AND APPLY_AFFIRM_FLAG NOT IN ('14014310','14014309','14014308')
+			  GROUP BY TB.BATCH_NO,TB.CREATED_BY,TB.CREATED_IP,EM.APPLY_TYPE_CODE
+			  ORDER BY ORDER_TIME DESC
+		]]>
+	</select>
+	<select id="viewNoticeedEmail" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT SEQ,
+			       AFFIRM_TYPE,
+			       APPLY_NO,
+			       APPLY_TYPE,
+			       APPLY_PERSON_ID,
+			       AFFIRM_PERSON_ID,
+			       TITLE,
+			       AFFIRM_LEVEL,
+			       AFFIRM_FLAG,
+			       AFFIRM_URL,
+			       APPLY_FLAG,
+			       APPLY_TYPE_CODE,
+			       APPLY_PERSON_INFO,
+			       GET_CODE_NAME(APPLY_AFFIRM_FLAG,'zh') APPLY_AFFIRM_FLAG,
+			       TO_CHAR(UPDATE_DATE,'YYYY.MM.DD HH24:MI') UPDATE_DATE,
+			       ACTIVITY,
+			       READ_FLAG
+			  FROM SY_AFFIRM_EMAIL
+			 WHERE ACTIVITY = 1
+		       AND AFFIRM_PERSON_ID = #adminID#
+		       AND AFFIRM_TYPE IN (3,4)
+		ORDER BY CREATE_DATE DESC
+		]]>
+	</select>
+	<select id="viewAttendanceEx" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT PK_NO,
+				   PERSON_ID,
+				   REPLACE(TO_CHAR(TO_DATE(AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY'),'/','-') AR_DATE_STR,
+				   GET_GLOBAL_NAME(ITEM_NO,#interLanguage#) ITEM_NO_NAME,
+			       ACTIVITY
+			  FROM AR_DETAIL_HTSV AD
+			 WHERE ACTIVITY = 1
+		       AND PERSON_ID = #adminID#
+		       AND ITEM_NO IN ('141443','141441','141442','14015448')
+		       AND AR_DATE_STR BETWEEN TO_CHAR(SYSDATE - 30,'YYYY/MM/DD') AND TO_CHAR(SYSDATE,'YYYY/MM/DD')
+		       AND AR_DATE_STR NOT IN
+       (SELECT AR_DATE_STR
+          FROM ESS_CARD_APPLY_TB CARD
+         WHERE AFFIRM_FLAG IN ('14014306','14014307') AND AD.PERSON_ID = CARD.PERSON_ID)
+		       ORDER BY AR_DATE_STR DESC
+		]]>
+	</select>
+	<select id="viewAttendanceExCoor" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT AR.ITEM_NO,
+			       COUNT(1) EMP_NUM,
+			       GET_GLOBAL_NAME(AR.ITEM_NO, #interLanguage#) ITEM_NAME,
+			       TO_CHAR(TO_DATE(AR.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR
+			  FROM AR_DETAIL_HTSV AR, HR_EMPLOYEE HR
+			 WHERE AR.PERSON_ID = HR.PERSON_ID
+			   AND AR.ITEM_NO IN ('141443', '141441', '141442', '14015448')
+			   AND HR.PERSON_ID NOT LIKE '111111%'
+			   AND AR_DATE_STR BETWEEN TO_CHAR(SYSDATE - 7, 'YYYY/MM/DD') AND TO_CHAR(SYSDATE - 1, 'YYYY/MM/DD')
+			   AND AR_DATE_STR NOT IN
+			       (SELECT AR_DATE_STR
+			          FROM ESS_CARD_APPLY_TB CARD
+			         WHERE AFFIRM_FLAG IN ('14014306', '14014307')
+			           AND AR.PERSON_ID = CARD.PERSON_ID)
+			  ]]>
+	        <isNotEmpty prepend="" property="AR_SUPERVISIOR_INFO">
+	            <isEmpty prepend="AND" property="MANAGEMENT_INFO">
+					<![CDATA[
+				   		EXISTS (SELECT AR_SUPERVISOR_INFO.DEPTNO
+					                  FROM AR_SUPERVISOR_INFO
+					                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					                   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO#)
+		             ]]>
+	            </isEmpty>
+			</isNotEmpty>
+			<isNotEmpty prepend="" property="MANAGEMENT_INFO">
+			    <isEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+					<![CDATA[
+				   		EXISTS (SELECT B1.DEPTID
+					                  FROM HR_DEPARTMENT B1
+					                 WHERE B1.DEPTNO = HR.DEPTNO
+					                 START WITH B1.DEPTNO in
+					                            (SELECT HRD.DEPTID
+					                               FROM HR_DEPARTMENT HRD
+					                              WHERE HRD.MANAGER_EMP_ID = #MANAGEMENT_INFO#)
+					                CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		             ]]>
+	             </isEmpty>
+			</isNotEmpty>
+			<isNotEmpty prepend="" property="MANAGEMENT_INFO">
+			    <isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+					<![CDATA[
+				   		(EXISTS (SELECT B1.DEPTID
+				                  FROM HR_DEPARTMENT B1
+				                 WHERE B1.DEPTNO = HR.DEPTNO
+				                 START WITH B1.DEPTNO in
+				                            (SELECT HRD.DEPTID
+				                               FROM HR_DEPARTMENT HRD
+				                              WHERE HRD.MANAGER_EMP_ID = #adminID#)
+				                CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				                UNION
+				                SELECT AR_SUPERVISOR_INFO.DEPTNO
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#))
+		             ]]>
+	             </isNotEmpty>
+			</isNotEmpty>
+		    <![CDATA[
+			    GROUP BY AR.ITEM_NO,AR.AR_DATE_STR
+				 ORDER BY AR.AR_DATE_STR,ITEM_NO DESC
+			]]>
+		
+	</select>
+	
+	<select id="viewAttendanceManagement" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT COUNT(1) EMP_NUM,
+			       GET_GLOBAL_NAME('21',#interLanguage#) ITEM_NAME,
+			       TO_CHAR(TO_DATE(AR.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AR_DATE_STR
+			  FROM AR_DETAIL_HTSV AR, HR_EMPLOYEE HR
+			 WHERE AR.PERSON_ID = HR.PERSON_ID
+			   AND AR.ITEM_NO IN ('141456',
+			                      '141454',
+			                      '141464',
+			                      '90000286',
+			                      '90000287',
+			                      '90000288',
+			                      '90000289',
+			                      '90000290',
+			                      '90000291',
+			                      '141461',
+			                      '90000292',
+			                      '90000293',
+			                      '90000294',
+			                      '141460')
+			   AND HR.PERSON_ID NOT LIKE '111111%'
+			   AND AR.AR_DATE_STR = TO_CHAR(SYSDATE - 1, 'YYYY/MM/DD')
+			   AND EXISTS (SELECT B1.DEPTID
+			                  FROM HR_DEPARTMENT B1
+			                 WHERE B1.DEPTNO = HR.DEPTNO
+			                 START WITH B1.DEPTNO in
+			                            (SELECT HRD.DEPTID
+			                               FROM HR_DEPARTMENT HRD
+			                              WHERE HRD.MANAGER_EMP_ID = #adminID#)
+			                CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+			 GROUP BY AR.AR_DATE_STR
+			]]>
+		
+	</select>
+	
+	<select id="viewOTManagement" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			  SELECT COUNT(1) EMP_NUM,
+		             GET_GLOBAL_NAME('31',#interLanguage#) ITEM_NAME,
+		             TO_CHAR(TO_DATE(AR.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AR_DATE_STR
+		        FROM AR_DETAIL_HTSV AR, HR_EMPLOYEE HR
+		       WHERE AR.PERSON_ID = HR.PERSON_ID
+		         AND AR.ITEM_NO IN ('90000295',
+		                            '90000296',
+		                            '90000297',
+		                            '90000298',
+		                            '90000299',
+		                            '90000300',
+		                            '90000301')
+		         AND HR.PERSON_ID NOT LIKE '111111%'
+		         AND AR.AR_DATE_STR = TO_CHAR(SYSDATE - 1, 'YYYY/MM/DD')
+		         AND EXISTS (SELECT B1.DEPTID
+		                        FROM HR_DEPARTMENT B1
+		                       WHERE B1.DEPTNO = HR.DEPTNO
+		                       START WITH B1.DEPTNO in
+		                                  (SELECT HRD.DEPTID
+		                                     FROM HR_DEPARTMENT HRD
+		                                    WHERE HRD.MANAGER_EMP_ID = #adminID#)
+		                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		       GROUP BY AR.AR_DATE_STR
+			]]>
+		
+	</select>
+	
+	<select id="viewApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+		SELECT *
+          FROM (
+			SELECT TB.APPLY_NO,
+			       TO_CHAR(TB.APPLY_TIME, 'DD/MM/YYYY HH24:MI') APPLY_TIME,
+			       TB.LEAVE_TYPE_NO TYPE_NO,
+			       GET_GLOBAL_NAME(TB.LEAVE_TYPE_NO,#interLanguage#) TYPE_NAME,
+			       TB.LEAVE_TYPE_CODE TYPE_CODE,
+			       GET_GLOBAL_NAME(TB.LEAVE_TYPE_CODE,#interLanguage#) TYPE_CODE_NAME,
+			       TO_CHAR(TB.LEAVE_FROM_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+               	   TO_CHAR(TB.LEAVE_TO_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+			       TO_CHAR(TB.APPLY_LENGTH) APPLY_LENGTH,
+			       AR_GET_DAY_HOURS(TB.PERSON_ID,TO_CHAR(TB.LEAVE_FROM_TIME,'YYYY/MM/DD')) DAY_HOURS,
+	               TB.PERSON_ID,
+	               TO_CHAR(TB.AFFIRM_FLAG) AFFIRM_FLAG,
+	               GET_GLOBAL_NAME(TB.AFFIRM_FLAG,#interLanguage#) AFFIRM_FLAG_NAME,
+	               TO_CHAR(TB.CONFIRM_FLAG) CONFIRM_FLAG
+			  FROM ESS_LEAVE_APPLY_TB TB
+			 WHERE TB.PERSON_ID = #adminID#
+			   AND TB.ACTIVITY = '1'
+			   AND TB.BATCH_YN <> '2'
+			   AND CPNY_ID = #interCpnyID#
+			UNION ALL
+			SELECT OT.APPLY_NO,
+			       TO_CHAR(OT.APPLY_TIME, 'DD/MM/YYYY HH24:MI') APPLY_TIME,
+			       OT.OT_TYPE_NO TYPE_NO,
+			       GET_GLOBAL_NAME(OT.OT_TYPE_NO,#interLanguage#) TYPE_NAME,
+			       OT.OT_TYPE_CODE TYPE_CODE,
+			       GET_GLOBAL_NAME(OT.OT_TYPE_CODE,#interLanguage#) TYPE_CODE_NAME,
+			       TO_CHAR(OT.OT_FROM_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+               	   TO_CHAR(OT.OT_TO_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+			       TO_CHAR(OT.OT_APPLY_HOUR) APPLY_LENGTH,
+			       AR_GET_DAY_HOURS(OT.PERSON_ID,TO_CHAR(OT.OT_FROM_TIME,'YYYY/MM/DD')) DAY_HOURS,
+	               OT.PERSON_ID,
+	               TO_CHAR(OT.AFFIRM_FLAG) AFFIRM_FLAG,
+	               GET_GLOBAL_NAME(OT.AFFIRM_FLAG,#interLanguage#) AFFIRM_FLAG_NAME,
+	               TO_CHAR(OT.CONFIRM_FLAG) CONFIRM_FLAG	
+			  FROM ESS_APPLY_OT OT
+			 WHERE OT.PERSON_ID = #adminID#
+			   AND OT.ACTIVITY = '1'
+			   AND OT.BATCH_YN <> '2'
+			   AND CPNY_ID = #interCpnyID#
+			UNION ALL 
+			SELECT CARD.APPLY_NO,
+			       TO_CHAR(CARD.APPLY_TIME, 'DD/MM/YYYY HH24:MI') APPLY_TIME,
+			       '218197' TYPE_NO,
+			       GET_GLOBAL_NAME('218197',#interLanguage#) TYPE_NAME,
+			       CARD.ITEM_NO TYPE_CODE,
+			       GET_GLOBAL_NAME(CARD.ITEM_NO,#interLanguage#) TYPE_CODE_NAME,
+			       TO_CHAR(CARD.IN_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+               	   TO_CHAR(CARD.OUT_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+			       CARD.WORK_HOUR APPLY_LENGTH,
+			       AR_GET_DAY_HOURS(CARD.PERSON_ID,TO_CHAR(CARD.FROM_TIME,'YYYY/MM/DD')) DAY_HOURS,
+			       CARD.PERSON_ID,
+			       CARD.AFFIRM_FLAG,
+			       GET_GLOBAL_NAME(CARD.AFFIRM_FLAG,#interLanguage#) AFFIRM_FLAG_NAME,
+			       CARD.CONFIRM_FLAG
+			  FROM ESS_CARD_APPLY_TB CARD
+			 WHERE CARD.PERSON_ID = #adminID#
+			   AND CARD.ACTIVITY = '1'
+			   AND CARD.CPNY_ID = #interCpnyID#) A
+			   WHERE TO_DATE(A.FROM_TIME,'DD/MM/YYYY HH24:MI') BETWEEN SYSDATE - 30 AND SYSDATE
+ ORDER BY TO_DATE(A.APPLY_TIME, 'DD/MM/YYYY HH24:MI') DESC 
+		]]>
+	</select>
+	
+	<select id="viewApplyListCoor" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+    SELECT * FROM (
+		SELECT A.*,HR.EMPID,HR.LOCAL_NAME,HR.DEPTNO,GET_DEPT_NAME(HR.DEPTNO,#interLanguage#) DEPT_NAME
+          FROM (
+      SELECT TB.APPLY_NO,
+             TO_CHAR(TB.APPLY_TIME, 'DD/MM/YYYY HH24:MI') APPLY_TIME,
+             TB.LEAVE_TYPE_NO TYPE_NO,
+             GET_GLOBAL_NAME(TB.LEAVE_TYPE_NO,#interLanguage#) TYPE_NAME,
+             TB.LEAVE_TYPE_CODE TYPE_CODE,
+             GET_GLOBAL_NAME(TB.LEAVE_TYPE_CODE,#interLanguage#) TYPE_CODE_NAME,
+             TO_CHAR(TB.LEAVE_FROM_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+             TO_CHAR(TB.LEAVE_TO_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+             TO_CHAR(TB.APPLY_LENGTH) APPLY_LENGTH,
+             AR_GET_DAY_HOURS(TB.PERSON_ID,TO_CHAR(TB.LEAVE_FROM_TIME,'YYYY/MM/DD')) DAY_HOURS,
+             TB.PERSON_ID,
+             TO_CHAR(TB.AFFIRM_FLAG) AFFIRM_FLAG,
+             GET_GLOBAL_NAME(TB.AFFIRM_FLAG,#interLanguage#) AFFIRM_FLAG_NAME,
+             TO_CHAR(TB.CONFIRM_FLAG) CONFIRM_FLAG
+        FROM ESS_LEAVE_APPLY_TB TB
+       WHERE TB.PERSON_ID NOT LIKE '111111%'
+         AND TB.PERSON_ID IS NOT NULL
+         AND TB.APPLY_TIME >= SYSDATE - 30
+         AND TB.BATCH_YN = 1
+         AND TB.ACTIVITY = '1'
+         AND TB.BATCH_YN <> '2'
+         AND CPNY_ID = #interCpnyID#
+      UNION ALL
+      SELECT OT.APPLY_NO,
+             TO_CHAR(OT.APPLY_TIME, 'DD/MM/YYYY HH24:MI') APPLY_TIME,
+             OT.OT_TYPE_NO TYPE_NO,
+             GET_GLOBAL_NAME(OT.OT_TYPE_NO,#interLanguage#) TYPE_NAME,
+             OT.OT_TYPE_CODE TYPE_CODE,
+             GET_GLOBAL_NAME(OT.OT_TYPE_CODE,#interLanguage#) TYPE_CODE_NAME,
+             TO_CHAR(OT.OT_FROM_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+             TO_CHAR(OT.OT_TO_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+             TO_CHAR(OT.OT_APPLY_HOUR) APPLY_LENGTH,
+             AR_GET_DAY_HOURS(OT.PERSON_ID,TO_CHAR(OT.OT_FROM_TIME,'YYYY/MM/DD')) DAY_HOURS,
+             OT.PERSON_ID,
+             TO_CHAR(OT.AFFIRM_FLAG) AFFIRM_FLAG,
+             GET_GLOBAL_NAME(OT.AFFIRM_FLAG,#interLanguage#) AFFIRM_FLAG_NAME,
+             TO_CHAR(OT.CONFIRM_FLAG) CONFIRM_FLAG  
+        FROM ESS_APPLY_OT OT
+       WHERE OT.PERSON_ID NOT LIKE '111111%'
+         AND OT.PERSON_ID IS NOT NULL
+         AND OT.APPLY_TIME >= SYSDATE - 30
+         AND OT.BATCH_YN = 1
+         AND OT.ACTIVITY = '1'
+         AND OT.BATCH_YN <> '2'
+         AND CPNY_ID = #interCpnyID#
+      UNION ALL 
+      SELECT CARD.APPLY_NO,
+             TO_CHAR(CARD.APPLY_TIME, 'DD/MM/YYYY HH24:MI') APPLY_TIME,
+             '218197' TYPE_NO,
+             GET_GLOBAL_NAME('218197',#interLanguage#) TYPE_NAME,
+             CARD.ITEM_NO TYPE_CODE,
+             GET_GLOBAL_NAME(CARD.ITEM_NO,#interLanguage#) TYPE_CODE_NAME,
+             TO_CHAR(CARD.IN_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+             TO_CHAR(CARD.OUT_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+             CARD.WORK_HOUR APPLY_LENGTH,
+             AR_GET_DAY_HOURS(CARD.PERSON_ID,TO_CHAR(CARD.FROM_TIME,'YYYY/MM/DD')) DAY_HOURS,
+             CARD.PERSON_ID,
+             CARD.AFFIRM_FLAG,
+             GET_GLOBAL_NAME(CARD.AFFIRM_FLAG,#interLanguage#) AFFIRM_FLAG_NAME,
+             CARD.CONFIRM_FLAG
+        FROM ESS_CARD_APPLY_TB CARD
+       WHERE CARD.PERSON_ID NOT LIKE '111111%'
+         AND CARD.PERSON_ID IS NOT NULL
+         AND CARD.APPLY_TIME >= SYSDATE - 30
+         AND CARD.ACTIVITY = '1'
+         AND CARD.CPNY_ID = #interCpnyID#) A,HR_EMPLOYEE HR
+       WHERE A.PERSON_ID = HR.PERSON_ID(+)
+         AND EXISTS
+             (SELECT B1.DEPTID
+                      FROM HR_DEPARTMENT B1
+                     WHERE B1.DEPTNO = HR.DEPTNO
+                     START WITH B1.DEPTNO in
+                                (SELECT HRD.DEPTID
+                                   FROM HR_DEPARTMENT HRD
+                                  WHERE HRD.MANAGER_EMP_ID = #adminID#)
+                    CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                UNION
+                SELECT AR_SUPERVISOR_INFO.DEPTNO
+                  FROM AR_SUPERVISOR_INFO
+                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                   AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#
+                ) 
+  		ORDER BY TO_DATE(A.APPLY_TIME, 'DD/MM/YYYY HH24:MI') DESC 
+ ) where rownum <= 10
+		]]>
+	</select>
+	<update  id="updatePersonalDataFlag" parameterClass="linkMap">
+		<![CDATA[	
+					UPDATE SY_USER SU
+					   SET SU.PERSONAL_DATA_FLAG = 1,
+					       SU.PERSONAL_DATA_UPDATE_DATE = sysdate,
+					       SU.PERSONAL_DATA_UPDATED_BY = #PERSON_ID#,
+						   SU.PERSONAL_DATA_UPDATED_IP = #PERSON_IP#
+					 WHERE SU.PERSON_ID =#PERSON_ID#
+		]]>
+	</update >
+	<update  id="updatePersonalSendDataFlag" parameterClass="linkMap">
+		<![CDATA[	
+					UPDATE SY_USER SU
+					   SET SU.PERSONAL_SEND_DATA_FLAG = 1,
+					       SU.PERSONAL_SEND_DATA_UPDATE_DATE = sysdate,
+					       SU.PERSONAL_SEND_DATA_UPDATED_BY = #PERSON_ID#,
+						   SU.PERSONAL_SEND_DATA_UPDATED_IP = #PERSON_IP#
+					 WHERE SU.PERSON_ID =#PERSON_ID#
+		]]>
+	</update >
+</sqlMap>

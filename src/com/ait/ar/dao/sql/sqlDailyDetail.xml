@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.dailyDetail">
+
+  <select id="getDailyDetailList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		SELECT AR_CALENDER.DDATE,
+		       AR_CALENDER.IYEAR,
+		       AR_CALENDER.IMONTH,
+		       AR_CALENDER.IDAY,
+		       AR_CALENDER.IWEEK,
+		       AR_CALENDER.TYPEID,
+		       AR_CALENDER.OVERTYPEID,
+		       AR_CALENDER.WORKDAYFLAG,
+		       AR_CALENDER.SHIFT_NO,
+		       AR_CALENDER.TYPEID_DEFAULT,
+		       T_SCHEDULE.SCHEDULE_SHIFT_NO,
+		       T_SCHEDULE.DATATYPE,
+		       SY1.CONTENT TYPENAME,
+		       SY2.CONTENT SHIFT_NAME,
+		       SY3.CONTENT DATETYPENAME,
+		       TO_CHAR(AR_CALENDER.DDATE,'YYYY-MM-DD') VIEW_DDATE,
+		       #PERSON_ID:VARCHAR# VIEW_PERSON_ID
+		  FROM AR_CALENDER,
+		       (SELECT T1.SHIFT_NO SCHEDULE_SHIFT_NO,
+		               T1.AR_DATE_STR,
+		               T2.DATATYPE
+		          FROM AR_SCHEDULE_HTSV T1,
+		          	   AR_SHIFT010 T2
+		         WHERE T1.SHIFT_NO = T2.SHIFT_NO
+		           AND T1.PERSON_ID = #PERSON_ID:VARCHAR#) T_SCHEDULE,
+		       SY_GLOBAL_NAME SY1,
+		       SY_GLOBAL_NAME SY2,
+		       SY_GLOBAL_NAME SY3
+		 WHERE AR_CALENDER.CPNY_ID = #CPNY_ID:VARCHAR#
+		   AND AR_CALENDER.DDATE = to_date(T_SCHEDULE.AR_DATE_STR(+),'yyyy-mm-dd')
+		   AND AR_CALENDER.DDATE BETWEEN
+		       GET_AR_START_DATE(#AR_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#) AND
+		       GET_AR_END_DATE(#AR_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#)
+		   AND AR_CALENDER.TYPEID = SY1.NO(+)
+		   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND AR_CALENDER.SHIFT_NO = SY2.NO(+)
+		   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND T_SCHEDULE.DATATYPE = SY3.NO(+)
+		   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ORDER BY AR_CALENDER.DDATE 
+		
+		]]> 
+	</select>
+	<select id="getShiftList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.SHIFT_NO,
+			       SY.CONTENT SHIFT_NAME,
+			       T.DATATYPE,
+			       T.SHIFT_ID
+			  FROM AR_SHIFT010 T,
+			  	   SY_GLOBAL_NAME SY
+			  WHERE T.SHIFT_NO = SY.NO(+)
+			  	AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  	AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			  	AND T.ACTIVITY = 1
+		]]>	
+		<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+			<![CDATA[
+				(T.DEPT_DISTINGUISH_NO IS NULL 
+					OR T.DEPT_DISTINGUISH_NO IN 
+						(SELECT HR_DEPARTMENT.DEPT_DISTINGUISH_NO FROM HR_EMPLOYEE,HR_DEPARTMENT
+							WHERE HR_EMPLOYEE.PERSON_ID = #PERSON_ID:VARCHAR#
+							  AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT.DEPTNO))
+			]]>
+		</isNotEmpty>
+   </select>
+   
+   <delete id="DeleteDailyDetailInfo" parameterClass="linkMap">
+      DELETE FROM AR_SCHEDULE_HTSV T
+			 WHERE T.PERSON_ID = #PERSON_ID:VARCHAR#
+			 AND TO_DATE(T.AR_DATE_STR,'YYYY-MM-DD') = TO_DATE(#DDATE_STR#, 'YYYY-MM-DD')
+			 AND T.LOCK_YN ='N'
+   
+   </delete>
+   <select id="checkDailyDetailInfo" parameterClass="linkMap" resultClass="int">
+    
+      SELECT COUNT(T.EMPID) FROM AR_SCHEDULE T WHERE T.EMPID = #EMPID#
+			 AND T.AR_DATE_STR = TO_CHAR(TO_DATE(#DDATE_STR#, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+   </select>
+   <insert id="insertDailyDetailInfo" parameterClass="linkMap">
+         INSERT INTO AR_SCHEDULE_HTSV 
+                 (PK_NO, PERSON_ID, SHIFT_NO, AR_DATE_STR, LOCK_YN, CREATE_DATE, CREATED_BY) 
+                 VALUES (Ar_Schedule_Seq.NEXTVAL, #PERSON_ID#, #SHIFT_NO#, TO_CHAR(TO_DATE(#DDATE_STR#,'YYYY/MM/DD'),'YYYY/MM/DD'), 'N', SYSDATE, #CREATED_BY:VARCHAR#)
+   
+   </insert>
+   
+   <select id="getEmpInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.LOCAL_NAME,
+				   HR.EMPID,
+				   HR.PERSON_ID,
+				   HR.CPNY_ID,
+			       HD.CONTENT DEPTNAME,
+			       GET_AR_STATNO(HR.PERSON_ID,HR.CPNY_ID) STAT_NO
+			  FROM HR_EMPLOYEE HR,
+			  	   HR_DEPARTMENT_NAME HD
+			  WHERE HR.DEPTNO = HD.DEPTNO(+)
+			  	AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  	AND HR.PERSON_ID = #person_id:VARCHAR#
+		]]>	
+   </select>
+   
+   <select id="getShiftName" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT 
+			       SY.CONTENT SHIFT_NAME
+			  FROM AR_SHIFT010 T,
+			  	   SY_GLOBAL_NAME SY
+			  WHERE T.SHIFT_NO = SY.NO(+)
+			    AND T.SHIFT_NO = #DAILY_SHIFT_NO:VARCHAR#
+			  	AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  	AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>	
+   </select>
+   
+   <select id="getDailyDetailPersonList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+					HE.PERSON_ID,
+					HE.LOCAL_NAME,
+					HDNAME.CONTENT DEPT_NAME,
+					GET_AR_STATNO(HE.PERSON_ID,HE.CPNY_ID) STAT_NO,
+					HD.CPNY_ID
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD,
+				 HR_DEPARTMENT_NAME HDNAME
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			ORDER BY HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getDailyDetailPersonCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<select id="getLeaveList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+		 SELECT GET_GLOBAL_NAME(T1.LEAVE_TYPE_CODE, #VIEW_LANGUAGE:VARCHAR#) LEAVE_TYPE_NAME,
+		 		CASE WHEN TO_DATE(TO_CHAR(T1.LEAVE_FROM_TIME,'HH24:MI:SS'),'HH24:MI:SS') >= TO_DATE(TO_CHAR(T2.FROM_TIME,'HH24:MI:SS'),'HH24:MI:SS')
+		 		THEN TO_CHAR(T1.LEAVE_FROM_TIME,'HH24:MI:SS')
+		 		ELSE TO_CHAR(T2.FROM_TIME,'HH24:MI:SS')
+		 		END FROM_TIME,
+		 		CASE WHEN TO_DATE(TO_CHAR(T1.LEAVE_TO_TIME,'HH24:MI:SS'),'HH24:MI:SS') <= TO_DATE(TO_CHAR(T2.TO_TIME,'HH24:MI:SS'),'HH24:MI:SS')
+		 		THEN TO_CHAR(T1.LEAVE_TO_TIME,'HH24:MI:SS')
+		 		ELSE TO_CHAR(T2.TO_TIME,'HH24:MI:SS')
+		 		END TO_TIME
+		  FROM ESS_LEAVE_APPLY_TB T1,
+		  	   (SELECT MIN(FROM_TIME) FROM_TIME,MAX(TO_TIME) TO_TIME FROM ar_shift020
+		  	    WHERE SHIFT_NO = #DAILY_SHIFT_NO:VARCHAR#) T2
+		 WHERE T1.ACTIVITY = 1
+		   AND T1.PERSON_ID = #VIEW_PERSON_ID:VARCHAR#
+		   AND TO_DATE(TO_CHAR(T1.LEAVE_FROM_TIME, 'YYYY-MM-DD'), 'YYYY-MM-DD') <= TO_DATE(#VIEW_DDATE:VARCHAR#,'YYYY-MM-DD')
+		   AND TO_DATE(TO_CHAR(T1.LEAVE_TO_TIME, 'YYYY-MM-DD'), 'YYYY-MM-DD') >= TO_DATE(#VIEW_DDATE:VARCHAR#,'YYYY-MM-DD')
+		
+		]]> 
+	</select>
+</sqlMap>

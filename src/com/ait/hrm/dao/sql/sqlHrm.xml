@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm">	
+	<select id="getDeptById" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			SELECT HD.*,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			FROM HR_DEPARTMENT HD
+			WHERE HD.DEPTNO = #deptno:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getDeptTreeForHr" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+			    SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       A.PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 1 THEN
+				          'false'
+				         ELSE
+				          'true'
+				       END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+				  FROM HR_DEPT_TREE_V A
+				 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#
+				   AND A.USE_YN = 'Y'
+		 ]]>  
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		A.DEPTNO IN  
+	             ]]>
+             	<include refid="sys.include.getDataPermission"/>
+             </isNotEqual>
+             <isEqual prepend="" property="specialParam" compareValue="general">
+					A.DEPTNO = #deptNo:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptLevel">
+		<![CDATA[
+	   		A.DEPT_LEVEL = #deptLevel#
+        ]]>
+		</isNotEmpty>
+	</select>
+	
+		<select id="getDeptTreeMultiForHr" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+			    SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 1 THEN
+				          'false'
+				         ELSE
+				          'true'
+				       END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+				  FROM HR_DEPT_TREE_V A
+				 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#
+				   AND A.USE_YN = 'Y'
+		 ]]>  
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		A.DEPTNO IN  
+	             ]]>
+             	<include refid="sys.include.getDataPermission"/>
+             </isNotEqual>
+             <isEqual prepend="" property="specialParam" compareValue="general">
+					A.DEPTNO = #deptNo:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptLevel">
+		<![CDATA[
+	   		A.DEPT_LEVEL = #deptLevel#
+        ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDeptTreeForHr2" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+			    SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       A.PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 3 THEN
+				          'false'
+				         ELSE
+				          'false'
+				       END) AS open,
+				       A.DEPT_DISTINGUISH_NO,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+				  FROM HR_DEPT_TREE_V A
+				 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#
+				   AND A.USE_YN = 'Y'
+		 ]]>  
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		A.DEPTNO IN  
+	             ]]>
+             	<include refid="sys.include.getDataPermission"/>
+             </isNotEqual>
+             <isEqual prepend="" property="specialParam" compareValue="general">
+					A.DEPTNO = #deptNo:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptLevel2">
+		<![CDATA[
+	   		(A.DEPT_LEVEL in ($deptLevel$) OR A.DEPT_LEVEL IS NULL)
+        ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDeptTreeMultiForHr2" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+			    SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 3 THEN
+				          'false'
+				         ELSE
+				          'false'
+				       END) AS open,
+				       A.DEPT_DISTINGUISH_NO,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+				  FROM HR_DEPT_TREE_V A
+				 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#
+				   AND A.USE_YN = 'Y'
+		 ]]>  
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		A.DEPTNO IN  
+	             ]]>
+             	<include refid="sys.include.getDataPermission"/>
+             </isNotEqual>
+             <isEqual prepend="" property="specialParam" compareValue="general">
+					A.DEPTNO = #deptNo:VARCHAR#
+             </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptLevel2">
+		<![CDATA[
+	   		(A.DEPT_LEVEL in ($deptLevel$) OR A.DEPT_LEVEL IS NULL)
+        ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDeptTreeForAr" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+		             A.DEPT_LEVEL,
+		             A.PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM AR_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#		
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+	</select>
+	
+	<select id="getDeptTreeMultiForAr" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM AR_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#		
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+	</select>
+	
+		<select id="getDeptTreeForAr2" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+		             A.DEPT_LEVEL,
+		             A.PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM AR_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#		
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel2">
+		<![CDATA[
+	   		(A.DEPT_LEVEL in ($deptLevel2$) OR A.DEPT_LEVEL IS NULL)
+        ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="getDeptTreeMultiForAr2" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM AR_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#		
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel2">
+		<![CDATA[
+	   		(A.DEPT_LEVEL in ($deptLevel2$) OR A.DEPT_LEVEL IS NULL)
+        ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="getDeptTreeForPa" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+		             A.DEPT_LEVEL,
+		             A.PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM PA_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#	
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel">
+		<![CDATA[
+	   		A.DEPT_LEVEL = #deptLevel#
+        ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="getDeptTreeMultiForPa" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM PA_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#	
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel">
+		<![CDATA[
+	   		A.DEPT_LEVEL = #deptLevel#
+        ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="getDeptTreeForPa2" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+		             A.DEPT_LEVEL,
+		             A.PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM PA_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#	
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel2">
+		<![CDATA[
+	   		(A.DEPT_LEVEL in ($deptLevel$) OR A.DEPT_LEVEL IS NULL)
+        ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="getDeptTreeMultiForPa2" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 2 THEN
+		                'false'
+		               ELSE
+		                'false'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM PA_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#
+		                          )
+				   AND A.CPNY_ID=#CPNYID:VARCHAR#	
+				   AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel2">
+		<![CDATA[
+	   		(A.DEPT_LEVEL in ($deptLevel$) OR A.DEPT_LEVEL IS NULL)
+        ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="getDeptTreeForSuper" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+		             A.DEPT_LEVEL,
+		             A.PARENT_DEPT_NO,
+		             A.WORK_AREA,
+		             (CASE
+		               WHEN A.DEPT_LEVEL > 1 THEN
+		                'false'
+		               ELSE
+		                'true'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.CPNY_ID = #CPNYID:VARCHAR#
+				 AND A.USE_YN = 'Y'		                    
+		 ]]>
+		<isNotEmpty prepend="AND" property="deptLevel">
+		<![CDATA[
+	   		A.DEPT_LEVEL = #deptLevel#
+        ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getDeptTreeForManager" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+		             A.DEPT_LEVEL,
+		             A.PARENT_DEPT_NO,
+		             A.WORK_AREA,
+		             (CASE
+		               WHEN (select count(hrd.deptid) from hr_department hrd
+              where hrd.parent_dept_no = a.DEPTNO) = 0 THEN
+		                'false'
+		               ELSE
+		                'true'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.CPNY_ID = #CPNYID:VARCHAR#
+				 AND A.USE_YN = 'Y'		
+				 AND EXISTS
+					 (SELECT B1.DEPTID
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = A.DEPTNO
+					         START WITH B1.DEPTNO in
+					                    (SELECT HRD.DEPTID
+					                       FROM HR_DEPARTMENT HRD
+					                      WHERE HRD.MANAGER_EMP_ID = #PERSON_ID:VARCHAR#)
+					        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+					    UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = A.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #PERSON_ID:VARCHAR#
+							     AND SUD.DEPTNO=A.DEPTNO
+					        )       
+		 ]]>
+	</select>
+	
+	<select id="getDeptTreeMultiForManager" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT '''' || A.DEPTNO || '''' DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       '''' ||A.PARENT_DEPT_NO || '''' PARENT_DEPT_NO,
+		             A.WORK_AREA,
+		             (CASE
+		               WHEN (select count(hrd.deptid) from hr_department hrd
+              where hrd.parent_dept_no = a.DEPTNO) = 0 THEN
+		                'false'
+		               ELSE
+		                'true'
+		             END) AS open,
+		             ICONOPEN,
+		             ICONCLOSE,
+		             ICON "icon"
+		        FROM HR_DEPT_TREE_V A
+		       WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+		         AND A.CPNY_ID = #CPNYID:VARCHAR#
+				 AND A.USE_YN = 'Y'		
+				 AND EXISTS
+					 (SELECT B1.DEPTID
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = A.DEPTNO
+					         START WITH B1.DEPTNO in
+					                    (SELECT HRD.DEPTID
+					                       FROM HR_DEPARTMENT HRD
+					                      WHERE HRD.MANAGER_EMP_ID = #PERSON_ID:VARCHAR#)
+					        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+					    UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = A.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #PERSON_ID:VARCHAR#
+							     AND SUD.DEPTNO=A.DEPTNO
+					        )       
+		 ]]>
+	</select>
+	
+	<select id="getAllDept" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  
+		   	SELECT A.DEPTNO,
+			       A.DEPTID,
+			       A.DEPT_NAME_ZH,
+			       A.DEPT_NAME_EN,
+			       A.DEPT_NAME_KR,
+			       A.DEPT_LEVEL
+			  FROM HR_DEPT_TREE_V A
+			 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+			   AND A.DEPTNO IN (SELECT E.ADMIN_DEPTNO
+			                      FROM SY_ADMIN_DEPTID E, SY_ADMIN F
+			                     WHERE E.ADMIN_NO = F.ADMINNO
+			                       AND E.ADMIN_DEPTNO = A.DEPTNO
+			                       AND F.ADMINID = #ADMINID:VARCHAR#)
+		  	  
+		  ]]>
+    </select>
+    
+    <select id="getBusiness" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  
+		   	SELECT A.BIZ_ID 	BIZID,
+				   B.CODE_NAME BIZNAME
+		  	  FROM HR_POST_BIZ_R A,SY_CODE B
+		  	  WHERE A.BIZ_ID = B.CODE_ID(+)
+		  	  	AND A.POST_ID = #post#
+		  	  	AND A.ACTIVITY = 1
+		  	  	ORDER BY NLSSORT(B.CODE_NAME,'NLS_SORT=SCHINESE_PINYIN_M')
+		  	  
+		  ]]>
+    </select>
+    
+	<select id="getDeptTreeForResume" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+				       GET_DEPT_NAME_RESUME(A.DEPTNO,#interLanguage:VARCHAR#,#interCpnyID:VARCHAR#,#RESUME_NO:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       A.PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 1 THEN
+				          'false'
+				         ELSE
+				          'true'
+				       END) AS open,
+                 decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_open.png'
+                             ,'Team','/resources/images/dept/t_open.png'
+                             ,'Group','/resources/images/dept/g_open.png'
+                             ,'Part','/resources/images/dept/p_open.png'
+                             ,'Sub-part','/resources/images/dept/s_open.png') ICONOPEN,
+                 decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+                             ,'Team','/resources/images/dept/t_close.png'
+                             ,'Group','/resources/images/dept/g_close.png'
+                             ,'Part','/resources/images/dept/p_close.png'
+                             ,'Sub-part','/resources/images/dept/s_close.png') ICONCLOSE,
+		             decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+		             					  ,'Team','/resources/images/dept/t_close.png'
+		             					  ,'Group','/resources/images/dept/g_close.png'
+		             					  ,'Part','/resources/images/dept/p_close.png'
+		             					  ,'Sub-part','/resources/images/dept/s_close.png') "icon"
+				  FROM ORG_INFO A
+				 WHERE A.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND A.RESUME_NO = #RESUME_NO:VARCHAR#
+				   AND A.ACTIVITY = 1
+				 ORDER BY ORDERNO
+		 ]]>
+	</select>
+	
+	<select id="getDeptTreeForCurrent" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+				       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       A.PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 1 THEN
+				          'false'
+				         ELSE
+				          'true'
+				       END) AS open,
+                 decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_open.png'
+                             ,'Team','/resources/images/dept/t_open.png'
+                             ,'Group','/resources/images/dept/g_open.png'
+                             ,'Part','/resources/images/dept/p_open.png'
+                             ,'Sub-part','/resources/images/dept/s_open.png') ICONOPEN,
+                 decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+                             ,'Team','/resources/images/dept/t_close.png'
+                             ,'Group','/resources/images/dept/g_close.png'
+                             ,'Part','/resources/images/dept/p_close.png'
+                             ,'Sub-part','/resources/images/dept/s_close.png') ICONCLOSE,
+		             decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+		             					  ,'Team','/resources/images/dept/t_close.png'
+		             					  ,'Group','/resources/images/dept/g_close.png'
+		             					  ,'Part','/resources/images/dept/p_close.png'
+		             					  ,'Sub-part','/resources/images/dept/s_close.png') "icon"
+				  FROM HR_DEPARTMENT A
+				 WHERE A.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND A.ACTIVITY = 1
+				 ORDER BY ORDERNO
+		 ]]>
+	</select>
+	<!-- 获取产品类型 -->
+	<select id="getOrgProductType" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			  SELECT A.DEPTNO,
+				       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       A.DEPT_LEVEL,
+				       A.PARENT_DEPT_NO,
+				       (CASE
+				         WHEN A.DEPT_LEVEL > 1 THEN
+				          'false'
+				         ELSE
+				          'true'
+				       END) AS open,
+                 decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_open.png'
+                             ,'Team','/resources/images/dept/t_open.png'
+                             ,'Group','/resources/images/dept/g_open.png'
+                             ,'Part','/resources/images/dept/p_open.png'
+                             ,'Sub-part','/resources/images/dept/s_open.png') ICONOPEN,
+                 decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+                             ,'Team','/resources/images/dept/t_close.png'
+                             ,'Group','/resources/images/dept/g_close.png'
+                             ,'Part','/resources/images/dept/p_close.png'
+                             ,'Sub-part','/resources/images/dept/s_close.png') ICONCLOSE,
+		             decode(GET_CODE_NAME(A.DEPT_TYPE,#interLanguage:VARCHAR#),'Company','/resources/images/dept/c_close.png'
+		             					  ,'Team','/resources/images/dept/t_close.png'
+		             					  ,'Group','/resources/images/dept/g_close.png'
+		             					  ,'Part','/resources/images/dept/p_close.png'
+		             					  ,'Sub-part','/resources/images/dept/s_close.png') "icon"
+				  FROM HR_DEPARTMENT A
+				 WHERE A.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND A.ACTIVITY = 1
+				 ORDER BY DEPT_LEVEL,ORDERNO
+		 ]]>
+	</select>
+	<!-- 获取工作地类型 -->
+	<select id="getOrgWorkArea" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			SELECT SEQ, CPNY_ID, CODE_NO, CODE_NAME CONTENT, ACTIVITY, ORDERNO
+			  FROM ORG_WORK_AREA
+			 WHERE CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = '14013912'
+			   AND END_DATE > TO_CHAR(SYSDATE,'YYYY.MM.DD')
+			 ORDER BY ORDERNO
+		 ]]>
+	</select>
+	<!-- 获取成本中心类型 -->
+	<select id="getOrgCostCenter" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			SELECT SEQ, CPNY_ID, CODE_NO, 
+  				CODE_NO || '     ' || GET_COST_CENTER_NAME(#interCpnyID:VARCHAR#,CODE_NO,#interLanguage:VARCHAR#) CONTENT, 
+  				ACTIVITY, ORDERNO
+			  FROM ORG_COST_CENTER
+			 WHERE CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = '14013912'
+			   AND END_DATE > TO_CHAR(SYSDATE,'YYYY.MM.DD')
+			 ORDER BY CODE_NO
+		 ]]>
+	</select>
+	<!-- 获取主要业务 -->
+	<select id="getBusinessCenter" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+  			SELECT CPNY_ID,
+			       DEPTNO,
+			       CODE_NO,
+			       GET_DESCRIPTION(CODE_NO) || ' -> ' || get_global_name(CODE_NO,#interLanguage:VARCHAR#) CONTENT
+			  FROM ORG_BUSINESS_RELATION A
+			 WHERE DEPTNO = #DEPTNO#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = 1
+			 ORDER BY IS_DEFAULT DESC,ORDERNO
+		 ]]>
+	</select>
+	
+	
+	<select id="getParamCodeListByCpnyID" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT '''' || SP.CODE_NO || '''' DEPTNO,
+			       NVL(T.DESCRIPTION,'')	DESCRIPTION,
+			       T.DEPTH,
+			       NVL(T.ORDERNO,'')	ORDERNO,
+			       T.PARENT_CODE_NO,
+			       S1.CONTENT DEPTNAME,
+			       1 DEPT_LEVEL,
+			       0 PARENT_DEPT_NO,
+			       'true' open
+			  FROM SY_CODE        T,
+			       SY_CODE_PARAM  SP,
+			       SY_GLOBAL_NAME S1
+			 WHERE T.CODE_NO = SP.CODE_NO
+			   AND SP.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.CODE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND T.ACTIVITY = 1
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="SON_FLAG">			
+			<![CDATA[
+				T.PARENT_CODE_NO IN (SELECT CODE_NO FROM SY_CODE WHERE PARENT_CODE_NO = #PARENT_CODE_NO:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="SON_FLAG">			
+			<![CDATA[
+				T.PARENT_CODE_NO = #PARENT_CODE_NO:VARCHAR#
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="include">			
+			<![CDATA[
+				    T.CODE_NO IN ( $include$ )
+			]]>
+		</isNotEmpty>
+		<isEmpty property="ORDER_TYPE">
+			<![CDATA[  
+				ORDER BY T.ORDERNO
+			]]>	
+		</isEmpty>
+	</select>
+	
+	<!-- 获取评价参数 -->
+	<select id="getEvsParamByResume" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT '''' || EVS.CODE_NO || '''' DEPTNO,
+			       2 DEPTH,
+			       1 PARENT_CODE_NO,
+			       CODE_NAME DEPTNAME,
+			       1 DEPT_LEVEL,
+			       0 PARENT_DEPT_NO,
+			       'true' open
+			  FROM EVS_PARAM EVS
+			 WHERE EVS.RESUME_SEQ = #RESUME_SEQ#
+			   AND EVS.PARAM_TYPE = #EVS_PARAM#
+			   AND EVS.ACTIVITY = 1
+			 ORDER BY SEQ
+		]]>
+	</select>
+	
+	<!-- 获取评价部门 -->
+	<select id="getEvsDeptnoByResume" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT '''' || DEPTNO || '''' DEPTNO,
+			       2 DEPTH,
+			       1 PARENT_CODE_NO,
+			       DEPTNAME DEPTNAME,
+			       1 DEPT_LEVEL,
+			       0 PARENT_DEPT_NO,
+			       'true' open
+			  FROM EVS_OBJECT OBJ
+			 WHERE OBJ.SEQ IN (SELECT EVS.EVS_OBJECT_SEQ
+			                     FROM EVS_AFFIRM EVS
+			                    WHERE EVS.RESUME_SEQ = #RESUME_SEQ#
+			                      AND EVS.AFFIRM_LEVEL = #AFFIRM_LEVEL#
+			                      AND EVS.AFFIRMOR_ID = #adminID#)
+		]]>
+	</select>
+	
+</sqlMap>

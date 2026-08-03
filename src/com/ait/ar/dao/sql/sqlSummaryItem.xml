@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.summaryItem">
+
+	<select id="getSummaryItemList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT ITEM_NO,
+			       S1.CONTENT ITEM_NAME,
+			       S2.CONTENT AS DATATYPE_NAME,
+			       STA_ITEM_ID
+			  FROM AR_STA_ITEM T,
+			  	   SY_GLOBAL_NAME S1,
+			  	   SY_GLOBAL_NAME S2
+			 WHERE T.ITEM_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DATATYPE = S2.NO(+)
+			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   
+			 
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 		   T.ACTIVITY=#ACTIVITY:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	
+	</select>
+	<select id="getSummaryItemByCpnyList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT ITEM_NO,
+			       S1.CONTENT ITEM_NAME,
+			       S2.CONTENT AS DATATYPE_NAME,
+			       STA_ITEM_ID
+			  FROM AR_STA_ITEM T,
+			  	   SY_GLOBAL_NAME S1,
+			  	   SY_GLOBAL_NAME S2
+			 WHERE T.ITEM_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DATATYPE = S2.NO(+)
+			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ITEM_NO NOT IN
+                  (SELECT P.ITEM_NO FROM AR_STA_ITEM_PARAM P WHERE P.CPNY_ID = #defaultCpnyID:VARCHAR#)
+			 
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+	 
+			<![CDATA[
+		 		  ORDER BY S1.CONTENT DESC
+		    ]]>
+		 
+	</select>
+	<select id="getSummaryItemCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_STA_ITEM T,
+			  	   SY_GLOBAL_NAME S1,
+			  	   SY_GLOBAL_NAME S2
+			 WHERE T.ITEM_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DATATYPE = S2.NO(+)
+			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   
+			   
+		]]>	  
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+      <![CDATA[
+            T.ACTIVITY=#ACTIVITY:NUMERIC#
+        ]]>
+    </isNotEmpty>
+	</select>
+	 
+	<select id="checkSummaryItemInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(ITEM_NO)
+			  FROM AR_STA_ITEM T
+			 
+		]]>	
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="STA_ITEM_ID">
+				<![CDATA[
+			 		  T.STA_ITEM_ID = #STA_ITEM_ID:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+				<![CDATA[
+			 		  T.ITEM_NO <> #ITEM_NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  T.ITEM_NO <> #NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<insert id="addSummaryItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_STA_ITEM (
+					ITEM_NO,
+					DATATYPE,
+					STA_ITEM_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY,
+					CREATED_IP
+				)
+				VALUES(
+					#NO:VARCAHR#,
+					'1492',
+					#STA_ITEM_ID:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1,
+					#adminIP:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<insert id="addSummaryItemInfoAffirm" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_STA_ITEM (
+					ITEM_NO,
+					DATATYPE,
+					STA_ITEM_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY
+				)
+				VALUES(
+					#ITEM_NO:VARCAHR#,
+					'1492',
+					#STA_ITEM_ID:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1
+				)
+		]]>
+	</insert>
+	
+	
+	<update id="updateSummaryItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_STA_ITEM SET
+			 		STA_ITEM_ID = #STA_ITEM_ID:VARCAHR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					UPDATED_IP=#adminIP:VARCHAR#
+
+			 WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</update>
+	<select id="checkForItemDelete" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM AR_STA_ITEM_PARAM 
+			WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+			 	ITEM_NO = #ITEM_NO:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+			 	ITEM_NO = #NO:VARCHAR#
+			]]>
+		</isNotEmpty> 
+	</select>
+	<delete id="deleteSummaryItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_STA_ITEM WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 参数部分 -->
+	<select id="getSummaryParamItemList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_NO,
+				AI.STA_ITEM_ID,
+				T.ACTIVITY,
+				T.CPNY_ID,
+				S1.CONTENT ITEM_NAME,
+				T.MIN_UNIT,
+				T.CAL_ORDER,
+				T.PARAM_NO,
+				AI.SHOW_YN,
+				AI.SHOW_ORDER,
+				S2.CONTENT CPNY_NAME,
+				(SELECT MAX(CAL_ORDER) FROM AR_STA_ITEM_PARAM AL 
+					WHERE AL.CAL_ORDER < T.CAL_ORDER AND AL.CPNY_ID = #CPNY_ID:VARCHAR#) UPORDER,
+		        (SELECT PARAM_NO FROM AR_STA_ITEM_PARAM 
+		        	WHERE CAL_ORDER = (SELECT MAX(CAL_ORDER) FROM AR_STA_ITEM_PARAM AL WHERE AL.CAL_ORDER < T.CAL_ORDER AND AL.CPNY_ID = #CPNY_ID:VARCHAR#)
+		        		AND CPNY_ID = #CPNY_ID:VARCHAR#) DOWN_PARAM_NO,     
+		        (SELECT MIN(CAL_ORDER) FROM AR_STA_ITEM_PARAM AL 
+		        	WHERE AL.CAL_ORDER > T.CAL_ORDER AND AL.CPNY_ID = #CPNY_ID:VARCHAR#) DOWNORDER,
+		        (SELECT PARAM_NO FROM AR_STA_ITEM_PARAM 
+		        	WHERE CAL_ORDER = (SELECT MIN(CAL_ORDER) FROM AR_STA_ITEM_PARAM AL WHERE AL.CAL_ORDER > T.CAL_ORDER AND AL.CPNY_ID = #CPNY_ID:VARCHAR#)
+		        		AND CPNY_ID = #CPNY_ID:VARCHAR#) UP_PARAM_NO,
+		       T.UNIT
+			FROM AR_STA_ITEM_PARAM T,
+				 AR_STA_ITEM AI,
+				 HR_COMPANY CPNY,
+				 SY_GLOBAL_NAME S1,
+				 SY_GLOBAL_NAME S2
+			WHERE T.ITEM_NO = AI.ITEM_NO 
+			  AND T.CPNY_ID = CPNY.CPNY_ID
+			  AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND T.ITEM_NO = S1.NO(+)
+			  AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND CPNY.CPNY_NO = S2.NO(+)
+			  AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+		 		  S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 		   T.ACTIVITY=#ACTIVITY:NUMERIC#
+		 		   AND AI.ACTIVITY=#ACTIVITY:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+	 		  ORDER BY CAL_ORDER
+	    ]]>
+	</select>
+	
+	<select id="getSummaryParamItemCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM AR_STA_ITEM_PARAM T,
+				 AR_STA_ITEM AI,
+				 HR_COMPANY CPNY,
+				 SY_GLOBAL_NAME S1,
+				 SY_GLOBAL_NAME S2
+			WHERE T.ITEM_NO = AI.ITEM_NO 
+			  AND T.CPNY_ID = CPNY.CPNY_ID
+			  AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND T.ITEM_NO = S1.NO(+)
+			  AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND CPNY.CPNY_NO = S2.NO(+)
+			  AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>	  
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+		 		  S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="checkForItemParamUnique" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(PARAM_NO)
+			FROM AR_STA_ITEM_PARAM 
+			WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+				AND ITEM_NO = #ITEM_NO:VARCHAR#
+		]]>	  
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+				PARAM_NO <> #PARAM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	<insert id="addSummaryParamItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_STA_ITEM_PARAM (
+			   ITEM_NO,
+		       ACTIVITY,
+		       CREATE_DATE,
+		       CREATED_BY,
+		       CPNY_ID,
+		       MIN_UNIT,
+		       CAL_ORDER,
+		       PARAM_NO,
+		       UNIT,
+		       CREATED_IP
+			)
+			VALUES(
+				#ITEM_NO:VARCHAR#,
+				#ACTIVITY:NUMERIC#,
+				SYSDATE,
+				#adminID:VARCHAR#,
+				#CPNY_ID:VARCHAR#,
+				#MIN_UNIT:VARCHAR#,
+				(SELECT NVL(MAX(T.CAL_ORDER),0) + 1 FROM AR_STA_ITEM_PARAM T WHERE CPNY_ID = #CPNY_ID:VARCHAR#),
+				AR_STA_ITEM_PARAM_SEQ.NEXTVAL,
+				#UNIT:VARCHAR#,
+				#adminIP:VARCHAR#
+			)
+		]]>
+	</insert>
+	<update id="updateSummaryParamItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_STA_ITEM_PARAM SET
+					ITEM_NO = #ITEM_NO:VARCHAR#,
+					ACTIVITY = #ACTIVITY:NUMERIC#,
+					CPNY_ID = #CPNY_ID:VARCHAR#,
+					MIN_UNIT = #MIN_UNIT:VARCHAR#,
+					UNIT = #UNIT:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #adminID:VARCHAR#,
+					UPDATED_IP=#adminIP:VARCHAR#
+
+			 WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateShowSummaryParamItem" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_STA_ITEM AST
+				SET AST.SHOW_YN = #showyn:VARCHAR#,
+				    AST.SHOW_ORDER = #showorder:VARHCAR#
+				WHERE  AST.ITEM_NO = #item:VARHCAR#
+		]]>
+	</update>
+	
+	<select id="checkForItemParamDelete" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(TABLE_NAME)
+			FROM USER_TAB_COLUMNS 
+			WHERE TABLE_NAME = 'AR_SUMMARY_' || #CPNY_ID:VARCHAR#
+			      AND COLUMN_NAME = #STA_ITEM_ID:VARCHAR#
+		]]>	  
+	</select>
+	<delete id="deleteSummaryParamItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_STA_ITEM_PARAM WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<update id="updateSummaryItemParamInfoAll" parameterClass="String">
+		<![CDATA[
+			UPDATE AR_STA_ITEM_PARAM T SET T.ACTIVITY = 0 WHERE T.ITEM_NO = #item_no:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateSummaryParamItem" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_STA_ITEM_PARAM T SET T.ACTIVITY = 1 WHERE T.ITEM_NO = #ITEM_NO:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+	<update id="updateSummaryParamItemInfoCalOrder" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_STA_ITEM_PARAM SET
+					CAL_ORDER = #CAL_ORDER:NUMERIC#
+			 WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+	<update id="updateSummaryParamItemActivityInfo" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_STA_ITEM_PARAM SET
+					ACTIVITY = #ACTIVITY:NUMERIC#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #adminID:VARCHAR#,
+					UPDATED_IP=#adminIP:VARCHAR#
+
+			 WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+	<update id="updateSummaryItemActivityInfo" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_STA_ITEM  SET
+					ACTIVITY = #ACTIVITY:NUMERIC#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #adminID:VARCHAR#,
+					UPDATED_IP=#adminIP:VARCHAR#
+
+		  WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</update>
+	
+</sqlMap>

@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.dynamicGroup">
+
+	<select id="getDynamicGroupList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.GROUP_NO,
+			       T.DESCRIPTION,
+			       S.CONTENT GROUP_NAME
+			  FROM AR_DYNAMIC_GROUP T,
+			  		SY_GLOBAL_NAME  S
+			  WHERE T.GROUP_NO = S.NO(+)
+			  	AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+			 	T.GROUP_NO = #NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+			 	T.GROUP_NO = #GROUP_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+			 	T.CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			 	T.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.GROUP_NO
+			]]>
+		</isEmpty>
+		 
+	</select>
+
+	<insert id="addDynamicGroupInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_DYNAMIC_GROUP (
+					 GROUP_NO,
+			         DESCRIPTION,
+			         CREATE_DATE,
+			         CREATED_BY,
+			         CPNY_ID,
+			         DEPT_DISTINGUISH_NO
+				)
+				VALUES(
+					#NO:VARCHAR#,
+					#DESCRIPTION:VARCAHR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					#distinguishNo:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<update id="updateDynamicGroupInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_DYNAMIC_GROUP 
+			       SET DESCRIPTION = #DESCRIPTION:VARCAHR#,
+                      UPDATE_DATE = SYSDATE,
+                      UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE GROUP_NO = #NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<delete id="deleteDynamicGroupInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_DYNAMIC_GROUP WHERE GROUP_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+	<delete id="deleteDynamicGroupInfoPerson" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_EMP_GROUP WHERE GROUP_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="getDynamicGroupInfoList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		  SELECT HR.EMPID,
+			       HR.PERSON_ID,
+			       HR.LOCAL_NAME,
+			       GET_DEPT_NAME(HR.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       GET_CODE_NAME(HR.STATUS_CODE,#interLanguage:VARCHAR#) STATUS
+			  FROM AR_EMP_GROUP       AR,
+			       HR_EMPLOYEE        HR
+			 WHERE AR.PERSON_ID = HR.PERSON_ID(+)
+		      AND EXISTS (
+		             SELECT 1 FROM AR_SUPERVISOR_INFO B
+		             WHERE B.DEPTNO = HR.DEPTNO
+		              AND B.PERSON_ID = #supervisorPersonId#
+		      )
+		]]>	 
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+		 		  AR.GROUP_NO = #GROUP_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  AR.GROUP_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (SELECT * FROM HR_DEPARTMENT 
+					WHERE HR.DEPTNO=HR_DEPARTMENT.DEPTNO 
+						START WITH HR_DEPARTMENT.DEPTNO =#DEPTNO:VARCHAR# 
+						CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO )
+			]]>					
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HR.EMPID ,HR.DEPTNO
+		]]>
+	</select>
+	
+	<select id="getDynamicGroupEmpList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  SELECT HR.EMPID,
+		  		 HR.PERSON_ID,
+		  		 HR.LOCAL_NAME,
+		  		 HR.DEPTNO,
+		  		 GET_DEPT_NAME(HR.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+		  		 S1.CONTENT STATUS
+		  	FROM HR_EMPLOYEE HR,
+		  		 SY_GLOBAL_NAME S1
+		  	WHERE HR.STATUS_CODE = S1.NO(+)
+		  	  AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>	 
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		 HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="WAGE_TYPE">
+			<![CDATA[
+		 		 HR.WAGE_TYPE = #WAGE_TYPE#
+		    ]]>
+		</isNotEmpty>
+		<!--本公司的员工不允许同时存在两个动态组里 -->
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				NOT EXISTS (SELECT PERSON_ID
+		          FROM AR_EMP_GROUP AG
+		         WHERE HR.PERSON_ID = AG.PERSON_ID
+		           AND AG.GROUP_NO IN(
+		           		SELECT GROUP_NO FROM AR_DYNAMIC_GROUP 
+		                 WHERE CPNY_ID = #CPNY_ID:VARCHAR# ))
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISOR_ID">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE HR.DEPTNO = F.DEPTNO
+	 					     AND F.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+	 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_GROUP_NO">
+			<![CDATA[
+				NOT EXISTS (SELECT PERSON_ID
+		          FROM AR_EMP_GROUP AG
+		         WHERE HR.PERSON_ID = AG.PERSON_ID
+		           AND AG.GROUP_NO = #AR_GROUP_NO:VARCHAR#)
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (SELECT 1 FROM HR_DEPARTMENT 
+					WHERE HR.DEPTNO=HR_DEPARTMENT.DEPTNO 
+						START WITH HR_DEPARTMENT.DEPTNO =#DEPTNO:VARCHAR# 
+						CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO )
+			]]>					
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.EMPID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getDynamicGroupEmpCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		  SELECT COUNT(*)
+		  	FROM HR_EMPLOYEE HR
+		  	WHERE 1 = 1
+		]]>	 
+				<isNotEmpty prepend="AND" property="WAGE_TYPE">
+			<![CDATA[
+		 		 HR.WAGE_TYPE = #WAGE_TYPE#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		 HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!--本公司的员工不允许同时存在两个动态组里 -->
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				NOT EXISTS (SELECT PERSON_ID
+		          FROM AR_EMP_GROUP AG
+		         WHERE HR.PERSON_ID = AG.PERSON_ID
+		           AND AG.GROUP_NO IN(
+		           		SELECT GROUP_NO FROM AR_DYNAMIC_GROUP 
+		                 WHERE CPNY_ID = #CPNY_ID:VARCHAR# ))
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT 1
+		  	 		  	        FROM AR_SUPERVISOR_INFO F
+							   WHERE HR.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_GROUP_NO">
+			<![CDATA[
+				NOT EXISTS (SELECT PERSON_ID
+		          FROM AR_EMP_GROUP AG
+		         WHERE HR.PERSON_ID = AG.PERSON_ID
+		           AND AG.GROUP_NO = #AR_GROUP_NO:VARCHAR#)
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			EXISTS (SELECT * FROM HR_DEPARTMENT 
+				WHERE HR.DEPTNO=HR_DEPARTMENT.DEPTNO 
+					START WITH HR_DEPARTMENT.DEPTNO =#DEPTNO:VARCHAR# 
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDynamicGroupInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		  SELECT COUNT(1)
+			  FROM AR_EMP_GROUP       AR,
+			       HR_EMPLOYEE        HR
+			 WHERE AR.PERSON_ID = HR.PERSON_ID(+)
+		      AND EXISTS (
+		             SELECT 1 FROM AR_SUPERVISOR_INFO B
+		             WHERE B.DEPTNO = HR.DEPTNO
+		              AND B.PERSON_ID = #supervisorPersonId#
+		      )
+			 
+		]]>	 
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+		 		  AR.GROUP_NO = #GROUP_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  AR.GROUP_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (SELECT * FROM HR_DEPARTMENT 
+					WHERE HR.DEPTNO=HR_DEPARTMENT.DEPTNO 
+						START WITH HR_DEPARTMENT.DEPTNO =#DEPTNO:VARCHAR# 
+						CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO )
+			]]>					
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<insert id="addDynamicGroupPerson" parameterClass="linkMap" >
+		<![CDATA[ 
+		
+			INSERT INTO AR_EMP_GROUP (PERSON_ID,GROUP_NO,CREATE_DATE,CREATED_BY) VALUES ( #PERSON_ID:VARCHAR#, #GROUP_NO:VARCHAR#, SYSDATE, #CREATED_BY:VARCHAR#)
+		
+		]]>
+	</insert>
+	<select id="checkDynamicGroupPerson" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		  SELECT  COUNT(AR.PERSON_ID)
+		   FROM   AR_EMP_GROUP AR
+		   WHERE  AR.PERSON_ID=#PERSON_ID:VARCHAR#
+		        AND AR.GROUP_NO=#GROUP_NO:VARCHAR#
+		]]>	 
+	</select>
+	<delete id="deleteDynamicGroupPerson" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE   FROM   AR_EMP_GROUP AR
+		   WHERE  AR.PERSON_ID=#PERSON_ID:VARCHAR#
+		        AND AR.GROUP_NO=#NO:VARCHAR#
+           ]]>	 
+   </delete>
+	
+</sqlMap>

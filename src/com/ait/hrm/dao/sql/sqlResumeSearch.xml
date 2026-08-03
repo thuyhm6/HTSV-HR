@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm">	
+	<select id="getResumeInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT REC_EMPLOYEE.REC_EMPLOYEE_NO,
+				   REC_INTERVIEW.REC_INTERVIEW_NO,
+				   REC_EMPLOYEE.EMP_NAME,
+				   get_global_name(REC_EMPLOYEE.CERT_TYPE_CODE, #interLanguage:VARCHAR#) CERT_TYPE,
+				   CERT_NUMBER,
+				   EMP_TELPHONE,
+				   EMP_ADDRESS,
+				   get_global_name(REC_EMPLOYEE.SEX_CODE, #interLanguage:VARCHAR#) SEX,
+				   get_global_name(REC_EMPLOYEE.NATIONALITY_CODE, #interLanguage:VARCHAR#) NATIONALITY,
+				   EMP_BIRTHDAY,
+				   FINAL_SCHOOL,
+				   get_global_name(REC_EMPLOYEE.FINAL_EDU_CODE, #interLanguage:VARCHAR#) FINAL_EDU,
+				   FINAL_GRAD_DATE,
+				   EMP_EMAIL,
+				   get_global_name(REC_EMPLOYEE.POST_TYPE_CODE, #interLanguage:VARCHAR#) POST_TYPE,
+				   REC_INTERVIEW.FINAL_CONFIRM FINAL_CONFIRM,
+				   WORK_EXPERIENCE,
+				   REC_EMPLOYEE.OLD_COMPANY,
+				   TO_CHAR(TO_DATE(REC_EMPLOYEE.INTERVIEW_PERIOD, 'YYYY/MM/DD'), 'DD/MM/YYYY') INTERVIEW_PERIOD,
+				   TRUNC((sysdate - TO_DATE(EMP_BIRTHDAY,'YYYY.MM.DD'))/365,0) AGE,
+				   FILE_PATH,
+				   REC_TYPE,
+				   REC_EMPLOYEE.CREATE_DATE CREATE_DATE,
+				   REC_EMPLOYEE.CREATED_BY CREATED_BY,
+				   REC_EMPLOYEE.UPDATE_DATE UPDATE_DATE,
+				   REC_EMPLOYEE.UPDATED_BY UPDATED_BY,
+				   REC_EMPLOYEE.ACTIVITY ACTIVITY,
+				   FILE_NAME
+			  FROM REC_EMPLOYEE, REC_INTERVIEW
+			 WHERE REC_EMPLOYEE.REC_EMPLOYEE_NO = REC_INTERVIEW.REC_EMPLOYEE_NO(+)
+			 AND REC_EMPLOYEE.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			
+			EMP_NAME LIKE
+			upper('%'||#KEY#||'%')
+			
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST">
+	      <![CDATA[
+				REC_EMPLOYEE.POST_TYPE_CODE = #POST:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDUCATION">
+			<![CDATA[
+			     FINAL_EDU_CODE = #EDUCATION:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPE">
+				<![CDATA[
+		 		 REC_TYPE = #TYPE:NUMBER#
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CONCOUNT">
+			<isEqual prepend="" property="eqOrMore" compareValue="1">
+				<![CDATA[
+		      		WORK_EXPERIENCE >= #CONCOUNT:VARCHAR#           
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="eqOrMore" compareValue="0">
+				<![CDATA[
+	      			WORK_EXPERIENCE = #CONCOUNT:VARCHAR#
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="INTERVIEW">
+			<![CDATA[
+		 		 REC_INTERVIEW.FINAL_CONFIRM = #INTERVIEW:VARCHAR#
+			    ]]>
+	    </isNotEmpty>  
+	    <isNotEmpty prepend="AND" property="OLD_COMPANY">
+			<![CDATA[
+		 		 REC_EMPLOYEE.OLD_COMPANY = #OLD_COMPANY:VARCHAR#
+			    ]]>
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="EMP_TELPHONE">
+			<![CDATA[
+		 		 REC_EMPLOYEE.EMP_TELPHONE = #EMP_TELPHONE:VARCHAR#
+			    ]]>
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="INTERVIEW_PERIOD">
+			<![CDATA[
+		 		 TO_DATE(REC_EMPLOYEE.INTERVIEW_PERIOD, 'YYYY/MM/DD') >= TO_DATE(#INTERVIEW_PERIOD:VARCHAR#, 'YYYY/MM/DD')
+			    ]]>
+	    </isNotEmpty>
+    
+		<![CDATA[
+			ORDER BY REC_INTERVIEW.REC_INTERVIEW_NO DESC
+		]]>
+	</select>
+	<select id="getResumeInfoAffrimList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT RE.REC_AFFIRM_NO,
+				   RE.REC_INTERVIEW_NO,
+				   HRE.LOCAL_NAME,
+				   RE.AFFIRM_LEVEL,
+				   RE.AFFIRMOR_ID,
+				   RE.AFFIRM_FLAG,
+				   RE.AFFIRM_REMARK,
+				   RE.CREATE_DATE,
+				   RE.CREATED_BY,
+				   RE.UPDATE_DATE,
+				   RE.UPDATED_BY,
+			       GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#) DEPARTMENT_NAME,
+			       get_global_name(HRE.POST_NO,#interLanguage:VARCHAR#) POST_GRADE,
+			      
+				   RE.ACTIVITY
+			  FROM REC_AFFIRM RE, REC_INTERVIEW REI, REC_EMPLOYEE REE,HR_EMPLOYEE HRE
+			 WHERE RE.REC_INTERVIEW_NO = REI.REC_INTERVIEW_NO
+			   AND REE.REC_EMPLOYEE_NO = REI.REC_EMPLOYEE_NO
+			   AND RE.AFFIRMOR_ID = HRE.EMPID
+			   AND REE.REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO#
+		]]>
+	</select>
+	
+</sqlMap>

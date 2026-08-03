@@ -1,0 +1,1329 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.searchTransferOrder">	
+	<!--
+	comment :搜索员工条件
+	author : aqing
+	-->
+	<sql id="EmpCondition">
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				A.EMPID=#EMPID#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DATELEFT">
+			<![CDATA[
+				  (A.DATE_LEFT IS NULL OR A.DATE_LEFT>SYSDATE)
+				]]>
+		</isEmpty>		
+		<isNotEmpty prepend="AND" property="CONDITION">
+			<![CDATA[
+				(	
+					A.CHINESENAME 		LIKE '%'||#CONDITION#||'%'
+					OR A.EMPID 			LIKE '%'||#CONDITION#||'%'
+					OR upper(A.CHINESE_PINYIN) LIKE '%'||upper(#CONDITION#)||'%'
+				)
+			]]>
+		</isNotEmpty>   
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+				EXISTS (
+					SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID=A.DEPTID
+	                 	START WITH B1.DEPTID = #DEPTID#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+             ]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID" >
+			<![CDATA[
+    		   EXISTS (
+		            SELECT *
+		              FROM SY_ADMIN_DEPTID S1, SY_ADMIN S2
+		             WHERE S2.ADMINNO = S1.ADMIN_NO
+		               AND S1.ADMIN_DEPTID = A.DEPTID
+		               AND S2.ADMINID = #ADMINID#
+		       )
+			]]>
+		</isNotEmpty>
+	</sql>
+	<!--
+	comment :搜索发令条件
+	author : aqing
+	-->
+	<sql id="TransCondition">
+			<isNotEmpty prepend="AND" property="TRANSCODE" >
+			<![CDATA[
+    		  G.TRANS_CODE =#TRANSCODE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_START" >
+			<![CDATA[
+    		  G.START_DATE >=TO_DATE(#PERIOD_START#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_END" >
+			<![CDATA[
+    		   G.START_DATE <=TO_DATE(#PERIOD_END#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATEDATE" >
+			<![CDATA[
+    		   TO_DATE(TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') =TO_DATE(#CREATEDATE#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="LIKE_UPGRADE" >
+			<![CDATA[
+    		   G.TRANS_CODE LIKE '%' ||#LIKE_UPGRADE#||'%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NOT_LIKE_UPGRADE" >
+			<![CDATA[
+    		   G.TRANS_CODE NOT LIKE #NOT_LIKE_UPGRADE#||'%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANSNO" >
+			<![CDATA[
+    		   G.TRANS_NO like '%' ||#TRANSNO#  ||'%'         
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY" >
+			<![CDATA[
+    		   G.ACTIVITY=#ACTIVITY#
+			]]>
+		</isNotEmpty>
+	</sql>
+	<!--
+	comment :搜索发令条件时间
+	author : aqing
+	-->
+	<sql id="startDateEqCondition">
+		<isNotEmpty prepend="AND" property="STARTDATE" >
+			<![CDATA[
+    		  TO_CHAR(G.START_DATE,'YYYY-MM-DD')=#STARTDATE#
+			]]>
+		</isNotEmpty>
+　　</sql>
+	<!--
+	comment :搜索发令条件时间小于时间条件
+	author : aqing
+	-->
+	<sql id="startDateLessThanCondition">
+		<isNotEmpty prepend="AND" property="START_DATE_LESS_THAN" >
+			<![CDATA[
+    		   G.START_DATE<=TO_DATE(#START_DATE_LESS_THAN#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+　　</sql>
+	<sql id="getOrder">
+		<isNotEmpty prepend="" property="sortname">
+			<![CDATA[
+		 		  ORDER BY 1
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	<sql id="EmpConditionTwo">
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				A.EMPID=#EMPID#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DATELEFT">
+			<![CDATA[
+				  (A.DATE_LEFT IS NULL OR TO_CHAR(A.DATE_LEFT,'YYYY-MM-DD')<=TO_CHAR(SYSDATE,'YYYY-MM-DD'))
+				]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="CONDITION">
+			<![CDATA[
+				(	
+					A.CHINESENAME 		LIKE '%'||#CONDITION#||'%'
+					OR A.EMPID 			LIKE '%'||#CONDITION#||'%'
+					OR upper(A.CHINESE_PINYIN) LIKE '%'||upper(#CONDITION#)||'%'
+				)
+			]]>
+		</isNotEmpty>   	
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+				EXISTS (
+					SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID=A.DEPTID
+	                 	START WITH B1.DEPTID = #DEPTID#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+             ]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID" >
+			<![CDATA[
+    		   EXISTS (
+		            SELECT *
+		              FROM SY_ADMIN_DEPTID S1, SY_ADMIN S2
+		             WHERE S2.ADMINNO = S1.ADMIN_NO
+		               AND S1.ADMIN_DEPTID = A.DEPTID
+		               AND S2.ADMINID = #ADMINID#
+		       )
+			]]>
+		</isNotEmpty>
+	</sql>
+	<sql id="seachgetExpInside">
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (G.ACTIVITY=1 OR G.ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE" >
+			<![CDATA[
+    		   G.START_DATE<=to_date(to_char(sysdate,'yyyy-mm-dd'),'yyyy-mm-dd')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS" >
+			<![CDATA[
+    		   (G.TRANS_CODE ='TransRemove01' OR G.TRANS_CODE='TransRemove02' OR G.TRANS_CODE='TransRemove03')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANSPROBATION" >
+			<![CDATA[
+    		   (G.TRANS_CODE ='TurnType0010' OR G.TRANS_CODE='TurnType0020' OR G.TRANS_CODE='TurnType0030')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PROMOTE" >
+			<![CDATA[
+    		    (G.TRANS_CODE ='TransCode_130')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TransferPost" >
+			<![CDATA[
+    		    (G.TRANS_CODE ='TransCode_220')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUSPEND" >
+			<![CDATA[
+    		    (G.TRANS_CODE ='BandhType0010' OR G.TRANS_CODE='BandhType0020' OR G.TRANS_CODE='BandhType0030' OR G.TRANS_CODE='BandhType0040')
+			]]>
+		</isNotEmpty>
+	</sql>
+	<sql id="seachgetActBusiness">
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (ACTIVITY=1 OR ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_START" >
+			<![CDATA[
+    		   TO_DATE(A.effectDate,'YYYY-MM-DD')>=TO_DATE(#PERIOD_START#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERIOD_END" >
+			<![CDATA[
+    		   TO_DATE(A.effectDate,'YYYY-MM-DD') <=TO_DATE(#PERIOD_END#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CREATEDATE" >
+			<![CDATA[
+    		   TO_DATE(A.createDate,'YYYY-MM-DD') =TO_DATE(#CREATEDATE#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+    		  ACTIVITY =#ACTIVITY#
+			]]>
+		</isNotEmpty>
+	</sql>
+	<sql id="seachgetPlurality">
+		<dynamic >
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (G.ACTIVITY=1 OR G.ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		</dynamic>
+		<dynamic >
+		<isNotEmpty prepend="AND" property="EMP_LIST">
+			<iterate property="EMP_LIST" open="(" close=")" conjunction="OR">
+				A.EMPID = #EMP_LIST[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOINDATE">
+			<![CDATA[
+    		  TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD')>=#JOINDATE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOINDATE1">
+			<![CDATA[
+    		  TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD')<=#JOINDATE#
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</sql>
+	<sql id="seachgetDispatch">
+		<dynamic >
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (G.ACTIVITY=1 OR G.ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_LIST">
+			<iterate property="EMP_LIST" open="(" close=")" conjunction="OR">
+				A.EMPID = #EMP_LIST[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOINDATE">
+			<![CDATA[
+    		  TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD')>=#JOINDATE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOINDATE1">
+			<![CDATA[
+    		  TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD')<=#JOINDATE#
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</sql>
+	<sql id="seachgetRewardInfo">
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (B.ACTIVITY=1 OR B.ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_START">
+			<![CDATA[
+    		   B.reward_date>=TO_DATE(#PERIOD_START#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_END">
+			<![CDATA[
+    		   B.reward_date <=TO_DATE(#PERIOD_END#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATEDATE">
+			<![CDATA[
+    		   TO_DATE(TO_CHAR(B.CREATE_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') =TO_DATE(#CREATEDATE#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REWARDTYPECODE">
+			<![CDATA[
+    		   B.REWARD_TYPE_CODE =#REWARDTYPECODE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+    		  B.ACTIVITY =#ACTIVITY#
+			]]>
+		</isNotEmpty>
+	</sql>
+	<sql id="seachgetPunishMent">
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (G.ACTIVITY=1 OR G.ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_START">
+			<![CDATA[
+    		   G.DATE_PUNISHED>=TO_DATE(#PERIOD_START#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_END">
+			<![CDATA[
+    		   G.DATE_PUNISHED <=TO_DATE(#PERIOD_END#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATEDATE">
+			<![CDATA[
+    		  to_date(to_char(G.CREATE_DATE,'yyyy-mm-dd'),'yyyy-mm-dd') =TO_DATE(#CREATEDATE#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PUNISHTYPECODE">
+			<![CDATA[
+    		   G.PUN_TYPE_ID =#PUNISHTYPECODE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+    		  G.ACTIVITY =#ACTIVITY#
+			]]>
+		</isNotEmpty>
+	</sql>
+	<sql id="seachgetResignation">
+		<isNotEmpty prepend="AND" property="EFFECTTRANS" >
+			<![CDATA[
+    		  (G.ACTIVITY=1 OR G.ACTIVITY=0) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_START">
+			<![CDATA[
+    		   G.RESIGN_DATE>=TO_DATE(#PERIOD_START#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RETYPE">
+			<![CDATA[
+    		   g.activity=#RETYPE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERIOD_END">
+			<![CDATA[
+    		   G.RESIGN_DATE <=TO_DATE(#PERIOD_END#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATEDATE">
+			<![CDATA[
+    		  TO_DATE(TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') =TO_DATE(#CREATEDATE#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGNTYPECODE">
+			<![CDATA[
+    		   G.resign_type_code =#RESIGNTYPECODE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+    		  G.ACTIVITY =#ACTIVITY#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+    		   TO_CHAR(G.RESIGN_DATE,'YYYY-MM-DD')=#RESIGN_DATE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE_LESS_THAN">
+			<![CDATA[
+    		   G.RESIGN_DATE<=TO_DATE(#RESIGN_DATE_LESS_THAN#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+	</sql>
+	<!-- 
+	  调动
+	 -->
+	<select id="getExpInside"  parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT 
+                A.EMPID                                 empID,
+                A.CHINESENAME                           chineseName,
+                A.CHINESE_PINYIN                        pinyin,
+                A.ENGLISHNAME                           enName,
+                A.KOREANNAME                            korName,
+                G.ACTIVITY                              activity,   
+                G.CREATED_BY                            createdBy,
+                TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD')     createDate,
+                G.DEPTID                                deptID,           
+                get_dept_name(hr_get_level_deptid(G.DEPTID,4))                 department,
+                 hr_get_flevel_deptname(G.DEPTID)       fdepartment,
+                 GET_DEPT_NAME1(A.EMPID,G.TRANS_NO)     bdepartment,
+                NVL(GET_POST_CODE_NAME(A.EMPID),' ')     bpostGradename,
+                B.DEPT_EN_NAME                          deptEnName,
+                B.DEPT_KOR_NAME                         deptKorName,
+                B.DEPT_LEVEL                            deptlevel,   
+                TO_CHAR(G.END_DATE,'YYYY-MM-DD')        endDate,
+                G.EXP_INSIDE_NO                         internalExperienceNo,
+                J.CODE_NAME                             position,
+                G.POSITION_CODE                         positionCode,
+                J.CODE_EN_NAME                          positionEnName,
+                J.CODE_KOR_NAME                         positionKorName,                   
+                G.POST_GRADE_CODE                       postGradeCode,
+                HG.POST_GRADE_NAME                      postGradename,
+                HG.POST_GRADE_EN_NAME                   postGradeEnName,
+                HG.POST_GRADE_KOR_NAME                  postGradeKorName,
+                G.POST_CODE                              postCode,
+                HP.POST_NAME                            post,
+                G .POST_GROUP_CODE                        postGroupCode,
+                HPG.POST_GROUP_NAME                     postGroup,          
+                G.STATUS_CODE                           statusCode,
+                get_code_name(G.STATUS_CODE)          status,
+                K.CODE_EN_NAME                          enstatus,
+                K.CODE_KOR_NAME                         korstatus, 
+                TO_CHAR(G.START_DATE,'YYYY-MM-DD')      startDate,
+                G.TRANS_CODE                            transCode,
+                G.TRANS_NO                       transNo,
+                H.CODE_NAME                             transCodeName,
+                H.CODE_EN_NAME                          transCodeEnName,
+                H.Code_Kor_Name                         transCodeKorName,
+                G.UPDATED_BY                            updatedBy,
+                TO_CHAR(G.UPDATE_DATE,'YYYY-MM-DD')     updateDate,
+                G.Remark                        reasons,
+                (select to_char(t.start_date,'yyyy-mm-dd') from HR_EXPERIENCE_INSIDE t where t.trans_no=g.trans_no and (t.trans_code='BandhType0020' OR t.TRANS_CODE='BandhType0040')) susdate,
+                decode(H.Parent_Code,'TransCode',get_code_name(H.CODE_ID),get_code_name(H.Parent_Code))      hrCommType              
+      FROM
+                      HR_EMPLOYEE A,
+                      HR_DEPARTMENT B,
+                      HR_EXPERIENCE_INSIDE G,                                        
+                      HR_POST_GRADE HG,
+                      HR_POST HP,
+                      HR_POST_GROUP HPG,
+                      SY_CODE H,
+                      SY_CODE J,
+                      SY_CODE K,
+                      hr_personal_info N       
+      WHERE           A.DEPTID = B.DEPTID(+)
+                     AND A.EMPID=G.EMPID(+)
+                     AND G.TRANS_CODE=H.CODE_ID(+)    
+                     AND G.POST_GRADE_CODE=HG.POST_GRADE_ID(+)
+                     AND G.POSITION_CODE=J.CODE_ID(+)  
+                     AND G.STATUS_CODE=K.CODE_ID(+) 
+                     AND G.POST_CODE = HP.POST_ID(+)
+                     AND HP.POST_GROUP_ID = HPG.POST_GROUP_ID(+) 
+                     AND A.empid=N.empid(+)
+		]]>
+		<include refid="seachgetExpInside"/>
+		<include refid="EmpCondition"/>
+		<include refid="TransCondition"/>
+		<include refid="startDateEqCondition"/>
+		<include refid="startDateLessThanCondition"/>
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	 		 	ORDER BY G.START_DATE DESC,G.ACTIVITY ASC,B.dept_level ASC,G.DEPTID ASC,G.post_grade_code ASC,B.orderno DESC
+			 ]]>
+		</isEmpty>
+	</select>
+	<!--
+	comment : 调动　发令信息查讯记录数
+	author : aqing
+	-->
+	<select id="getExpInsideCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+		            COUNT(A.EMPID)  CNT
+		             FROM
+		                HR_EMPLOYEE A,
+		                HR_DEPARTMENT B,
+		                HR_EXPERIENCE_INSIDE G,
+                        HR_POST_GRADE HG,
+		                SY_CODE H  ,
+                        SY_CODE J         
+		        WHERE  A.DEPTID = B.DEPTID(+)   
+				    AND A.EMPID(+)=G.EMPID 
+	                AND G.TRANS_CODE=H.CODE_ID(+)		
+                    AND G.POST_GRADE_CODE=HG.POST_GRADE_ID(+)
+                    AND G.POSITION_CODE=J.CODE_ID(+)	
+		]]>
+		<include refid="seachgetExpInside"/>
+	　　<include refid="EmpCondition"/>
+		<include refid="TransCondition"/>
+		<include refid="startDateEqCondition"/>
+		<include refid="startDateLessThanCondition"/>
+	</select>
+	<update id="rollBackUpgrade" parameterClass="linkMap">
+		<![CDATA[
+			
+  			   UPDATE HR_EXPERIENCE_INSIDE
+			      SET Activity = 2 
+				WHERE EXP_INSIDE_NO = #INTERNALEXPERIENCENO#  
+			  ]]>
+	</update>
+	<!-- 担当业务变更 -->
+	<select id="getActBusiness" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT 
+                	empID        			 empid,
+                    chineseName              chineseName,
+                    activity                 activity,   
+                    createdBy                createdBy,
+                    createDate               createDate,
+                    deptid                   deptid,
+                    deptName                 deptName,
+                    fdeptName                fdeptName,
+                    endDate                  endDate,
+                    postId                   postId,
+                    postName                 postName,
+                    posttionCode             posttionCode,
+                    positionName             positionName,
+                    postGradeCode            postGradeCode,
+                    postGradeName            postGradeName,
+                    effectDate               effectDate,
+                    transNo                  transNo,
+                    bizName                  bizName,
+                    updatedBy                updatedBy,
+                    updateDate               updateDate,
+                    remark                   remark
+			FROM hr_act_business_v  A
+			where 1=1
+		]]>
+		<include refid="EmpCondition"/>
+		<include refid="seachgetActBusiness"/>
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	 		 	order by   effectDate desc,deptid asc,postGradeCode ASC
+			 ]]>
+		</isEmpty>	
+	</select>
+	<select id="getActBusinessCnt"  parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+                	COUNT(*)
+			FROM hr_act_business_v  A
+			where 1=1
+		]]>
+		<include refid="EmpCondition"/>
+		<include refid="seachgetActBusiness"/>
+	</select>
+	<update id="rollBackActBusiness" parameterClass="linkMap">
+		<![CDATA[
+  			   UPDATE HR_ACT_BUSINESS
+			      SET activity= 2 
+				WHERE TRANS_NO= #TRANSNO#  
+			  ]]>
+	</update>
+	<select id="viewActBusiness" resultClass="linkMap"
+		parameterClass="linkMap">
+		<![CDATA[
+			SELECT   
+				          T.TRANS_NO                                transNo,  
+				          T.TRANS_CODE                              transCode,
+				          get_code_name(T.TRANS_CODE)               transName,                           
+				          T.EMPID                                   empid,    
+				          HR.CHINESENAME                            chineseName,
+				          hr_get_FLevel_deptname(t.Partid)          deptName,                  
+				          T.Partid                                  partId,
+				          HD.DEPTNAME                     			partName,             
+				          T.POST_ID                                 postId,
+				          get_post_name(T.POST_ID)                  postName,
+				          get_post_grade_name(T.POST_GRADE_CODE)   postGradeName,
+				          get_position_name(T.POSITION_CODE)           positionName,
+				          hr_getActBusiness(T.TRANS_NO)             bizName,                       
+				          TO_CHAR(T.EFFECT_DATE,'YYYY-MM-DD')       effectDate,
+				          TO_CHAR(T.END_DATE,'YYYY-MM-DD')          endDate,        
+				          T.REMARK                                  remark,
+				          TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD')       createDate,                  
+				          T.CREATED_BY                              createdBy,                
+				          TO_CHAR(T.UPDATE_DATE,'YYYY-MM-DD')       updateDate,                  
+				          T.UPDATED_BY                              updatedBy,                   
+				          T.ACTIVITY                                activity
+		                                                           
+		      FROM HR_ACT_BUSINESS      T,
+		           HR_EMPLOYEE          HR,
+		           HR_DEPARTMENT        HD
+		      WHERE T.EMPID=HR.EMPID
+		      AND T.Partid=hd.deptid
+		      AND T.EMPID=#EMPID#
+			GROUP BY 
+		          T.TRANS_NO,  
+		          T.TRANS_CODE,                          
+		          T.EMPID,    
+		          HR.CHINESENAME,                            
+		          T.Partid,
+		          HD.DEPTNAME,          
+		          T.POST_ID,                                         
+		          TO_CHAR(T.EFFECT_DATE,'YYYY-MM-DD'),
+		          TO_CHAR(T.END_DATE,'YYYY-MM-DD'),        
+		          T.REMARK,
+		          TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD'),                  
+		          T.CREATED_BY,                
+		          TO_CHAR(T.UPDATE_DATE,'YYYY-MM-DD'),                  
+		          T.UPDATED_BY,                   
+		          T.ACTIVITY,
+		          HR.POSITION_CODE,
+		          HR.POST_GRADE_CODE,
+		          T.POSITION_CODE,
+		          T.POST_GRADE_CODE	
+		          order by effectDate desc
+		]]>
+	</select>
+	<select id="viewActBusinessCnt" resultClass="int"
+		parameterClass="linkMap">
+		<![CDATA[
+			SELECT   COUNT(*)                                            
+		      FROM HR_ACT_BUSINESS      T,
+		           HR_EMPLOYEE          HR,
+		           HR_DEPARTMENT        HD
+		      WHERE T.EMPID=HR.EMPID
+		      AND T.Partid=hd.deptid
+		      AND T.EMPID=#EMPID#
+		]]>
+	</select>
+	<!--
+	comment :查讯兼职信息
+	author : aqing
+	-->
+	<select id="getPlurality" parameterClass="linkMap" resultClass="linkMap"> 
+		<![CDATA[
+		  SELECT 
+                A.EMPID                             empID,
+                A.CHINESENAME                       chineseName,
+                A.CHINESE_PINYIN                    pinyin,
+                A.ENGLISHNAME                       enName,
+                A.KOREANNAME                        korName,
+                get_dept_name(g.deptid)             department,
+                B.DEPT_EN_NAME                      enDept,
+                B.DEPT_KOR_NAME                     korDept,
+                g.deptid                            deptID,
+                C.POSTID                            postCode,
+                D.POST_NAME                         post,
+                D.POST_EN_NAME                      enPost,
+                D.POST_KOR_NAME                     korPost,
+                g.POSITION_CODE                     positionCode,
+                get_position_name(g.POSITION_CODE)  position,
+                E.CODE_EN_NAME                      enPosition,
+                E.CODE_KOR_NAME                     korPosition,
+                A.POST_COEF                         postCoef,
+                G.POST_GRADE_CODE                   postGradeCode,
+                get_post_grade_name(G.POST_GRADE_CODE)  postGrade,
+                    HG.POST_GRADE_EN_NAME                                      enPostGrade,
+                    HG.POST_GRADE_KOR_NAME                                     korPostGrade,
+                G.ACTIVITY                          activity,
+                TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD') createDate,
+                G.CREATED_BY                        createdBy,
+                TO_CHAR(G.END_DATE,'YYYY-MM-DD')    endDate,
+                 to_char(sysdate,'yyyy-mm-dd')      endPluralityDate ,
+                G.PLU_CONTENTS                      contents,
+                G.PLU_NO                            pluralityNo,
+                G.PLU_REASON                        reasonCode,
+                I.CODE_NAME                        reason,
+                I.CODE_EN_NAME                    enReason,
+                I.CODE_KOR_NAME                   korReason,
+                TO_CHAR(G.START_DATE,'YYYY-MM-DD')  startDate,
+                G.TRANS_CODE                        transCode,
+                H.CODE_NAME                          transCodeName,
+                H.CODE_EN_NAME                      enTransCodeName,
+                H.CODE_KOR_NAME                     korTransCodeName,
+                G.TRANS_NO                          transNo,
+                TO_CHAR(G.UPDATE_DATE,'YYYY-MM-DD') updateDate,
+          G.UPDATED_BY            updatedBy,
+          g.pludeptid                               pluDeptid,
+          decode(g.pludeptname,null,get_dept_name(g.pludeptid),'',get_dept_name(g.pludeptid),g.pludeptname)                pluDeptName,
+          g.plupositionid                           pluPositionid,
+          get_position_name(g.plupositionid)        pluPositionName,
+          decode(g.trans_code,'TransCode_150_01',null,
+                  (select to_char(tem.start_date,'yyyy-mm-dd')
+                  from HR_PLURALITY tem
+                  where tem.trans_no=g.trans_no and tem.trans_code='TransCode_150_01')
+          )       startWithDate,
+          decode(g.trans_code,'TransCode_150_01',null,
+                  (select get_dept_name(tem.pludeptid)
+                  from HR_PLURALITY tem
+                  where tem.trans_no=g.trans_no and tem.trans_code='TransCode_150_01')
+          )       startPluDeptName,
+          decode(g.trans_code,'TransCode_150_01',null,
+                  (select get_position_name(tem.plupositionid)
+                  from HR_PLURALITY tem
+                  where tem.trans_no=g.trans_no and tem.trans_code='TransCode_150_01')
+          )       startPluPositionName,
+          decode(g.trans_code,'TransCode_150_01',null,
+                  (select tem.plu_reason
+                  from HR_PLURALITY tem
+                  where tem.trans_no=g.trans_no and tem.trans_code='TransCode_150_01')
+          )       startPluReason,
+          decode(G.trans_code,'TransCode_150_01',
+                   decode(
+                        sign( G.START_DATE-sysdate),-1,1,1,0
+                         ),'TransCode_150_02',
+                        decode(
+                        sign(G.END_DATE-sysdate          
+                            ),-1,1,1,0  
+                         )
+                       ) flag
+          
+                FROM
+                        HR_EMPLOYEE A,
+                        HR_DEPARTMENT B,
+                        HR_EMP_POST C,
+                        HR_POST D,
+                        SY_CODE E,
+                        SY_CODE F,
+                        HR_POST_GRADE HG,
+                        HR_PLURALITY G,
+                        SY_CODE H,
+                        SY_CODE I,
+                        hr_personal_info N           
+                WHERE
+                        A.DEPTID = B.DEPTID(+)
+                    AND A.EMPID = C.EMPID(+)
+                    AND C.POSTID = D.POST_ID(+)
+                    AND A.POSITION_CODE = E.CODE_ID(+)
+                    AND A.POST_GRADE_CODE = F.CODE_ID(+)
+             AND A.EMPID(+)=G.EMPID
+             AND HG.POST_GRADE_ID(+)=A.POST_GRADE_CODE
+                    AND G.TRANS_CODE=H.CODE_ID(+)
+                    AND G.PLU_REASON=I.CODE_ID(+)
+                    AND A.empid=N.empid(+)
+                    AND (A.DATE_LEFT IS NULL OR A.DATE_LEFT > SYSDATE)   	 	
+		]]>
+		<include refid="seachgetPlurality"/>
+		<include refid="EmpCondition"/>
+		<include refid="TransCondition"/>
+		<include refid="startDateEqCondition"/>
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	   			ORDER BY  G.START_DATE DESC,G.deptID ASC,G.POST_GRADE_CODE ASC,B.orderno,N.dob,activity,transCode,empid
+		 	]]>
+		</isEmpty>	
+	</select>
+	<select id="getPluralityCnt" parameterClass="linkMap" resultClass="int"> 
+		<![CDATA[
+		    	SELECT 
+		            COUNT(A.EMPID) AS CNT
+		            FROM
+		            		HR_EMPLOYEE A,
+		                    HR_PLURALITY G
+		            WHERE
+					 	 	A.EMPID(+)=G.EMPID
+		]]>
+		<include refid="seachgetPlurality"/>
+		<include refid="EmpCondition"/>
+		<include refid="TransCondition"/>
+		<include refid="startDateEqCondition"/>
+	</select>
+	<update id="rollBackPlurality" parameterClass="linkMap">
+		<![CDATA[
+  			   UPDATE HR_PLURALITY
+			      SET activity = 2 
+				WHERE PLU_NO = #PLURALITYNO#  
+			  ]]>
+	</update>
+	<!--
+	comment :查讯派遣信息
+	author : aqing
+	-->
+	
+	<select id="getDispatch" parameterClass="linkMap" resultClass="linkMap"> 
+		<![CDATA[
+		SELECT 
+                A.EMPID                             empID,
+                A.CHINESENAME                       chineseName,
+                A.CHINESE_PINYIN                    pinyin,
+                A.ENGLISHNAME                       enName,
+                A.KOREANNAME                        korName,
+                hr_get_flevel_deptname(g.deptid)    department,
+                hr_get_flevel_deptname(g.deptid)    fdepartment,
+                B.DEPT_EN_NAME                      enDept,
+                B.DEPT_KOR_NAME                     korDept,
+                A.DEPTID                            deptID,
+                C.POSTID                            postCode,
+                D.POST_NAME                         post,
+                D.POST_EN_NAME                      enPost,
+                D.POST_KOR_NAME                     korPost,
+                g.POSITION_CODE                     positionCode,
+                get_position_name(g.POSITION_CODE)                         position,
+                E.CODE_EN_NAME                      enPosition,
+                E.CODE_KOR_NAME                     korPosition,
+                A.POST_COEF                         postCoef,
+                g.POST_GRADE_CODE                   postGradeCode,
+                get_post_grade_name(g.POST_GRADE_CODE)                         postGrade,
+                F.CODE_EN_NAME                      enPostGrade,
+                F.CODE_KOR_NAME                     korPostGrade,
+                G.ACTIVITY                          activity,
+                TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD') createDate,
+                G.CREATED_BY                        createdBy,
+                TO_CHAR(G.END_DATE,'YYYY-MM-DD')    endDate,
+                G.CONTENTS                        contents,
+                G.DISP_NO                           dispNo,
+                G.DEPT_NAME                          disDept,
+                TO_CHAR(G.START_DATE,'YYYY-MM-DD')  startDate,
+                G.TRANS_CODE                        transCode1,
+                H.CODE_NAME                          transCodeName1,
+                H.CODE_EN_NAME                      enTransCodeName,
+                H.CODE_KOR_NAME                     korTransCodeName,
+                G.TRANS_NO                          transNo,
+                TO_CHAR(G.UPDATE_DATE,'YYYY-MM-DD')  updateDate,
+                G.UPDATED_BY                         updatedBy,
+                TO_CHAR(G.PROPOSE_END_DATE,'YYYY-MM-DD')                   proposeEndDate,
+                GET_CODE_NAME(G.DIS_DIFFENT)                               disDiffentName,
+                G.DIS_DIFFENT                                              disDiffent,
+                G.DIS_TARGET                                               disTarget,                         
+                G.REMARK                                                   remark,
+                get_code_name(g.statuscode)                                statusName,
+                g.trans_code                                               transCode,
+                get_code_name(g.trans_code)                                transCodeName,
+                 decode(G.trans_code,'TransDispatchType01',
+                   decode(  
+                        sign( G.START_DATE-sysdate),-1,1,1,0
+                         ),'TransDispatchType02',
+                        decode(
+                        sign(G.END_DATE-sysdate
+                            ),-1,1,1,0
+                         )
+                       ) flag
+                FROM
+                    HR_EMPLOYEE A,
+                        HR_DEPARTMENT B,
+                        HR_EMP_POST C,
+                        HR_POST D,
+                        SY_CODE E,
+                        SY_CODE F,
+                        HR_DISPATCH G,
+                        SY_CODE H,
+                        hr_personal_info N           
+                WHERE
+                    A.DEPTID = B.DEPTID(+)
+                    AND A.EMPID = C.EMPID(+)
+                    AND C.POSTID = D.POST_ID(+)
+                    AND A.POSITION_CODE = E.CODE_ID(+)
+                    AND A.POST_GRADE_CODE = F.CODE_ID(+)
+             AND A.EMPID(+)=G.EMPID
+                    AND G.TRANS_CODE=H.CODE_ID(+)
+                    AND A.empid=N.empid(+)
+             AND (A.DATE_LEFT IS NULL OR A.DATE_LEFT > SYSDATE)
+		]]>
+		<include refid="seachgetDispatch"/>
+		<include refid="EmpCondition"/>
+		<include refid="TransCondition"/>
+		<include refid="startDateEqCondition"/>
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	 	 		ORDER BY G.START_DATE DESC,A.DEPTID ASC,G.POST_GRADE_CODE ASC,activity,empid
+			 ]]>
+		</isEmpty>	
+	</select>
+	<select id="getDispatchCnt" parameterClass="linkMap" resultClass="int"> 
+		<![CDATA[
+		    SELECT 
+		            COUNT(A.EMPID) AS CNT
+		            FROM
+		            		HR_EMPLOYEE A,
+		                    HR_DISPATCH G
+		            WHERE
+		                    A.EMPID(+)=G.EMPID
+			 	
+		]]>
+		<include refid="seachgetDispatch"/>
+		<include refid="EmpCondition"/>
+		<include refid="TransCondition"/>
+		<include refid="startDateEqCondition"/>
+	</select>
+	<update id="rollBackDispatch" parameterClass="linkMap">
+		<![CDATA[
+  			   UPDATE HR_DISPATCH
+			      SET activity = 2 
+				WHERE DISP_NO = #DISPNO#  
+			  ]]>
+	</update>
+	<!--
+	comment :查讯奖励信息
+	author : zhangyi
+	-->
+
+	<select id="getRewardInfo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+		    SELECT REWARD_NO             			 rewardNo,
+				  B.EMPID                 			 empID,
+				  A.CHINESENAME						 chineseName,
+                A.CHINESE_PINYIN                    pinyin,
+                A.ENGLISHNAME                       enName,
+                A.KOREANNAME                        korName,
+				  A.DEPTID							 deptID,
+				 hr_get_flevel_deptname(b.DEPTID)						 department,
+               F.DEPT_EN_NAME                      enDept,
+                F.DEPT_KOR_NAME                     korDept,
+				  REWARD_TYPE_CODE      			 rewardTypeCode,
+				  C.CODE_NAME						 rewardType,
+               C.CODE_EN_NAME                      enRewardType,
+                C.CODE_KOR_NAME                      korRewardType,
+				  TO_CHAR(REWARD_DATE,'YYYY-MM-DD')  rewardDate,
+				  REWARD_CONTENTS        			 rewardContents1,
+				  REWARD_SORT_CODE       			 rewardSortCode,
+				  D.CODE_NAME			 			 rewardSort,
+               D.CODE_EN_NAME                     enRewardSort,
+                D.CODE_KOR_NAME                      korRewardSort,
+          ACHIEVEMENT_TYPE_CODE         achievementTypeCode,
+          E.CODE_NAME              achievementType,
+               E.CODE_EN_NAME                      enAchievementType,
+                E.CODE_KOR_NAME                     korAchievementType,
+          REWARD_AMOUNT                 rewardAmount,
+          REWARD_BONUS                  rewardBonus,
+          TO_CHAR(B.CREATE_DATE,'YYYY-MM-DD') createDate,
+          B.CREATED_BY                    createdBy ,
+          TO_CHAR(B.UPDATE_DATE,'YYYY-MM-DD') updateDate,
+          B.UPDATED_BY                    updatedBy,
+          B.ORDERNO                       orderNo,
+          B.ACTIVITY                      activity,
+          B.TRANS_NO                         transNo,
+         get_post_name(A.POST_CODE)                       post,
+              get_post_grade_name(b.POST_GRADE_CODE)    postGradeName,
+              B.REWARD_CONTENTS                         rewardContents,
+                H.POST_EN_NAME                      enPost,
+                H.POST_KOR_NAME                     korPost,
+          get_position_name(b.position_code)                        position,
+                I.CODE_EN_NAME                      enPosition,
+                I.CODE_KOR_NAME                     korPosition
+        FROM HR_REWARD B,
+           HR_EMPLOYEE A,
+          SY_CODE C,
+          SY_CODE D,
+          SY_CODE E,
+          HR_DEPARTMENT F,
+          HR_EMP_POST G,
+          HR_POST H,
+          SY_CODE I
+      WHERE B.EMPID = A.EMPID(+)
+        AND B.REWARD_TYPE_CODE = C.CODE_ID(+)
+        AND B.REWARD_SORT_CODE = D.CODE_ID(+)
+        AND B.ACHIEVEMENT_TYPE_CODE = E.CODE_ID(+)
+        AND A.DEPTID = F.DEPTID(+)
+        AND G.EMPID(+) = B.EMPID
+           AND H.POST_ID(+) = G.POSTID
+        AND A.POSITION_CODE=I.CODE_ID(+)
+			
+		]]>
+		<include refid="seachgetRewardInfo" />
+		<include refid="EmpCondition" />
+		<include refid="startDateEqCondition" />
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	 			ORDER BY REWARD_DATE DESC,B.DEPTID ASC ,b.POST_GRADE_CODE ASC ,B.position_code
+			 ]]>
+		</isEmpty>	
+	</select>
+	<select id="getRewardInfoCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true"> 
+		<![CDATA[
+		    SELECT 
+                    COUNT(A.EMPID) AS CNT
+                    FROM
+                         HR_EMPLOYEE A,
+                         HR_REWARD B
+                    WHERE
+                        A.EMPID(+)=B.EMPID
+		]]>
+		<include refid="EmpCondition" />
+		<include refid="seachgetRewardInfo" />
+		<include refid="startDateEqCondition" />
+	</select>
+	<update id="rollBackHortation" parameterClass="linkMap">
+		<![CDATA[
+			
+  			   UPDATE HR_REWARD
+			      SET activity = 2 
+				WHERE reward_no = #REWARDNO#  
+			  ]]>
+	</update>
+	<!--
+	comment :查讯惩戒信息
+	author : aqing
+	-->
+
+	<select id="getPunishMent" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+		     SELECT 
+                    A.EMPID                             empID,
+                    A.CHINESENAME                       chineseName,
+                A.CHINESE_PINYIN                    pinyin,
+                A.ENGLISHNAME                       enName,
+                A.KOREANNAME                        korName,
+                hr_get_FLevel_deptname(g.DEPTID)             department,
+                B.DEPT_EN_NAME                      enDept,
+                B.DEPT_KOR_NAME                     korDept,
+                    A.DEPTID                            deptID,
+                    C.POSTID                            postCode,
+                    D.POST_NAME                         post,
+                D.POST_EN_NAME                      enPost,
+                D.POST_KOR_NAME                     korPost,
+                    g.POSITION_CODE                     positionCode,
+                    get_position_name(g.POSITION_CODE)                         position,
+                E.CODE_EN_NAME                      enPosition,
+                E.CODE_KOR_NAME                     korPosition,
+                    A.POST_COEF                         postCoef,
+                    g.POST_GRADE_CODE                   postGradeCode,
+                    get_post_grade_name(g.POST_GRADE_CODE)                         postGrade,
+                    
+                F.CODE_EN_NAME                      enPostGrade,
+                F.CODE_KOR_NAME                     korPostGrade,
+                    G.PUNISHMENT_NO            punishmentNo,
+                    G.ACTIVITY                          activity,
+                    TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD') createDate,
+                    G.CREATED_BY                        createdBy,
+                    G.TRANS_CODE                        transCode,
+                    H.CODE_NAME                         transCodeName,
+                H.CODE_EN_NAME                      enTransCodeName,
+                H.CODE_KOR_NAME                     korTransCodeName,
+                    G.TRANS_NO                          transNo,
+                    TO_CHAR(G.UPDATE_DATE,'YYYY-MM-DD') updateDate,
+                    G.UPDATED_BY                        updatedBy,      
+                    
+          TO_CHAR(G.DATE_PUNISHED,'YYYY-MM-DD') punishDate,
+          TO_CHAR(G.DATE_RELEASED,'YYYY-MM-DD') releaseDate,
+          G.ORDERNO              orderNo,
+          G.PUN_RESULT            punishResult,
+          G.PUN_REASON            punishReason,
+          G.PUN_TYPE_ID            punishTypeCode,
+          I.CODE_NAME              punishType,
+          I.CODE_EN_NAME          enPunishType,
+          I.CODE_KOR_NAME         korPunishType,
+          G.VIOLATION_TYPE_CODE        violationTypeCode,
+          J.CODE_NAME              violationType,
+          J.CODE_EN_NAME          enViolationType,
+          J.CODE_KOR_NAME         korViolationType,
+          G.PUNISHER_CODE            punisherCode,
+          K.CODE_NAME              punisher,
+          get_post_grade_name(a.post_grade_code)    postGradeName,
+          round(round(months_between(g.date_released,g.date_punished))/12)||'年'|| mod(round(months_between(g.date_released,g.date_punished)),12) ||'个月'     timeLength
+                    FROM
+                            HR_EMPLOYEE A,
+                            HR_DEPARTMENT B,
+                            HR_EMP_POST C,
+                            HR_POST D,
+                            SY_CODE E,
+                            SY_CODE F,
+                            HR_PUNISHMENT G,
+                            SY_CODE H,
+                            SY_CODE I,
+                            SY_CODE J,
+                            SY_CODE K,
+                            hr_personal_info N
+                            
+                    WHERE
+                            A.DEPTID = B.DEPTID(+)
+                        AND A.EMPID = C.EMPID(+)
+                        AND C.POSTID = D.POST_ID(+)
+                        AND A.POSITION_CODE = E.CODE_ID(+)
+                        AND A.POST_GRADE_CODE = F.CODE_ID(+)
+                        AND A.EMPID(+)=G.EMPID
+                        AND G.TRANS_CODE=H.CODE_ID(+)
+                        AND G.PUN_TYPE_ID=I.CODE_ID(+)
+                        AND G.VIOLATION_TYPE_CODE=J.CODE_ID(+)
+                        AND G.PUNISHER_CODE=K.CODE_ID(+)
+                        AND A.empid=N.empid(+)
+		]]>
+		<include refid="EmpCondition" />
+		<include refid="seachgetPunishMent" />
+		<include refid="startDateEqCondition" />
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	 			ORDER BY G.DATE_PUNISHED DESC,g.DEPTID ASC,g.POST_GRADE_CODE ASC,A.date_started ASC,A.EMPID
+			 ]]>
+		</isEmpty>
+	</select>
+	<select id="getPunishMentCnt" parameterClass="linkMap"
+		resultClass="int"> 
+		<![CDATA[
+		    SELECT 
+                    COUNT(A.EMPID) AS CNT
+                    FROM
+                         HR_EMPLOYEE A,
+                         HR_PUNISHMENT G
+                    WHERE
+                        A.EMPID(+)=G.EMPID
+		]]>
+		<include refid="EmpCondition" />
+		<include refid="seachgetPunishMent" />
+		<include refid="startDateEqCondition" />
+	</select>
+	<update id="rollBackPunishMent" parameterClass="linkMap">
+		<![CDATA[
+  			   UPDATE HR_PUNISHMENT
+			      SET activity = 2 
+				WHERE PUNISHMENT_NO = #PUNISHMENTNO#  
+			  ]]>
+	</update>
+	<!--
+	comment :查讯退社信息
+	author : aqing
+	-->
+
+	<select id="getResignation" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+		   SELECT 
+                    A.EMPID                             empID,
+                    A.CHINESENAME                       chineseName,
+                    A.CHINESE_PINYIN                    pinyin,
+                    TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD')                     date_started,
+                    A.ENGLISHNAME                       enName,
+                    A.KOREANNAME                        korName,
+                    hr_get_flevel_deptname(G.PREV_DEPTID) department,
+                    hr_get_flevel_deptname(G.PREV_DEPTID) fdepartment,
+                    B.DEPT_EN_NAME                      enDept,
+                    B.DEPT_KOR_NAME                     korDept,
+                    A.DEPTID                            deptID,
+                    C.POSTID                            postCode,
+                    D.POST_NAME                         post,
+                    D.POST_EN_NAME                      enPost,
+                    D.POST_KOR_NAME                     korPost,
+                    G.PREV_POSITION_CODE                positionCode,
+                    get_position_name(G.PREV_POSITION_CODE) position,
+                    E.CODE_EN_NAME                      enPosition,
+                    E.CODE_KOR_NAME                     korPosition,
+                    A.POST_COEF                         postCoef,
+                    G.PREV_GRADE_CODE                   postGradeCode,
+                    get_post_grade_name(G.PREV_GRADE_CODE) postGrade,
+                    F.POST_GRADE_EN_NAME                enPostGrade,
+                    F.POST_GRADE_KOR_NAME               korPostGrade,
+                    G.RESIGN_NO              resignNo,
+                    G.ACTIVITY                          activity,
+                    TO_CHAR(G.CREATE_DATE,'YYYY-MM-DD') createDate,
+                    G.CREATED_BY                        createdBy,
+                    G.TRANS_CODE                        transCode,
+                    H.CODE_NAME                         transCodeName,
+                    H.CODE_EN_NAME                      enTransCodeName,
+                    H.CODE_KOR_NAME                     korTransCodeName,
+                    G.TRANS_NO                          transNo,
+                    TO_CHAR(G.UPDATE_DATE,'YYYY-MM-DD') updateDate,
+                    G.UPDATED_BY                        updatedBy,
+                    
+                    TO_CHAR(G.RESIGN_DATE,'YYYY-MM-DD') resignDate,
+                    G.RESIGN_TYPE_CODE                  resignTypeCode,
+                    I.CODE_NAME                         resignType,
+                    I.CODE_EN_NAME                      enResignType,
+                    I.CODE_KOR_NAME                     korResignType,
+                    G.RESIGN_REASON                    resignReasonCode,
+                    G.RESIGN_REASON                     resignReason,
+                    J.CODE_EN_NAME                      enResignReason,
+                    J.CODE_KOR_NAME                     korResignReason,
+                    G.RESIGN_DESC                       resignDesc,
+                    G.NEW_COMPANY                       newCompany
+                    FROM
+                            HR_EMPLOYEE A,
+                            HR_DEPARTMENT B,
+                            HR_EMP_POST C,
+                            HR_POST D,
+                            SY_CODE E,
+                            HR_POST_GRADE F,
+                            HR_RESIGNATION G,
+                            SY_CODE H,
+                            SY_CODE I,
+                            SY_CODE J,
+                            hr_personal_info N
+                    WHERE
+                            A.DEPTID = B.DEPTID(+)
+                        AND A.EMPID = C.EMPID(+)
+                        AND C.POSTID = D.POST_ID(+)
+                        AND A.POSITION_CODE = E.CODE_ID(+)
+                        AND A.POST_GRADE_CODE = F.POST_GRADE_ID(+)
+                        AND A.empid=N.empid(+)
+                        AND A.EMPID(+)=G.EMPID
+                        AND G.TRANS_CODE=H.CODE_ID(+)
+                        AND G.RESIGN_TYPE_CODE=I.CODE_ID(+)
+                        AND G.RESIGN_REASON_CODE=J.CODE_ID(+)
+		]]>
+		<include refid="EmpConditionTwo" />
+		<include refid="seachgetResignation" />
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+	 			RDER BY  G.RESIGN_DATE DESC,A.DEPTID ASC,G.PREV_GRADE_CODE ASC,A.date_started ASC,A.EMPID
+		 	]]>
+		</isEmpty>
+	</select>
+	<select id="getResignationCnt" parameterClass="linkMap"
+		resultClass="int"> 
+		<![CDATA[
+		    SELECT 
+                    COUNT(A.EMPID) AS CNT
+                    FROM
+                            HR_EMPLOYEE A,
+                            HR_RESIGNATION G
+                    WHERE
+                           A.EMPID(+)=G.EMPID
+		]]>
+		<include refid="EmpConditionTwo" />
+		<include refid="seachgetResignation" />
+	</select>
+	<update id="rollBackResign" parameterClass="linkMap">
+		<![CDATA[
+  			   UPDATE HR_RESIGNATION
+			      SET activity = 2 
+				WHERE RESIGN_NO = #RESIGNNO#  
+			  ]]>
+	</update>
+	<!--
+	comment : 查看员工历史记录
+	author : liumeng
+	-->
+	
+	<select id="searchEmpHistoryById" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+      SELECT 
+              A.EMPID                             empID,
+              A.CHINESENAME                       chineseName,
+             A.CHINESE_PINYIN                    englishName,
+               hr_getDeptFullname (A.deptid)         deptFullName,
+             B.DEPTNAME              department,
+              B.DEPT_EN_NAME          deptEnName,
+              B.Dept_Kor_Name          deptKorName,
+              H.CODE_NAME                positionname,
+              H.Code_En_Name            positionEnName,
+              H.Code_Kor_Name           positionKorName,
+              HP.POST_GROUP_NAME        postGroupName,
+              get_post_name(A.post_code)                  post,
+              hr_getBusiness(A.empid)        business,    
+              HG.POST_GRADE_NAME                  postGradename,
+             HG.Post_Grade_En_Name               postGradeEnName,
+             HG.Post_Grade_Kor_Name              postGradeKorName,
+                 I.CODE_NAME                         status,   
+                 I.Code_En_Name                      enStatus ,
+                 I.Code_Kor_Name                     korStatus,
+                 GG.START_DATE                       STARTDATE,
+                 GG.TRANS_CODE                       TRANSCODE,
+                 get_code_name(GG.TRANS_CODE)        TRANSNAME
+            FROM
+                   HR_EMPLOYEE A,
+                   HR_DEPARTMENT B,
+                   hr_experience_inside_history G,
+                   hr_experience_inside GG,
+                   HR_POST_GROUP HP,
+                   HR_POST_GRADE HG,
+                   SY_CODE H ,
+                   SY_CODE I
+            WHERE G.EMPID=A.EMPID(+)
+                  AND G.DEPTID=B.DEPTID(+)
+                  AND G.POST_GRADE_CODE=HG.POST_GRADE_ID(+)
+                  AND G.POSITION_CODE=H.CODE_ID(+) 
+                  AND G.STATUS_CODE=I.CODE_ID
+                  AND G.TRANS_NO=GG.TRANS_NO
+                  AND G.POST_GROUP_CODE=HP.POST_GROUP_ID(+)
+         
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID" >
+			<![CDATA[
+    		    G.EMPID=#EMPID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANSCODE" >
+			<![CDATA[
+    		   gg.trans_code=#TRANSCODE#
+			]]>
+		</isNotEmpty>
+		<include refid="getOrder"/>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+			 	order by G.EXP_INSIDE_HISTORY_NO 
+			]]>
+		</isEmpty>
+	</select>
+	<select id="searchEmpHistoryByIdCnt"  parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[  
+      SELECT   COUNT(A.EMPID) AS CNT
+            FROM
+                   HR_EMPLOYEE A,
+                   HR_DEPARTMENT B,
+                   hr_experience_inside_history G,
+                   hr_experience_inside GG,
+                   HR_POST_GROUP HP,
+                   HR_POST_GRADE HG,
+                   SY_CODE H ,
+                   SY_CODE I
+            WHERE G.EMPID=A.EMPID(+)
+                  AND G.DEPTID=B.DEPTID(+)
+                  AND G.POST_GRADE_CODE=HG.POST_GRADE_ID(+)
+                  AND G.POSITION_CODE=H.CODE_ID(+) 
+                  AND G.STATUS_CODE=I.CODE_ID
+                  AND G.TRANS_NO=GG.TRANS_NO
+                  AND G.POST_GROUP_CODE=HP.POST_GROUP_ID(+)
+         
+		]]>
+		<isNotEmpty prepend="AND" property="EMPID" >
+			<![CDATA[
+    		    G.EMPID=#EMPID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANSCODE" >
+			<![CDATA[
+    		   gg.trans_code=#TRANSCODE#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+
+</sqlMap>

@@ -1,0 +1,1968 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="empsubject">
+
+	<!-- 课程组管理 -->
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchSubjectGroupList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+                SELECT  A.SUBSD_CD,
+       				    A.SUBJT_GR_ID,
+					    A.SUBJT_GR_NM,
+						TO_CHAR(A.RGST_DTIME,'YYYY-MM-DD') RGST_DTIME,
+						TO_CHAR(A.UPDT_DTIME,'YYYY-MM-DD') UPDT_DTIME,
+						A.UPDT_USER,
+						A.USE_YN
+				  FROM EDU_PR_SUBJT_GR A
+				 WHERE A.SUBSD_CD = #CPNY_ID#
+		]]>		
+		<isNotEmpty prepend="and" property="SUBJT_GR_ID">
+			<![CDATA[
+			A.SUBJT_GR_ID = #SUBJT_GR_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="USE_YN">
+			<![CDATA[
+			A.USE_YN = #USE_YN#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.SUBSD_CD,A.SUBJT_GR_ID DESC		   
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchSubjectGroupListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[	
+                SELECT  COUNT(0)
+				  FROM EDU_PR_SUBJT_GR A
+				 WHERE A.SUBSD_CD = #CPNY_ID# 
+				   AND A.USE_YN = #USE_YN#
+		]]>		
+		<isNotEmpty prepend="and" property="SUBJT_GR_ID">
+			<![CDATA[
+			A.SUBJT_GR_ID = #SUBJT_GR_ID#
+			]]>
+		</isNotEmpty>
+	</select>  	
+	
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchGroupList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+                SELECT  A.SUBSD_CD,
+       				    A.SUBJT_GR_ID,
+					    A.SUBJT_GR_NM
+				  FROM EDU_PR_SUBJT_GR A
+				 WHERE A.SUBSD_CD = #CPNY_ID# 
+				   AND A.USE_YN = 'Y'
+		         ORDER BY A.SUBSD_CD,A.SUBJT_GR_ID DESC		   
+		]]>
+	</select>   	
+	
+	<!-- @Create date: 2014.06.26 -->
+	<update id="updateSubjectGroup" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EDU_PR_SUBJT_GR
+		     SET USE_YN           = NVL(#USE_YN#,'N'),
+			     SUBJT_GR_NM      = #SUBJT_GR_NM#,
+				 UPDT_USER        = #UPDT_USER#,
+				 UPDT_DTIME       = SYSDATE		 
+		   WHERE SUBSD_CD   = #SUBSD_CD#
+		     AND SUBJT_GR_ID = #SUBJT_GR_ID#
+		]]>	
+	</update>
+	
+	<!-- @Create date: 2014.06.26 -->
+	<update id="addSubjectGroup" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EDU_PR_SUBJT_GR
+		  (      SUBSD_CD,
+		         SUBJT_GR_ID,
+				 SUBJT_GR_NM,
+				 RGST_DTIME,
+				 UPDT_DTIME,
+				 UPDT_USER,
+				 USE_YN)   
+		  VALUES 
+		  (      #SUBSD_CD#,
+				 #SUBJT_GR_ID#,
+				 #SUBJT_GR_NM#,
+				 SYSDATE,  
+				 SYSDATE,
+				 #UPDT_USER#,
+				 NVL(#USE_YN#,'Y'))  
+		]]>		
+	</update>
+
+	<!-- 课程管理 -->
+	<!-- @Create date: 2014.06.30 -->
+	<select id="searchSubjectList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+	                SELECT A.SUBSD_CD,
+	       				   A.SUBJT_GR_ID,
+						   A.SUBJT_ID,
+						   A.SUBJT_NM,
+						   A.STANDARD_C,
+						   TO_CHAR(A.RGST_DTIME,'YYYY-MM-DD') RGST_DTIME,
+						   TO_CHAR(A.UPDT_DTIME,'YYYY-MM-DD') UPDT_DTIME,
+						   A.UPDT_USER,
+						   A.USE_YN,
+						   A.SUBJT_DESC,
+						   TO_CHAR(TO_DATE(A.EDU_FROM_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') AS START_DATE,
+						   TO_CHAR(TO_DATE(A.EDU_TO_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') AS END_DATE,
+						   A.ONLINE_STATE,
+						   GET_CODE_NAME_BY_DESC(A.ONLINE_STATE,14013523,'zh') AS ONLINE_STATE_NM
+					  FROM EDU_PR_SUBJT A
+					 WHERE A.SUBSD_CD = #CPNY_ID#
+				       AND A.USE_YN = #USE_YN#
+		]]>		
+		<isNotEmpty prepend="and" property="SUBJT_GR_ID">
+			A.SUBJT_GR_ID = #SUBJT_GR_ID#
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SUBJT_NM">
+			A.SUBJT_NM LIKE '%'||#SUBJT_NM#||'%'
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ONLINE_STATE">
+			A.ONLINE_STATE = #ONLINE_STATE#
+		</isNotEmpty>
+		<![CDATA[
+		    ORDER BY A.UPDT_DTIME DESC,A.SUBJT_GR_ID,A.SUBJT_ID
+		]]>
+	</select>
+
+	<!-- @Create date: 2014.06.30 -->
+	<select id="searchSubject" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+	                SELECT A.SUBSD_CD,
+	       				   A.SUBJT_GR_ID,
+						   A.SUBJT_ID,
+						   A.SUBJT_NM,
+						   A.STANDARD_C,
+						   TO_CHAR(A.RGST_DTIME,'YYYY-MM-DD') RGST_DTIME,
+						   TO_CHAR(A.UPDT_DTIME,'YYYY-MM-DD') UPDT_DTIME,
+						   A.UPDT_USER,
+						   A.USE_YN,
+						   A.SUBJT_DESC,
+						   TO_CHAR(TO_DATE(A.EDU_FROM_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') AS START_DATE,
+						   TO_CHAR(TO_DATE(A.EDU_TO_DATE,'YYYY-MM-DD'),'YYYY-MM-DD') AS END_DATE,
+						   A.ONLINE_STATE
+					  FROM EDU_PR_SUBJT A
+					 WHERE A.SUBSD_CD = #CPNY_ID#
+		]]>		
+		<isNotEmpty prepend="and" property="SUBJT_GR_ID">
+			A.SUBJT_GR_ID = #SUBJT_GR_ID#
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SUBJT_ID">
+			A.SUBJT_ID =#SUBJT_ID#
+		</isNotEmpty>
+		<![CDATA[
+		    ORDER BY A.SUBSD_CD,A.SUBJT_GR_ID,A.SUBJT_ID DESC
+		]]>
+	</select>
+		
+	<!-- @Create date: 2014.06.30 -->
+	<select id="searchSubjectListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[	
+                SELECT  COUNT(0)
+				  FROM EDU_PR_SUBJT A
+				 WHERE A.SUBSD_CD = #CPNY_ID# 
+				   AND A.USE_YN = #USE_YN#
+		]]>		
+		<isNotEmpty prepend="and" property="SUBJT_GR_ID">
+			A.SUBJT_GR_ID = #SUBJT_GR_ID#
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SUBJT_NM">
+			A.SUBJT_NM LIKE '%'||#SUBJT_NM#||'%'
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ONLINE_STATE">
+			A.ONLINE_STATE = #ONLINE_STATE#
+		</isNotEmpty>
+	</select>  	 	
+	
+	<!-- @Create date: 2014.06.30 -->
+	<update id="updateSubject" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE EDU_PR_SUBJT
+		     SET USE_YN           = NVL(#USE_YN#,'N'),
+			     SUBJT_NM         = #SUBJT_NM#,
+				 STANDARD_C       = NVL(#STANDARD_C#,0),
+				 UPDT_USER        = #UPDT_USER#,
+				 UPDT_DTIME       = SYSDATE	,
+				 EDU_FROM_DATE    = #START_DATE#,
+				 EDU_TO_DATE	  = #END_DATE#,
+				 ONLINE_STATE	  = #ONLINE_STATE#
+		   WHERE SUBSD_CD   = #SUBSD_CD#
+		     AND SUBJT_GR_ID = #SUBJT_GR_ID#
+			 AND SUBJT_ID   = #SUBJT_ID#
+		]]>	
+	</update>
+	
+	<!-- @Create date: 2014.06.30 -->
+	<update id="addSubject" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO EDU_PR_SUBJT
+		  (      SUBSD_CD,
+		         SUBJT_GR_ID,
+				 SUBJT_ID,
+				 SUBJT_NM,
+				 STANDARD_C,
+				 RGST_DTIME,
+				 UPDT_DTIME,
+				 UPDT_USER,
+				 USE_YN,
+				 SUBJT_PROD,
+				 EDU_FROM_DATE,
+				 EDU_TO_DATE,
+				 ONLINE_STATE)    
+		  VALUES 
+		  (      #SUBSD_CD#,
+				 #SUBJT_GR_ID#,
+				 #SUBJT_ID#,
+				 #SUBJT_NM#,
+				 NVL(#STANDARD_C#,0),
+				 SYSDATE,  
+				 SYSDATE,
+				 #UPDT_USER#,
+				 NVL(#USE_YN#,'Y'),
+				 NVL((SELECT NVL(T.DESCRIPTION, '') 
+			           FROM SY_CODE T,SY_CODE_PARAM SP
+			          WHERE T.CODE_NO = SP.CODE_NO
+			            AND T.PARENT_CODE_NO = '211424'
+			            AND SP.CPNY_ID = #SUBSD_CD#
+			            AND T.CODE_NO = #PROD_TP#),'OTHER') ,
+				 #START_DATE#,
+				 #END_DATE#,
+				 #ONLINE_STATE#
+		  )             
+		]]>		
+	</update>
+
+	<!-- 课程别实绩汇总 -->
+	<!-- @Create date: 2014.07.01 -->
+	<select id="searchGradeStatisticsList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">	
+		<![CDATA[  
+                SELECT A.SUBSD_CD,
+                         (SELECT HD.ORG_NAME_LOCAL AS CODE_NAME
+                            FROM HR_DEPARTMENT HD
+                           WHERE HD.CPNY_ID = A.SUBSD_CD
+                             AND HD.DEPT_LEVEL = 2
+                             AND HD.DEPTNO = A.PAY_AREA_CD) PAY_AREA_CD,
+                         A.BRANCH_CD,
+                         (SELECT ORG_NAME_LOCAL
+                            FROM HR_DEPARTMENT ORG
+                           WHERE ORG.DEPTNO = A.BRANCH_CD
+                             AND ORG.CPNY_ID = A.SUBSD_CD) ORG_NM,
+                         DECODE(#PROD_TP_NM#, '', 'ALL', #PROD_TP_NM#)  PROD_TP,
+                         A.SUBJT_GR,
+                         (SELECT SUBJT_GR_NM
+                            FROM EDU_PR_SUBJT_GR T
+                           WHERE T.SUBJT_GR_ID = A.SUBJT_GR
+                             AND T.SUBSD_CD = A.SUBSD_CD) SUBJT_GR_NM,
+                         A.SUBJT_ID,
+                         (SELECT SUBJT_NM
+                            FROM EDU_PR_SUBJT T
+                           WHERE T.SUBJT_GR_ID = A.SUBJT_GR
+                             AND T.SUBJT_ID = A.SUBJT_ID
+                             AND T.SUBSD_CD = A.SUBSD_CD) SUBJT_NM,
+                         DECODE(SUBSTR(ROUND((STUDY_COUNT / TOTAL_COUNT) * 100,
+                                             2) || '%',
+                                       0,
+                                       1),
+                                '.',
+                                '0' ||
+                                ROUND((STUDY_COUNT / TOTAL_COUNT) * 100, 2) || '%',
+                                ROUND((STUDY_COUNT / TOTAL_COUNT) * 100, 2) || '%') RATE,
+                         A.STUDY_COUNT,
+                         B.TOTAL_COUNT,
+                         A.GRADE_POINT,
+                         A.COURSE_S,
+                         A.LECTURER_S,
+                         A.NPS,
+                         A.SUBJT_TIME,
+                         A.EDU_TIME,
+                         A.EDU_RM,
+                         DECODE(SIGN(LENGTH(A.NPS_REASON) - 5),
+                                -1,
+                                A.NPS_REASON,
+                                0,
+                                A.NPS_REASON,
+                                1,
+                                SUBSTR(A.NPS_REASON, 0, 5) || '...') NPS_REASON,
+                         DECODE(SIGN(LENGTH(A.NPS_NO_REASON) - 5),
+                                -1,
+                                A.NPS_NO_REASON,
+                                0,
+                                A.NPS_NO_REASON,
+                                1,
+                                SUBSTR(A.NPS_NO_REASON, 0, 5) || '...') NPS_NO_REASON,
+                         DECODE(SIGN(LENGTH(A.SALES_TALK) - 5),
+                                -1,
+                                A.SALES_TALK,
+                                0,
+                                A.SALES_TALK,
+                                1,
+                                SUBSTR(A.SALES_TALK, 0, 5) || '...') SALES_TALK,
+                         DECODE(SIGN(LENGTH(A.COM_CLUB_INFO) - 5),
+                                -1,
+                                A.COM_CLUB_INFO,
+                                0,
+                                A.COM_CLUB_INFO,
+                                1,
+                                SUBSTR(A.COM_CLUB_INFO, 0, 5) || '...') COM_CLUB_INFO,
+                         DECODE(SIGN(LENGTH(A.OTHER_FEEDBACK) - 5),
+                                -1,
+                                A.OTHER_FEEDBACK,
+                                0,
+                                A.OTHER_FEEDBACK,
+                                1,
+                                SUBSTR(A.OTHER_FEEDBACK, 0, 5) || '...') OTHER_FEEDBACK
+                    FROM (SELECT TT.SUBSD_CD,
+                                 TT.PAY_AREA_CD,
+                                 TT.BRANCH_CD,
+                                 TT.SUBJT_GR,
+                                 TT.SUBJT_ID,
+                                 ROUND(SUM(TT.GRADE_POINT) / COUNT(TT.EMPNO), 1) GRADE_POINT,
+                                 ROUND(SUM(TT.COURSE_S) / COUNT(TT.EMPNO), 1) COURSE_S,
+                                 ROUND(SUM(TT.LECTURER_S) / COUNT(TT.EMPNO), 1) LECTURER_S,
+                                 ROUND(SUM(TT.NPS) / COUNT(TT.EMPNO), 1) NPS,
+                                 ROUND(SUM(TT.SUBJT_TIME) / COUNT(TT.EMPNO), 1) SUBJT_TIME,
+                                 TT.EDU_TIME,
+                                 TT.EDU_RM,
+                                 MIN(TT.NPS_REASON) NPS_REASON,
+                                 MIN(TT.NPS_NO_REASON) NPS_NO_REASON,
+                                 MIN(TT.SALES_TALK) SALES_TALK,
+                                 MIN(TT.COM_CLUB_INFO) COM_CLUB_INFO,
+                                 MIN(TT.OTHER_FEEDBACK) OTHER_FEEDBACK,
+                                 COUNT(TT.EMPNO) STUDY_COUNT 
+                            FROM (SELECT T.SUBSD_CD,
+                                         T.PAY_AREA_CD,
+                                         T.BRANCH_CD,
+                                         T.SUBJT_GR,
+                                         T.SUBJT_ID,
+                                         T.EMPNO,
+                                         T.GRADE_POINT,
+                                         T.COURSE_S,
+                                         T.LECTURER_S,
+                                         T.NPS,
+                                         T.SUBJT_TIME,
+                                         T.EDU_TIME,
+                                         T.EDU_RM,
+                                         T.NPS_REASON,
+                                         T.NPS_NO_REASON,
+                                         T.SALES_TALK,
+                                         T.COM_CLUB_INFO,
+                                         T.OTHER_FEEDBACK
+                                    FROM EDU_PR_EVAL T, HR_EMPLOYEE E, EDU_PR_SUBJT F
+                                   WHERE LENGTH(T.EMPNO) < 10
+                                     AND T.SUBSD_CD = #CPNY_ID#
+                                     ]]>
+                                      <isNotEmpty prepend="AND" property="START_DATE">
+                                         <![CDATA[
+                                             T.EDU_TIME >= #START_DATE#
+                                         ]]>
+                                      </isNotEmpty>
+                                  
+                                      <isNotEmpty prepend="AND" property="END_DATE">
+                                        <![CDATA[
+                                            T.EDU_TIME <= #END_DATE#
+                                        ]]>
+                                      </isNotEmpty>                 
+                                      <isNotEmpty prepend="and" property="PROD_TP">
+                                        <isNotEqual property="PROD_TP" compareValue="" >
+                                              <![CDATA[
+                                               E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                              FROM SY_CODE T,SY_CODE_PARAM SP
+                                                             WHERE T.CODE_NO = SP.CODE_NO
+                                                               AND T.PARENT_CODE_NO = '211424'
+                                                               AND SP.CPNY_ID = #CPNY_ID#
+                                                               AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+					                                                             from dual
+					                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+					                                                       		)
+                                      AND T.ACTIVITY = 1)  
+                                              ]]>
+                                        </isNotEqual>
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                                        T.SUBJT_GR = #SUBJT_GR_ID#
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_NM">
+                                        UPPER(F.SUBJT_NM) LIKE '%' || UPPER(#SUBJT_NM#) || '%'
+                                      </isNotEmpty> 
+                                      <isNotEmpty prepend="and" property="BRANCH_CD">
+                                        T.BRANCH_CD = #BRANCH_CD#
+                                      </isNotEmpty> 
+                                     <![CDATA[
+                                     AND E.STATUS_CODE = '14891'
+                                     AND T.USE_YN = 'Y'
+                                     AND T.SUBSD_CD = E.CPNY_ID
+                                     AND T.PAY_AREA_CD = E.PAY_AREA_CD
+                                     AND T.EMPNO = E.EMPID
+                                     AND T.BRANCH_CD = (SELECT HD.DEPTNO
+                                                          FROM HR_DEPARTMENT HD
+                                                         WHERE DEPT_TYPE = 'branch'
+                                                         START WITH E.CPNY_ID = HD.CPNY_ID
+                                                                AND HD.DEPTNO = E.DEPTNO
+                                                        CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO)
+                                     AND T.SUBJT_GR = F.SUBJT_GR_ID
+                                     AND T.SUBJT_ID = F.SUBJT_ID
+                                  UNION ALL
+                                  SELECT T.SUBSD_CD,
+                                         T.PAY_AREA_CD,
+                                         T.BRANCH_CD,
+                                         T.SUBJT_GR,
+                                         T.SUBJT_ID,
+                                         T.EMPNO,
+                                         T.GRADE_POINT,
+                                         T.COURSE_S,
+                                         T.LECTURER_S,
+                                         T.NPS,
+                                         T.SUBJT_TIME,
+                                         T.EDU_TIME,
+                                         T.EDU_RM,
+                                         T.NPS_REASON,
+                                         T.NPS_NO_REASON,
+                                         T.SALES_TALK,
+                                         T.COM_CLUB_INFO,
+                                         T.OTHER_FEEDBACK
+                                    FROM EDU_PR_EVAL T, EDU_PR_SUBJT F 
+                                   WHERE LENGTH(T.EMPNO) > 10
+                                     AND T.SUBSD_CD = #CPNY_ID#
+                                     ]]>
+                                      <isNotEmpty prepend="AND" property="START_DATE">
+                                         <![CDATA[
+                                             T.EDU_TIME >= #START_DATE#
+                                         ]]>
+                                      </isNotEmpty>
+                                  
+                                      <isNotEmpty prepend="AND" property="END_DATE">
+                                        <![CDATA[
+                                            T.EDU_TIME <= #END_DATE#
+                                        ]]>
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                                        T.SUBJT_GR = #SUBJT_GR_ID#
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_NM">
+                                        UPPER(F.SUBJT_NM) LIKE '%' || UPPER(#SUBJT_NM#) || '%'
+                                      </isNotEmpty> 
+                                      <isNotEmpty prepend="and" property="BRANCH_CD">
+                                        T.BRANCH_CD = #BRANCH_CD#
+                                      </isNotEmpty>                 
+                                      <isNotEmpty prepend="and" property="PROD_TP">
+                                        <isNotEqual property="PROD_TP" compareValue="" >
+                                             <![CDATA[
+                                             'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                             from dual
+                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                       )
+                                             ]]>
+                                        </isNotEqual>
+                                      </isNotEmpty> 
+                                     <![CDATA[
+                                     AND T.USE_YN = 'Y'
+                                     AND T.SUBJT_GR = F.SUBJT_GR_ID
+                                     AND T.SUBJT_ID = F.SUBJT_ID  
+                           )  TT
+                           GROUP BY TT.SUBSD_CD,
+                                    TT.PAY_AREA_CD,
+                                    TT.BRANCH_CD,
+                                    TT.SUBJT_GR,
+                                    TT.SUBJT_ID,
+                                    TT.EDU_TIME,
+                                    TT.EDU_RM) A,
+                         (SELECT PA_MONTH,
+                               CPNY_ID,
+                               PAY_AREA_CD,
+                               BRANCH_CD,
+                               COUNT(1) TOTAL_COUNT 
+                          FROM (         
+                              SELECT K.PA_MONTH,
+                                     K.CPNY_ID,
+                                     E.PAY_AREA_CD,
+                                     (SELECT HD.DEPTNO
+                                        FROM HR_DEPARTMENT HD
+                                       WHERE DEPT_TYPE = 'branch'
+                                       START WITH E.CPNY_ID = HD.CPNY_ID
+                                              AND HD.DEPTNO = E.DEPTNO
+                                      CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO) AS BRANCH_CD
+                                FROM PA_SUMMARY_LGECH K, HR_EMPLOYEE E
+                               WHERE K.CPNY_ID = #CPNY_ID#
+                                 AND K.CPNY_ID = E.CPNY_ID
+                                 AND K.PERSON_ID = E.PERSON_ID
+                                 AND E.EMP_TYPE_CODE IN ('211804')
+                                 ]]>
+                                   <isNotEmpty prepend="and" property="PROD_TP">
+                                     <isNotEqual property="PROD_TP" compareValue="" >
+                                            <![CDATA[
+                                             E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                            FROM SY_CODE T,SY_CODE_PARAM SP
+                                                           WHERE T.CODE_NO = SP.CODE_NO
+                                                             AND T.PARENT_CODE_NO = '211424'
+                                                             AND SP.CPNY_ID = #CPNY_ID#
+                                                             AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+					                                                             from dual
+					                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+					                                                      	 )
+                                    AND T.ACTIVITY = 1)  
+                                        ]]>
+                                     </isNotEqual>
+                                   </isNotEmpty>
+                                  <![CDATA[
+                                  AND K.PA_MONTH IN
+                                           (SELECT distinct SUBSTR(T.EDU_TIME, 0, 6)
+                                              FROM EDU_PR_EVAL T, HR_EMPLOYEE EMP, EDU_PR_SUBJT PR
+                                             WHERE T.SUBSD_CD = #CPNY_ID#
+                                  ]]>
+                                               <isNotEmpty prepend="AND" property="START_DATE">
+                                                  <![CDATA[
+                                                    T.EDU_TIME >= #START_DATE#
+                                                  ]]>
+                                               </isNotEmpty>
+                                               <isNotEmpty prepend="AND" property="END_DATE">
+                                                  <![CDATA[
+                                                      T.EDU_TIME <= #END_DATE#
+                                                  ]]>
+                                               </isNotEmpty>   
+                                  <![CDATA[
+                                                     AND T.SUBSD_CD = EMP.CPNY_ID
+                                                     AND T.PAY_AREA_CD = EMP.PAY_AREA_CD
+                                                     AND T.EMPNO = EMP.EMPID
+                                                     AND T.SUBSD_CD = PR.SUBSD_CD
+                                                     AND T.SUBJT_GR = PR.SUBJT_GR_ID
+                                                     AND T.SUBJT_ID = PR.SUBJT_ID)
+                                   ]]>
+                                   <isNotEmpty prepend="and" property="BRANCH_CD">
+                                      E.DEPTNO IN
+                                            (SELECT HR_DEPARTMENT.DEPTNO
+                                               FROM HR_DEPARTMENT
+                                              WHERE HR_DEPARTMENT.CPNY_ID = #CPNY_ID#
+                                              CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                                              START WITH HR_DEPARTMENT.DEPTNO = #BRANCH_CD#)
+                                    </isNotEmpty>
+                                  <![CDATA[
+                             UNION ALL
+                             SELECT DISTINCT SUBSTR(K.EDU_TIME, 0, 6) AS PA_MONTH,
+                                    K.SUBSD_CD AS CPNY_ID,
+                                    K.PAY_AREA_CD,
+                                    K.BRANCH_CD 
+                               FROM EDU_PR_EVAL K ,EDU_PR_SUBJT PR
+                              WHERE LENGTH(K.EMPNO) > 10 
+                                AND K.SUBSD_CD = #CPNY_ID#
+                                AND K.SUBSD_CD = PR.SUBSD_CD
+                                AND K.SUBJT_GR = PR.SUBJT_GR_ID
+                                AND K.SUBJT_ID = PR.SUBJT_ID
+                                ]]>
+                                     <isNotEmpty prepend="AND" property="START_DATE">
+                                        <![CDATA[
+                                            K.EDU_TIME >= #START_DATE#
+                                        ]]>
+                                     </isNotEmpty>
+                                     <isNotEmpty prepend="AND" property="END_DATE">
+                                        <![CDATA[
+                                            K.EDU_TIME <= #END_DATE#
+                                        ]]>
+                                     </isNotEmpty>  
+                                     <isNotEmpty prepend="and" property="BRANCH_CD">
+                                        K.BRANCH_CD = #BRANCH_CD#
+                                     </isNotEmpty>                  
+                                      <isNotEmpty prepend="and" property="PROD_TP">
+                                        <isNotEqual property="PROD_TP" compareValue="" >
+                                             <![CDATA[
+                                             'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                             from dual
+                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                       )
+                                             ]]>
+                                        </isNotEqual>
+                                      </isNotEmpty> 
+                                <![CDATA[                   
+                              )  
+                           GROUP BY PA_MONTH,
+                                    CPNY_ID,
+                                    PAY_AREA_CD,
+                                    BRANCH_CD) B
+                   WHERE A.SUBSD_CD = B.CPNY_ID
+                     AND A.PAY_AREA_CD = B.PAY_AREA_CD
+                     AND A.BRANCH_CD = B.BRANCH_CD
+                     AND B.PA_MONTH = SUBSTR(A.EDU_TIME, 0, 6)
+               AND B.PA_MONTH = SUBSTR(A.EDU_TIME, 0, 6) 
+               ORDER BY A.SUBSD_CD,A.PAY_AREA_CD,A.BRANCH_CD,A.SUBJT_GR,A.SUBJT_ID,A.EDU_TIME           
+      ]]>
+	</select>
+	
+	<!-- 课程别实绩汇总count -->
+	<!-- @Create date: 2014.07.04 -->
+	<select id="searchGradeStatisticsListCnt" parameterClass="linkMap"
+		resultClass="int">	
+		<![CDATA[  
+              SELECT COUNT(0) FROM (
+                SELECT A.SUBSD_CD,
+                         (SELECT HD.ORG_NAME_LOCAL AS CODE_NAME
+                            FROM HR_DEPARTMENT HD
+                           WHERE HD.CPNY_ID = A.SUBSD_CD
+                             AND HD.DEPT_LEVEL = 2
+                             AND HD.DEPTNO = A.PAY_AREA_CD) PAY_AREA_CD,
+                         A.BRANCH_CD,
+                         (SELECT ORG_NAME_LOCAL
+                            FROM HR_DEPARTMENT ORG
+                           WHERE ORG.DEPTNO = A.BRANCH_CD
+                             AND ORG.CPNY_ID = A.SUBSD_CD) ORG_NM,
+                         DECODE(#PROD_TP_NM#, '', 'ALL', #PROD_TP_NM#)  PROD_TP,
+                         A.SUBJT_GR,
+                         (SELECT SUBJT_GR_NM
+                            FROM EDU_PR_SUBJT_GR T
+                           WHERE T.SUBJT_GR_ID = A.SUBJT_GR
+                             AND T.SUBSD_CD = A.SUBSD_CD) SUBJT_GR_NM,
+                         A.SUBJT_ID,
+                         (SELECT SUBJT_NM
+                            FROM EDU_PR_SUBJT T
+                           WHERE T.SUBJT_GR_ID = A.SUBJT_GR
+                             AND T.SUBJT_ID = A.SUBJT_ID
+                             AND T.SUBSD_CD = A.SUBSD_CD) SUBJT_NM,
+                         DECODE(SUBSTR(ROUND((STUDY_COUNT / TOTAL_COUNT) * 100,
+                                             2) || '%',
+                                       0,
+                                       1),
+                                '.',
+                                '0' ||
+                                ROUND((STUDY_COUNT / TOTAL_COUNT) * 100, 2) || '%',
+                                ROUND((STUDY_COUNT / TOTAL_COUNT) * 100, 2) || '%') RATE,
+                         A.STUDY_COUNT,
+                         B.TOTAL_COUNT,
+                         A.GRADE_POINT,
+                         A.COURSE_S,
+                         A.LECTURER_S,
+                         A.NPS,
+                         A.SUBJT_TIME,
+                         A.EDU_TIME,
+                         A.EDU_RM,
+                         DECODE(SIGN(LENGTH(A.NPS_REASON) - 5),
+                                -1,
+                                A.NPS_REASON,
+                                0,
+                                A.NPS_REASON,
+                                1,
+                                SUBSTR(A.NPS_REASON, 0, 5) || '...') NPS_REASON,
+                         DECODE(SIGN(LENGTH(A.NPS_NO_REASON) - 5),
+                                -1,
+                                A.NPS_NO_REASON,
+                                0,
+                                A.NPS_NO_REASON,
+                                1,
+                                SUBSTR(A.NPS_NO_REASON, 0, 5) || '...') NPS_NO_REASON,
+                         DECODE(SIGN(LENGTH(A.SALES_TALK) - 5),
+                                -1,
+                                A.SALES_TALK,
+                                0,
+                                A.SALES_TALK,
+                                1,
+                                SUBSTR(A.SALES_TALK, 0, 5) || '...') SALES_TALK,
+                         DECODE(SIGN(LENGTH(A.COM_CLUB_INFO) - 5),
+                                -1,
+                                A.COM_CLUB_INFO,
+                                0,
+                                A.COM_CLUB_INFO,
+                                1,
+                                SUBSTR(A.COM_CLUB_INFO, 0, 5) || '...') COM_CLUB_INFO,
+                         DECODE(SIGN(LENGTH(A.OTHER_FEEDBACK) - 5),
+                                -1,
+                                A.OTHER_FEEDBACK,
+                                0,
+                                A.OTHER_FEEDBACK,
+                                1,
+                                SUBSTR(A.OTHER_FEEDBACK, 0, 5) || '...') OTHER_FEEDBACK
+                    FROM (SELECT TT.SUBSD_CD,
+                                 TT.PAY_AREA_CD,
+                                 TT.BRANCH_CD,
+                                 TT.SUBJT_GR,
+                                 TT.SUBJT_ID,
+                                 ROUND(SUM(TT.GRADE_POINT) / COUNT(TT.EMPNO), 1) GRADE_POINT,
+                                 ROUND(SUM(TT.COURSE_S) / COUNT(TT.EMPNO), 1) COURSE_S,
+                                 ROUND(SUM(TT.LECTURER_S) / COUNT(TT.EMPNO), 1) LECTURER_S,
+                                 ROUND(SUM(TT.NPS) / COUNT(TT.EMPNO), 1) NPS,
+                                 ROUND(SUM(TT.SUBJT_TIME) / COUNT(TT.EMPNO), 1) SUBJT_TIME,
+                                 TT.EDU_TIME,
+                                 TT.EDU_RM,
+                                 MIN(TT.NPS_REASON) NPS_REASON,
+                                 MIN(TT.NPS_NO_REASON) NPS_NO_REASON,
+                                 MIN(TT.SALES_TALK) SALES_TALK,
+                                 MIN(TT.COM_CLUB_INFO) COM_CLUB_INFO,
+                                 MIN(TT.OTHER_FEEDBACK) OTHER_FEEDBACK,
+                                 COUNT(TT.EMPNO) STUDY_COUNT 
+                            FROM (SELECT T.SUBSD_CD,
+                                         T.PAY_AREA_CD,
+                                         T.BRANCH_CD,
+                                         T.SUBJT_GR,
+                                         T.SUBJT_ID,
+                                         T.EMPNO,
+                                         T.GRADE_POINT,
+                                         T.COURSE_S,
+                                         T.LECTURER_S,
+                                         T.NPS,
+                                         T.SUBJT_TIME,
+                                         T.EDU_TIME,
+                                         T.EDU_RM,
+                                         T.NPS_REASON,
+                                         T.NPS_NO_REASON,
+                                         T.SALES_TALK,
+                                         T.COM_CLUB_INFO,
+                                         T.OTHER_FEEDBACK
+                                    FROM EDU_PR_EVAL T, HR_EMPLOYEE E, EDU_PR_SUBJT F
+                                   WHERE LENGTH(T.EMPNO) < 10
+                                     AND T.SUBSD_CD = #CPNY_ID#
+                                     ]]>
+                                      <isNotEmpty prepend="AND" property="START_DATE">
+                                         <![CDATA[
+                                             T.EDU_TIME >= #START_DATE#
+                                         ]]>
+                                      </isNotEmpty>
+                                  
+                                      <isNotEmpty prepend="AND" property="END_DATE">
+                                        <![CDATA[
+                                            T.EDU_TIME <= #END_DATE#
+                                        ]]>
+                                      </isNotEmpty>                 
+                                      <isNotEmpty prepend="and" property="PROD_TP">
+                                        <isNotEqual property="PROD_TP" compareValue="" >
+                                              <![CDATA[
+                                               E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                              FROM SY_CODE T,SY_CODE_PARAM SP
+                                                             WHERE T.CODE_NO = SP.CODE_NO
+                                                               AND T.PARENT_CODE_NO = '211424'
+                                                               AND SP.CPNY_ID = #CPNY_ID#
+                                                               AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+						                                                             from dual
+						                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+						                                                       )
+                                      AND T.ACTIVITY = 1)  
+                                              ]]>
+                                        </isNotEqual>
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                                        T.SUBJT_GR = #SUBJT_GR_ID#
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_NM">
+                                        UPPER(F.SUBJT_NM) LIKE '%' || UPPER(#SUBJT_NM#) || '%'
+                                      </isNotEmpty> 
+                                      <isNotEmpty prepend="and" property="BRANCH_CD">
+                                        T.BRANCH_CD = #BRANCH_CD#
+                                      </isNotEmpty> 
+                                     <![CDATA[
+                                     AND E.STATUS_CODE = '14891'
+                                     AND T.USE_YN = 'Y'
+                                     AND T.SUBSD_CD = E.CPNY_ID
+                                     AND T.PAY_AREA_CD = E.PAY_AREA_CD
+                                     AND T.EMPNO = E.EMPID
+                                     AND T.BRANCH_CD = (SELECT HD.DEPTNO
+                                                          FROM HR_DEPARTMENT HD
+                                                         WHERE DEPT_TYPE = 'branch'
+                                                         START WITH E.CPNY_ID = HD.CPNY_ID
+                                                                AND HD.DEPTNO = E.DEPTNO
+                                                        CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO)
+                                     AND T.SUBJT_GR = F.SUBJT_GR_ID
+                                     AND T.SUBJT_ID = F.SUBJT_ID
+                                  UNION ALL
+                                  SELECT T.SUBSD_CD,
+                                         T.PAY_AREA_CD,
+                                         T.BRANCH_CD,
+                                         T.SUBJT_GR,
+                                         T.SUBJT_ID,
+                                         T.EMPNO,
+                                         T.GRADE_POINT,
+                                         T.COURSE_S,
+                                         T.LECTURER_S,
+                                         T.NPS,
+                                         T.SUBJT_TIME,
+                                         T.EDU_TIME,
+                                         T.EDU_RM,
+                                         T.NPS_REASON,
+                                         T.NPS_NO_REASON,
+                                         T.SALES_TALK,
+                                         T.COM_CLUB_INFO,
+                                         T.OTHER_FEEDBACK
+                                    FROM EDU_PR_EVAL T, EDU_PR_SUBJT F 
+                                   WHERE LENGTH(T.EMPNO) > 10
+                                     AND T.SUBSD_CD = #CPNY_ID#
+                                     ]]>
+                                      <isNotEmpty prepend="AND" property="START_DATE">
+                                         <![CDATA[
+                                             T.EDU_TIME >= #START_DATE#
+                                         ]]>
+                                      </isNotEmpty>
+                                  
+                                      <isNotEmpty prepend="AND" property="END_DATE">
+                                        <![CDATA[
+                                            T.EDU_TIME <= #END_DATE#
+                                        ]]>
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                                        T.SUBJT_GR = #SUBJT_GR_ID#
+                                      </isNotEmpty>
+                                      <isNotEmpty prepend="and" property="SUBJT_NM">
+                                        UPPER(F.SUBJT_NM) LIKE '%' || UPPER(#SUBJT_NM#) || '%'
+                                      </isNotEmpty> 
+                                      <isNotEmpty prepend="and" property="BRANCH_CD">
+                                        T.BRANCH_CD = #BRANCH_CD#
+                                      </isNotEmpty>                 
+                                      <isNotEmpty prepend="and" property="PROD_TP">
+                                        <isNotEqual property="PROD_TP" compareValue="" >
+                                             <![CDATA[
+                                             'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                             from dual
+                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                       )
+                                             ]]>
+                                        </isNotEqual>
+                                      </isNotEmpty> 
+                                     <![CDATA[
+                                     AND T.USE_YN = 'Y'
+                                     AND T.SUBJT_GR = F.SUBJT_GR_ID
+                                     AND T.SUBJT_ID = F.SUBJT_ID  
+                           )  TT
+                           GROUP BY TT.SUBSD_CD,
+                                    TT.PAY_AREA_CD,
+                                    TT.BRANCH_CD,
+                                    TT.SUBJT_GR,
+                                    TT.SUBJT_ID,
+                                    TT.EDU_TIME,
+                                    TT.EDU_RM) A,
+                         (SELECT PA_MONTH,
+                               CPNY_ID,
+                               PAY_AREA_CD,
+                               BRANCH_CD,
+                               COUNT(1) TOTAL_COUNT 
+                          FROM (         
+                              SELECT K.PA_MONTH,
+                                     K.CPNY_ID,
+                                     E.PAY_AREA_CD,
+                                     (SELECT HD.DEPTNO
+                                        FROM HR_DEPARTMENT HD
+                                       WHERE DEPT_TYPE = 'branch'
+                                       START WITH E.CPNY_ID = HD.CPNY_ID
+                                              AND HD.DEPTNO = E.DEPTNO
+                                      CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO) AS BRANCH_CD
+                                FROM PA_SUMMARY_LGECH K, HR_EMPLOYEE E
+                               WHERE K.CPNY_ID = #CPNY_ID#
+                                 AND K.CPNY_ID = E.CPNY_ID
+                                 AND K.PERSON_ID = E.PERSON_ID
+                                 AND E.EMP_TYPE_CODE IN ('211804')
+                                 ]]>
+                                   <isNotEmpty prepend="and" property="PROD_TP">
+                                     <isNotEqual property="PROD_TP" compareValue="" >
+                                            <![CDATA[
+                                             E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                            FROM SY_CODE T,SY_CODE_PARAM SP
+                                                           WHERE T.CODE_NO = SP.CODE_NO
+                                                             AND T.PARENT_CODE_NO = '211424'
+                                                             AND SP.CPNY_ID = #CPNY_ID#
+                                                             AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+					                                                             from dual
+					                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+					                                                       )
+                                    AND T.ACTIVITY = 1)  
+                                        ]]>
+                                     </isNotEqual>
+                                   </isNotEmpty>
+                                  <![CDATA[
+                                  AND K.PA_MONTH IN
+                                           (SELECT distinct SUBSTR(T.EDU_TIME, 0, 6)
+                                              FROM EDU_PR_EVAL T, HR_EMPLOYEE EMP, EDU_PR_SUBJT PR
+                                             WHERE T.SUBSD_CD = #CPNY_ID#
+                                  ]]>
+                                               <isNotEmpty prepend="AND" property="START_DATE">
+                                                  <![CDATA[
+                                                    T.EDU_TIME >= #START_DATE#
+                                                  ]]>
+                                               </isNotEmpty>
+                                               <isNotEmpty prepend="AND" property="END_DATE">
+                                                  <![CDATA[
+                                                      T.EDU_TIME <= #END_DATE#
+                                                  ]]>
+                                               </isNotEmpty>   
+                                  <![CDATA[
+                                                     AND T.SUBSD_CD = EMP.CPNY_ID
+                                                     AND T.PAY_AREA_CD = EMP.PAY_AREA_CD
+                                                     AND T.EMPNO = EMP.EMPID
+                                                     AND T.SUBSD_CD = PR.SUBSD_CD
+                                                     AND T.SUBJT_GR = PR.SUBJT_GR_ID
+                                                     AND T.SUBJT_ID = PR.SUBJT_ID)
+                                   ]]>
+                                   <isNotEmpty prepend="and" property="BRANCH_CD">
+                                      E.DEPTNO IN
+                                            (SELECT HR_DEPARTMENT.DEPTNO
+                                               FROM HR_DEPARTMENT
+                                              WHERE HR_DEPARTMENT.CPNY_ID = #CPNY_ID#
+                                              CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                                              START WITH HR_DEPARTMENT.DEPTNO = #BRANCH_CD#)
+                                    </isNotEmpty>
+                                  <![CDATA[
+                             UNION ALL
+                             SELECT DISTINCT SUBSTR(K.EDU_TIME, 0, 6) AS PA_MONTH,
+                                    K.SUBSD_CD AS CPNY_ID,
+                                    K.PAY_AREA_CD,
+                                    K.BRANCH_CD 
+                               FROM EDU_PR_EVAL K ,EDU_PR_SUBJT PR
+                              WHERE LENGTH(K.EMPNO) > 10 
+                                AND K.SUBSD_CD = #CPNY_ID#
+                                AND K.SUBSD_CD = PR.SUBSD_CD
+                                AND K.SUBJT_GR = PR.SUBJT_GR_ID
+                                AND K.SUBJT_ID = PR.SUBJT_ID
+                                ]]>
+                                     <isNotEmpty prepend="AND" property="START_DATE">
+                                        <![CDATA[
+                                            K.EDU_TIME >= #START_DATE#
+                                        ]]>
+                                     </isNotEmpty>
+                                     <isNotEmpty prepend="AND" property="END_DATE">
+                                        <![CDATA[
+                                            K.EDU_TIME <= #END_DATE#
+                                        ]]>
+                                     </isNotEmpty>  
+                                     <isNotEmpty prepend="and" property="BRANCH_CD">
+                                        K.BRANCH_CD = #BRANCH_CD#
+                                     </isNotEmpty>                  
+                                      <isNotEmpty prepend="and" property="PROD_TP">
+                                        <isNotEqual property="PROD_TP" compareValue="" >
+                                             <![CDATA[
+                                             'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                             from dual
+                                                           connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                       )
+                                             ]]>
+                                        </isNotEqual>
+                                      </isNotEmpty> 
+                                <![CDATA[                   
+                              )  
+                           GROUP BY PA_MONTH,
+                                    CPNY_ID,
+                                    PAY_AREA_CD,
+                                    BRANCH_CD) B
+                   WHERE A.SUBSD_CD = B.CPNY_ID
+                     AND A.PAY_AREA_CD = B.PAY_AREA_CD
+                     AND A.BRANCH_CD = B.BRANCH_CD
+                     AND B.PA_MONTH = SUBSTR(A.EDU_TIME, 0, 6)
+               AND B.PA_MONTH = SUBSTR(A.EDU_TIME, 0, 6)        
+               )    
+      ]]>
+	</select>
+			
+	<!-- 课程周别汇总 -->
+	<!-- @Create date: 2014.07.07 -->
+	<select id="searchGradeWeekList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">	
+	  <![CDATA[  
+      SELECT B.SUBSD_CD,
+             (SELECT HD.ORG_NAME_LOCAL AS CODE_NAME
+                FROM HR_DEPARTMENT HD
+               WHERE HD.CPNY_ID = B.SUBSD_CD
+                 AND HD.DEPT_LEVEL = 2
+                 AND HD.DEPTNO = B.PAY_AREA_CD) PAY_AREA_CD,
+             B.BRANCH_CD,
+             (SELECT ORG_NAME_LOCAL
+                FROM HR_DEPARTMENT ORG
+               WHERE ORG.DEPTNO = B.BRANCH_CD
+                 AND ORG.CPNY_ID = B.SUBSD_CD) ORG_NM,
+             (SELECT SUBJT_GR_NM
+                FROM EDU_PR_SUBJT_GR T
+               WHERE T.SUBSD_CD = B.SUBSD_CD
+                 AND T.SUBJT_GR_ID = B.SUBJT_GR
+                 ) SUBJT_GR_NM,
+             (SELECT SUBJT_NM
+                FROM EDU_PR_SUBJT T
+               WHERE T.SUBSD_CD = B.SUBSD_CD
+                 AND T.SUBJT_GR_ID = B.SUBJT_GR
+                 AND T.SUBJT_ID = B.SUBJT_ID) SUBJT_NM,
+             B.CHANNEL_NM,B.EDU_TIME,
+             SUM(CASE
+                   WHEN B.EDU_TIME < #beforeTime# THEN
+                    1
+                   ELSE
+                    0
+                 END) PRE_WEEK_ACCOUNT,
+             SUM(CASE
+                   WHEN B.EDU_TIME BETWEEN #beforeTime# AND #afterTime# THEN
+                    1
+                   ELSE
+                    0
+                 END) CURRENT_WEEK,
+             SUM(CASE
+                   WHEN B.EDU_TIME < #beforeTime# THEN
+                    1
+                   ELSE
+                    0
+                 END) + SUM(CASE
+                              WHEN B.EDU_TIME BETWEEN #beforeTime# AND #afterTime# THEN
+                               1
+                              ELSE
+                               0
+                            END) NOW_ACCOUNT,
+             MAX(C.TOTAL_COUNT) TOTAL_COUNT,   
+             ROUND((SUM(CASE
+                          WHEN B.EDU_TIME < #beforeTime# THEN
+                           1
+                          ELSE
+                           0
+                        END) + SUM(CASE
+                                      WHEN B.EDU_TIME BETWEEN #beforeTime# AND #afterTime# THEN
+                                       1
+                                      ELSE
+                                       0
+                                    END)) / MAX(C.TOTAL_COUNT) * 100,
+                   2) || '%' RATE
+        FROM (SELECT  * FROM 
+                (SELECT A.SUBSD_CD,
+                     A.PAY_AREA_CD,
+                     A.BRANCH_CD,
+                     A.SUBJT_GR,
+                     A.SUBJT_ID,
+                     A.SUBJT_NM,
+                     A.EDU_TIME,
+                     DECODE(S.CHANNEL1,
+                            'B00',
+                            NVL(C.CHANNEL_NM, 'other'),
+                            'PARENT_DEFAULT',
+                            'other',
+                            'K00',
+                            'other',
+                            NULL,
+                            'other',
+                            S.CHANNEL1_NAME) CHANNEL_NM
+                FROM (SELECT T.SUBSD_CD,
+                             T.PAY_AREA_CD,
+                             T.BRANCH_CD,
+                             T.SUBJT_GR,
+                             T.SUBJT_ID,
+                             F.SUBJT_NM,
+                             T.EDU_TIME,
+                             T.EMPNO
+                        FROM EDU_PR_EVAL  T,
+                             HR_EMPLOYEE  E,
+                             EDU_PR_SUBJT F
+                       WHERE LENGTH(T.EMPNO) < 10
+                         AND T.SUBSD_CD = #CPNY_ID#
+                         ]]>
+                         
+                         <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                             T.SUBJT_GR = #SUBJT_GR_ID#
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="SUBJT_NM">
+                             F.SUBJT_NM LIKE '%' ||#SUBJT_NM#|| '%'
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="BRANCH_CD">
+                             T.BRANCH_CD = #BRANCH_CD#
+                         </isNotEmpty>
+                         <![CDATA[
+                         AND T.USE_YN = 'Y'
+                         AND T.EDU_CNT = 1
+                         AND T.SEQ = 0
+                         AND T.SUBSD_CD = E.CPNY_ID
+                         AND T.EMPNO = E.EMPID
+                         AND T.BRANCH_CD = (SELECT HD.DEPTNO
+                                              FROM HR_DEPARTMENT HD
+                                             WHERE DEPT_TYPE = 'branch'
+                                             START WITH E.CPNY_ID = HD.CPNY_ID
+                                                    AND HD.DEPTNO = E.DEPTNO
+                                            CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO)
+                         AND T.SUBJT_GR = F.SUBJT_GR_ID
+                         AND T.SUBJT_ID = F.SUBJT_ID
+                         AND E.PROD_TP = F.SUBJT_PROD
+                         ]]>
+                           <isNotEmpty prepend="and" property="PROD_TP">
+                              <isNotEqual property="PROD_TP" compareValue="" >
+                                <![CDATA[
+                                       E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                      FROM SY_CODE T,SY_CODE_PARAM SP
+                                                     WHERE T.CODE_NO = SP.CODE_NO
+                                                       AND T.PARENT_CODE_NO = '211424'
+                                                       AND SP.CPNY_ID = #CPNY_ID#
+                                                       AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                                            from dual
+                                                                          connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                                      )
+                                AND T.ACTIVITY = 1)  
+                                ]]>
+                              </isNotEqual>
+                           </isNotEmpty>
+                          
+                         <![CDATA[
+                      UNION
+                      SELECT T.SUBSD_CD,
+                             T.PAY_AREA_CD,
+                             T.BRANCH_CD,
+                             T.SUBJT_GR,
+                             T.SUBJT_ID,
+                             F.SUBJT_NM,
+                             T.EDU_TIME,
+                             T.EMPNO
+                        FROM EDU_PR_EVAL  T,
+                             HR_EMPLOYEE  E,
+                             EDU_PR_SUBJT F
+                       WHERE LENGTH(T.EMPNO) < 10
+                         AND T.SUBSD_CD = #CPNY_ID#
+                         ]]>
+                         
+                         <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                           T.SUBJT_GR = #SUBJT_GR_ID#
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="SUBJT_NM">
+                           F.SUBJT_NM LIKE '%' ||#SUBJT_NM#|| '%'
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="BRANCH_CD">
+                           T.BRANCH_CD = #BRANCH_CD#
+                         </isNotEmpty>
+                         <![CDATA[
+                         AND T.USE_YN = 'Y'
+                         AND T.SUBSD_CD = E.CPNY_ID
+                         AND T.EMPNO = E.EMPID
+                         AND T.BRANCH_CD = (SELECT HD.DEPTNO
+                                              FROM HR_DEPARTMENT HD
+                                             WHERE DEPT_TYPE = 'branch'
+                                             START WITH E.CPNY_ID = HD.CPNY_ID
+                                                    AND HD.DEPTNO = E.DEPTNO
+                                            CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO)
+                         AND T.SUBJT_GR = F.SUBJT_GR_ID
+                         AND T.SUBJT_ID = F.SUBJT_ID
+                         AND T.EDU_CNT = 1
+                         AND T.SEQ = 0
+                         AND E.PROD_TP != F.SUBJT_PROD
+                         ]]>
+                         <isNotEmpty prepend="and" property="PROD_TP">
+                            <isNotEqual property="PROD_TP" compareValue="" >
+                              <![CDATA[
+                                     E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                    FROM SY_CODE T,SY_CODE_PARAM SP
+                                                   WHERE T.CODE_NO = SP.CODE_NO
+                                                     AND T.PARENT_CODE_NO = '211424'
+                                                     AND SP.CPNY_ID = #CPNY_ID#
+                                                     AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                                            from dual
+                                                                          connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                                      )
+                              AND T.ACTIVITY = 1)  
+                              ]]>
+                            </isNotEqual>
+                         </isNotEmpty>
+                       <![CDATA[  
+                         ) A,
+                     (SELECT S.COM_CD,
+                             S.SHOP_CD,
+                             S.CHANNEL1,
+                             S.CHANNEL2,
+                             S.CHANNEL1_NAME
+                        FROM SPMS_SHOP_GRADE_CHRS S
+                       WHERE S.COM_CD = #CPNY_ID#
+                         AND S.YYYY = SUBSTR(#TIME#, 1, 4)) S,
+                     AS_SHOP_DTL L,
+                     EDU_PR_EVAL_CHANNEL_MAPPING C
+               WHERE L.YYYYMM = SUBSTR(TRIM(A.EDU_TIME), 1, 6)
+                 AND A.SUBSD_CD = L.SUBSD_CD 
+                 AND A.EMPNO = L.EMPNO
+                             
+                 AND L.CUST_ID = S.SHOP_CD
+                 AND S.COM_CD = C.SUBSD_CD(+)
+                 AND S.CHANNEL1 = C.CHANNEL1(+)
+                 AND S.CHANNEL2 = C.CHANNEL2(+)
+                             
+             UNION ALL
+             SELECT         
+                 T.SUBSD_CD,
+                 T.PAY_AREA_CD,
+                 T.BRANCH_CD,
+                 T.SUBJT_GR,
+                 T.SUBJT_ID,
+                 F.SUBJT_NM,
+                 T.EDU_TIME, 
+                 'other' CHANNEL_NM
+              FROM EDU_PR_EVAL T ,
+                   EDU_PR_SUBJT F
+             WHERE LENGTH(T.EMPNO) > 10
+               AND T.SUBJT_GR = F.SUBJT_GR_ID
+               AND T.SUBJT_ID = F.SUBJT_ID
+               AND  T.SUBSD_CD = #CPNY_ID#
+               ]]>
+                         
+                 <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                   T.SUBJT_GR = #SUBJT_GR_ID#
+                 </isNotEmpty>
+                 <isNotEmpty prepend="and" property="SUBJT_NM">
+                   F.SUBJT_NM LIKE '%' ||#SUBJT_NM#|| '%'
+                 </isNotEmpty>
+                 <isNotEmpty prepend="and" property="BRANCH_CD">
+                   T.BRANCH_CD = #BRANCH_CD#
+                 </isNotEmpty>                 
+                   <isNotEmpty prepend="and" property="PROD_TP">
+                     <isNotEqual property="PROD_TP" compareValue="" >
+                          <![CDATA[
+                         'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                    from dual
+                                  connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                              )
+                          ]]>
+                     </isNotEqual>
+                   </isNotEmpty> 
+               <![CDATA[
+               AND T.USE_YN = 'Y'
+               AND T.EDU_CNT = 1
+               AND T.SEQ = 0 )) B,
+             (SELECT A.SUBSD_CD,
+                     A.PAY_AREA_CD,
+                     A.BRANCH_CD,
+                     A.CHANNEL_NM,
+                     COUNT(1) TOTAL_COUNT
+                FROM (SELECT K.CPNY_ID SUBSD_CD,
+                             E.PAY_AREA_CD,
+                             (SELECT HD.DEPTNO
+                                      FROM HR_DEPARTMENT HD
+                                     WHERE DEPT_TYPE = 'branch'
+                                     START WITH E.CPNY_ID = HD.CPNY_ID
+                                            AND HD.DEPTNO = E.DEPTNO
+                                    CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO) AS BRANCH_CD,
+                             DECODE(S.CHANNEL1,
+                                    'B00',
+                                    NVL(C.CHANNEL_NM, 'other'),
+                                    'PARENT_DEFAULT',
+                                    'other',
+                                    'K00',
+                                    'other',
+                                    NULL,
+                                    'other',
+                                    S.CHANNEL1_NAME) CHANNEL_NM,
+                             K.EMPID
+                        FROM PA_SUMMARY_LGECH K,
+                             HR_EMPLOYEE E,
+                             (SELECT S.COM_CD,
+                                     S.SHOP_CD,
+                                     S.CHANNEL1,
+                                     S.CHANNEL2,
+                                     S.CHANNEL1_NAME
+                                FROM SPMS_SHOP_GRADE_CHRS S
+                               WHERE S.COM_CD = #CPNY_ID#
+                                 AND S.YYYY = SUBSTR(#TIME#, 1, 4)) S,
+                             AS_SHOP_DTL L,
+                             EDU_PR_EVAL_CHANNEL_MAPPING C
+                       WHERE K.CPNY_ID = #CPNY_ID#
+                         AND E.EMP_TYPE_CODE IN ('211804')
+                         AND K.PA_MONTH =
+                             TO_CHAR(ADD_MONTHS(TO_DATE(#TIME#, 'YYYYMMDD'),
+                                                -1),
+                                     'YYYYMM')
+                         ]]>
+                         <isNotEmpty prepend="and" property="PROD_TP">
+                            <isNotEqual property="PROD_TP" compareValue="" >
+                                  <![CDATA[
+                                        E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                       FROM SY_CODE T,SY_CODE_PARAM SP
+                                                      WHERE T.CODE_NO = SP.CODE_NO
+                                                        AND T.PARENT_CODE_NO = '211424'
+                                                        AND SP.CPNY_ID = #CPNY_ID#
+                                                        AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                                            from dual
+                                                                          connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                                      )
+                               AND T.ACTIVITY = 1)  
+                              ]]>
+                            </isNotEqual>
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="BRANCH_CD">
+                            E.DEPTNO IN
+                                  (SELECT HR_DEPARTMENT.DEPTNO
+                                     FROM HR_DEPARTMENT
+                                    WHERE HR_DEPARTMENT.CPNY_ID = #CPNY_ID#
+                                    CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                                    START WITH HR_DEPARTMENT.DEPTNO = #BRANCH_CD#)
+                          </isNotEmpty>
+                         <![CDATA[
+                         AND K.CPNY_ID = E.CPNY_ID
+                         AND K.PERSON_ID = E.PERSON_ID
+                         AND L.YYYYMM = SUBSTR(#TIME#, 1, 6)
+                         AND E.CPNY_ID = L.SUBSD_CD
+                         AND E.EMPID = L.EMPNO
+                         AND L.CUST_ID = S.SHOP_CD
+                         AND S.COM_CD = C.SUBSD_CD(+)
+                         AND S.CHANNEL1 = C.CHANNEL1(+)
+                         AND S.CHANNEL2 = C.CHANNEL2(+)
+                         UNION ALL
+                         SELECT DISTINCT
+                             P.SUBSD_CD,
+                             P.PAY_AREA_CD,
+                             P.BRANCH_CD,
+                             'other' CHANNEL_NM,
+                             P.EMPNO
+                         FROM EDU_PR_EVAL P
+                         WHERE LENGTH(P.EMPNO) > 10
+                           AND P.SUBSD_CD = #CPNY_ID#
+                           AND SUBSTR(P.EDU_TIME, 0,6) BETWEEN TO_CHAR(ADD_MONTHS(TO_DATE(#afterTime#, 'YYYYMMDD'),-1),'YYYYMM') AND SUBSTR(#afterTime#, 0,6)
+                         ]]>
+                          <isNotEmpty prepend="and" property="BRANCH_CD">
+                               P.BRANCH_CD = #BRANCH_CD#
+                          </isNotEmpty>                 
+                       <isNotEmpty prepend="and" property="PROD_TP">
+                         <isNotEqual property="PROD_TP" compareValue="" >
+                              <![CDATA[
+                             'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                         from dual
+                                       connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                   )
+                              ]]>
+                         </isNotEqual>
+                       </isNotEmpty> 
+                         <![CDATA[
+                           AND P.USE_YN = 'Y'
+                           AND P.EDU_CNT = 1
+                           AND P.SEQ = 0) A
+               GROUP BY A.SUBSD_CD,
+                        A.PAY_AREA_CD,
+                        A.BRANCH_CD,
+                        A.CHANNEL_NM) C
+       WHERE B.SUBSD_CD = C.SUBSD_CD
+         AND B.PAY_AREA_CD = C.PAY_AREA_CD
+         AND B.BRANCH_CD = C.BRANCH_CD
+         AND B.CHANNEL_NM = C.CHANNEL_NM
+       GROUP BY B.SUBSD_CD,
+                B.PAY_AREA_CD,
+                B.BRANCH_CD,
+                B.SUBJT_GR,
+                B.SUBJT_ID,
+                B.CHANNEL_NM,B.EDU_TIME
+       ORDER BY B.SUBSD_CD,
+                B.PAY_AREA_CD,
+                B.BRANCH_CD,
+                B.SUBJT_GR,
+                B.SUBJT_ID,
+                B.CHANNEL_NM,
+                B.EDU_TIME
+      ]]>
+	 </select>	
+	 
+	 	
+	<!-- 课程周别汇总count -->
+	<!-- @Create date: 2014.07.07 -->
+	<select id="searchGradeWeekListCnt"  parameterClass="linkMap"
+		resultClass="int">
+	  <![CDATA[  
+    SELECT COUNT(0) FROM 
+      (SELECT B.SUBSD_CD,
+             (SELECT HD.ORG_NAME_LOCAL AS CODE_NAME
+                FROM HR_DEPARTMENT HD
+               WHERE HD.CPNY_ID = B.SUBSD_CD
+                 AND HD.DEPT_LEVEL = 2
+                 AND HD.DEPTNO = B.PAY_AREA_CD) PAY_AREA_CD,
+             B.BRANCH_CD,
+             (SELECT ORG_NAME_LOCAL
+                FROM HR_DEPARTMENT ORG
+               WHERE ORG.DEPTNO = B.BRANCH_CD
+                 AND ORG.CPNY_ID = B.SUBSD_CD) ORG_NM,
+             (SELECT SUBJT_GR_NM
+                FROM EDU_PR_SUBJT_GR T
+               WHERE T.SUBSD_CD = B.SUBSD_CD
+                 AND T.SUBJT_GR_ID = B.SUBJT_GR
+                 ) SUBJT_GR_NM,
+             (SELECT SUBJT_NM
+                FROM EDU_PR_SUBJT T
+               WHERE T.SUBSD_CD = B.SUBSD_CD
+                 AND T.SUBJT_GR_ID = B.SUBJT_GR
+                 AND T.SUBJT_ID = B.SUBJT_ID) SUBJT_NM,
+             B.CHANNEL_NM,B.EDU_TIME,
+             SUM(CASE
+                   WHEN B.EDU_TIME < #beforeTime# THEN
+                    1
+                   ELSE
+                    0
+                 END) PRE_WEEK_ACCOUNT,
+             SUM(CASE
+                   WHEN B.EDU_TIME BETWEEN #beforeTime# AND #afterTime# THEN
+                    1
+                   ELSE
+                    0
+                 END) CURRENT_WEEK,
+             SUM(CASE
+                   WHEN B.EDU_TIME < #beforeTime# THEN
+                    1
+                   ELSE
+                    0
+                 END) + SUM(CASE
+                              WHEN B.EDU_TIME BETWEEN #beforeTime# AND #afterTime# THEN
+                               1
+                              ELSE
+                               0
+                            END) NOW_ACCOUNT,
+             MAX(C.TOTAL_COUNT) TOTAL_COUNT,   
+             ROUND((SUM(CASE
+                          WHEN B.EDU_TIME < #beforeTime# THEN
+                           1
+                          ELSE
+                           0
+                        END) + SUM(CASE
+                                      WHEN B.EDU_TIME BETWEEN #beforeTime# AND #afterTime# THEN
+                                       1
+                                      ELSE
+                                       0
+                                    END)) / MAX(C.TOTAL_COUNT) * 100,
+                   2) || '%' RATE
+        FROM (SELECT  * FROM 
+                (SELECT A.SUBSD_CD,
+                     A.PAY_AREA_CD,
+                     A.BRANCH_CD,
+                     A.SUBJT_GR,
+                     A.SUBJT_ID,
+                     A.SUBJT_NM,
+                     A.EDU_TIME,
+                     DECODE(S.CHANNEL1,
+                            'B00',
+                            NVL(C.CHANNEL_NM, 'other'),
+                            'PARENT_DEFAULT',
+                            'other',
+                            'K00',
+                            'other',
+                            NULL,
+                            'other',
+                            S.CHANNEL1_NAME) CHANNEL_NM
+                FROM (SELECT T.SUBSD_CD,
+                             T.PAY_AREA_CD,
+                             T.BRANCH_CD,
+                             T.SUBJT_GR,
+                             T.SUBJT_ID,
+                             F.SUBJT_NM,
+                             T.EDU_TIME,
+                             T.EMPNO
+                        FROM EDU_PR_EVAL  T,
+                             HR_EMPLOYEE  E,
+                             EDU_PR_SUBJT F
+                       WHERE LENGTH(T.EMPNO) < 10
+                         AND T.SUBSD_CD = #CPNY_ID#
+                         ]]>
+                         
+                         <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                             T.SUBJT_GR = #SUBJT_GR_ID#
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="SUBJT_NM">
+                             F.SUBJT_NM LIKE '%' ||#SUBJT_NM#|| '%'
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="BRANCH_CD">
+                             T.BRANCH_CD = #BRANCH_CD#
+                         </isNotEmpty>
+                         <![CDATA[
+                         AND T.USE_YN = 'Y'
+                         AND T.EDU_CNT = 1
+                         AND T.SEQ = 0
+                         AND T.SUBSD_CD = E.CPNY_ID
+                         AND T.EMPNO = E.EMPID
+                         AND T.BRANCH_CD = (SELECT HD.DEPTNO
+                                              FROM HR_DEPARTMENT HD
+                                             WHERE DEPT_TYPE = 'branch'
+                                             START WITH E.CPNY_ID = HD.CPNY_ID
+                                                    AND HD.DEPTNO = E.DEPTNO
+                                            CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO)
+                         AND T.SUBJT_GR = F.SUBJT_GR_ID
+                         AND T.SUBJT_ID = F.SUBJT_ID
+                         AND E.PROD_TP = F.SUBJT_PROD
+                         ]]>
+                           <isNotEmpty prepend="and" property="PROD_TP">
+                              <isNotEqual property="PROD_TP" compareValue="" >
+                                <![CDATA[
+                                       E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                      FROM SY_CODE T,SY_CODE_PARAM SP
+                                                     WHERE T.CODE_NO = SP.CODE_NO
+                                                       AND T.PARENT_CODE_NO = '211424'
+                                                       AND SP.CPNY_ID = #CPNY_ID#
+                                                       AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                                            from dual
+                                                                          connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                                      )
+                                AND T.ACTIVITY = 1)  
+                                ]]>
+                              </isNotEqual>
+                           </isNotEmpty>
+                          
+                         <![CDATA[
+                      UNION
+                      SELECT T.SUBSD_CD,
+                             T.PAY_AREA_CD,
+                             T.BRANCH_CD,
+                             T.SUBJT_GR,
+                             T.SUBJT_ID,
+                             F.SUBJT_NM,
+                             T.EDU_TIME,
+                             T.EMPNO
+                        FROM EDU_PR_EVAL  T,
+                             HR_EMPLOYEE  E,
+                             EDU_PR_SUBJT F
+                       WHERE LENGTH(T.EMPNO) < 10
+                         AND T.SUBSD_CD = #CPNY_ID#
+                         ]]>
+                         
+                         <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                           T.SUBJT_GR = #SUBJT_GR_ID#
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="SUBJT_NM">
+                           F.SUBJT_NM LIKE '%' ||#SUBJT_NM#|| '%'
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="BRANCH_CD">
+                           T.BRANCH_CD = #BRANCH_CD#
+                         </isNotEmpty>
+                         <![CDATA[
+                         AND T.USE_YN = 'Y'
+                         AND T.SUBSD_CD = E.CPNY_ID
+                         AND T.EMPNO = E.EMPID
+                         AND T.BRANCH_CD = (SELECT HD.DEPTNO
+                                              FROM HR_DEPARTMENT HD
+                                             WHERE DEPT_TYPE = 'branch'
+                                             START WITH E.CPNY_ID = HD.CPNY_ID
+                                                    AND HD.DEPTNO = E.DEPTNO
+                                            CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO)
+                         AND T.SUBJT_GR = F.SUBJT_GR_ID
+                         AND T.SUBJT_ID = F.SUBJT_ID
+                         AND T.EDU_CNT = 1
+                         AND T.SEQ = 0
+                         AND E.PROD_TP != F.SUBJT_PROD
+                         ]]>
+                         <isNotEmpty prepend="and" property="PROD_TP">
+                            <isNotEqual property="PROD_TP" compareValue="" >
+                              <![CDATA[
+                                     E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                    FROM SY_CODE T,SY_CODE_PARAM SP
+                                                   WHERE T.CODE_NO = SP.CODE_NO
+                                                     AND T.PARENT_CODE_NO = '211424'
+                                                     AND SP.CPNY_ID = #CPNY_ID#
+                                                     AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                                            from dual
+                                                                          connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                                      )
+                              AND T.ACTIVITY = 1)  
+                              ]]>
+                            </isNotEqual>
+                         </isNotEmpty>
+                       <![CDATA[  
+                         ) A,
+                     (SELECT S.COM_CD,
+                             S.SHOP_CD,
+                             S.CHANNEL1,
+                             S.CHANNEL2,
+                             S.CHANNEL1_NAME
+                        FROM SPMS_SHOP_GRADE_CHRS S
+                       WHERE S.COM_CD = #CPNY_ID#
+                         AND S.YYYY = SUBSTR(#TIME#, 1, 4)) S,
+                     AS_SHOP_DTL L,
+                     EDU_PR_EVAL_CHANNEL_MAPPING C
+               WHERE L.YYYYMM = SUBSTR(TRIM(A.EDU_TIME), 1, 6)
+                 AND A.SUBSD_CD = L.SUBSD_CD 
+                 AND A.EMPNO = L.EMPNO
+                             
+                 AND L.CUST_ID = S.SHOP_CD
+                 AND S.COM_CD = C.SUBSD_CD(+)
+                 AND S.CHANNEL1 = C.CHANNEL1(+)
+                 AND S.CHANNEL2 = C.CHANNEL2(+)
+                             
+             UNION ALL
+             SELECT         
+                 T.SUBSD_CD,
+                 T.PAY_AREA_CD,
+                 T.BRANCH_CD,
+                 T.SUBJT_GR,
+                 T.SUBJT_ID,
+                 F.SUBJT_NM,
+                 T.EDU_TIME, 
+                 'other' CHANNEL_NM
+              FROM EDU_PR_EVAL T ,
+                   EDU_PR_SUBJT F
+             WHERE LENGTH(T.EMPNO) > 10
+               AND T.SUBJT_GR = F.SUBJT_GR_ID
+               AND T.SUBJT_ID = F.SUBJT_ID
+               AND  T.SUBSD_CD = #CPNY_ID#
+               ]]>
+                         
+                 <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+                   T.SUBJT_GR = #SUBJT_GR_ID#
+                 </isNotEmpty>
+                 <isNotEmpty prepend="and" property="SUBJT_NM">
+                   F.SUBJT_NM LIKE '%' ||#SUBJT_NM#|| '%'
+                 </isNotEmpty>
+                 <isNotEmpty prepend="and" property="BRANCH_CD">
+                   T.BRANCH_CD = #BRANCH_CD#
+                 </isNotEmpty>                 
+                   <isNotEmpty prepend="and" property="PROD_TP">
+                     <isNotEqual property="PROD_TP" compareValue="" >
+                          <![CDATA[
+                         'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                     from dual
+                                   connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                               )
+                          ]]>
+                     </isNotEqual>
+                   </isNotEmpty> 
+               <![CDATA[
+               AND T.USE_YN = 'Y'
+               AND T.EDU_CNT = 1
+               AND T.SEQ = 0 )) B,
+             (SELECT A.SUBSD_CD,
+                     A.PAY_AREA_CD,
+                     A.BRANCH_CD,
+                     A.CHANNEL_NM,
+                     COUNT(1) TOTAL_COUNT
+                FROM (SELECT K.CPNY_ID SUBSD_CD,
+                             E.PAY_AREA_CD,
+                             (SELECT HD.DEPTNO
+                                      FROM HR_DEPARTMENT HD
+                                     WHERE DEPT_TYPE = 'branch'
+                                     START WITH E.CPNY_ID = HD.CPNY_ID
+                                            AND HD.DEPTNO = E.DEPTNO
+                                    CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO) AS BRANCH_CD,
+                             DECODE(S.CHANNEL1,
+                                    'B00',
+                                    NVL(C.CHANNEL_NM, 'other'),
+                                    'PARENT_DEFAULT',
+                                    'other',
+                                    'K00',
+                                    'other',
+                                    NULL,
+                                    'other',
+                                    S.CHANNEL1_NAME) CHANNEL_NM,
+                             K.EMPID
+                        FROM PA_SUMMARY_LGECH K,
+                             HR_EMPLOYEE E,
+                             (SELECT S.COM_CD,
+                                     S.SHOP_CD,
+                                     S.CHANNEL1,
+                                     S.CHANNEL2,
+                                     S.CHANNEL1_NAME
+                                FROM SPMS_SHOP_GRADE_CHRS S
+                               WHERE S.COM_CD = #CPNY_ID#
+                                 AND S.YYYY = SUBSTR(#TIME#, 1, 4)) S,
+                             AS_SHOP_DTL L,
+                             EDU_PR_EVAL_CHANNEL_MAPPING C
+                       WHERE K.CPNY_ID = #CPNY_ID#
+                         AND E.EMP_TYPE_CODE IN ('211804')
+                         AND K.PA_MONTH =
+                             TO_CHAR(ADD_MONTHS(TO_DATE(#TIME#, 'YYYYMMDD'),
+                                                -1),
+                                     'YYYYMM')
+                         ]]>
+                         <isNotEmpty prepend="and" property="PROD_TP">
+                            <isNotEqual property="PROD_TP" compareValue="" >
+                                  <![CDATA[
+                                        E.PROD_TP IN (SELECT NVL(T.DESCRIPTION, '') 
+                                                       FROM SY_CODE T,SY_CODE_PARAM SP
+                                                      WHERE T.CODE_NO = SP.CODE_NO
+                                                        AND T.PARENT_CODE_NO = '211424'
+                                                        AND SP.CPNY_ID = #CPNY_ID#
+                                                        AND T.CODE_NO IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                                                            from dual
+                                                                          connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                                                      )
+                               AND T.ACTIVITY = 1)  
+                              ]]>
+                            </isNotEqual>
+                         </isNotEmpty>
+                         <isNotEmpty prepend="and" property="BRANCH_CD">
+                            E.DEPTNO IN
+                                  (SELECT HR_DEPARTMENT.DEPTNO
+                                     FROM HR_DEPARTMENT
+                                    WHERE HR_DEPARTMENT.CPNY_ID = #CPNY_ID#
+                                    CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                                    START WITH HR_DEPARTMENT.DEPTNO = #BRANCH_CD#)
+                          </isNotEmpty>
+                         <![CDATA[
+                         AND K.CPNY_ID = E.CPNY_ID
+                         AND K.PERSON_ID = E.PERSON_ID
+                         AND L.YYYYMM = SUBSTR(#TIME#, 1, 6)
+                         AND E.CPNY_ID = L.SUBSD_CD
+                         AND E.EMPID = L.EMPNO
+                         AND L.CUST_ID = S.SHOP_CD
+                         AND S.COM_CD = C.SUBSD_CD(+)
+                         AND S.CHANNEL1 = C.CHANNEL1(+)
+                         AND S.CHANNEL2 = C.CHANNEL2(+)
+                         UNION ALL
+                         SELECT DISTINCT
+                             P.SUBSD_CD,
+                             P.PAY_AREA_CD,
+                             P.BRANCH_CD,
+                             'other' CHANNEL_NM,
+                             P.EMPNO
+                         FROM EDU_PR_EVAL P
+                         WHERE LENGTH(P.EMPNO) > 10
+                           AND P.SUBSD_CD = #CPNY_ID#
+                           AND SUBSTR(P.EDU_TIME, 0,6) BETWEEN TO_CHAR(ADD_MONTHS(TO_DATE(#afterTime#, 'YYYYMMDD'),-1),'YYYYMM') AND SUBSTR(#afterTime#, 0,6)
+                         ]]>
+                          <isNotEmpty prepend="and" property="BRANCH_CD">
+                               P.BRANCH_CD = #BRANCH_CD#
+                          </isNotEmpty>                 
+                       <isNotEmpty prepend="and" property="PROD_TP">
+                         <isNotEqual property="PROD_TP" compareValue="" >
+                              <![CDATA[
+                             'OTHER' IN (select regexp_substr(#PROD_TP:VARCHAR#,'[^,]+',1,level) 
+                                         from dual
+                                      connect by level<=length(#PROD_TP:VARCHAR#)-length(replace(#PROD_TP:VARCHAR#,','))+1
+                                      )
+                              ]]>
+                         </isNotEqual>
+                       </isNotEmpty> 
+                         <![CDATA[
+                           AND P.USE_YN = 'Y'
+                           AND P.EDU_CNT = 1
+                           AND P.SEQ = 0) A
+               GROUP BY A.SUBSD_CD,
+                        A.PAY_AREA_CD,
+                        A.BRANCH_CD,
+                        A.CHANNEL_NM) C
+       WHERE B.SUBSD_CD = C.SUBSD_CD
+         AND B.PAY_AREA_CD = C.PAY_AREA_CD
+         AND B.BRANCH_CD = C.BRANCH_CD
+         AND B.CHANNEL_NM = C.CHANNEL_NM
+       GROUP BY B.SUBSD_CD,
+                B.PAY_AREA_CD,
+                B.BRANCH_CD,
+                B.SUBJT_GR,
+                B.SUBJT_ID,
+                B.CHANNEL_NM,B.EDU_TIME)
+    ]]>
+	 </select>
+	 
+	<!-- 教育实绩 -->
+	<!-- @Create date: 2014.07.08 -->
+	<select id="searchPromotoGradeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">	
+	  <![CDATA[  
+      SELECT V.EVAL_SEQ,V.SUBSD_CD,V.PAY_AREA_CD,V.PAY_AREA_NM,V.BRANCH_CD
+		       ,V.BRANCH_NM,V.DEPTNO,V.DEPT_NM,V.EMPNO    ,V.EMP_NM,V.CITY_NAME,V.CHANNEL1_NAME
+		       ,V.SHOP_CD,V.SHOP_NAME,V.SHOP_LEVEL ,V.CN_CD_NM,V.SUBJT_TIME
+		       ,V.SUBJT_GR,V.SUBJT_GR_NM,V.SUBJT_ID,V.SUBJT_NM,V.GRADE_POINT
+		       ,V.COURSE_S,V.LECTURER_S,V.NPS,V.RGST_DTIME,V.UPDT_DTIME
+		       ,V.UPDT_USER,V.USE_YN,V.TCR_NM,V.EDU_TIME,V.EDU_RM
+		       ,V.NPS_REASON,V.NPS_NO_REASON,V.SALES_TALK,V.COM_CLUB_INFO,V.OTHER_FEEDBACK
+		       ,V.SEX_NAME,V.OFFICE_PHONE,V.ONLINE_STATE,V.AVG_POINT
+        FROM V_PROMOTOR_TRAIN_RESULT V
+        WHERE V.SUBSD_CD = #CPNY_ID#  
+          AND F_CHECK_USER_DEPT_AUTH(V.DEPTNO, #USER_NO:VARCHAR#, 'hr') > 0
+       ]]>
+       <isNotEmpty prepend="and" property="EMPNO">
+       <![CDATA[  
+         V.EMPNO = #EMPNO#
+       ]]>
+       </isNotEmpty>                      
+       <isNotEmpty prepend="and" property="BRANCH_CD">
+       <![CDATA[  
+         V.BRANCH_CD = #BRANCH_CD#
+       ]]>
+       </isNotEmpty>      
+       <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+       <![CDATA[  
+         V.SUBJT_GR = #SUBJT_GR_ID#
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="SUBJT_NM">
+       <![CDATA[  
+         V.SUBJT_NM LIKE '%'||#SUBJT_NM#||'%'
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="START_DATE">
+       <![CDATA[  
+         V.EDU_TIME >= #START_DATE:VARCHAR#
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="END_DATE">
+       <![CDATA[  
+         V.EDU_TIME <= #END_DATE:VARCHAR#
+       ]]>
+       </isNotEmpty> 
+       <isNotEmpty prepend="and" property="ONLINE_STATE">
+       <![CDATA[  
+         V.ONLINE_STATE = #ONLINE_STATE:VARCHAR#
+       ]]>
+       </isNotEmpty> 
+       <isNotEmpty prepend="and" property="USE_YN">
+       <![CDATA[  
+         V.USE_YN = #USE_YN#
+       ]]>
+       </isNotEmpty> 
+       ORDER BY V.SUBSD_CD,
+                 V.PAY_AREA_CD,
+                 V.BRANCH_CD,
+                 V.EMPNO,
+                 V.SUBJT_GR,
+                 V.SUBJT_ID,
+                 V.EDU_TIME DESC     
+  </select>
+	
+	<!-- 教育实绩count -->
+	<!-- @Create date: 2014.07.08 -->
+	<select id="searchPromotoGradeListCnt" parameterClass="linkMap"
+		resultClass="int" >	
+	  	<![CDATA[  
+      		SELECT COUNT(0) 
+      		  FROM V_PROMOTOR_TRAIN_RESULT V
+      		 WHERE V.SUBSD_CD = #CPNY_ID# 
+			   AND F_CHECK_USER_DEPT_AUTH(V.DEPTNO, #USER_NO:VARCHAR#, 'hr') > 0
+    	]]>
+       <isNotEmpty prepend="and" property="EMPNO">
+       <![CDATA[  
+         V.EMPNO = #EMPNO#
+       ]]>
+       </isNotEmpty>                      
+       <isNotEmpty prepend="and" property="BRANCH_CD">
+       <![CDATA[  
+         V.BRANCH_CD = #BRANCH_CD#
+       ]]>
+       </isNotEmpty>      
+       <isNotEmpty prepend="and" property="SUBJT_GR_ID">
+       <![CDATA[  
+         V.SUBJT_GR = #SUBJT_GR_ID#
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="SUBJT_NM">
+       <![CDATA[  
+         V.SUBJT_NM LIKE '%'||#SUBJT_NM#||'%'
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="START_DATE">
+       <![CDATA[  
+         V.EDU_TIME >= #START_DATE:VARCHAR#
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="END_DATE">
+       <![CDATA[  
+         V.EDU_TIME <= #END_DATE:VARCHAR#
+       ]]>
+       </isNotEmpty>  
+       <isNotEmpty prepend="and" property="ONLINE_STATE">
+       <![CDATA[  
+         V.ONLINE_STATE = #ONLINE_STATE#
+       ]]>
+       </isNotEmpty>
+       <isNotEmpty prepend="and" property="USE_YN">
+       <![CDATA[  
+         V.USE_YN = #USE_YN#
+       ]]>
+       </isNotEmpty> 
+	</select>
+		
+	<!-- @Create date: 2014.07.10 -->
+	<update id="deletePromotoGrade" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE EDU_PR_EVAL P
+	 			SET P.USE_YN='N',
+	 			    P.SEQ = (SELECT NVL(MAX(SEQ),0) +1
+	 			               FROM EDU_PR_EVAL
+	 			              WHERE EMPNO = P.EMPNO
+	 			                AND SUBJT_ID=P.SUBJT_ID
+	 			                AND EDU_TIME = P.EDU_TIME
+	 			                AND USE_YN='N'),
+	 			P.EDU_CNT=0,
+	     	    P.UPDT_DTIME=SYSDATE,
+	     	    P.UPDT_USER=#DEL_USER#
+			WHERE P.EVAL_SEQ = #EVAL_SEQ#
+			AND P.USE_YN='Y'
+			AND P.SEQ = 0
+		]]>
+	</update>
+	
+	<select id="getPromotoGradeResultList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT EMP.LINE_ID,
+			        EMP.SUBSD_CD,
+			        EMP.PAY_AREA_CD,
+			        EMP.BRANCH_CD,
+			        EMP.EMPNO,
+			        EMP.SUBJT_GR,
+			        EMP.SUBJT_ID,
+			        EMP.GRADE_POINT,
+			        TO_CHAR(EMP.RGST_DTIME,'YYYY-MM-DD') RGST_DTIME,
+			        TO_CHAR(EMP.UPDT_DTIME,'YYYY-MM-DD') UPDT_DTIME,
+			        EMP.UPDT_USER,
+			        EMP.USE_YN,
+			        EMP.EDU_TIME,
+			        EMP.EDU_RM,
+			        EMP.COURSE_S,
+			        EMP.LECTURER_S,
+			        EMP.NPS,
+ 			        EMP.SUBJT_TIME,
+   			        EMP.TCR_NM,
+			        EMP.NPS_REASON,
+			        EMP.NPS_NO_REASON,
+			        EMP.SALES_TALK,
+			        EMP.COM_CLUB_INFO,
+			        EMP.OTHER_FEEDBACK,
+			        EMP.ERROR_INFO,
+			        EMP.RESULT_FLAG
+			   FROM EDU_PR_EVAL_EXCEL_IMP EMP
+			  WHERE  EMP.UPDT_USER =  #UPDT_USER#
+			    AND  EMP.SUBSD_CD  =  #SUBSD_CD#
+		]]>	
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 EMP.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY EMP.LINE_ID
+	</select>
+	
+	<select id="getPromotoGradeResultListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		    SELECT COUNT(*)			
+		      FROM EDU_PR_EVAL_EXCEL_IMP EMP
+	         WHERE EMP.UPDT_USER = #UPDT_USER#
+			   AND EMP.SUBSD_CD  = #SUBSD_CD#   
+		]]>	
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 EMP.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPromotoGradeErrCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT    
+	          FROM EDU_PR_EVAL_EXCEL_IMP EMP
+	         WHERE EMP.UPDT_USER = #UPDT_USER#
+		       AND EMP.SUBSD_CD	 = #SUBSD_CD#
+	           AND EMP.ERROR_INFO IS NOT NULL	
+		]]>
+	</select>
+	
+	<!-- 写入excel临时表数据验证֤================================ -->
+	<procedure id="importPromotoGradeRAWFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTO_GRADE_EXCEL_IMP.PR_IMPORT_PROMOTO_GRADE_DATA(
+						 #UPDT_USER:VARCHAR#
+						,#SUBSD_CD#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	
+	</procedure>
+	
+	<select id="getDeptAreaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			    SELECT HD.DEPTNO AS PAY_AREA_CD, HD.ORG_NAME_LOCAL AS PAY_AREA_NAME, HD.PAY_AREA_CD AS PAY_AREA_CD_CODE,HD.ORDERNO
+				  FROM HR_DEPARTMENT HD, HR_DEPARTMENT_NAME HDN
+				 WHERE HD.DEPTNO = HDN.DEPTNO
+				   AND HD.CPNY_ID = #CPNY_ID#
+				   AND HDN.LANGUAGE = #language#
+				   AND HD.DEPT_LEVEL = 2   
+				   ORDER BY HD.ORDERNO
+	  	]]>
+	</select>
+	
+	<!-- 大区code -->
+	<select id="getSubjectGroupCodeList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			  SELECT  A.SUBJT_GR_ID AS CODE_NO,
+					  A.SUBJT_GR_NM AS CODE_NAME,
+					  A.SUBJT_GR_ID || ':' || A.SUBJT_GR_NM AS CODE_DESC
+				  FROM EDU_PR_SUBJT_GR A
+				 WHERE A.SUBSD_CD = #CPNY_ID# 
+				   AND A.USE_YN = 'Y'
+		         ORDER BY A.SUBSD_CD,A.SUBJT_GR_ID DESC	
+		]]>
+	</select>
+ 
+</sqlMap>

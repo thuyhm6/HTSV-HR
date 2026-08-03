@@ -1,0 +1,63 @@
+/* Basic styling */
+/* Draw the lines */
+.jOrgChart .line {
+  height                : 20px;
+  width                 : 2px;
+}
+
+.jOrgChart .down {
+  background-color 		: black;	
+  margin 				: 0px auto;
+}
+
+.jOrgChart .top {
+  border-top          : 2px solid black;
+}
+
+.jOrgChart .left {
+  border-right          : 2px solid black;
+}
+
+.jOrgChart .right {
+  border-left           : 2px solid black;
+}
+
+/* node cell */
+.jOrgChart td {
+  text-align            : center;
+  vertical-align        : top;
+  padding               : 0;
+}
+
+/* The node */
+.jOrgChart .node {
+  background-color 		: #ffffff;
+  border-style: solid solid solid;
+  border-width: 2px 2px 2px;
+  border-color        : #468847;
+  display               : inline-block;
+  width                 : 160px;
+  height                : 70px;
+  z-index 				: 10;
+  margin               : 0 2px;
+}
+.jOrgChart .no_pic{
+	width	:90px;
+	height	:70px;
+	float	:left;
+	display :inline;
+}
+.jOrgChart .info{
+	width		:90px;
+	line-height :20px;
+}
+.jOrgChart .pic{
+	width	:60px;
+	height	:70px;
+	float	:right;
+	display :inline;
+}
+.jOrgChart .pic img{
+	width:60px;
+	height:66px;
+}

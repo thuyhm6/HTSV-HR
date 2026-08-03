@@ -1,0 +1,2921 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.tempsale">
+
+	<select id="getPaTempSalesList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	    SELECT EVENT_ID,
+		   	   	   EVENT_NAME,
+		   	   	   TO_CHAR(START_DATE,'yyyy-mm-dd') START_DATE,
+		   	   	   TO_CHAR(END_DATE,'yyyy-mm-dd') END_DATE,
+		   	   	   PAY_DATE,
+		   	   	   TOTAL_NUM,
+		   	   	   TOTAL_SALARY,
+		   	   	   EVENT_DEPTNO ACC_ORG_CODE,
+		   	   	   PKG_TEMPSALES_EXCEL.GET_BRANCH_NAME(EVENT_DEPTNO,#LANGUAGE:VARCHAR#) EVENT_DEPTNO,
+		   	   	   EVENT_STORE_CODE,
+		   	   	   REMARK,
+		   	   	   COMMON_EMPID,
+		   	   	   FILE_NAME,
+		   	   	   FILE_URL,
+		   	   	   EVENT_CONTENT,
+			  	   A.ACTIVITY,
+			  	   SUBMIT_STATUS,
+			  	   CURRENT_AFFIRM_ID,
+			  	   AFFIRM_FLAG ,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   A.PAY_AREA_CD,
+		   	   	   GET_DEPT_NAME(A.PAY_AREA_CD,#LANGUAGE:VARCHAR#) PAY_AREA_NAME,
+		   	   	   E.LOCAL_NAME,
+		   	   	   TO_CHAR(A.CREATE_DATE,'yyyy-mm-dd') CREATE_DATE
+			 FROM PA_TEMP_SELLER_EVENT A,HR_EMPLOYEE E
+			 WHERE E.PERSON_ID = A.CREATED_BY
+			 AND EXISTS (
+			 	SELECT 1 FROM PA_SUPERVISOR_INFO B,
+			 	HR_DEPARTMENT HR
+			 	WHERE B.DEPTNO = HR.DEPTNO
+			 	AND HR.ACC_ORG_CODE = A.EVENT_DEPTNO
+			 	AND B.PERSON_ID = #supervisorPersonId#
+			 )
+		]]>
+		<isNotEmpty prepend="AND" property="EVENT_NAME">
+			<![CDATA[
+				A.EVENT_NAME like '%$EVENT_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACCRUAL_FLAG">
+			<![CDATA[
+				A.ACCRUAL_FLAG = #ACCRUAL_FLAG#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.EVENT_DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.START_DATE > TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.END_DATE < TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			<![CDATA[
+				A.PAY_DATE = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUBMIT_STATUS">
+			<![CDATA[
+				A.SUBMIT_STATUS = #SUBMIT_STATUS:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="-2">
+	   			<![CDATA[
+						A.SUBMIT_STATUS = 0
+			    ]]>
+			</isEqual>
+			<isNotEqual prepend="" property="AFFIRM_FLAG" compareValue="-2">
+				<![CDATA[
+					( A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+					AND A.SUBMIT_STATUS <> 0 )
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		ORDER BY A.CREATE_DATE DESC
+	</select>
+	
+	<select id="getPaTempSalesEmpInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT INFO_NO,
+		   	   	   B.EVENT_ID,
+		   	   	   B.EVENT_NAME,
+		   	   	   PKG_TEMPSALES_EXCEL.GET_BRANCH_NAME(EVENT_DEPTNO,#LANGUAGE:VARCHAR#) EVENT_DEPTNO,
+		   	   	   PKG_TEMPSALES_EXCEL.GET_SHOP_NAME(A.EVENT_STORE_CODE) EVENT_STORE_CODE,
+		   	   	   EMP_NAME,
+		   	   	   IDCARD_NO,
+		   	   	   BANK_NO,
+		   	   	   BANK_NAME,
+		   	   	   CELLPHONE,
+		   	   	   WORK_DAYS,
+		   	   	   EVENT_SALARY,
+		   	   	   BIRTH_DATE,
+		   	   	   DEPT_NAME ,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   GET_CODE_NAME(A.PROD_TP,#LANGUAGE:VARCHAR#) PROD_NAME,
+		   	   	   GET_CODE_NAME(A.EVS_GRADE,#LANGUAGE:VARCHAR#) EVS_GRADE_NAME
+			 FROM PA_TEMP_SELLER_INFO A,
+			 	  PA_TEMP_SELLER_EVENT B
+			 WHERE A.EVENT_ID = B.EVENT_ID
+			 AND B.EVENT_ID = #EVENT_ID:VARCHAR#
+		]]>
+		ORDER BY A.CREATE_DATE DESC
+	</select>
+	
+	<select id="getPaTempSalesCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(1) FROM PA_TEMP_SELLER_EVENT A WHERE A.ACTIVITY = 1 
+			 AND EXISTS (
+			 	SELECT 1 FROM PA_SUPERVISOR_INFO B,
+			 	HR_DEPARTMENT HR
+			 	WHERE B.DEPTNO = HR.DEPTNO
+			 	AND HR.ACC_ORG_CODE = A.EVENT_DEPTNO
+			 	AND B.PERSON_ID = #supervisorPersonId#
+			 )
+		]]>
+		<isNotEmpty prepend="AND" property="EVENT_NAME">
+			<![CDATA[
+				A.EVENT_NAME like '%$EVENT_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACCRUAL_FLAG">
+			<![CDATA[
+				A.ACCRUAL_FLAG = #ACCRUAL_FLAG#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.EVENT_DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.START_DATE > TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.END_DATE < TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			<![CDATA[
+				A.PAY_DATE = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUBMIT_STATUS">
+			<![CDATA[
+				A.SUBMIT_STATUS = #SUBMIT_STATUS:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				( A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+				AND A.SUBMIT_STATUS <> 0 )
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaTempSalesEmpInfoCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(1) FROM PA_TEMP_SELLER_INFO P WHERE EVENT_ID = #EVENT_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<!-- 签订契约列表查询 -->
+	<select id="getPaTempSalesSeq" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT PA_TEMP_SELLER_EVENT_SEQ.NEXTVAL FROM DUAL
+		]]>
+	</select>
+	
+	<insert id="insertPaTempSalesEmpInfo" parameterClass="linkMap">
+		<![CDATA[	
+	  INSERT INTO PA_TEMP_SELLER_INFO A
+		   	   	  (INFO_NO,
+		   	   	   EVENT_ID,
+		   	   	   EMP_NAME,
+		   	   	   IDCARD_NO,
+		   	   	   CELLPHONE,
+		   	   	   EVS_GRADE,
+		   	   	   WORK_DAYS,
+		   	   	   EVENT_SALARY,
+		   	   	   BLACK_LIST_YN,
+		   	   	   BIRTH_DATE,
+		   	   	   DEPT_NAME,
+		   	   	   BANK_NO,
+			  	   CREATE_DATE,
+			  	   CREATED_BY,
+			  	   ACTIVITY
+				  )
+	        VALUES(PA_TEMP_SELLER_INFO_SEQ.NEXTVAL,
+				   #EVENT_ID:VARCHAR#,
+				   #EMP_NAME:VARCHAR#,
+				   #IDCARD_NO:VARCHAR#,
+				   #CELLPHONE:VARCHAR#,
+				   #EVS_GRADE:VARCHAR#,
+				   #WORK_DAYS:VARCHAR#,
+				   #EVENT_SALARY:VARCHAR#,
+				   #BLACK_LIST_YN:VARCHAR#,
+				   TO_DATE(#BIRTH_DATE:VARCHAR#,'YYYY-MM-DD'),
+				   #DEPT_NAME:VARCHAR#,
+		   	   	   #BANK_NO:VARCHAR#,
+				   SYSDATE,
+				   #PERSON_ID:VARCHAR#,
+			  	   1
+				  )
+	  	 ]]>
+	</insert>
+	
+	
+	<insert id="insertPaTempSales" parameterClass="linkMap">
+		<![CDATA[	
+	  INSERT INTO PA_TEMP_SELLER_EVENT A
+		   	   	  (EVENT_ID,
+		   	   	   EVENT_NAME,
+		   	   	   START_DATE,
+		   	   	   END_DATE,
+		   	   	   PAY_DATE,
+		   	   	   EVENT_DEPTNO,
+		   	   	   EVENT_STORE_CODE,
+		   	   	   REMARK,
+		   	   	   COMMON_EMPID,
+		   	   	   EVENT_CONTENT,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   PAY_AREA_CD,
+		   	   	   BRANCH_CD,
+		   	   	   ACCRUAL_FLAG,
+			  	   CREATE_DATE,
+			  	   CREATED_BY,
+			  	   ACTIVITY,
+			  	   SUBMIT_STATUS,
+			  	   CURRENT_AFFIRM_ID,
+			  	   Affirm_Flag,
+			  	   FILE_NAME,
+			  	   FILE_URL       					
+				  )
+	        VALUES(#EVENT_ID:VARCHAR#,
+				   #EVENT_CONTENT:VARCHAR# || #EVENT_NAME:VARCHAR#,
+				   TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD'),
+				   TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD'),
+				   #PAY_DATE:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   #EVENT_STORE_CODE:VARCHAR#,
+				   #REMARK:VARCHAR#,
+				   ( select EMPNO from 
+				 	  pay_org_promoter_map 
+				 	  where org_id = #DEPTNO:VARCHAR#
+				 	  and job_tp  IN ('P','L')  AND ROWNUM < 1),
+				   #EVENT_CONTENT:VARCHAR#,
+		   	   	   PKG_TEMPSALES_EXCEL.GET_SHOP_NAME(#EVENT_STORE_CODE:VARCHAR#),
+		   	   	   PKG_TEMPSALES_EXCEL.GET_PAY_AREA_CD_BY_BRANCH(#DEPTNO:VARCHAR#),
+		   	   	   #DEPTNO:VARCHAR#,
+		   	   	   'N',
+				   SYSDATE,
+				   #PERSON_ID:VARCHAR#,
+			  	   1,
+				   #FLAG:VARCHAR#,
+				   #CURRENT_AFFIRM_ID:VARCHAR#,
+				   -1,
+				   #FILE_NAME:VARCHAR#,
+				   #FILE_URL:VARCHAR#
+				  )
+	  	 ]]>
+	</insert>
+	<!-- 修改临促信息 -->
+	<update id="updatePaTempSales" parameterClass="linkMap">
+		<![CDATA[	
+	  UPDATE PA_TEMP_SELLER_EVENT A
+		   	   SET EVENT_NAME = #EVENT_CONTENT:VARCHAR# || #EVENT_NAME:VARCHAR#,
+		   	   	   START_DATE = TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD'),
+		   	   	   END_DATE = TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD'),
+		   	   	   PAY_DATE = #PAY_DATE:VARCHAR#,
+		   	   	   EVENT_DEPTNO = #DEPTNO:VARCHAR#,
+		   	   	   EVENT_STORE_CODE = #EVENT_STORE_CODE:VARCHAR#,
+		   	   	   EVENT_STORE_NAME = PKG_TEMPSALES_EXCEL.GET_SHOP_NAME(#EVENT_STORE_CODE:VARCHAR#),
+		   	   	   PAY_AREA_CD = PKG_TEMPSALES_EXCEL.GET_PAY_AREA_CD_BY_BRANCH(#DEPTNO:VARCHAR#),
+		   	   	   BRANCH_CD = #DEPTNO:VARCHAR#,
+		   	   	   REMARK = #REMARK:VARCHAR#,
+		   	   	   COMMON_EMPID = 
+				   ( select EMPNO from 
+				 	  pay_org_promoter_map 
+				 	  where org_id = #DEPTNO:VARCHAR#
+				 	  and job_tp IN ('P','L') AND ROWNUM < 1),
+		   	   	   EVENT_CONTENT = #EVENT_CONTENT:VARCHAR#,
+			  	   UPDATE_DATE = SYSDATE,
+			  	   UPDATED_BY = #PERSON_ID:VARCHAR#,
+			  	   CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#,
+			  	   SUBMIT_STATUS = #FLAG:VARCHAR#		
+		WHERE EVENT_ID = #EVENT_ID:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<!-- 申请加决裁者 -->
+	<insert id="insertAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY,
+				APPLY_TYPE
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #EVENT_ID#,
+				0, 
+				#AFFIRM_LEVEL#, 
+				#AFFIRMOR_ID#, 
+				SYSDATE, 
+				#PERSON_ID#, 
+				0,
+				#APPLY_TYPE_NO:VARCHAR#
+				)
+	    ]]>
+	</insert>
+	
+	<!-- 删除决裁者 -->
+	<delete id="deleteAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+	    DELETE FROM ESS_AFFIRM
+	    	WHERE APPLY_NO = #EVENT_ID#
+	    	AND APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+	    	AND AFFIRM_FLAG = 0
+	    	
+	    ]]>
+	    <isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				ESS_AFFIRM_NO <> #ESS_AFFIRM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<select id="getAffirmorList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	    SELECT ESS.ESS_AFFIRM_NO,
+	 	    	   ESS.APPLY_NO,
+			       ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_CONTENT,
+			       TO_CHAR(ESS.UPDATE_DATE,'YYYY-MM-DD') UPDATE_DATE,
+			       HR.EMPID,
+			       HR.LOCAL_NAME
+			FROM ESS_AFFIRM ESS,
+			     HR_EMPLOYEE HR
+			WHERE ESS.AFFIRMOR_ID = HR.PERSON_ID
+			AND ESS.APPLY_NO = #EVENT_ID:VARCHAR#
+			AND ESS.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+			ORDER BY ESS.AFFIRM_LEVEL
+		]]>
+	</select>
+	
+	<update id="submitTempSalary" parameterClass="linkMap" >
+	    <![CDATA[
+		UPDATE PA_TEMP_SELLER_EVENT 
+			SET SUBMIT_STATUS = 1
+		WHERE EVENT_ID IN ($EVENT_ID_STR$)
+	    ]]>
+	</update>
+	
+	
+	<delete id="deleteTempSalary" parameterClass="linkMap" >
+	    <![CDATA[
+		DELETE FROM  PA_TEMP_SELLER_EVENT 
+		WHERE EVENT_ID IN ( $EVENT_ID_STR$ )
+	    ]]>
+	</delete>
+	
+	
+	<delete id="deleteTempSalaryEmp" parameterClass="linkMap" >
+	    <![CDATA[
+		DELETE FROM  PA_TEMP_SELLER_INFO
+		WHERE EVENT_ID IN ( $EVENT_ID_STR$ )
+	    ]]>
+	</delete>
+	
+	
+	<delete id="deleteTempSalaryAccrual" parameterClass="linkMap" >
+	    <![CDATA[
+		DELETE FROM  PA_TEMP_SELLER_ACCRUAL
+		WHERE BATCH_EVENT_ID IN ( $EVENT_ID_STR$ )
+	    ]]>
+	</delete>
+	
+	<select id="getTempSalesEmpInfoByEventId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT EVENT_ID,
+		   	   	   EVENT_NAME,
+		   	   	   TO_CHAR(START_DATE,'yyyy-mm-dd') START_DATE,
+		   	   	   TO_CHAR(END_DATE,'yyyy-mm-dd') END_DATE,
+		   	   	   PAY_DATE,
+		   	   	   TOTAL_NUM,
+		   	   	   TOTAL_SALARY,
+		   	   	   PKG_TEMPSALES_EXCEL.GET_BRANCH_NAME(EVENT_DEPTNO,#LANGUAGE:VARCHAR#) EVENT_DEPTNO_NAME,
+		   	   	   GET_DEPT_NAME(A.PAY_AREA_CD,#LANGUAGE:VARCHAR#) PAY_AREA_NAME,
+		   	   	   EVENT_DEPTNO,
+		   	   	   EVENT_STORE_CODE,
+		   	   	   REMARK,
+		   	   	   COMMON_EMPID,
+		   	   	   FILE_NAME,
+		   	   	   FILE_URL,
+		   	   	   EVENT_CONTENT,
+		   	   	   A.CREATED_BY,
+		   	   	   CURRENT_AFFIRM_ID,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   ACCRUAL_FLAG,
+		   	   	   HR.EMPID,
+		   	   	   HR.LOCAL_NAME,
+		   	   	   TO_CHAR(A.CREATE_DATE,'yyyy-mm-dd') APPLY_DATE
+			 FROM PA_TEMP_SELLER_EVENT A,HR_EMPLOYEE HR
+			 WHERE A.CREATED_BY = HR.PERSON_ID
+			 AND A.EVENT_ID = #EVENT_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getExcelMessage" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT E.LOCAL_NAME EMPNAME,
+	 	       E.ENGLISH_NAME ENGLISH_NAME,
+		       COSTEMP,
+		       TYPENAME,
+		       TO_CHAR(START_DATE,'YYYY-MM') START_DATE,
+       		   TO_CHAR(END_DATE,'YYYY-MM') END_DATE,
+		       MONEY,
+		       DEMO
+		  FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E
+		 WHERE T.COSTEMP = E.EMPID
+		   AND T.CREATED_BY = #PERSON_ID:VARCHAR#
+		   AND T.ACTIVITY = 0
+		   AND T.REALSTATE = 'N'
+		]]>
+	</select>
+	
+	<insert id="insertWageApplication" parameterClass="linkMap">
+		<selectKey resultClass="int" keyProperty="ID" >
+			<![CDATA[
+      			SELECT NVL(MAX(ID+1),1) AS MAXID FROM ESS_WAGEAPPLICATION
+    		]]>
+    	</selectKey>
+		<![CDATA[
+	 	  INSERT INTO ESS_WAGEAPPLICATION(
+	 	  	ID, 
+	 	  	CREATED_BY, 
+	 	  	CREATE_DATE, 
+	 	  	ACTIVITY, 
+	 	  	APPEMP, 
+	 	  	TITLE, 
+	 	  	APPTIME, 
+	 	  	FILEURL,
+	 	  	FILENAME,
+	 	  	ORDERNO
+	 	  ) VALUES(#ID:NUMBER#,
+	 	  		  #PERSON_ID:VARCHAR#,
+	 	  		  SYSDATE,
+	 	  		  '1',
+	 	  		  #PERSON_ID:VARCHAR#,
+	 	  		  #TITLE:VARCHAR#,
+	 	  		  SYSDATE,
+	 	  		  #FILEURL:VARHCAR#,
+	 	  		  #FILENAME:VARCHAR#,
+	 	  		  #ID:NUMBER#)
+		]]>
+	</insert>
+	
+	<update id="updateWageApplicationDetail" parameterClass="linkMap">
+		UPDATE ESS_WAGEAPPLICATION_DETAIL
+		   SET UPDATED_BY  = #PERSON_ID:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       APPLYID  = #APPLYID:VARCHAR#,
+		       ACTIVITY    = 1,
+		       REALSTATE   = 'Y'
+		 WHERE CREATED_BY = #PERSON_ID:VARCHAR#		   
+		   AND REALSTATE = 'N'   
+		   AND ACTIVITY = 0
+	</update>
+	
+	<delete id="deleteWageApplicationDetail" parameterClass="linkMap">
+		DELETE FROM ESS_WAGEAPPLICATION_DETAIL L
+		 WHERE L.CREATED_BY = #PERSON_ID:VARCHAR#
+		   AND L.CPNY_ID = #CPNY_ID:VARCHAR#		   
+		   AND L.REALSTATE = 'N' 
+		   AND L.APPLYID IS NULL  
+		   AND L.ACTIVITY = 0
+	</delete>
+	
+	<select id="getTempSalesEmpInfoByInfoNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT INFO_NO,
+		   	   	   EMP_NAME,
+		   	   	   IDCARD_NO,
+		   	   	   BANK_NO,
+		   	   	   BANK_NAME,
+		   	   	   CELLPHONE,
+		   	   	   EVS_GRADE,
+		   	   	   WORK_DAYS,
+		   	   	   EVENT_SALARY,
+		   	   	   BLACK_LIST_YN,
+		   	   	   to_char(BIRTH_DATE,'YYYY-MM-DD') BIRTH_DATE,
+		   	   	   DEPT_NAME
+			 FROM PA_TEMP_SELLER_INFO A
+			 WHERE A.INFO_NO = #INFO_NO:VARCHAR#
+		]]>
+	</select>
+	
+	<update id="updateEventInfoByEmoInfo" parameterClass="linkMap">
+		<![CDATA[
+	 	  UPDATE PA_TEMP_SELLER_EVENT A set (
+	 	  	TOTAL_NUM,TOTAL_SALARY
+	 	  ) = (
+	 	  	SELECT COUNT(1),SUM(EVENT_SALARY) FROM PA_TEMP_SELLER_INFO B WHERE B.EVENT_ID = A.EVENT_ID
+	 	  ) WHERE A.EVENT_ID = #EVENT_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updatePaTempSalesEmpInfo" parameterClass="linkMap">
+		<![CDATA[	
+	  UPDATE PA_TEMP_SELLER_INFO A
+		   	   	SET   WORK_DAYS = #WORK_DAYS:VARCHAR#,
+		   	   	   EVENT_SALARY = #EVENT_SALARY:VARCHAR#,
+			  	   UPDATE_DATE = SYSDATE,
+			  	   UPDATED_BY = #PERSON_ID:VARCHAR#
+		WHERE INFO_NO = #INFO_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<update id="deletePaTempSalesEmpInfo" parameterClass="linkMap">
+		<![CDATA[	
+	  DELETE FROM PA_TEMP_SELLER_INFO
+		WHERE INFO_NO = #INFO_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<select id="getPaTempSalesAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT EVENT_ID,
+		   	   	   EVENT_NAME,
+		   	   	   TO_CHAR(START_DATE,'yyyy-mm-dd') START_DATE,
+		   	   	   TO_CHAR(END_DATE,'yyyy-mm-dd') END_DATE,
+		   	   	   PAY_DATE,
+		   	   	   TOTAL_NUM,
+		   	   	   TOTAL_SALARY,
+		   	   	   C.CONTENT EVENT_DEPTNO,
+		   	   	   EVENT_STORE_CODE,
+		   	   	   REMARK,
+		   	   	   COMMON_EMPID,
+		   	   	   EVENT_CONTENT,
+			  	   A.ACTIVITY,
+			  	   SUBMIT_STATUS,
+			  	   CURRENT_AFFIRM_ID,
+			  	   A.AFFIRM_FLAG,
+			  	   DECODE(CURRENT_AFFIRM_ID, #PERSON_ID:VARCHAR#, 1, 0) AFFIRM_FLAG_PERSON,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   EVENT_DEPTNO ACC_ORG_CODE,
+		   	   	   A.PAY_AREA_CD,
+		   	   	   GET_DEPT_NAME(A.PAY_AREA_CD,#LANGUAGE:VARCHAR#) PAY_AREA_NAME,
+                 D.ORG_NAME_LOCAL,
+                 A.ACCRUAL_FLAG
+			 FROM PA_TEMP_SELLER_EVENT A,
+			 	  HR_DEPARTMENT_NAME C,
+		           HR_DEPARTMENT D
+			 WHERE A.EVENT_DEPTNO = C.DEPTNO(+)
+			 AND A.ACTIVITY = 1
+			 AND C.LANGUAGE(+) = #LANGUAGE:VARCHAR#
+		       AND A.EVENT_DEPTNO = D.ACC_ORG_CODE(+)
+		       AND D.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+			 AND SUBMIT_STATUS = 1
+       AND EXISTS (
+           SELECT 1 FROM ESS_AFFIRM 
+           WHERE APPLY_NO = A.EVENT_ID
+			     AND   APPLY_TYPE = #APPLY_TYPE_NO#
+           AND   AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+       )
+		]]>
+		<isNotEmpty prepend="AND" property="EVENT_NAME">
+			<![CDATA[
+				A.EVENT_NAME like '%$EVENT_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.EVENT_DEPTNO IN (SELECT DEPTNO
+						FROM HR_DEPARTMENT 
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.START_DATE > TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.END_DATE < TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="ACCRUAL_FLAG">
+			<isEqual prepend="" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<isNotEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG = 'CONFIRM_' || #ACCRUAL_YN#
+					]]>
+				</isNotEmpty>
+				<isEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG LIKE '$ACCRUAL_FLAG$%'
+					]]>
+				</isEmpty>
+			</isEqual>
+			<isNotEqual prepend="AND" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<![CDATA[
+					A.ACCRUAL_FLAG = #ACCRUAL_FLAG#
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			<![CDATA[
+				A.PAY_DATE = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+		ORDER BY A.CREATE_DATE DESC
+	</select>
+	
+	<select id="getTempSalesAffirmCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(1) FROM PA_TEMP_SELLER_EVENT A WHERE 
+			 A.ACTIVITY = 1
+			 AND SUBMIT_STATUS = 1
+       AND EXISTS (
+           SELECT 1 FROM ESS_AFFIRM 
+           WHERE APPLY_NO = A.EVENT_ID
+			     AND   APPLY_TYPE = #APPLY_TYPE_NO#
+           AND   AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+       )
+		]]>
+		<isNotEmpty prepend="AND" property="EVENT_NAME">
+			<![CDATA[
+				A.EVENT_NAME like '%$EVENT_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.EVENT_DEPTNO IN (SELECT DEPTNO
+						FROM HR_DEPARTMENT 
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.START_DATE > TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.END_DATE < TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="ACCRUAL_FLAG">
+			<isEqual prepend="" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<isNotEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG = 'CONFIRM_' || #ACCRUAL_YN#
+					]]>
+				</isNotEmpty>
+				<isEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG LIKE '$ACCRUAL_FLAG$%'
+					]]>
+				</isEmpty>
+			</isEqual>
+			<isNotEqual prepend="AND" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<![CDATA[
+					A.ACCRUAL_FLAG = #ACCRUAL_FLAG#
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			<![CDATA[
+				A.PAY_DATE = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="addCheckPaTempSales" parameterClass="linkMap" >
+		<selectKey keyProperty="ESS_CHECK_NO" resultClass="int">
+	  		SELECT ESS_CHECK_SEQ.NEXTVAL FROM DUAL
+	 	</selectKey>
+	    <![CDATA[
+		INSERT INTO ESS_CHECK (
+			ESS_CHECK_NO,
+			ESS_AFFIRM_NO,
+			CHECK_REASON,
+			CHECKOR_ID,
+			CHECK_FLAG,
+			CHECK_LEVEL,
+			CREATED_DATE,
+			CREATED_BY,
+			ACTIVITY
+		) values (
+			#ESS_CHECK_NO#,
+			#ESS_AFFIRM_NO#,
+			#CHECK_REASON#,
+			#CHECKOR_ID#,
+			0,
+			1,
+			SYSDATE,
+			#PERSON_ID#,
+			1
+		)
+	    ]]>
+	</insert>
+	
+	<select id="getCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.ESS_CHECK_NO,
+		       A.ESS_AFFIRM_NO,
+		       C.PERSON_ID PERSON_ID_R,
+		       C.EMPID EMPID_R,
+		       C.LOCAL_NAME LOCAL_NAME_R,
+		       C.POSITION_NO POSITION_NO_R,
+		       get_dept_name(C.DEPTNO , 'zh') DEPTNAME_R,
+		       A.CHECK_REASON,
+		       TO_CHAR(A.CREATED_DATE,'YYYY-MM-DD') DATE_R,
+		       D.PERSON_ID PERSON_ID_C,
+		       D.EMPID EMPID_C,
+		       A.CHECKOR_ID,
+		       D.LOCAL_NAME LOCAL_NAME_C,
+		       D.POSITION_NO POSITION_NO_C,
+		       get_dept_name(D.DEPTNO , 'zh') DEPTNAME_C,
+		       A.CHECK_CONTENT,
+		       A.CHECK_FLAG,
+		       TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') DATE_C
+		       FROM  ESS_CHECK A,
+		             ESS_AFFIRM B,
+		             HR_EMPLOYEE C,
+		             HR_EMPLOYEE D
+		       WHERE A.ESS_AFFIRM_NO = B.ESS_AFFIRM_NO
+		       AND   A.CHECKOR_ID = D.PERSON_ID
+		       AND   B.AFFIRMOR_ID = C.PERSON_ID
+		       AND   B.APPLY_NO = #EVENT_ID:VARCHAR#
+		       AND   B.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		       ORDER BY A.CREATED_DATE
+		]]>
+	</select>
+	
+	<update id="affirmPaTempSales" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE PA_TEMP_SELLER_EVENT
+		  	SET AFFIRM_FLAG = #FLAG#,
+		  	CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID#,
+		  	UPDATE_DATE = SYSDATE,
+		  	UPDATED_BY = #UPDATED_BY#
+			WHERE EVENT_ID = #EVENT_ID:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<update id="updateEssAffirm" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE ESS_AFFIRM SET
+			 		AFFIRM_FLAG = #FLAG#,
+			 		AFFIRM_CONTENT = #AFFIRM_CONTENT#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		]]>
+	</update> 
+	
+	<update id="updateEssCheck" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE ESS_CHECK SET
+			 		CHECK_FLAG = 1,
+			 		CHECK_CONTENT = #CHECK_CONTENT#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ESS_CHECK_NO = #ESS_CHECK_NO#
+		]]>
+	</update> 
+	
+	<select id="getTempSalesCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	    SELECT EVENT_ID,
+                 EVENT_NAME,
+                 TO_CHAR(START_DATE,'yyyy-mm-dd') START_DATE,
+                 TO_CHAR(END_DATE,'yyyy-mm-dd') END_DATE,
+                 PAY_DATE,
+                 TOTAL_NUM,
+                 TOTAL_SALARY,
+                 C.CONTENT EVENT_DEPTNO,
+                 EVENT_STORE_CODE,
+                 REMARK,
+                 COMMON_EMPID,
+                 EVENT_CONTENT,
+	             A.ACTIVITY,
+	             SUBMIT_STATUS,
+	             CURRENT_AFFIRM_ID,
+	             A.AFFIRM_FLAG,
+			  	   (SELECT DECODE((SELECT 1
+                     FROM ESS_AFFIRM a1,
+                     ess_check b1
+                     WHERE A1.ESS_AFFIRM_NO = B1.ESS_AFFIRM_NO
+                     AND A1.APPLY_NO = A.EVENT_ID
+                     AND A1.APPLY_TYPE = #APPLY_TYPE_NO#
+                     AND B1.CHECK_FLAG = 0
+                     AND B1.CHECKOR_ID = #PERSON_ID:VARCHAR#
+                     GROUP BY A1.APPLY_NO),NULL, 0,1) FROM DUAL
+			          ) AFFIRM_FLAG_PERSON,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME  ,
+                 EVENT_DEPTNO ACC_ORG_CODE,
+                 A.PAY_AREA_CD,
+                 D.ORG_NAME_LOCAL,
+                 GET_DEPT_NAME(A.PAY_AREA_CD,#LANGUAGE:VARCHAR#) PAY_AREA_NAME,
+                 A.ACCRUAL_FLAG
+			 FROM PA_TEMP_SELLER_EVENT A,
+			 	  HR_DEPARTMENT_NAME C,
+	               HR_DEPARTMENT D
+			 WHERE A.EVENT_DEPTNO = C.DEPTNO(+)
+			 AND A.ACTIVITY = 1
+			 AND C.LANGUAGE(+) = #LANGUAGE:VARCHAR#
+           AND A.EVENT_DEPTNO = D.ACC_ORG_CODE(+)
+           AND D.CPNY_ID(+) = #CPNY_ID:VARCHAR#
+			 AND SUBMIT_STATUS = 1
+		       AND EXISTS (
+		           SELECT 1 FROM ESS_AFFIRM ESS1,
+		           ESS_CHECK ESS2
+		           WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		           AND   APPLY_NO = A.EVENT_ID
+					     AND   APPLY_TYPE = #APPLY_TYPE_NO#
+		           AND   ESS2.CHECKOR_ID = #PERSON_ID:VARCHAR#
+		       )
+		]]>
+		<isNotEmpty prepend="AND" property="EVENT_NAME">
+			<![CDATA[
+				A.EVENT_NAME like '%$EVENT_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.EVENT_DEPTNO IN (SELECT DEPTNO
+						FROM HR_DEPARTMENT 
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.START_DATE > TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.END_DATE < TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="ACCRUAL_FLAG">
+			<isEqual prepend="" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<isNotEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG = 'CONFIRM_' || #ACCRUAL_YN#
+					]]>
+				</isNotEmpty>
+				<isEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG LIKE '$ACCRUAL_FLAG$%'
+					]]>
+				</isEmpty>
+			</isEqual>
+			<isNotEqual prepend="AND" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<![CDATA[
+					A.ACCRUAL_FLAG = #ACCRUAL_FLAG#
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			<![CDATA[
+				A.PAY_DATE = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+		ORDER BY A.CREATE_DATE DESC
+	</select>
+	
+	<select id="getTempSalesCheckCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(1)  
+			 FROM PA_TEMP_SELLER_EVENT A
+			 WHERE A.ACTIVITY = 1
+			 AND SUBMIT_STATUS = 1
+		       AND EXISTS (
+		           SELECT 1 FROM ESS_AFFIRM ESS1,
+		           ESS_CHECK ESS2
+		           WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		           AND   APPLY_NO = A.EVENT_ID
+					     AND   APPLY_TYPE = #APPLY_TYPE_NO#
+		           AND   ESS2.CHECKOR_ID = #PERSON_ID:VARCHAR#
+		       )
+		]]>
+		<isNotEmpty prepend="AND" property="EVENT_NAME">
+			<![CDATA[
+				A.EVENT_NAME like '%$EVENT_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="ACCRUAL_FLAG">
+			<isEqual prepend="" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<isNotEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG = 'CONFIRM_' || #ACCRUAL_YN#
+					]]>
+				</isNotEmpty>
+				<isEmpty prepend="AND" property="ACCRUAL_YN">
+					<![CDATA[
+						A.ACCRUAL_FLAG LIKE '$ACCRUAL_FLAG$%'
+					]]>
+				</isEmpty>
+			</isEqual>
+			<isNotEqual prepend="AND" property="ACCRUAL_FLAG" compareValue="CONFIRM_">
+				<![CDATA[
+					A.ACCRUAL_FLAG = #ACCRUAL_FLAG#
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.EVENT_DEPTNO IN (SELECT DEPTNO
+						FROM HR_DEPARTMENT 
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				A.START_DATE > TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				A.END_DATE < TO_DATE(#END_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			<![CDATA[
+				A.PAY_DATE = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<update id="updateCheckFlagByEssAffirmNo" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE ESS_CHECK SET
+			 		CHECK_FLAG = 1,
+					UPDATED_BY = 'AUTO'
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		]]>
+	</update> 
+	
+	<select id="getTempSalesTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  select EVENT_CONTENT || EVENT_STORE_CODE || to_char(start_date,'yyyymmdd') EVENT_NAME,
+		             to_char(start_date,'yyyy-mm-dd') START_DATE,
+		             to_char(end_date,'yyyy-mm-dd') END_DATE,
+		             PAY_DATE,
+		             EVENT_DEPTNO,
+		             nvl(HRN.Content,'') EVENT_DEPTNO_NAME,
+		             EVENT_STORE_CODE,
+		             nvl(SHOP.SHOP_NAME,'') EVENT_STORE_NAME,
+		             REMARK,
+		             COMMON_EMPID,
+		             EVENT_CONTENT,
+		             UPLOAD_ERROR_MSG,
+		             LINE_ID,
+		             RESULT_FLAG,
+		             hr.local_name UPLOAD_BY,
+		             to_char(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE,
+		             pa.CPNY_ID,
+		             get_dept_name(PKG_TEMPSALES_EXCEL.GET_PAY_AREA_CD_BY_BRANCH(EVENT_DEPTNO),#interLanguage#) PAY_AREA_CD,
+		             get_dept_name(nvl((SELECT DEPTNO FROM HR_DEPARTMENT a WHERE ACC_ORG_CODE = trim(EVENT_DEPTNO) and a.cpny_id = pa.cpny_id),'') ,#interLanguage#) EVENT_DEPTNO_NAME1,
+		             (SELECT EMPNO FROM PAY_ORG_PROMOTER_MAP WHERE JOB_TP IN ('P','L') AND ORG_ID = trim(EVENT_DEPTNO) AND ROWNUM < 1) EMPID,
+		             (SELECT EMPNO FROM PAY_ORG_PROMOTER_MAP WHERE JOB_TP IN ('P','L') AND ORG_ID = GET_BRANCH_CD(EVENT_DEPTNO) AND ROWNUM < 1) EMPID1,
+		             pa.PRODUCT_CODE
+		      from pa_temp_seller_event_temp pa,
+		      hr_employee hr,
+		      HR_DEPARTMENT_NAME HRN,
+		      spms_shop_grade_chrs SHOP
+		      where pa.UPLOAD_BY = hr.person_id
+		      AND PA.EVENT_DEPTNO = HRN.DEPTNO(+)
+		      AND PA.EVENT_STORE_CODE = SHOP.SHOP_CD(+)
+		      AND SHOP.YYYY(+) = TO_CHAR(SYSDATE,'YYYY')
+		      AND HRN.LANGUAGE(+) = #interLanguage#
+			and UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getTempSalesTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from pa_temp_seller_event_temp
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getTempSalesTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from pa_temp_seller_event_temp
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	<!-- 1209修改，添加门店信息 -->
+	<select id="getTempSalesEmpTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  select   pa.EVENT_ID,
+	 	  		   pa.EMP_NAME,
+	 	  		   pa.EVENT_STORE_CODE,
+	 	  		   PKG_TEMPSALES_EXCEL.GET_SHOP_NAME(pa.EVENT_STORE_CODE) EVENT_STORE_NAME,
+			       pa.IDCARD_NO,
+			       pa.BANK_NO,
+			       pa.BANK_NAME,
+			       pa.CELLPHONE,
+			       pa.EVS_GRADE,
+			       pa.WORK_DAYS,
+			       pa.PROD_TP,
+			       EVENT_SALARY,
+			       to_char(pa.BIRTH_DATE,'yyyy-mm-dd') BIRTH_DATE,
+			       UPLOAD_ERROR_MSG,
+			       LINE_ID,
+			       RESULT_FLAG,
+			       hr.local_name UPLOAD_BY,
+			       to_char(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE,
+			       pa.CPNY_ID
+			from pa_temp_seller_Info_temp pa,
+			hr_employee hr
+			where pa.UPLOAD_BY = hr.person_id
+			and UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getTempSalesEmpTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from pa_temp_seller_Info_temp
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getTempSalesEmpTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from pa_temp_seller_Info_temp
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	
+		<select id="submitImportExcelTempPqdJtbzData" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				 	  select COUNT(*) cnt
+			      from sy_dispatch_allow_std_temp p
+			      where p.created_by = #PERSON_ID#
+			      and p.pqd_daoru_result = 'E'
+		]]>
+	</select>
+	
+			<select id="submitImportExcelTempPqdGuanLiData" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				 	  select COUNT(*) cnt
+			      from sy_dispatch_temp p
+			      where p.created_by = #PERSON_ID#
+			      and p.pqd_daoru_result = 'E'
+		]]>
+	</select>
+	
+				<select id="submitImportExcelTempPqdJinTieBiaoZhunData" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				 	  select COUNT(*) cnt
+			      from sy_dispatch_allow_std_temp p
+			      where p.created_by = #PERSON_ID#
+			      and p.pqd_daoru_result = 'E'
+		]]>
+	</select>
+	
+	<select id="getErrorZuiDiGongZiBiaoZhunFeiCuXiaoYuanNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and p.pqd_faren not in (select g.cpny_id from hr_company g)
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and checknumber(p.pqd_niandu) = 0
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and p.pqd_fulidiqu not in
+							       (select s.code_no from sy_code s where s.parent_code_no = 216736)
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and checknumber(p.pqd_zuidigongzi) = 0
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and checknumber(p.pqd_shepinggongzi) = 0
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and checknumber(p.pqd_zuixiaojishu) = 0
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and checknumber(p.pqd_zuidajishu) = 0
+							union
+							select p.pqd_no NO
+							  from pa_low_salary_unpromo_temp p
+							 where p.created_by = #PERSON_ID#
+							   and p.pqd_qufen not in ('SQ', 'SH')
+		]]>
+	</select>
+	
+	<select id="getErrorPaiQianDiGuanLiNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			select p.pqd_no NO
+			  from sy_dispatch_temp p
+			 where p.created_by = #CREATED_BY#
+			   and p.pqd_faren not in (select g.cpny_id from hr_company g)
+			union
+			select p.pqd_no NO
+			  from sy_dispatch_temp p
+			 where p.created_by = #CREATED_BY#
+			   and p.pqd_chengshidengji not in
+			       (select s.code_no from sy_code s where s.parent_code_no = 218067)
+			union
+			select p.pqd_no NO
+			  from sy_dispatch_temp p
+			 where p.created_by = #CREATED_BY#
+			   and p.pqd_shengfen not in
+			       (select s.code_no from sy_code s where s.parent_code_no = 218071)
+			union
+			select p.pqd_no NO
+			  from sy_dispatch_temp p
+			 where p.created_by = #CREATED_BY#
+			   and p.pqd_chengshimingcheng not in
+			       (select s.code_no from sy_code s where s.parent_code_no = 218074)
+			union
+			select p.pqd_no NO
+			  from sy_dispatch_temp p
+			 where p.created_by = #CREATED_BY#
+			   and p.pqd_diqumingcheng not in
+			       (select s.code_no from sy_code s where s.parent_code_no = 218076)
+		]]>
+	</select>
+	
+			<select id="getErrorPaiQianDiJinTieBiaoZhunNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					 select p.pqd_no NO
+              from sy_dispatch_allow_std_temp p
+             where p.created_by = #CREATED_BY#
+               and p.pqd_faren not in (select g.cpny_id from hr_company g)
+            union
+            select p.pqd_no NO
+              from sy_dispatch_allow_std_temp p
+             where p.created_by = #CREATED_BY#
+               and p.pqd_chengshidengji not in
+                   (select s.code_no from sy_code s where s.parent_code_no = 218067)
+            union
+            select p.pqd_no NO
+              from sy_dispatch_allow_std_temp p
+             where p.created_by = #CREATED_BY#
+               and p.pqd_zhize not in
+                   (SELECT DISTINCT POSITION_NO
+                      FROM HR_EMPLOYEE HR
+                     WHERE POSITION_NO IS NOT NULL)
+						union
+						select p.pqd_no NO
+						  from sy_dispatch_allow_std_temp p
+						 where p.created_by = #CREATED_BY#
+						   and p.pqd_diqumingcheng not in
+						       (select ic.region_cd from inc_city_to_citylevel_mapp ic )
+						union
+						select p.pqd_no NO
+						  from sy_dispatch_allow_std_temp p
+						 where p.created_by = #CREATED_BY#
+						   and checknumber(p.pqd_shuzhi) = 0
+            union
+            select pp.pqd_no
+              from sy_dispatch_allow_std_temp pp
+             where pp.pqd_no not in
+                   (select p.pqd_no NO
+                      from sy_dispatch_allow_std_temp p, sy_dispatch sd
+                     where p.created_by = #CREATED_BY#
+                       and p.pqd_faren = sd.pqd_faren
+                       and p.pqd_chengshidengji = sd.pqd_chengshidengji
+                       and p.pqd_diqumingcheng = sd.pqd_diqumingcheng)
+               and pp.created_by = #CREATED_BY#
+		]]>
+	</select>
+	
+	
+	<select id="getErrorZuiDiGongZiBiaoZhunCuXiaoYuanNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					select p.pqd_no NO
+					  from pa_low_salary_promo_temp p
+					 where p.created_by = #PERSON_ID#
+					   and p.pqd_chengshimingcheng not in
+					       (SELECT DISTINCT  T.CITY_NM CONTENT 
+                FROM INC_CITY_TO_CITYLEVEL_MAPP T
+               GROUP BY T.CITY_NM, T.STATE_NM)
+					union
+					select p.pqd_no NO
+					  from pa_low_salary_promo_temp p
+					 where p.created_by = #PERSON_ID#
+					   and p.pqd_city_cd not in
+					       (SELECT DISTINCT T.STATE_NM CONTENT
+                FROM INC_CITY_TO_CITYLEVEL_MAPP T
+               GROUP BY T.STATE_NM, T.CITY_NM)
+					union
+					select p.pqd_no NO
+					  from pa_low_salary_promo_temp p
+					 where p.created_by = #PERSON_ID#
+					   and checknumber(p.pqd_zuidigongzi) = 0
+					union
+					select p.pqd_no NO
+					  from pa_low_salary_promo_temp p
+					 where p.created_by = #PERSON_ID#
+					   and p.pqd_qufen not in ('SQ', 'SH')
+					union
+					select p.pqd_no NO
+					  from pa_low_salary_promo_temp p
+					 where p.created_by = #PERSON_ID#
+					   and checknumber(p.pqd_niandu) = 0
+		]]>
+	</select>
+	
+		<select id="getRepartZuiDiGongZiBiaoZhunFeiCuXiaoYuanNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					select p2.pqd_no NO
+					  from pa_low_salary_unpromo p1, pa_low_salary_unpromo_temp p2
+					 where p1.pqd_faren = p2.pqd_faren
+					   and p1.pqd_fulidiqu = p2.pqd_fulidiqu
+					   and p1.pqd_niandu = p2.pqd_niandu
+					   and p2.created_by = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="getRepartPaiQianDiGuanLiNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					select p2.pqd_no NO
+				  from sy_dispatch p1, sy_dispatch_temp p2
+				 where p1.pqd_faren = p2.pqd_faren
+				   and p1.pqd_chengshidengji = p2.pqd_chengshidengji
+				   and p1.pqd_shengfen = p2.pqd_shengfen
+				   and p1.pqd_chengshimingcheng = p2.pqd_chengshimingcheng
+				   and p1.pqd_diqumingcheng = p2.pqd_diqumingcheng
+				   and p2.created_by = #PERSON_ID#
+		]]>
+	</select>
+	
+		<select id="getRepartPaiQianDiJinTieBiaoZhunNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				       	  select p2.pqd_no NO
+				           from sy_dispatch_allow_std p1, sy_dispatch_allow_std_temp p2
+				          where p1.pqd_faren = p2.pqd_faren
+				            and p1.pqd_chengshidengji = p2.pqd_chengshidengji
+				            and p1.pqd_zhize = p2.pqd_zhize
+				            and p1.pqd_diqumingcheng = p2.pqd_diqumingcheng
+				            and p2.created_by = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="getRepartZuiDiGongZiBiaoZhunCuXiaoYuanNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+						select p2.pqd_no NO
+					  from pa_low_salary_promo p1, pa_low_salary_promo_temp p2
+					 where p1.pqd_niandu = p2.pqd_niandu
+					   and p1.pqd_city_cd = (SELECT DISTINCT T.STATE_CD
+                			FROM INC_CITY_TO_CITYLEVEL_MAPP T 
+               				where t.state_nm= p2.pqd_city_cd)
+					   and p1.pqd_chengshimingcheng = (SELECT DISTINCT T.CITY_CD 
+                			FROM INC_CITY_TO_CITYLEVEL_MAPP T 
+               				where t.city_nm= p2.pqd_chengshimingcheng)
+					   and p2.created_by = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="getRepartTempZuiDiGongZiBiaoZhunFeiCuXiaoYuanNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+							select t.pqd_no
+							  from pa_low_salary_unpromo_temp t
+						 where	t.created_by = #PERSON_ID#						 	
+							 and (t.pqd_faren, t.pqd_fulidiqu, t.pqd_niandu) in
+							       (select p.pqd_faren, p.pqd_fulidiqu, p.pqd_niandu
+							          from pa_low_salary_unpromo_temp p
+							           where p.created_by = #PERSON_ID#
+							         group by p.pqd_faren, p.pqd_fulidiqu, p.pqd_niandu
+							        having count(p.pqd_no) > 1)
+		]]>
+	</select>
+	
+	<select id="getRepartTempZuiDiGongZiBiaoZhunFeiCuXiaoYuanNosListBak" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+							select pp.pqd_no
+							  from pa_low_salary_unpromo_temp pp
+							 where pp.pqd_faren in (select p.pqd_faren
+							                          from pa_low_salary_unpromo_temp p
+							                         where p.created_by = #PERSON_ID#
+							                         group by p.pqd_faren, p.pqd_fulidiqu, p.pqd_niandu
+							                        having count(p.pqd_no) > 1)
+							   and pp.pqd_fulidiqu in
+							       (select p.pqd_fulidiqu
+							          from pa_low_salary_unpromo_temp p
+							         where p.created_by = #PERSON_ID#
+							         group by p.pqd_faren, p.pqd_fulidiqu, p.pqd_niandu
+							        having count(p.pqd_no) > 1)
+							   and pp.pqd_niandu in (select p.pqd_niandu
+		                           from pa_low_salary_unpromo_temp p
+		                          where p.created_by = #PERSON_ID#
+		                          group by p.pqd_faren, p.pqd_fulidiqu, p.pqd_niandu
+		                         having count(p.pqd_no) > 1)
+		]]>
+	</select>
+	
+		<select id="getRepartTempPaiQianDiGuanLiNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+												select pp.pqd_no
+							  from sy_dispatch_temp pp
+							 where pp.pqd_faren in (select p.pqd_faren
+							                          from sy_dispatch_temp p
+							                         where p.created_by = #PERSON_ID#
+							                         group by p.pqd_faren,
+							                                  p.pqd_chengshidengji,
+							                                  p.pqd_shengfen,
+							                                  p.pqd_chengshimingcheng,
+							                                  p.pqd_diqumingcheng
+							                        having count(p.pqd_no) > 1)
+							   and pp.pqd_chengshidengji in
+							       (select p.pqd_chengshidengji
+							          from sy_dispatch_temp p
+							         where p.created_by = #PERSON_ID#
+							         group by p.pqd_faren,
+							                  p.pqd_chengshidengji,
+							                  p.pqd_shengfen,
+							                  p.pqd_chengshimingcheng,
+							                  p.pqd_diqumingcheng
+							        having count(p.pqd_no) > 1)
+							   and pp.pqd_shengfen in (select p.pqd_shengfen
+							                             from sy_dispatch_temp p
+							                            where p.created_by = #PERSON_ID#
+							                            group by p.pqd_faren,
+							                                     p.pqd_chengshidengji,
+							                                     p.pqd_shengfen,
+							                                     p.pqd_chengshimingcheng,
+							                                     p.pqd_diqumingcheng
+							                           having count(p.pqd_no) > 1)
+							   and pp.pqd_chengshimingcheng in
+							       (select p.pqd_chengshimingcheng
+							          from sy_dispatch_temp p
+							         where p.created_by = #PERSON_ID#
+							         group by p.pqd_faren,
+							                  p.pqd_chengshidengji,
+							                  p.pqd_shengfen,
+							                  p.pqd_chengshimingcheng,
+							                  p.pqd_diqumingcheng
+							        having count(p.pqd_no) > 1)
+							   and pp.pqd_diqumingcheng in
+							       (select p.pqd_diqumingcheng
+							          from sy_dispatch_temp p
+							         where p.created_by = #PERSON_ID#
+							         group by p.pqd_faren,
+							                  p.pqd_chengshidengji,
+							                  p.pqd_shengfen,
+							                  p.pqd_chengshimingcheng,
+							                  p.pqd_diqumingcheng
+							        having count(p.pqd_no) > 1)
+		]]>
+	</select>
+	
+			<select id="getRepartTempPaiQianDiJinTieBiaoZhunNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[               select pp.pqd_no
+				                 from sy_dispatch_allow_std_temp pp
+				                where pp.pqd_faren in
+				                      (select p.pqd_faren
+				                         from sy_dispatch_allow_std_temp p
+				                        where p.created_by = #PERSON_ID#
+				                        group by p.pqd_faren,
+				                                 p.pqd_chengshidengji,
+				                                 p.pqd_zhize,
+				                                 p.pqd_diqumingcheng
+				                       having count(p.pqd_no) > 1)
+				                  and pp.pqd_chengshidengji in
+				                      (select p.pqd_chengshidengji
+				                         from sy_dispatch_allow_std_temp p
+				                        where p.created_by = #PERSON_ID#
+				                        group by p.pqd_faren,
+				                                 p.pqd_chengshidengji,
+				                                 p.pqd_zhize,
+				                                 p.pqd_diqumingcheng
+				                       having count(p.pqd_no) > 1)
+				                  and pp.pqd_zhize in
+				                      (select p.pqd_zhize
+				                         from sy_dispatch_allow_std_temp p
+				                        where p.created_by = #PERSON_ID#
+				                        group by p.pqd_faren,
+				                                 p.pqd_chengshidengji,
+				                                 p.pqd_zhize,
+				                                 p.pqd_diqumingcheng
+				                       having count(p.pqd_no) > 1)
+				                  and pp.pqd_zhize in
+				                      (select p.pqd_zhize
+				                         from sy_dispatch_allow_std_temp p
+				                        where p.created_by = #PERSON_ID#
+				                        group by p.pqd_faren,
+				                                 p.pqd_chengshidengji,
+				                                 p.pqd_zhize,
+				                                 p.pqd_diqumingcheng
+				                       having count(p.pqd_no) > 1)
+				                  and pp.pqd_diqumingcheng in
+				                      (select p.pqd_diqumingcheng
+				                         from sy_dispatch_allow_std_temp p
+				                        where p.created_by = #PERSON_ID#
+				                        group by p.pqd_faren,
+				                                 p.pqd_chengshidengji,
+				                                 p.pqd_zhize,
+				                                 p.pqd_diqumingcheng
+				                       having count(p.pqd_no) > 1)
+		]]>
+	</select>
+	
+	<select id="getRepartTempZuiDiGongZiBiaoZhunCuXiaoYuanNosList" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					   select pp.pqd_no
+					    from pa_low_salary_promo_temp pp
+					   where pp.pqd_niandu in (select p.pqd_niandu
+                             from pa_low_salary_promo_temp p
+                            where p.created_by = #PERSON_ID#
+                            group by p.pqd_niandu,
+                                     p.pqd_city_cd,
+                                     p.pqd_chengshimingcheng,
+                                     p.pqd_qufen
+                           having count(p.pqd_no) > 1)
+    					 and pp.pqd_city_cd in (select p.pqd_city_cd
+                              from pa_low_salary_promo_temp p
+                             where p.created_by = #PERSON_ID#
+                             group by p.pqd_niandu,
+                                      p.pqd_city_cd,
+                                      p.pqd_chengshimingcheng,
+                                      p.pqd_qufen
+                            having count(p.pqd_no) > 1)
+				     and pp.pqd_chengshimingcheng in
+				         (select p.pqd_chengshimingcheng
+				            from pa_low_salary_promo_temp p
+				           where p.created_by = #PERSON_ID#
+				           group by p.pqd_niandu,
+				                    p.pqd_city_cd,
+				                    p.pqd_chengshimingcheng,
+				                    p.pqd_qufen
+				          having count(p.pqd_no) > 1)
+		]]>
+	</select>
+	
+	<select id="queryImportExcelTempZuiDiGongZiBiaoZhunFeiCuXiaoYuanData" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				 select count(*) cnt
+						    from pa_low_salary_unpromo_temp p
+						   where p.pqd_yz_result in ('E', 'R')
+					    	 and p.created_by = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="queryImportExcelTempZuiDiGongZiBiaoZhunCuXiaoYuanData" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				 select count(*) cnt
+						    from pa_low_salary_promo_temp p
+						   where p.pqd_yz_result in ('E', 'R')
+					    	 and p.created_by = #PERSON_ID#
+		]]>
+	</select>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+				   set p.pqd_yz_result = 'E'
+				 where p.pqd_no = #errorNos#
+		]]>
+	</update>
+	
+		<update id="updatePaiQianDiGuanLiErrorYzResult" parameterClass="linkMap">
+		<![CDATA[
+			   update sy_dispatch_temp p
+				   set p.pqd_daoru_result = 'E'
+				 where p.pqd_no = #errorNos#
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiJinTieBiaoZhunErrorYzResult" parameterClass="linkMap">
+		<![CDATA[
+			   update sy_dispatch_allow_std_temp p
+				   set p.pqd_daoru_result = 'E'
+				 where p.pqd_no = #errorNos#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanErrorYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_promo_temp p
+				   set p.pqd_yz_result = 'E'
+				 where p.pqd_no = #errorNos#
+		]]>
+	</update>
+		
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultFaRen" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+			   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[法人不存在] '
+			 where p.pqd_no = #errorNos#
+			   and p.pqd_faren not in (select g.cpny_id from hr_company g)
+		]]>
+	</update>
+	
+		<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultNianDuFei" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+			   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[年度不正确] '
+			 where p.pqd_no = #errorNos#
+			   and checknumber(p.pqd_niandu) = 0
+		]]>
+	</update>
+	
+			<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultZuiDaJiShu" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+			   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[最大基数不是数字] '
+			 where p.pqd_no = #errorNos#
+			   and checknumber(p.pqd_zuidajishu) = 0
+		]]>
+	</update>
+	
+			<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultQuFenFei" parameterClass="linkMap">
+		<![CDATA[
+				update pa_low_salary_unpromo_temp p
+				   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[区分不存在] '
+				 where p.pqd_no = #errorNos#
+			  	 and p.pqd_qufen not in ('SQ', 'SH')
+		]]>
+	</update>
+	
+	
+		<update id="updatePaiQianDiGuanLiErrorYzResultFaRen" parameterClass="linkMap">
+		<![CDATA[
+			         update sy_dispatch_temp p
+			   set p.pqd_001 = p.pqd_001 || '[法人不存在] '
+			 where p.pqd_no = #errorNos#
+			   and p.pqd_faren not in (select g.cpny_id from hr_company g)
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiJinTieBiaoZhunErrorYzResultFaRenCsdjDqmc" parameterClass="linkMap">
+		<![CDATA[
+			                update sy_dispatch_allow_std_temp ptt
+					          set ptt.pqd_001 = ptt.pqd_001 || '[此关系在派遣地管理中不存在] '
+					        where ptt.pqd_no = #errorNos#
+					          and ptt.pqd_no in
+					              (select pp.pqd_no
+					                 from sy_dispatch_allow_std_temp pp
+					                where pp.pqd_no not in
+					                      (select p.pqd_no NO
+					                         from sy_dispatch_allow_std_temp p, sy_dispatch sd
+					                        where p.pqd_faren = sd.pqd_faren
+					                          and p.pqd_chengshidengji = sd.pqd_chengshidengji
+					                          and p.pqd_diqumingcheng = sd.pqd_diqumingcheng))
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiJinTieBiaoZhunErrorYzResultFaRen" parameterClass="linkMap">
+		<![CDATA[
+			         update sy_dispatch_allow_std_temp p
+			   set p.pqd_001 = p.pqd_001 || '[法人不存在] '
+			 where p.pqd_no = #errorNos#
+			   and p.pqd_faren not in (select g.cpny_id from hr_company g)
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultNianDu" parameterClass="linkMap">
+		<![CDATA[
+			      	 update pa_low_salary_promo_temp p
+			          set p.pqd_update_yz_result = p.pqd_update_yz_result || '[年度不合法] '
+			        where p.pqd_no = #errorNos#
+			          and checknumber(p.pqd_niandu) = 0
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultFuLiDiQu" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+					   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[福利地区不存在] '
+					 where p.pqd_no = #errorNos#
+					   and p.pqd_fulidiqu not in
+					       (select s.code_no from sy_code s where s.parent_code_no = 216736)
+		]]>
+	</update>
+				
+		      <update id="updatePaiQianDiGuanLiErrorYzResultChengShiDengJi" parameterClass="linkMap">
+    <![CDATA[
+         update sy_dispatch_temp p
+             set p.pqd_001 = p.pqd_001 || '[城市等级不存在] '
+           where p.pqd_no = #errorNos#
+             and p.pqd_chengshidengji not in
+                 (select s.code_no from sy_code s where s.parent_code_no = 218067)
+    ]]>
+  </update>
+  
+  		      <update id="updatePaiQianDiJinTieBiaoZhuniErrorYzResultChengShiDengJi" parameterClass="linkMap">
+    <![CDATA[
+         update sy_dispatch_allow_std_temp p
+             set p.pqd_001 = p.pqd_001 || '[城市等级不存在] '
+           where p.pqd_no = #errorNos#
+             and p.pqd_chengshidengji not in
+                 (select s.code_no from sy_code s where s.parent_code_no = 218067)
+    ]]>
+  </update>
+  
+    <update id="updatePaiQianDiGuanLiErrorYzResultShengFen" parameterClass="linkMap">
+    <![CDATA[
+          update sy_dispatch_temp p
+             set p.pqd_001 = p.pqd_001 || '[省份不存在] '
+           where p.pqd_no = #errorNos#
+             and p.pqd_shengfen not in
+                 (select s.code_no from sy_code s where s.parent_code_no = 218071)
+    ]]>
+  </update>
+  
+    <update id="updatePaiQianDiGuanLiErrorYzResultChengShiMingCheng" parameterClass="linkMap">
+    <![CDATA[
+            update sy_dispatch_temp p
+             set p.pqd_001 = p.pqd_001 || '[城市名称不存在] '
+           where p.pqd_no = #errorNos#
+             and p.pqd_chengshimingcheng not in
+                 (select s.code_no from sy_code s where s.parent_code_no = 218074)
+    ]]>
+  </update>
+  
+    <update id="updatePaiQianDiGuanLiErrorYzResultDiQuMingCheng" parameterClass="linkMap">
+    <![CDATA[
+      update sy_dispatch_temp p
+             set p.pqd_001 = p.pqd_001 || '[地区名称不存在] '
+           where p.pqd_no = #errorNos#
+             and p.pqd_diqumingcheng not in
+                 (select s.code_no from sy_code s where s.parent_code_no = 218076)
+    ]]>
+  </update>
+  
+      <update id="updatePaiQianDiJinTieBiaoZhunErrorYzResultDiQuMingCheng" parameterClass="linkMap">
+    <![CDATA[
+                         update sy_dispatch_allow_std_temp p
+             set p.pqd_001 = p.pqd_001 || '[地区名称不存在] '
+           where p.pqd_no = #errorNos#
+             and p.pqd_diqumingcheng not in
+                (select ic.region_cd from inc_city_to_citylevel_mapp ic )
+    ]]>
+  </update>
+  
+  
+        <update id="updatePaiQianDiJinTieBiaoZhunErrorYzResultZhiZe" parameterClass="linkMap">
+    <![CDATA[
+     			 update sy_dispatch_allow_std_temp p
+				   set p.pqd_001 = p.pqd_001 || '[职责名称不存在] '
+				 where p.pqd_no = #errorNos#
+				   and p.pqd_zhize not in
+				       (SELECT DISTINCT POSITION_NO
+				          FROM HR_EMPLOYEE HR
+				         WHERE POSITION_NO IS NOT NULL)
+
+    ]]>
+  </update>
+  
+        <update id="updatePaiQianDiJinTieBiaoZhunErrorYzResultShuZhi" parameterClass="linkMap">
+    <![CDATA[
+			               update sy_dispatch_allow_std_temp p
+						            set p.pqd_001 = p.pqd_001 || '[数值不是数字] '
+						          where p.pqd_no = #errorNos#
+						            and checknumber(p.pqd_shuzhi) = 0
+
+    ]]>
+  </update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultZuiDiGongZi" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+			   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[最低工资不是数字] '
+			 where p.pqd_no = #errorNos#
+			   and checknumber(p.pqd_zuidigongzi) = 0
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanErrorYzResultZuiDiGongZi" parameterClass="linkMap">
+		<![CDATA[
+			         update pa_low_salary_promo_temp p
+					   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[最低工资不是数字] '
+					 where p.pqd_no = #errorNos#
+					   and checknumber(p.pqd_zuidigongzi) = 0
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultShePingGongZi" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+				   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[社平工资不是数字] '
+				 where p.pqd_no = #errorNos#
+				   and checknumber(p.pqd_shepinggongzi) = 0
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultShePingChengShiMingCheng" parameterClass="linkMap">
+		<![CDATA[
+			         update pa_low_salary_promo_temp p
+		            set p.pqd_update_yz_result = p.pqd_update_yz_result ||
+		                                         '[城市名称不存在] '
+		          where p.pqd_no = #errorNos#
+		            and p.pqd_chengshimingcheng not in
+		                (SELECT DISTINCT  T.CITY_NM CONTENT 
+                FROM INC_CITY_TO_CITYLEVEL_MAPP T
+               GROUP BY T.CITY_NM, T.STATE_NM)
+		]]>
+	</update>
+	
+		<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultShePingCityCd" parameterClass="linkMap">
+		<![CDATA[
+			         update pa_low_salary_promo_temp p
+					    set p.pqd_update_yz_result = p.pqd_update_yz_result || '[省份不存在] '
+					  where p.pqd_no = #errorNos#
+					    and p.pqd_city_cd not in
+					        (SELECT DISTINCT T.STATE_NM CONTENT
+                FROM INC_CITY_TO_CITYLEVEL_MAPP T
+               GROUP BY T.STATE_NM, T.CITY_NM)
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultZuiXiaoJiShu" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+				   set p.pqd_update_yz_result = p.pqd_update_yz_result || '[最小基数不是数字] '
+				 where p.pqd_no = #errorNos#
+				   and checknumber(p.pqd_zuixiaojishu) = 0
+		]]>
+	</update>
+
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanErrorYzResultZuiXiaoQuFen" parameterClass="linkMap">
+		<![CDATA[
+			         update pa_low_salary_promo_temp p
+		            set p.pqd_update_yz_result = p.pqd_update_yz_result ||
+		                                         '[区分不存在] '
+		          where p.pqd_no = #errorNos#
+		            and p.pqd_qufen not in ('SQ', 'SH')
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanRepartYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+			   set p.pqd_yz_result = 'R',
+			   p.pqd_update_yz_result = p.pqd_update_yz_result || '[已经存在此数据]'
+			 where p.pqd_no = #repartNos#
+		]]>
+	</update>
+	
+		<update id="updatePaiQianDiGuanLiRepartYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update sy_dispatch_temp p
+			   set p.pqd_daoru_result = 'E',
+			   p.pqd_001 = p.pqd_001 || '[已经存在此数据]'
+			 where p.pqd_no = #repartNos#
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiJinTieBiaoZhunRepartYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update sy_dispatch_allow_std_temp p
+			   set p.pqd_daoru_result = 'E',
+			   p.pqd_001 = p.pqd_001 || '[已经存在此数据]'
+			 where p.pqd_no = #repartNos#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanRepartYzResult" parameterClass="linkMap">
+		<![CDATA[
+			            update pa_low_salary_promo_temp p
+						   set p.pqd_yz_result = 'R',
+						   p.pqd_update_yz_result = p.pqd_update_yz_result || '[已经存在此数据]'
+						 where p.pqd_no = #repartNos#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanRepartTempYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+			   set p.pqd_yz_result = 'R',
+			   p.pqd_update_yz_result = p.pqd_update_yz_result || '[临时表中数据重复]'
+			 where p.pqd_no = #repartTempNos#
+		]]>
+	</update>
+	
+		<update id="updatePaiQianDiGuanLiRepartTempYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update sy_dispatch_temp p
+			   set p.pqd_daoru_result = 'E',
+			   p.pqd_001 = p.pqd_001 || '[临时表中数据重复]'
+			 where p.pqd_no = #repartTempNos#
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiJinTieBiaoZhunRepartTempYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update sy_dispatch_allow_std_temp p
+			   set p.pqd_daoru_result = 'E',
+			   p.pqd_001 = p.pqd_001 || '[临时表中数据重复]'
+			 where p.pqd_no = #repartTempNos#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanRepartTempYzResult" parameterClass="linkMap">
+		<![CDATA[
+			       	 update pa_low_salary_promo_temp p
+					   set p.pqd_yz_result = 'R',
+					   p.pqd_update_yz_result = p.pqd_update_yz_result || '[临时表中数据重复]'
+					 where p.pqd_no = #repartTempNos#
+		]]>
+	</update>
+	
+		<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanQingKongYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_unpromo_temp p
+					   set p.pqd_update_yz_result = ''
+					 where p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiGuanLiQingKongYzResult" parameterClass="linkMap">
+		<![CDATA[
+			        update sy_dispatch_temp p
+					   set p.pqd_001 = ''
+					 where p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+				<update id="updatePaiQianDiJinTieBiaoZhunQingKongYzResult" parameterClass="linkMap">
+		<![CDATA[
+			       update sy_dispatch_allow_std_temp p
+					   set p.pqd_001 = ''
+					 where p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanQingKongYzResult" parameterClass="linkMap">
+		<![CDATA[
+			update pa_low_salary_promo_temp p
+					   set p.pqd_update_yz_result = ''
+					 where p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanOkYzResult" parameterClass="linkMap">
+		<![CDATA[
+           update pa_low_salary_unpromo_temp p
+              set p.pqd_yz_result = 'N'
+            where p.pqd_yz_result not in ('E', 'R')
+              and p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+		<update id="updatePaiQianDiGuanLiOkYzResult" parameterClass="linkMap">
+		<![CDATA[
+		           update sy_dispatch_temp p
+					   set p.pqd_daoru_result = 'N'
+					 where p.pqd_daoru_result not in ('E')
+					   and p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+			<update id="updatePaiQianDiJinTieBiaoZhunOkYzResult" parameterClass="linkMap">
+		<![CDATA[
+		           update sy_dispatch_allow_std_temp p
+					   set p.pqd_daoru_result = 'N'
+					 where p.pqd_daoru_result not in ('E')
+					   and p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanOkYzResult" parameterClass="linkMap">
+		<![CDATA[
+           update pa_low_salary_promo_temp p
+              set p.pqd_yz_result = 'N'
+            where p.pqd_yz_result not in ('E', 'R')
+              and p.created_by = #PERSON_ID#
+		]]>
+	</update>
+	
+	<insert id="submitImportExcelTempZuiDiGongZiBiaoZhunFeiCuXiaoYuanData" parameterClass="linkMap">
+		<![CDATA[
+			insert into pa_low_salary_unpromo
+					  (	 pqd_no,
+					     pqd_faren,
+             			 pqd_niandu,
+					   	 pqd_fulidiqu,
+					  	 pqd_zuidigongzi,
+			             pqd_shepinggongzi,
+			             pqd_zuixiaojishu,
+			             pqd_zuidajishu,
+			             pqd_qufen)
+		            select p.pqd_no,
+		                   p.pqd_faren,
+		                   p.pqd_niandu,
+		                   p.pqd_fulidiqu,
+		                   p.pqd_zuidigongzi,
+		                   p.pqd_shepinggongzi,
+		                   p.pqd_zuixiaojishu,
+		                   p.pqd_zuidajishu,
+		                   p.pqd_qufen
+		              from pa_low_salary_unpromo_temp p
+		             where p.created_by = #PERSON_ID#
+		]]>
+	</insert>
+	
+	<insert id="submitImportExcelTempZuiDiGongZiBiaoZhunCuXiaoYuanData" parameterClass="linkMap">
+		<![CDATA[
+						   insert into pa_low_salary_promo
+			         	   (pqd_no,
+			                pqd_niandu,
+			                pqd_city_cd,
+			                pqd_chengshimingcheng,
+			                pqd_zuidigongzi,
+			                pqd_qufen,
+			                create_date,
+			                created_by)
+			          select p.pqd_no,
+			                 p.pqd_niandu,
+			                 (SELECT DISTINCT T.STATE_CD
+                			FROM INC_CITY_TO_CITYLEVEL_MAPP T 
+               				where t.state_nm= p.pqd_city_cd),
+			                 (SELECT DISTINCT T.CITY_CD 
+                			FROM INC_CITY_TO_CITYLEVEL_MAPP T 
+               				where t.city_nm= p.pqd_chengshimingcheng),
+			                 p.pqd_zuidigongzi,
+			                 p.pqd_qufen,
+			                 create_date,
+			                 created_by
+			           from pa_low_salary_promo_temp p
+			          where created_by = #PERSON_ID#
+		]]>
+	</insert>
+	
+	<delete id="submitDeleteImportExcelTempPqdJtbzData" parameterClass="linkMap" >
+		<![CDATA[
+								delete sy_dispatch_allow_std p
+			 where p.pqd_no in
+			       (select t.pqd_no
+			          from sy_dispatch_allow_std t, sy_dispatch_allow_std_temp tt
+			         where t.pqd_faren = tt.pqd_faren
+			           and t.pqd_zhize = tt.pqd_zhize
+			           and t.pqd_chengshidengji = tt.pqd_chengshidengji
+			           and t.pqd_diqumingcheng = tt.pqd_diqumingcheng
+			           and tt.created_by = #PERSON_ID#)
+		]]>
+	</delete>
+	
+		<delete id="submitDeleteImportExcelTempPqdGuanLiData" parameterClass="linkMap" >
+		<![CDATA[
+							  delete sy_dispatch p
+       where p.pqd_no in
+             (select t.pqd_no
+                from sy_dispatch  t, sy_dispatch_temp tt
+               where t.pqd_faren = tt.pqd_faren
+                 and t.pqd_chengshidengji = tt.pqd_chengshidengji
+                 and t.pqd_shengfen = tt.pqd_shengfen
+                 and t.pqd_chengshimingcheng = tt.pqd_chengshimingcheng
+                 and t.pqd_diqumingcheng = tt.pqd_diqumingcheng
+                 and tt.created_by = #PERSON_ID#)
+		]]>
+	</delete>
+	
+	<insert id="submitInsertImportExcelTempPqdGuanLiData" parameterClass="linkMap" >
+		<![CDATA[
+					insert into sy_dispatch
+						  (PQD_NO,
+						   PQD_FAREN,
+						   PQD_CHENGSHIDENGJI,
+						   PQD_SHENGFEN,
+						   PQD_CHENGSHIMINGCHENG,
+						   PQD_DIQUMINGCHENG,
+						   CREATE_DATE,
+						   CREATED_BY,
+						   ACTIVITY)
+						  select PQD_NO,
+						         PQD_FAREN,
+						         PQD_CHENGSHIDENGJI,
+						         PQD_SHENGFEN,
+						         PQD_CHENGSHIMINGCHENG,
+						         PQD_DIQUMINGCHENG,
+						         CREATE_DATE,
+						         CREATED_BY,
+						         ACTIVITY
+						    from sy_dispatch_temp
+						   where created_by = #PERSON_ID#
+		]]>
+	</insert>
+	
+		<insert id="submitInsertImportExcelTempPqdJinTieBiaoZhunData" parameterClass="linkMap" >
+		<![CDATA[
+					            insert into sy_dispatch_allow_std
+								              (pqd_no,
+								               pqd_faren,
+								               pqd_zhize,
+								               pqd_chengshidengji,
+								               pqd_diqumingcheng,
+								               pqd_shuzhi,
+								               create_date,
+								               created_by,
+								               activity)
+								              select p.pqd_no,
+								                     p.pqd_faren,
+								                     p.pqd_zhize,
+								                     p.pqd_chengshidengji,
+								                     p.pqd_diqumingcheng,
+								                     p.pqd_shuzhi,
+								                     p.create_date,
+								                     p.created_by,
+								                     p.activity
+								                from sy_dispatch_allow_std_temp p
+								               where p.created_by = #PERSON_ID#
+		]]>
+	</insert>
+	
+		<insert id="submitInsertImportExcelTempPqdJtbzData" parameterClass="linkMap" >
+		<![CDATA[
+					insert into sy_dispatch_allow_std
+					  (PQD_NO,
+					   PQD_FAREN,
+					   PQD_ZHIZE,
+					   PQD_CHENGSHIDENGJI,
+					   PQD_DIQUMINGCHENG,
+					   PQD_SHUZHI,
+					   PQD_DEFULT_ZHI,
+					   CREATE_DATE,
+					   CREATED_BY,
+					   ACTIVITY)
+					  select PQD_NO,
+					         PQD_FAREN,
+					         PQD_ZHIZE,
+					         PQD_CHENGSHIDENGJI,
+					         PQD_DIQUMINGCHENG,
+					         PQD_SHUZHI,
+					         PQD_DEFULT_ZHI,
+					         CREATE_DATE,
+					         CREATED_BY,
+					         ACTIVITY
+					    from sy_dispatch_allow_std_temp
+					   where created_by = #PERSON_ID#
+		]]>
+	</insert>
+	
+	<!-- 写入excel临时表数据验证֤================================ -->
+	<procedure id="importInfoFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call $PR_NAME$(#PERSON_ID:VARCHAR#,#CPNY_ID#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<select id="getSpmsShopList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  select SHOP_CD,
+			       SHOP_NAME
+			  FROM spms_shop_grade_chrs
+			  WHERE  COM_CD = #CPNY_ID#
+			  and dept_cd = '$CONTENT$'
+			  and yyyy = to_char(sysdate, 'yyyy')
+		]]>
+	</select>
+	
+	<select id="getCommonEmpId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  select EMPNO,EMPNM from 
+	 	  pay_org_promoter_map 
+	 	  where org_id = (select get_branch_cd(#DEPT_NO#) from dual)
+	 	  and job_tp IN ('P','L')
+	 	   AND ROWNUM < 1
+		]]>
+	</select>
+	
+	
+	<select id="getPaTempSalesEmpList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT LOCAL_NAME,
+               ID_CARD,
+               BANK_NO,
+               BANK_NAME,
+               IS_BLACK_LIST,
+               TO_CHAR(BIRTH_DATE,'YYYY-MM-DD') BIRTH_DATE,
+               DEPT_NAME,
+               PKG_TEMPSALES_EXCEL.GET_BRANCH_NAME(DEPT_NAME,#interLanguage#) DEPT_NAME_DISPLAY,
+               EVS_GRADE,
+               GET_CODE_NAME(EVS_GRADE,#interLanguage#) EVS_GRADE_NAME,
+               CELLPHONE,
+               CREATE_DATE,
+               CREATED_BY,
+               ORDERNO,
+               ACTIVITY,
+               TO_CHAR(START_DATE,'YYYY-MM-DD') START_DATE
+          FROM PA_TEMP_SELLER_EMP A
+          WHERE 1 = 1 
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+			(A.LOCAL_NAME like '%$KEY$%' OR A.ID_CARD like '%$KEY$%' OR A.BANK_NO like '%$KEY$%' OR CELLPHONE like '%$KEY$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IS_BLACK_LIST">
+			<![CDATA[
+			IS_BLACK_LIST = #IS_BLACK_LIST#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GRADE">
+			<![CDATA[
+			EVS_GRADE = #EVS_GRADE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+			DEPT_NAME = #DEPTNO#
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="specialParam" compareValue="special">
+			<![CDATA[
+				  EXISTS (
+				      		SELECT 1 FROM SY_USER_DEPT SUD ,
+				      			HR_DEPARTMENT DEPT
+				             WHERE SUD.DEPTNO = DEPT.DEPTNO
+				               AND SUD.USER_NO=#USERNO:VARCHAR#
+				               AND DEPT_NAME = DEPT.ACC_ORG_CODE
+				               AND DEPT.CPNY_ID = #CPNY_ID#
+				               AND ROWNUM = 1
+				      ) 
+		     ]]>
+	    </isEqual>
+		<isEqual prepend="AND" property="specialParam" compareValue="manager">
+		   	<![CDATA[
+		   		DEPT_NAME IN (SELECT DEPT.ACC_ORG_CODE
+						          FROM HR_DEPARTMENT DEPT
+						         START WITH DEPT.DEPTNO = #deptNo:VARCHAR#
+						        CONNECT BY PRIOR DEPT.DEPTNO = DEPT.PARENT_DEPT_NO)
+			]]>
+		</isEqual>
+		<![CDATA[
+			ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getPaTempSalesEmpCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(1) FROM PA_TEMP_SELLER_EMP A WHERE 1 = 1 
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+			(A.LOCAL_NAME like '%$KEY$%' OR A.ID_CARD like '%$KEY$%' OR A.BANK_NO like '%$KEY$%' OR CELLPHONE like '%$KEY$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IS_BLACK_LIST">
+			<![CDATA[
+			IS_BLACK_LIST = #IS_BLACK_LIST#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVS_GRADE">
+			<![CDATA[
+			EVS_GRADE = #EVS_GRADE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+			DEPT_NAME = #DEPTNO#
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="specialParam" compareValue="special">
+			<![CDATA[
+				  EXISTS (
+				      		SELECT 1 FROM SY_USER_DEPT SUD ,
+				      			HR_DEPARTMENT DEPT
+				             WHERE SUD.DEPTNO = DEPT.DEPTNO
+				               AND SUD.USER_NO=#USERNO:VARCHAR#
+				               AND DEPT_NAME = DEPT.ACC_ORG_CODE
+				               AND DEPT.CPNY_ID = #CPNY_ID#
+				               AND ROWNUM = 1
+				      ) 
+		     ]]>
+	    </isEqual>
+		<isEqual prepend="AND" property="specialParam" compareValue="manager">
+		   	<![CDATA[
+		   		DEPT_NAME IN (SELECT DEPT.ACC_ORG_CODE
+						          FROM HR_DEPARTMENT DEPT
+						         START WITH DEPT.DEPTNO = #deptNo:VARCHAR#
+						        CONNECT BY PRIOR DEPT.DEPTNO = DEPT.PARENT_DEPT_NO)
+			]]>
+		</isEqual>
+	</select>
+	
+	<select id="getTempSalesEmpInfoByIdCard" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT LOCAL_NAME,
+               ID_CARD,
+               BANK_NO,
+               BANK_NAME,
+               IS_BLACK_LIST,
+               TO_CHAR(BIRTH_DATE,'YYYY-MM-DD') BIRTH_DATE,
+               DEPT_NAME,
+               EVS_GRADE,
+               GET_CODE_NAME(EVS_GRADE,#interLanguage#) EVS_GRADE_NAME,
+               CELLPHONE,
+               CREATE_DATE,
+               CREATED_BY,
+               ORDERNO,
+               ACTIVITY
+          FROM PA_TEMP_SELLER_EMP A
+          WHERE ID_CARD = #ID_CARD# 
+		]]>
+	</select>
+	
+	<update id="updatePaTempSalesEmp" parameterClass="linkMap">
+		<![CDATA[	
+	  UPDATE PA_TEMP_SELLER_EMP A
+		   	   	 SET LOCAL_NAME = #LOCAL_NAME:VARCHAR#,
+		   	   	   BANK_NO = #BANK_NO:VARCHAR#,
+		   	   	   BANK_NAME = #BANK_NAME:VARCHAR#,
+		   	   	   IS_BLACK_LIST = #IS_BLACK_LIST:VARCHAR#,
+		   	   	   DEPT_NAME = #DEPT_NAME:VARCHAR#,
+		   	   	   EVS_GRADE = #EVS_GRADE:VARCHAR#,
+		   	   	   CELLPHONE = #CELLPHONE:VARCHAR#,
+			  	   UPDATE_DATE = SYSDATE,
+			  	   UPDATED_BY = #PERSON_ID:VARCHAR#
+		WHERE ID_CARD = #ID_CARD:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<select id="getPaTempSalesSummaryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="TYPE" compareValue="summary">
+			<![CDATA[
+				SELECT ID_CARD,
+				       LOCAL_NAME,
+				       BANK_NO,
+				       BANK_NAME,
+				       PA_MONTH,
+				       TOTAL_PAY,
+				       TAX_PAY,
+				       NET_PAY,
+				       CREATE_DATE,
+				       CREATED_BY,
+				       UPDATE_DATE,
+				       UPDATED_BY,
+				       ORDERNO,
+				       ACTIVITY,
+				       PAY_AREA_CD,
+				       PAY_AREA_NAME,
+				       BRANCH_NAME,
+				       PROD_TP,
+				       PROD_NAME,
+				       WORK_DAYS 
+				  FROM PA_TEMP_SELLER_SUMMARY A
+				  WHERE PA_MONTH = '$YEAR$$MONTH$'
+			]]>
+		</isEqual>
+		<isEqual prepend="" property="TYPE" compareValue="detail">
+			<![CDATA[
+				SELECT ID_CARD,
+				       PA_MONTH,
+				       TOTAL_PAY,
+				       TAX_PAY,
+				       NET_PAY,
+				       CREATE_DATE,
+				       CREATED_BY,
+				       UPDATE_DATE,
+				       UPDATED_BY,
+				       ORDERNO,
+				       ACTIVITY,
+				       PAY_AREA_CD,
+				       PAY_AREA_NAME,
+				       BRANCH_CD,
+				       BRANCH_NAME,
+				       LOCAL_NAME,
+				       PROD_TP,
+				       PROD_NAME,
+				       WORK_DAYS
+				  FROM PA_TEMP_SELLER_DETAIL A
+				  WHERE PA_MONTH = '$YEAR$$MONTH$'
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+			(A.LOCAL_NAME like '%$KEY$%' OR A.ID_CARD like '%$KEY$%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+			A.PAY_AREA_CD IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.PAY_AREA_CD,A.ID_CARD DESC
+		]]>
+	</select>
+	
+	<select id="getPaTempSalesSummaryCnt" parameterClass="linkMap" resultClass="int" >
+		<isEqual prepend="" property="TYPE" compareValue="summary">
+			<![CDATA[
+				SELECT COUNT(1)
+				  FROM PA_TEMP_SELLER_SUMMARY A
+				  WHERE PA_MONTH = '$YEAR$$MONTH$'
+			]]>
+		</isEqual>
+		<isEqual prepend="" property="TYPE" compareValue="detail">
+			<![CDATA[
+				SELECT COUNT(1)
+				  FROM PA_TEMP_SELLER_DETAIL A
+				  WHERE PA_MONTH = '$YEAR$$MONTH$'
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+			(A.LOCAL_NAME like '%$KEY$%' OR A.ID_CARD like '%$KEY$%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+			A.PAY_AREA_CD IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<procedure id="viewTempSaleSummary" parameterClass="linkMap">
+		<![CDATA[
+			{call pkg_tempsales_excel.PR_TEMP_SALES_CALC(
+						#PAY_AREA_CD:VARCHAR#
+						,#PERSON_ID:VARCHAR#
+						,'$YEAR$$MONTH$'
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	
+	<select id="getAffirmorInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.PERSON_ID AFFIRMOR_ID,
+	             HR.LOCAL_NAME,
+	             HR.EMPID,
+	             AFFIRM_LEVEL
+	        FROM (SELECT MANAGER_EMP_ID,
+	                     ROWNUM AFFIRM_LEVEL,
+	                     ROW_NUMBER() OVER(PARTITION BY MANAGER_EMP_ID ORDER BY ROWNUM DESC) CN
+	                FROM (SELECT MANAGER_EMP_ID
+	                        FROM HR_DEPARTMENT
+	                       WHERE (ACC_ORG_CODE = #DEPTNO# or
+	                             DEPTNO =
+	                             (SELECT DEPTNO
+	                                 FROM HR_EMPLOYEE
+	                                WHERE PERSON_ID = #ADMIN_ID#))
+	                         AND CPNY_ID = #CPNY_ID#
+	                         AND MANAGER_EMP_ID IS NOT NULL
+	                       ORDER BY DEPT_LEVEL DESC)) G,
+	             HR_EMPLOYEE HR
+	       WHERE G.MANAGER_EMP_ID = HR.PERSON_ID
+	         AND CN = 1
+		]]>
+	</select>
+	
+	
+	<select id="getTempSalesAccuralInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EVENT_ID,
+			       GET_DEPT_NAME(PAY_AREA_CD,#LANGUAGE#) PAY_AREA_NAME,
+		   	   	   GET_DEPT_NAME((SELECT deptno FROM HR_DEPARTMENT WHERE ACC_ORG_CODE = BRANCH_CD AND CPNY_ID = 'TSTO'),#LANGUAGE#) BRANCH_NAME,
+			       GET_CODE_NAME(PROD_TP,#LANGUAGE#) PROD_TP,
+			       PA_MONTH,
+			       COMMON_EMPID,
+			       TOTAL_PAY,
+			       BATCH_EVENT_ID,
+			       ACTIVITY
+			  FROM PA_TEMP_SELLER_ACCRUAL A
+			  WHERE BATCH_EVENT_ID = #EVENT_ID#
+		]]>
+	</select>
+	
+	<select id="getTempSalesAccuralInfoCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM PA_TEMP_SELLER_ACCRUAL A
+			  WHERE BATCH_EVENT_ID = #EVENT_ID#
+		]]>
+	</select>
+	
+	
+	<select id="getTempSalesInfoByEventId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT EVENT_ID,
+		   	   	   EVENT_NAME,
+		   	   	   TO_CHAR(START_DATE,'yyyy-mm-dd') START_DATE,
+		   	   	   TO_CHAR(END_DATE,'yyyy-mm-dd') END_DATE,
+		   	   	   PAY_DATE,
+		   	   	   TOTAL_NUM,
+		   	   	   TOTAL_SALARY,
+		   	   	   EVENT_DEPTNO,
+		   	   	   EVENT_STORE_CODE,
+		   	   	   REMARK,
+		   	   	   COMMON_EMPID,
+		   	   	   EVENT_CONTENT,
+		   	   	   A.CREATED_BY,
+		   	   	   CURRENT_AFFIRM_ID,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   HR.EMPID,
+		   	   	   HR.LOCAL_NAME,
+		   	   	   ACCRUAL_FLAG,
+		   	   	   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') APPLY_DATE,
+		   	   	   GET_DEPT_NAME(A.PAY_AREA_CD,#LANGUAGE#) PAY_AREA_NAME,
+		   	   	   GET_DEPT_NAME((SELECT deptno FROM HR_DEPARTMENT WHERE ACC_ORG_CODE = BRANCH_CD AND CPNY_ID = 'TSTO'),#LANGUAGE#) BRANCH_NAME
+			 FROM PA_TEMP_SELLER_EVENT A,
+			 HR_EMPLOYEE HR
+			 WHERE A.CREATED_BY = HR.PERSON_ID(+)
+			 AND A.EVENT_ID = #EVENT_ID:VARCHAR#
+		]]>
+	</select>
+	
+	
+	<select id="getCheckListToLgep" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.ESS_CHECK_NO,
+		       A.ESS_AFFIRM_NO,
+		       CHECKOR_ID
+		       FROM  ESS_CHECK A
+		       WHERE A.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		       AND   CHECK_FLAG = 0
+		]]>
+	</select>
+	
+	
+	<select id="getBranchList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.DEPTNO,
+           A.ACC_ORG_CODE,
+           B.CONTENT
+           FROM  HR_DEPARTMENT A,
+           HR_DEPARTMENT_NAME B
+           WHERE A.DEPTNO = B.DEPTNO
+           AND B.LANGUAGE = #language#
+           AND A.DEPT_TYPE = 'branch'
+           AND EXISTS (
+			 	SELECT 1 FROM PA_SUPERVISOR_INFO B
+			 	WHERE B.DEPTNO = A.DEPTNO
+			 	AND B.PERSON_ID = #supervisorPersonId#
+          )
+		]]>
+	</select>
+	
+	<select id="getBranchListHR" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.DEPTNO,
+	           A.ACC_ORG_CODE,
+	           B.CONTENT
+	           FROM  HR_DEPARTMENT A,
+	           HR_DEPARTMENT_NAME B
+	        WHERE A.DEPTNO = B.DEPTNO
+	           AND B.LANGUAGE = #language#
+	           AND A.DEPT_TYPE = 'branch'
+		]]>
+		<isEqual prepend="AND" property="specialParam" compareValue="special">
+			<![CDATA[
+				  EXISTS (
+				      		SELECT 1 FROM SY_USER_DEPT SUD 
+				             WHERE SUD.USER_NO=#userNo:VARCHAR#
+				               AND SUD.DEPTNO = A.DEPTNO
+				               AND ROWNUM = 1
+				      ) 
+		     ]]>
+	    </isEqual>
+		<isEqual prepend="AND" property="specialParam" compareValue="manager">
+		   	<![CDATA[
+		   		A.DEPTNO IN (SELECT DEPT.DEPTNO
+						          FROM HR_DEPARTMENT DEPT
+						         START WITH DEPT.DEPTNO = #deptNo:VARCHAR#
+						        CONNECT BY PRIOR DEPT.DEPTNO = DEPT.PARENT_DEPT_NO)
+			]]>
+		</isEqual>
+	</select>
+	
+	<select id="getPaTempSalesSendList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="accrualFlag" compareValue="Y">
+	   		<![CDATA[
+				SELECT A.PAY_AREA_CD,
+			       GET_DEPT_NAME(A.PAY_AREA_CD,#interLanguage#) PAY_AREA_NAME,
+		   	   	   GET_DEPT_NAME((SELECT deptno FROM HR_DEPARTMENT WHERE ACC_ORG_CODE = A.BRANCH_CD AND CPNY_ID = 'TSTO'),#interLanguage#) BRANCH_NAME,
+		   	   	   A.BRANCH_CD,
+			       GET_CODE_NAME(A.PROD_TP,#interLanguage#) PROD_NAME,
+			       A.PA_MONTH,
+			       A.COMMON_EMPID,
+			       A.TOTAL_PAY,
+			       A.BATCH_EVENT_ID,
+			       DECODE(C.SEND_FLAG_ACCRUAL,1,'已传送',0,'未传送') IS_SEND
+			  FROM PA_TEMP_SELLER_ACCRUAL A,
+                  PA_TEMP_SELLER_EVENT B,
+                  PA_TEMP_SELLER_PROGRESS C
+                 WHERE A.BATCH_EVENT_ID = B.EVENT_ID
+                   AND A.PAY_AREA_CD = C.PAY_AREA_CD(+)
+                   AND A.PA_MONTH = C.PA_MONTH(+)
+                   AND A.PA_MONTH = #PA_MONTH#
+                   AND B.ACTIVITY = 1
+                   AND B.AFFIRM_FLAG = 1
+                   AND B.ACCRUAL_FLAG = 'Y'
+			]]>
+			<isEqual prepend="AND" property="IS_SEND" compareValue="0">
+				<![CDATA[
+                    A.PROD_TP <> '211544'
+				]]>
+			</isEqual>
+		</isEqual>
+		<isEqual prepend="" property="accrualFlag" compareValue="N">
+			<![CDATA[
+					SELECT A.*,
+			       DECODE(C.SEND_FLAG,1,'已传送',0,'未传送') IS_SEND 
+			       FROM (
+						Select  P.PAY_AREA_NAME,
+								P.PAY_AREA_CD,		
+					        P.BRANCH_NAME,
+					        P.BRANCH_CD,
+					        P.PA_MONTH,
+					        P.PROD_NAME,
+					        P.PROD_TP,
+					        SUM(P.TOTAL_PAY) TOTAL_PAY,
+					        SUM(P.TAX_PAY) TAX_PAY,
+					        SUM(P.NET_PAY) NET_PAY,
+					        COMMON_EMPID
+					       FROM PA_TEMP_SELLER_DETAIL P
+						      GROUP BY P.PA_MONTH,
+						      P.PAY_AREA_CD,
+						      P.PAY_AREA_NAME,
+						      P.BRANCH_CD,
+						      P.BRANCH_NAME,
+						      P.PROD_TP,
+						      P.PROD_NAME,
+						      COMMON_EMPID) A,
+                  PA_TEMP_SELLER_PROGRESS C
+			WHERE A.PAY_AREA_CD = C.PAY_AREA_CD
+                   AND A.PA_MONTH = C.PA_MONTH
+                   AND A.PA_MONTH = #PA_MONTH#
+			]]>
+			<isEqual prepend="AND" property="IS_SEND" compareValue="0">
+				<![CDATA[
+                    A.PROD_TP <> '211544'
+				]]>
+			</isEqual>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+			A.PAY_AREA_CD IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVENT_ID">
+			<![CDATA[
+			A.PAY_AREA_CD = (SELECT PAY_AREA_CD FROM PA_TEMP_SELLER_EVENT WHERE EVENT_ID = #EVENT_ID#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.PAY_AREA_CD,A.BRANCH_CD
+		]]>
+	</select>
+	
+	<select id="getPaTempSalesSendCnt" parameterClass="linkMap" resultClass="int" >
+	
+		<isEqual prepend="" property="accrualFlag" compareValue="Y">
+			<![CDATA[
+			SELECT COUNT(1)
+			  FROM PA_TEMP_SELLER_ACCRUAL A,
+                  PA_TEMP_SELLER_EVENT B
+                 WHERE A.BATCH_EVENT_ID = B.EVENT_ID
+                   AND A.PA_MONTH = #PA_MONTH#
+                   AND B.ACTIVITY = 1
+                   AND B.AFFIRM_FLAG = 1
+                   AND B.ACCRUAL_FLAG = 'Y'
+			]]>
+		</isEqual>
+		<isEqual prepend="" property="accrualFlag" compareValue="N">
+			<![CDATA[
+			SELECT COUNT(1) FROM (
+						Select PA_MONTH,
+								PAY_AREA_CD
+					       FROM PA_TEMP_SELLER_DETAIL P
+						      GROUP BY P.PA_MONTH,
+						      P.PAY_AREA_CD,
+						      P.PAY_AREA_NAME,
+						      P.BRANCH_CD,
+						      P.BRANCH_NAME,
+						      P.PROD_TP,
+						      P.PROD_NAME,
+						      COMMON_EMPID) A
+			WHERE PA_MONTH = #PA_MONTH#
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+			A.PAY_AREA_CD IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVENT_ID">
+			<![CDATA[
+			A.PAY_AREA_CD = (SELECT PAY_AREA_CD FROM PA_TEMP_SELLER_EVENT WHERE EVENT_ID = #EVENT_ID#)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaTempSalesSum" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual prepend="" property="accrualFlag" compareValue="Y">
+	   		<![CDATA[
+				SELECT  SUM(A.TOTAL_PAY) TOTAL_PAY
+			  FROM PA_TEMP_SELLER_ACCRUAL A,
+                  PA_TEMP_SELLER_EVENT B
+                 WHERE A.BATCH_EVENT_ID = B.EVENT_ID
+                   AND A.PA_MONTH = #PA_MONTH#
+                   AND B.ACTIVITY = 1
+                   AND B.AFFIRM_FLAG = 1
+                   AND B.ACCRUAL_FLAG = 'Y'
+                   AND A.PROD_TP <> '211544'
+			]]>
+		</isEqual>
+		<isEqual prepend="" property="accrualFlag" compareValue="N">
+			<![CDATA[
+					SELECT SUM(A.TOTAL_PAY) TOTAL_PAY,
+					        SUM(A.TAX_PAY) TAX_PAY,
+					        SUM(A.NET_PAY) NET_PAY FROM (
+						Select  P.PAY_AREA_NAME,
+								P.PAY_AREA_CD,		
+					        P.BRANCH_NAME,
+					        P.BRANCH_CD,
+					        P.PA_MONTH,
+					        P.PROD_NAME,
+					        SUM(P.TOTAL_PAY) TOTAL_PAY,
+					        SUM(P.TAX_PAY) TAX_PAY,
+					        SUM(P.NET_PAY) NET_PAY
+					       FROM PA_TEMP_SELLER_DETAIL P
+					       WHERE P.PROD_TP <> '211544'
+						      GROUP BY P.PA_MONTH,
+						      P.PAY_AREA_CD,
+						      P.PAY_AREA_NAME,
+						      P.BRANCH_CD,
+						      P.BRANCH_NAME,
+						      P.PROD_TP,
+						      P.PROD_NAME,
+						      COMMON_EMPID) A
+			WHERE PA_MONTH = #PA_MONTH#
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+			A.PAY_AREA_CD IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EVENT_ID">
+			<![CDATA[
+			A.PAY_AREA_CD = (SELECT PAY_AREA_CD FROM PA_TEMP_SELLER_EVENT WHERE EVENT_ID = #EVENT_ID#)
+			]]>
+		</isNotEmpty>
+	</select>
+	<procedure id="viewTempSaleSend" parameterClass="linkMap">
+		<![CDATA[
+			{call pkg_tempsales_excel.PR_TEMP_SALES_SEND(
+						#interCpnyID:VARCHAR#
+						,'$YEAR$$MONTH$'
+						,#PAY_AREA_CD:VARCHAR#
+						,#ACCRUAL_YN:VARCHAR#
+						,''
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<procedure id="viewTempSaleConfirm" parameterClass="linkMap">
+		<![CDATA[
+			{call pkg_tempsales_excel.PR_TEMP_SALES_CONFIRM(
+						#supervisorPersonId:VARCHAR#
+						,'$YEAR$$MONTH$'
+						,#PAY_AREA_CD:VARCHAR#
+						,#ACCRUAL_YN:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	
+	<select id="getConfirmInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.EVENT_ID ,
+				A.EVENT_NAME,
+				A.CREATED_BY,
+				A.CURRENT_AFFIRM_ID
+		FROM PA_TEMP_SELLER_EVENT A
+		WHERE A.PAY_DATE = '$YEAR$$MONTH$'
+		AND A.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+		AND A.ACCRUAL_FLAG = 'CONFIRM_$ACCRUAL_YN$'
+		AND A.ACTIVITY = 1
+		]]>
+	</select>
+	
+	
+	<!-- 修改progress -->
+	<update id="updateTempSalesProgress" parameterClass="linkMap">
+		<![CDATA[	
+	  UPDATE PA_TEMP_SELLER_PROGRESS A
+	  	 ]]>
+		<isEqual prepend="" property="accrualFlag" compareValue="CONFIRM_N">
+		<![CDATA[	
+		   	   SET A.AFFIRM_FLAG = #FLAG#	
+	  	 ]]>
+		</isEqual>
+		<isEqual prepend="" property="accrualFlag" compareValue="CONFIRM_Y">
+		<![CDATA[	
+		   	   SET A.AFFIRM_FLAG_ACCRUAL = #FLAG#	
+	  	 ]]>
+		</isEqual>
+		<![CDATA[	
+		,A.UPDATE_DATE = SYSDATE
+		WHERE EXISTS(
+			SELECT 1 FROM PA_TEMP_SELLER_EVENT B
+			WHERE B.PAY_DATE = A.PA_MONTH
+			AND B.PAY_AREA_CD = A.PAY_AREA_CD
+			AND B.EVENT_ID = #EVENT_ID#
+		)
+	  	 ]]>
+	</update>
+	
+	
+	<select id="viewTempSaleState" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.PA_MONTH,
+			   A.PAY_AREA_CD,
+		       GET_DEPT_NAME(A.PAY_AREA_CD,'zh') PAY_AREA_NAME,
+		       DECODE(A.CALC_FLAG,1,'已计算','未计算') CALC_FLAG,
+		       DECODE(A.AFFIRM_FLAG,1,'通过','2','否决','3','审批中','未确认') AFFIRM_FLAG,
+		       DECODE(A.SEND_FLAG,1,'已传送','未传送') SEND_FLAG,
+		       DECODE(A.AFFIRM_FLAG_ACCRUAL,1,'通过','2','否决','3','审批中','未确认') AFFIRM_FLAG_ACCRUAL,
+		       DECODE(A.SEND_FLAG_ACCRUAL,1,'已传送','未传送') SEND_FLAG_ACCRUAL
+		FROM PA_TEMP_SELLER_PROGRESS A
+		WHERE 
+		]]>
+		<isEmpty prepend="" property="YEAR">
+			<![CDATA[
+			A.PA_MONTH = TO_CHAR(ADD_MONTHS(SYSDATE,-1),'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="" property="YEAR">
+			<![CDATA[
+			A.PA_MONTH = '$YEAR$$MONTH$'
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="isTsm" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM (SELECT 1
+			          FROM PA_TEMP_SELLER_EVENT A, PA_TEMP_SELLER_INFO B
+			         WHERE A.EVENT_ID = B.EVENT_ID
+			           AND B.PROD_TP = '211544'
+			           AND A.EVENT_ID = #EVENT_ID#
+           				UNION
+			          SELECT 1
+			                  FROM PA_TEMP_SELLER_EVENT A, PA_TEMP_SELLER_ACCRUAL B
+			                 WHERE A.EVENT_ID = B.BATCH_EVENT_ID
+			                   AND B.PROD_TP = '211544'
+			                   AND A.EVENT_ID = #EVENT_ID#
+			        )
+		]]>
+	</select>
+	<update id="updateTsmStatus" parameterClass="linkMap" >
+	    <![CDATA[
+			UPDATE PA_TEMP_SELLER_EVENT 
+			   SET AFFIRM_FLAG = 1,
+			       UPDATE_DATE = SYSDATE
+			 WHERE EVENT_ID = #EVENT_ID#
+	    ]]>
+	</update>
+	<update id="updateTsmStatusAffirm" parameterClass="linkMap" >
+	    <![CDATA[
+			UPDATE ESS_AFFIRM 
+			   SET AFFIRM_FLAG = 1,
+			       UPDATE_DATE = SYSDATE,
+			       AFFIRM_CONTENT = '手机项目无需审批，自动通过'
+			 WHERE APPLY_NO = #EVENT_ID#
+			   AND APPLY_TYPE = '218064'
+	    ]]>
+	</update>
+	
+	
+	<update id="updateCurrentAffirmId" parameterClass="linkMap">
+		<![CDATA[	
+	  		UPDATE PA_TEMP_SELLER_EVENT A
+		   	   SET UPDATE_DATE = SYSDATE,
+			  	   UPDATED_BY = #PERSON_ID:VARCHAR#,
+			  	   CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#	
+			WHERE EVENT_ID = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<update id="updateYuTy" parameterClass="linkMap">
+		<![CDATA[	
+	  		UPDATE PA_TEMP_SELLER_EVENT A
+		   	   SET FILE_NAME = #FILE_NAME:VARCHAR#,
+			  	   FILE_URL = #FILE_URL:VARCHAR#
+			 WHERE EVENT_ID = #EVENT_ID:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	
+	<select id="getTempSalesSummary" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT EVENT_ID,
+		   	   	   EVENT_NAME,
+		   	   	   TO_CHAR(START_DATE,'yyyy-mm-dd') START_DATE,
+		   	   	   TO_CHAR(END_DATE,'yyyy-mm-dd') END_DATE,
+		   	   	   PAY_DATE,
+		   	   	   TOTAL_NUM,
+		   	   	   TOTAL_SALARY,
+		   	   	   PKG_TEMPSALES_EXCEL.GET_BRANCH_NAME(EVENT_DEPTNO,#LANGUAGE:VARCHAR#) EVENT_DEPTNO_NAME,
+		   	   	   GET_DEPT_NAME(A.PAY_AREA_CD,#LANGUAGE:VARCHAR#) PAY_AREA_NAME,
+		   	   	   EVENT_DEPTNO,
+		   	   	   EVENT_STORE_CODE,
+		   	   	   REMARK,
+		   	   	   COMMON_EMPID,
+		   	   	   FILE_NAME,
+		   	   	   FILE_URL,
+		   	   	   EVENT_CONTENT,
+		   	   	   A.CREATED_BY,
+		   	   	   CURRENT_AFFIRM_ID,
+		   	   	   PRODUCT_CODE,
+		   	   	   EVENT_STORE_NAME,
+		   	   	   ACCRUAL_FLAG,
+		   	   	   HR.EMPID,
+		   	   	   HR.LOCAL_NAME,
+		   	   	   TO_CHAR(A.CREATE_DATE,'yyyy-mm-dd') APPLY_DATE
+			 FROM PA_TEMP_SELLER_EVENT A,HR_EMPLOYEE HR
+			 WHERE A.CREATED_BY = HR.PERSON_ID
+			 AND A.PAY_DATE = #PAY_DATE:VARCHAR#
+			 AND A.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+			 AND A.ACCRUAL_FLAG = #ACCRUAL_FLAG:VARCHAR#
+			 AND A.ACTIVITY = 1
+		]]>
+	</select>
+</sqlMap>

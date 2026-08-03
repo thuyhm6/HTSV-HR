@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.sqlSummaryFormula">
+	<select id="getSummaryFormulaItemList" resultClass="linkMap">
+		<![CDATA[
+			SELECT  
+				T.ITEM_NO,
+				S1.CONTENT ITEM_NAME,
+				CAL_ORDER,
+				T.STA_ITEM_ID,
+				T.DATATYPE,
+        		S2.CONTENT DATATYPE_NAME
+				
+			FROM AR_STA_ITEM T,
+				 AR_STA_ITEM_PARAM PA,
+				 SY_GLOBAL_NAME S1,
+				 SY_GLOBAL_NAME S2
+			WHERE T.ITEM_NO = PA.ITEM_NO
+			  AND PA.ITEM_NO = S1.NO(+)
+			  AND S1.LANGUAGE(+) = #language:VARCHAR#
+			  AND T.DATATYPE = S2.NO(+)
+			  AND S2.LANGUAGE(+) = #language:VARCHAR#
+			  AND PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND T.ACTIVITY = 1 AND PA.ACTIVITY = 1
+			ORDER BY PA.CAL_ORDER
+	    ]]>
+	</select>
+	<select id="getsummaryFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT ITEM_NO, 
+			       FORMULAR_NO,
+			       CONDITION,
+			       FORMULAR
+			FROM AR_STA_FORMULAR 
+			WHERE ITEM_NO=#ITEM_NO:VARCHAR#
+		      AND CPNY_ID = #interCpnyID:VARCHAR#
+			ORDER BY FORMULAR_NO
+		]]>
+	</select>
+	<select id="getFormulaInfo" resultClass="linkMap" parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT 
+				T.FORMULAR_NO,
+				T.ITEM_NO, 
+				T.CONDITION,
+				T.FORMULAR,
+				T.CPNY_ID
+			FROM AR_STA_FORMULAR T
+			WHERE T.FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+			  AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	<insert id="addFormulaItem" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO AR_STA_FORMULAR 
+				(FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)
+			VALUES
+				(AR_STA_FORMULAR_SEQ.NEXTVAL,#ITEM_NO:VARCHAR#,#CONDITION:VARCHAR#,#FORMULAR:VARCHAR#,#CPNY_ID:VARCHAR#,SYSDATE,#CREATED_BY:VARCHAR#)
+		]]>
+	</insert>
+	
+	<update id="updateFormulaItem" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_STA_FORMULAR 
+				SET CONDITION=#CONDITION:VARCHAR#,
+				FORMULAR=#FORMULAR:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE FORMULAR_NO=#FORMULAR_NO:VARCHAR# 
+				AND ITEM_NO=#ITEM_NO:VARCHAR#
+				AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getArItemList" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT A.*,
+				S2.CONTENT ITEM_NAME,
+				S1.CONTENT ITEM_GROUP_NAME
+			FROM AR_ITEM A,
+				 AR_ITEM_PARAM C,
+				 SY_GLOBAL_NAME S1,
+				 SY_GLOBAL_NAME S2
+			WHERE A.ITEM_NO = C.ITEM_NO 
+			  AND C.CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND A.ITEM_GROUP_CODE = S1.NO(+)
+			  AND S1.LANGUAGE(+) = #language:VARCHAR#
+			  AND A.ITEM_NO = S2.NO(+)
+			  AND S2.LANGUAGE(+) = #language:VARCHAR#
+			ORDER BY A.ITEM_NO
+		]]>
+	</select>
+	<select id="getPersonBasicInfo" resultClass="linkMap">
+		<![CDATA[
+			SELECT DISTINCT_FIELD,
+				S1.CONTENT FIELD_NAME
+			FROM PA_DISTINCT_LIST,
+				 SY_GLOBAL_NAME S1
+			WHERE TABLE_NAME = 'PA_HR_V'
+			  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND ID = S1.NO(+)
+			  AND S1.LANGUAGE(+) = #language:VARCHAR#
+			  AND PA_DISTINCT_LIST.ACTIVITY = 1
+			ORDER BY PA_DISTINCT_LIST.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getSummaryFormulaItemToCN" resultClass="linkMap">
+		<![CDATA[
+			select 'ATT_ITEM.' || ai.item_id as ID, ai.item_name_zh as name
+			from ar_item ai
+			union
+			select 'STA_ITEM.' || asi.sta_item_id, asi.item_name_zh
+			from ar_sta_item asi
+			union
+			select 'STA_ITEM.' || pdl.distinct_field, pdl.field_name_zh
+			from pa_distinct_list pdl
+			where pdl.table_name = 'PA_HR_V'  
+		]]>
+	</select>
+    
+    <select id="getSummaryFormulaItemToInter" resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[
+			select 'ATT_ITEM.' || ai.item_id as ID, S1.CONTENT as name
+			from ar_item ai,SY_GLOBAL_NAME S1
+			WHERE ai.item_no = S1.NO(+)
+			AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			union
+			select 'STA_ITEM.' || asi.sta_item_id, S2.CONTENT AS name
+			from ar_sta_item asi,SY_GLOBAL_NAME S2
+			WHERE asi.item_no = S2.NO(+)
+			AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			union
+			select 'STA_ITEM.' || pdl.distinct_field, S3.CONTENT AS name
+			from pa_distinct_list pdl,SY_GLOBAL_NAME S3
+			WHERE pdl.table_name = 'PA_HR_V' 
+			and pdl.CPNY_ID = #interCpnyID:VARCHAR#
+			and pdl.ID = S3.NO(+)
+			AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			
+		]]>
+	</select>
+  
+	<delete  id="deleteFormulaInfo" parameterClass="linkMap">
+		 <![CDATA[
+			DELETE FROM AR_STA_FORMULAR 
+			WHERE FORMULAR_NO=#FORMULAR_NO:VARCHAR#
+			  AND CPNY_ID = #CPNY_ID:VARCHAR#
+	     ]]>
+	</delete>
+</sqlMap>

@@ -1,0 +1,15 @@
+DIV.DTS TBODY TH {
+	WHITE-SPACE: nowrap
+}
+DIV.DTS TBODY TD {
+	WHITE-SPACE: nowrap
+}
+DIV.DTS DIV.DTS_Loading {
+	Z-INDEX: 1
+}
+DIV.DTS DIV.dataTables_scrollBody TABLE {
+	Z-INDEX: 2
+}
+DIV.DTS DIV.dataTables_paginate {
+	DISPLAY: none
+}

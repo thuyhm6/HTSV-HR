@@ -1,0 +1,4 @@
+select * from  hr_experience_inside where person_id='11111111' for update
+
+update (select * from sy_code where parent_code_no='400098')a set a.depth='1'
+select * from sy_code where code_no='400098' for update

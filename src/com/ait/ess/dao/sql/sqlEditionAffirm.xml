@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.editionAffirm">
+	<!-- 查找离职交接进度表的List -->
+	<select id="getEditionAffirmList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+		           SELECT 
+                   HD.CONTENT DEPT_NAME,
+                   E.POST_GRADE_NO,
+                   E.EMPID,
+                   SY.CONTENT EMP_TYPE_NAME,
+                   E.EMP_TYPE_CODE,
+                   T.APPLY_NO,
+                   E.LOCAL_NAME,
+                   TO_CHAR(T.APPLY_TIME, 'yyyy-MM-dd') APPLY_TIME,
+                   TO_CHAR(T.APPLY_LEAVE_TIME, 'yyyy-MM-dd') APPLY_LEAVE_TIME,
+                   TO_CHAR(T.LEAVE_TIME, 'yyyy-MM-dd') LEAVE_TIME,
+                   T.APPLY_REASON,
+                   T.AFFIRM_FLAG
+              FROM HR_EMPLOYEE E,SY_GLOBAL_NAME SY,HR_DEPARTMENT_NAME HD,ESS_APPLY_DIMISSION T
+             WHERE E.PERSON_ID = T.PERSON_ID
+               AND E.EMP_TYPE_CODE = SY.NO(+)
+               AND SY.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.DEPTNO = HD.DEPTNO
+               AND HD.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+		 	     T.APPLY_TIME = #APPLY_TIME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 	     E.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<!-- 查找离职交接进度表的数量 -->
+	<select id="getEditionAffirmCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(1)
+			   FROM HR_EMPLOYEE E,SY_GLOBAL_NAME SY,HR_DEPARTMENT_NAME HD,ESS_APPLY_DIMISSION T
+            WHERE E.PERSON_ID = T.PERSON_ID
+               AND E.EMP_TYPE_CODE = SY.NO(+)
+               AND SY.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.DEPTNO = HD.DEPTNO
+               AND HD.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+		 	     T.APPLY_TIME = #APPLY_TIME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 	     E.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getEditionApplyorByApplyNoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT ESS.APPLY_NO,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       ESS.APPLY_REASON,
+			       ESS.PERSON_ID,
+			       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       get_global_name(HE.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+			       HE.POST_GRADE_NO,
+			       TO_CHAR(ESS.APPLY_LEAVE_TIME, 'YYYY-MM-DD') APPLY_LEAVE_TIME,
+			       TO_CHAR(ESS.create_date, 'YYYY-MM-DD') APPLY_TIME
+			  FROM HR_EMPLOYEE HE, ESS_APPLY_DIMISSION ESS
+			 WHERE HE.PERSON_ID = ESS.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY ESS.APPLY_NO
+		]]>
+	</select>
+
+	<select id="getEditionAffirmorByApplyNoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT ESS.APPLY_NO,
+			       ESS.APPLY_TYPE,
+			       ESS.ESS_AFFIRM_NO,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       get_global_name(HE.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+			       HE.POST_GRADE_NO,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_CONTENT,
+			       TO_CHAR(ESS.UPDATE_DATE,'YYYYMMDD') AFFIRM_DATE,
+			       ESS.CHECK_REASON,
+             	   ESS.CHECKOR_ID,
+                   ESS.CHECK_FLAG,
+             	   ESS.CHECK_CONTENT,
+                   ESS.CHECK_DATE,
+             	   ESS.CHECK_CREATED_BY,
+             	   TO_CHAR(ESS.UPDATE_DATE,'YYYYMMDD') UPDATE_DATE,
+                   TO_CHAR(ESS.CHECK_CREATED_DATE,'YYYYMMDD') CHECK_CREATED_DATE
+			  FROM HR_EMPLOYEE HE, ESS_AFFIRM ESS
+			 WHERE HE.PERSON_ID = ESS.AFFIRMOR_ID
+			   AND ESS.APPLY_TYPE = #APPLY_TYPE_NO#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY ESS.AFFIRM_LEVEL
+		]]>
+	</select>
+
+	<select id="getEditionCheckorByApplyNoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT A.ESS_CHECK_NO,
+		       A.ESS_AFFIRM_NO,
+		       C.PERSON_ID PERSON_ID_R,
+		       C.EMPID EMPID_R,
+		       C.LOCAL_NAME LOCAL_NAME_R,
+		       C.POSITION_NO POSITION_NO_R,
+		       get_dept_name(C.DEPTNO , 'zh') DEPTNAME_R,
+		       A.CHECK_REASON,
+		       TO_CHAR(A.CREATED_DATE,'YYYY-MM-DD') DATE_R,
+		       D.PERSON_ID PERSON_ID_C,
+		       D.EMPID EMPID_C,
+		       A.CHECKOR_ID,
+		       D.LOCAL_NAME LOCAL_NAME_C,
+		       D.POSITION_NO POSITION_NO_C,
+		       get_dept_name(C.DEPTNO , 'zh') DEPTNAME_C,
+		       A.CHECK_CONTENT,
+		       A.CHECK_FLAG,
+		       TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') DATE_C
+		       FROM  ESS_CHECK A,
+		             ESS_AFFIRM B,
+		             HR_EMPLOYEE C,
+		             HR_EMPLOYEE D
+		       WHERE A.ESS_AFFIRM_NO = B.ESS_AFFIRM_NO
+		       AND   A.CHECKOR_ID = D.PERSON_ID
+		       AND   B.AFFIRMOR_ID = C.PERSON_ID
+		       AND   B.APPLY_NO = #APPLY_NO:VARCHAR#
+		       AND   B.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		       ORDER BY A.CREATED_DATE
+		    ]]>
+	</select>
+
+	<!-- 删除决裁者 -->
+	<delete id="deleteDimissionAffirmor" parameterClass="linkMap">
+	    <![CDATA[
+	    DELETE FROM ESS_AFFIRM
+	    	WHERE APPLY_NO = #APPLY_NO:VARCHAR#
+	    	AND APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+	    	AND AFFIRM_FLAG = 0
+	    	
+	    ]]>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				ESS_AFFIRM_NO <> #ESS_AFFIRM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+
+	<!-- 申请加决裁者 -->
+	<insert id="insertDimissionAffirmor" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY,
+				APPLY_TYPE
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #APPLY_NO:VARCHAR#,
+				0, 
+				#AFFIRM_LEVEL#, 
+				#AFFIRMOR_ID:VARCHAR#, 
+				SYSDATE, 
+				#PERSON_ID:VARCHAR#, 
+				0,
+				#APPLY_TYPE_NO:VARCHAR#
+				)
+	    ]]>
+	</insert>
+
+	<update id="updateDimissionEssAffirm" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE ESS_AFFIRM SET
+			 		AFFIRM_FLAG = #FLAG:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateCheckFlagByDimissionEssAffirmNo"
+		parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE ESS_CHECK SET
+			 		CHECK_FLAG = 1,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO:VARCHAR#
+		]]>
+	</update>
+
+	<update id="affirmDimissionInfo" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE ESS_APPLY_DIMISSION
+		  	SET AFFIRM_FLAG = #FLAG:VARCHAR#,
+		  	CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#,
+		  	UPDATE_DATE = SYSDATE,
+		  	UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE APPLY_NO = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<update id="affirmDimissionInfoAffirm" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE ESS_APPLY_DIMISSION SET
+		  	CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#
+			WHERE APPLY_NO = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<update id="affirmDimissionItemInfo" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE ESS_APPLY_DIMISSION
+		  	SET AFFIRM_FG = #AFFIRM_FLAG:VARCHAR#
+			WHERE APPLY_NO = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+
+	<update id="updateDimissionEssCheck" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE ESS_CHECK SET
+			 		CHECK_FLAG = 1,
+			 		CHECK_CONTENT = #CHECK_CONTENT:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ESS_CHECK_NO = #ESS_CHECK_NO:VARCHAR#
+		]]>
+	</update>
+
+	<select id="getDimissionAffirmorList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			        SELECT AP.APPLY_NO,
+		            AP.PERSON_ID,
+                    SY.CONTENT EMP_TYPE_NAME,
+		             H.EMPID,
+		             H.LOCAL_NAME,
+		             H.DEPTNO,
+		             get_dept_name(H.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+		             TO_CHAR(AP.APPLY_TIME, 'yyyy-MM-dd') APPLY_TIME,
+		             TO_CHAR(AP.APPLY_LEAVE_TIME, 'YYYY-MM-DD') APPLY_LEAVE_TIME,
+                 AP.AFFIRM_FLAG,
+                 AP.APPLY_REASON,
+                 AP.CURRENT_AFFIRM_ID,
+                (SELECT DECODE(B.AFFIRMOR_ID, #PERSON_ID:VARCHAR#, 1, 0)
+			         FROM ESS_AFFIRM B
+			         WHERE B.APPLY_NO = AP.APPLY_NO
+			          AND   B.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+			          AND B.AFFIRM_LEVEL = (
+			               SELECT MIN(AFFIRM_LEVEL )
+			               FROM ESS_AFFIRM a2
+			               WHERE a2.APPLY_NO = AP.APPLY_NO
+			               AND   a2.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+			               AND a2.AFFIRM_FLAG = 0
+                           AND AP.AFFIRM_FLAG in (0,-1))
+			          ) AFFIRM_FLAG_PERSON
+            FROM ESS_APPLY_DIMISSION AP, HR_EMPLOYEE H,SY_GLOBAL_NAME SY
+           WHERE AP.PERSON_ID = H.PERSON_ID
+             AND H.EMP_TYPE_CODE = SY.NO(+)
+             AND SY.LANGUAGE = #interLanguage:VARCHAR#
+             AND EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = AP.APPLY_NO
+                       AND   AFFIRMOR_ID =#PERSON_ID:VARCHAR# 
+                   )
+		  ]]>
+     <!-- 1.30为本人审批条件新加 -->
+	<isEqual prepend="AND" compareValue="10" property="AFFIRM_FLAG">
+		<![CDATA[
+ 			AP.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR# 
+		]]>
+ 	</isEqual>
+	<isEqual prepend="AND" compareValue="11" property="AFFIRM_FLAG">
+		<![CDATA[
+                   EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = AP.APPLY_NO
+                       AND   AFFIRMOR_ID =#PERSON_ID:VARCHAR# 
+                       AND   AFFIRM_FLAG = 0
+                       AND AP.CURRENT_AFFIRM_ID <> #PERSON_ID:VARCHAR# 
+                   )
+		]]>
+ 	</isEqual>
+		<!-- 决裁状态 start -->
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<isNotEqual prepend="" compareValue="-5" property="AFFIRM_FLAG">
+			<isNotEqual prepend="" compareValue="10" property="AFFIRM_FLAG">
+				<isNotEqual prepend="" compareValue="11" property="AFFIRM_FLAG">
+					<![CDATA[
+						AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+			 		]]>
+	 			</isNotEqual>
+ 			</isNotEqual>
+ 		</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+		<![CDATA[
+			AP.APPLY_NO = #APPLY_NO:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	        ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		<![CDATA[
+			H.DEPTNO = #DEPTNO:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+	 	
+		<![CDATA[
+			  ORDER BY AP.APPLY_TIME DESC,
+			           H.DEPTNO,
+			           H.EMPID
+	  ]]>
+	</select>
+
+	<select id="getDimissionAffirmor" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			        SELECT B.APPLY_NO,
+                           B.AFFIRM_FLAG,
+                           B.AFFIRMOR_ID,
+                           B.AFFIRM_LEVEL
+			          FROM ESS_AFFIRM B
+			         WHERE B.APPLY_NO = #APPLY_NO:VARCHAR#
+			          AND  B.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		  ]]>
+
+		<!-- 决裁状态 start -->
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG1">
+		<![CDATA[
+			B.AFFIRM_FLAG = #AFFIRM_FLAG1:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+	</select>
+
+
+	<select id="getDimissionAffirmorCnt" parameterClass="linkMap"
+		resultClass="int">
+	<![CDATA[
+			SELECT COUNT(0)
+            FROM ESS_APPLY_DIMISSION AP, HR_EMPLOYEE H,SY_GLOBAL_NAME SY
+           WHERE AP.PERSON_ID = H.PERSON_ID
+             AND H.EMP_TYPE_CODE = SY.NO(+)
+             AND SY.LANGUAGE = #interLanguage:VARCHAR#
+	]]>
+	     <isNotEmpty prepend="AND" property="PERSON_ID">
+		<![CDATA[
+			 EXISTS (
+                 SELECT 1 FROM ESS_AFFIRM 
+                 WHERE APPLY_NO = AP.APPLY_NO
+                 AND   APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+                 AND   AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+               )
+               AND AP.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+		<!-- 决裁状态 start -->
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	        ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+		<![CDATA[
+			AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+ 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		<![CDATA[
+			H.DEPTNO = #DEPTNO:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+
+	</select>
+
+	<select id="getDimissionCheckList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT AP.APPLY_NO,
+		             AP.PERSON_ID,
+                 SY.CONTENT EMP_TYPE_NAME,
+		             H.EMPID,
+		             H.LOCAL_NAME,
+		             H.DEPTNO,
+		             get_dept_name(H.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+		             TO_CHAR(AP.APPLY_TIME, 'yyyy-MM-dd') APPLY_TIME,
+		             TO_CHAR(AP.APPLY_LEAVE_TIME, 'YYYY-MM-DD') APPLY_LEAVE_TIME,
+                 AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+                 AP.APPLY_REASON,
+                 AP.CURRENT_AFFIRM_ID,
+                 AP.CREATE_DATE,
+                 AP.UPDATE_DATE,
+                 (SELECT DECODE((SELECT 1
+                         FROM ESS_AFFIRM a1,
+                         ess_check b1
+                         WHERE A1.ESS_AFFIRM_NO = B1.ESS_AFFIRM_NO
+                         AND A1.APPLY_NO = AP.APPLY_NO
+                         AND B1.CHECK_FLAG = 0
+                         AND B1.CHECKOR_ID = #PERSON_ID:VARCHAR#
+                         GROUP BY A1.APPLY_NO),NULL, 0,1) FROM DUAL
+                    ) AFFIRM_FLAG_PERSON
+            FROM ESS_APPLY_DIMISSION AP, HR_EMPLOYEE H,SY_GLOBAL_NAME SY
+           WHERE AP.PERSON_ID = H.PERSON_ID
+             AND H.EMP_TYPE_CODE = SY.NO(+)
+             AND SY.LANGUAGE = #interLanguage:VARCHAR#
+             AND EXISTS (
+                   SELECT 1 FROM ESS_AFFIRM ESS1,
+                   ESS_CHECK ESS2
+                   WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+                   AND   APPLY_NO = AP.APPLY_NO
+                   AND   ESS2.CHECKOR_ID = #PERSON_ID:VARCHAR#
+               )
+                ]]>
+
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+		<![CDATA[
+			AP.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	        ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		<![CDATA[
+			H.DEPTNO = #DEPTNO:VARCHAR#
+ 		]]>
+		</isNotEmpty>  
+               <![CDATA[
+				  ORDER BY AP.APPLY_TIME DESC,
+				           H.DEPTNO,
+				           H.EMPID
+		  ]]>
+
+
+	</select>
+
+	<select id="getDimissionCheckCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 		SELECT COUNT(1)
+			  FROM ESS_APPLY_DIMISSION AP, HR_EMPLOYEE H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND EXISTS (
+		           SELECT 1 FROM ESS_AFFIRM ESS1,
+		           ESS_CHECK ESS2
+		           WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		           AND   APPLY_NO = AP.APPLY_NO
+					     AND   APPLY_TYPE = #APPLY_TYPE_NO#
+		           AND   ESS2.CHECKOR_ID = #PERSON_ID:VARCHAR#
+		       )
+		  ]]>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+		<![CDATA[
+			AP.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	       ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		<![CDATA[
+			H.DEPTNO = #DEPTNO:VARCHAR#
+ 		]]>
+		</isNotEmpty>
+	</select>
+
+	<insert id="addCheckAffirmDimission" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT INTO ESS_CHECK (
+			ESS_CHECK_NO,
+			ESS_AFFIRM_NO,
+			CHECK_REASON,
+			CHECKOR_ID,
+			CHECK_FLAG,
+			CHECK_LEVEL,
+			CREATED_DATE,
+			CREATED_BY,
+			ACTIVITY
+		) values (
+			ESS_CHECK_SEQ.NEXTVAL,
+			#ESS_AFFIRM_NO#,
+			#CHECK_REASON#,
+			#CHECKOR_ID#,
+			0,
+			1,
+			SYSDATE,
+			#PERSON_ID#,
+			1
+		)
+	    ]]>
+	</insert>
+
+	<!-- 查找离职交接进度表的List -->
+	<select id="getAffirmEditionItemList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+	   SELECT 
+	   EP.EDITION_PERSON_NO,
+       E.LOCAL_NAME,
+       E.EMP_TYPE_CODE,
+       E.DEPTNO,
+       E.EMPID,
+       E.PERSON_ID,
+       EP.APPLY_PERSON_ID,
+       EP.AFFIRM_PERSON_ID,
+       HD.CONTENT DEPT_NAME,
+       TO_CHAR(ES.APPLY_LEAVE_TIME, 'YYYYMMDD') APPLY_LEAVE_TIME,
+       TO_CHAR(ES.APPLY_TIME, 'YYYYMMDD') APPLY_TIME,
+       ES.APPLY_REASON,
+       ES.APPLY_NO,
+       ES.AFFIRM_FG,
+       SY.CONTENT  EDITION_TYPE_NAME,
+       SY1.CONTENT EDITION_ITEM_NAME,
+       EE.LOCAL_NAME AFFIRM_NAME,
+       EE.DEPTNO AFFIRM_DEPTNO,
+       HD1.CONTENT AFFIRM_DEPT_NAME,
+       EP.EDITION_ITEM_NO,
+       TO_CHAR(EP.AFFIRM_DATE, 'YYYYMMDD') AFFIRM_DATE,
+       EP.AFFIRM_FLAG
+  FROM HR_EMPLOYEE E,HR_EMPLOYEE EE,HR_DEPARTMENT_NAME HD,ESS_APPLY_DIMISSION ES,SYS_EDITION_PERSON EP,
+       SY_GLOBAL_NAME SY,SY_GLOBAL_NAME SY1,ESS_DIMISSION_GL ST,HR_DEPARTMENT_NAME HD1
+ WHERE E.PERSON_ID = ES.PERSON_ID
+   AND E.DEPTNO = HD.DEPTNO
+   AND HD.LANGUAGE = #interLanguage:VARCHAR#
+   AND E.EMP_TYPE_CODE = ST.EMP_TYPE_CODE
+   AND EP.EDITION_TYPE_NO = SY.NO(+)
+   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+   AND EP.EDITION_ITEM_NO = SY1.NO(+)
+   AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+   AND EP.AFFIRM_PERSON_ID = EE.PERSON_ID
+   AND EE.DEPTNO = HD1.DEPTNO
+   AND HD1.LANGUAGE = #interLanguage:VARCHAR#
+   AND ES.APPLY_NO = #APPLY_NO:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				EP.APPLY_PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EE.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO1">
+			<![CDATA[
+				EE.DEPTNO <> #DEPTNO1:VARCHAR#
+				AND HD1.CONTENT NOT LIKE '%人事%'
+			    AND HD1.CONTENT NOT LIKE '%HR%'
+			    AND HD1.CONTENT NOT LIKE '%hr%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				EP.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AFFIRM_PERSON_ID">
+			<![CDATA[
+				EP.AFFIRM_PERSON_ID = #AFFIRM_PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_PERSON_NO1">
+			<![CDATA[
+				EP.EDITION_PERSON_NO = #EDITION_PERSON_NO1:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+ 		<![CDATA[
+ 				ORDER BY EP.ORDERNO_TYPE,EP.ORDERNO_ITEM
+ 			]]> 
+	</select>
+
+	<select id="getDimissionByApplyNoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT ESS.APPLY_NO,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+			       get_global_name(HE.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       TO_CHAR(ESS.APPLY_TIME, 'YYYYMMDD') APPLY_TIME
+			  FROM HR_EMPLOYEE HE, ESS_APPLY_DIMISSION ESS
+			 WHERE HE.PERSON_ID = ESS.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY ESS.APPLY_NO
+		]]>
+	</select>
+
+	<select id="getEditionItemByPidList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT  E.PERSON_ID APPLY_PERSON_ID,
+			        E.DEPTNO,
+                    ESS.EDITION_NO,
+                    ST.EDITION_ITEM_TYPE EDITION_TYPE_NO,
+                    ST.ORDERNO,
+                    SM.EDITION_ITEM_NO,
+                    SM.PERSON_ID AFFIRM_PERSON_ID,
+                    ST.ORDERNO ORDERNO_TYPE,
+                    SM.ORDERNO ORDERNO_ITEM
+               FROM HR_EMPLOYEE E,ESS_DIMISSION_GL ESS,SYS_EDITION_ITEM ST,SYS_EDITION_ITEM_PARAM SM
+              WHERE E.EMP_TYPE_CODE = ESS.EMP_TYPE_CODE
+                AND ESS.EDITION_NO = ST.EDITION_NO
+                AND ST.EDITION_ITEM_TYPE = SM.EDITION_ITEM_TYPE
+                AND E.PERSON_ID = #PID:VARCHAR#
+		]]>
+	</select>
+	
+	<!-- 离职申请个人模版添加 -->
+	<insert id="addEditionEditionPidInfo" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO SYS_EDITION_PERSON 
+				(EDITION_PERSON_NO, 
+				 APPLY_PERSON_ID, 
+				 EDITION_TYPE_NO, 
+				 EDITION_ITEM_NO, 
+				 AFFIRM_PERSON_ID, 
+				 AFFIRM_FLAG,
+				 ORDERNO_TYPE,
+				 ORDERNO_ITEM
+                ) 
+		VALUES (SYS_EDITION_PERSONNO_SEQ.NEXTVAL,
+    		    #APPLY_PERSON_ID:VARCHAR#,
+				#EDITION_TYPE_NO:VARCHAR#, 
+				#EDITION_ITEM_NO:VARCHAR#, 
+				#AFFIRM_PERSON_ID:VARCHAR#, 
+				0,
+				#ORDERNO_TYPE:VARCHAR#, 
+				#ORDERNO_ITEM:VARCHAR#
+				)
+	    ]]>
+	</insert>
+	
+	<select id="getDeptByPersonId" parameterClass="linkMap"
+	resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT E.EMPID,
+                   E.LOCAL_NAME,
+                   E.PERSON_ID,
+                   D.DEPTNO,
+                  HD.CONTENT AFFIRM_DEPT_NAME
+             FROM HR_EMPLOYEE E,
+                  HR_DEPARTMENT D,
+                  HR_DEPARTMENT_NAME HD
+            WHERE E.DEPTNO = D.DEPTNO
+              AND D.DEPTNO = HD.DEPTNO
+              AND HD.LANGUAGE = 'zh' 
+              AND PERSON_ID = #PERSON_ID1:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPT">
+			<![CDATA[
+				 HD.CONTENT NOT LIKE '%人事%' 
+			    AND HD.CONTENT NOT LIKE '%HR%'	
+			    AND HD.CONTENT NOT LIKE '%hr%'	 
+		    ]]>
+		</isNotEmpty>
+</select>
+</sqlMap>

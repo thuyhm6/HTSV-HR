@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.shift">
+
+	<select id="getShiftList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT T.SHIFT_NO,
+				   S.CONTENT SHIFT_NAME,
+			       T.DATATYPE,
+			       S2.CONTENT DATATYPE_NAME,
+			       T.SHIFT_ID,
+			       T.CPNY_ID,
+			       T.DEDUCT_TIME,
+			       T.OT_TIME_START,
+			       substr(t.ot_time_start,0,2)OT_TIME_START_H,
+			       substr(t.ot_time_start,4,2)OT_TIME_START_M,
+			       SUBSTR(T.SHIFT_SHORTNAME,1,2) F_H,
+		           SUBSTR(T.SHIFT_SHORTNAME,3,2) F_M,
+		           SUBSTR(T.SHIFT_SHORTNAME,6,2) T_H,
+		           SUBSTR(T.SHIFT_SHORTNAME,8,2) T_M,
+			       T.OT_ALLOWANCE,
+			       t.shift_shortname
+			  FROM AR_SHIFT010 T,
+			  		SY_GLOBAL_NAME S,
+			  		SY_GLOBAL_NAME S2
+			  WHERE T.CPNY_ID = #interCpnyID:VARCHAR#
+			  		AND T.SHIFT_NO = S.NO(+)
+			  		AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  		AND T.DATATYPE = S2.NO(+)
+			  		AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  		AND T.ACTIVITY = 1
+			 
+		]]>
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+				T.SHIFT_NO = #SHIFT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+				T.SHIFT_NO = #NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.SHIFT_NO
+			]]>
+		</isEmpty>
+
+	</select>
+	<select id="getWorkTimeLsit" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT AR.SHIFT_NO,AR.SHIFT_SHORTNAME,AR.DATATYPE FROM AR_SHIFT010 AR
+				 WHERE AR.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND AR.ACTIVITY = 1
+				  ORDER BY AR.SHIFT_SHORTNAME
+				  
+		]]>
+	</select>
+	<select id="getDateTypeLsit" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT distinct AR.Date_Type DATE_TYPE, get_global_name(AR.Date_Type, #interLanguage:VARCHAR#) DATE_TYPE_NAME
+                  from ar_shift_break_time AR
+		]]>
+	</select>
+	<select id="getWorkTimeLsit1" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT AR.SHIFT_NO,AR.SHIFT_SHORTNAME,AR.DATATYPE FROM AR_SHIFT010 AR
+				 WHERE AR.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND AR.ACTIVITY = 1
+				   AND AR.DATATYPE = '1440'
+				  ORDER BY AR.SHIFT_SHORTNAME
+		]]>
+	</select>
+	<select id="getWorkTimeLsit2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT AR.SHIFT_NO,AR.SHIFT_SHORTNAME,AR.DATATYPE FROM AR_SHIFT010 AR
+				 WHERE AR.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND AR.ACTIVITY = 1
+				   AND AR.DATATYPE <> '1440'
+				  ORDER BY AR.SHIFT_SHORTNAME
+		]]>
+	</select>
+
+	<select id="getShiftCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_SHIFT010 T
+		]]>
+	</select>
+
+	<select id="getItemList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT A.ITEM_NO,
+				   S1.CONTENT ITEM_NAME
+			FROM AR_ITEM A,
+				 SY_GLOBAL_NAME S1
+			WHERE A.ITEM_NO = S1.NO(+)
+			  	AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  	AND A.ACTIVITY = 1
+		]]>
+	</select>
+
+	<select id="calculateAvg" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		
+		<![CDATA[  
+			  SELECT MAX(NVL(AA.G,0)) G ,MAX(NVL(AA.P,0)) P  FROM (
+				 SELECT DECODE(A.DIV_GP,'G',TOTAL) G,
+				        DECODE(A.DIV_GP,'P',TOTAL) P
+				    FROM (
+				 SELECT  L.DIV_GP,COUNT(L.DIV_GP) TOTAL
+				   FROM ESS_OVERTIME_LIMIT_APPLY L
+				  WHERE L.DEPTNO = #AR_DEPT_NO#
+				    AND L.AR_MONTH_STR = TO_CHAR(ADD_months(TO_DATE(REPLACE(#AR_DATE#,'-',''),'YYYYMM'),1),'YYYYMM')
+				  GROUP BY L.DIV_GP) A) AA
+		]]>
+	</select>
+
+	<insert id="addShiftInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO AR_SHIFT010 (
+					SHIFT_NO,
+					DATATYPE,
+					SHIFT_ID,
+					CPNY_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY,
+					DEPT_DISTINGUISH_NO,
+					DEDUCT_TIME,
+					OT_TIME_START,
+					OT_ALLOWANCE,
+					SHIFT_SHORTNAME
+				)
+				VALUES(
+					#NO:VARCHAR#,
+					#DATATYPE:VARCHAR#,
+					#SHIFT_ID:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1,
+					#distinguishNo:VARCHAR#,
+					NVL(#DEDUCT_TIME:NUMERIC#,0),
+					decode(#OT_TIME_START:VARCHAR#,'',null,#OT_TIME_START:VARCHAR#),
+					#OT_ALLOWANCE:NUMERIC#,
+					#SHIFT_WORK_TIOME:VARCHAR#
+				)
+		]]>
+	</insert>
+
+	<select id="getShiftParameterList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			SELECT T.PK_NO,
+			       T.SHIFT_NO,
+			       T.ITEM_NO,
+			       S1.CONTENT SHITT_NAME,
+			       S2.CONTENT ITEM_NAME,
+			       T.BEGIN_DAY_OFFSET,
+			       TO_CHAR(T.FROM_TIME, 'HH24:MI') AS FROM_TIME,
+			       T.END_DAY_OFFSET,
+			       TO_CHAR(T.TO_TIME, 'HH24:MI') AS TO_TIME,
+			       SHIFT.SHIFT_ID,
+			       SHIFT.DATATYPE,
+			       S3.CONTENT DATATYPE_NAME,
+			       SHIFT.OT_TIME_START,
+			       SHIFT.OT_ALLOWANCE
+			  FROM AR_SHIFT020    T,
+			       AR_SHIFT010    SHIFT,
+			       AR_ITEM        AI,
+			       SY_GLOBAL_NAME S1,
+			       SY_GLOBAL_NAME S2,
+			       SY_GLOBAL_NAME S3
+			 WHERE T.ITEM_NO = AI.ITEM_NO
+			   AND T.SHIFT_NO = SHIFT.SHIFT_NO
+			   AND SHIFT.SHIFT_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND AI.ITEM_NO = S2.NO(+)
+			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SHIFT.DATATYPE = S3.NO(+)
+			   AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ACTIVITY = 1
+			
+		]]>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.SHIFT_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY T.BEGIN_DAY_OFFSET, T.FROM_TIME
+		]]>
+	</select>
+
+	<insert id="addShiftParameterInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO AR_SHIFT020 (
+					PK_NO,
+					SHIFT_NO,
+					ITEM_NO,
+					BEGIN_DAY_OFFSET,
+					FROM_TIME,
+					END_DAY_OFFSET,
+					TO_TIME,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY
+			)
+			VALUES(
+					AR_SHIFT020_SEQ.NEXTVAL ,
+					#NO:VARCHAR#,
+					#ITEM_NO:VARCHAR#,
+					#BEGIN_DAY_OFFSET:NUMERIC#,
+					TO_DATE('2011-07-01 ' || #FROM_TIME:VARCHAR#, 'YYYY-MM-DD HH24:MI'),
+					#END_DAY_OFFSET:NUMERIC#,
+					TO_DATE('2011-07-01 ' || #TO_TIME:VARCHAR#, 'YYYY-MM-DD HH24:MI'),
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1
+			)
+		]]>
+	</insert>
+
+	<delete id="deleteShiftParameterInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_SHIFT020 WHERE SHIFT_NO = #SHIFT_NO:NUMERIC#
+		]]>
+	</delete>
+
+	<select id="getShitfNewSeq" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT AR_SHIFT010_SEQ.NEXTVAL FROM DUAL 
+		]]>
+
+	</select>
+
+	<select id="getShiftCheckShiftId" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM AR_SHIFT010 T 
+			WHERE SHIFT_ID = #SHIFT_ID:VARCHAR#
+				AND CPNY_ID = #CPNY_ID:VARCHAR#
+				
+		]]>
+		<!--
+			<isNotEmpty prepend="AND" property="distinguishNo"> <![CDATA[
+			DEPT_DISTINGUISH_NO = #distinguishNo:VARCHAR# ]]> </isNotEmpty>
+		-->
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+				T.SHIFT_NO <> #SHIFT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<update id="updateShiftInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_SHIFT010 SET ACTIVITY = 0, UPDATED_BY = #PERSON_ID:VARCHAR#, 
+			UPDATE_DATE = SYSDATE WHERE SHIFT_NO = #NO:VARCHAR#
+			
+		]]>
+	</update>
+
+	<update id="updateShiftIDInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_SHIFT010 SET SHIFT_ID = #SHIFT_ID:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#,
+				DEDUCT_TIME = NVL(#DEDUCT_TIME:NUMERIC#,0),
+				OT_TIME_START =#OT_TIME_START:VARCHAR#,
+				OT_ALLOWANCE = NVL(#OT_ALLOWANCE:NUMERIC#,0),
+				shift_shortname = #SHIFT_WORK_TIOME:VARCHAR#
+			WHERE SHIFT_NO = #NO:VARCHAR#
+		]]>
+	</update>
+
+	<update id="updateShiftParameterInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_SHIFT020 SET ACTIVITY = 0, UPDATED_BY = #PERSON_ID:VARCHAR#, 
+			UPDATE_DATE = SYSDATE WHERE SHIFT_NO = #NO:VARCHAR#
+		]]>
+	</update>
+
+	<select id="getDeptDistinguishNo" parameterClass="linkMap"
+		resultClass="string">
+		<![CDATA[
+			SELECT 
+				HR_DEPARTMENT.DEPT_DISTINGUISH_NO
+			  FROM HR_EMPLOYEE,
+			  	   HR_DEPARTMENT
+			  WHERE HR_EMPLOYEE.PERSON_ID = #PERSON_ID:VARCHAR#
+			  	AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT.DEPTNO
+		]]>
+	</select>
+</sqlMap>

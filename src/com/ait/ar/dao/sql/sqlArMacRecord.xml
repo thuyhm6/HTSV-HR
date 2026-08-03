@@ -1,0 +1,1164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.macRecord">
+	<select id="getArHrmMasterExcelList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HM.CPNY_ID,
+			       HM.EMPID,
+			       HM.PERSON_ID,
+			       HM.LOCAL_NAME,
+			       HM.COMPANY_NAME,
+			       HM.DEPTNO,
+			       HM.DEPT_NAME,
+			       HM.STORE_CODE,
+			       HM.STORE_NAME,
+			       TO_CHAR(HM.RESIGN_DATE, 'YYYY-MM-DD') RESIGN_DATE,
+			       HM.EMP_OFFICE,
+			       HM.EMP_OFFICE_NAME,
+			       READ_FLAG,
+			       TO_CHAR(HM.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       NVL(HE.LOCAL_NAME, HM.CREATED_BY) CREATED_BY,
+			       TO_CHAR(HM.UPDATE_DATE, 'YYYY-MM-DD') UPDATE_DATE,
+			       NVL(EE.LOCAL_NAME, HM.UPDATED_BY) UPDATED_BY
+			  FROM AR_HRMASTER_STD HM, HR_EMPLOYEE HE, HR_EMPLOYEE EE
+			 WHERE 1 = 1
+			   AND HM.CREATED_BY = HE.PERSON_ID(+)
+			   AND HM.UPDATED_BY = EE.PERSON_ID(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HM.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+			        HM.PERSON_ID NOT IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					HM.PERSON_ID IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HM.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HM.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HM.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HM.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HM.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAS_SEND_DATE">
+			<![CDATA[
+				(TO_CHAR(HM.CREATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR# OR 
+					TO_CHAR(HM.UPDATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR#) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+				TO_CHAR(HM.RESIGN_DATE,'YYYY-MM-DD') = #RESIGN_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HM.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HM.CPNY_ID, HM.EMPID
+		]]>
+	</select>
+	
+	<select id="getArHrmMasterList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HM.CPNY_ID,
+			       HM.EMPID,
+			       HM.PERSON_ID,
+			       HM.LOCAL_NAME,
+			       HM.COMPANY_NAME,
+			       HM.DEPTNO,
+			       HM.DEPT_NAME,
+			       HM.STORE_CODE,
+			       HM.STORE_NAME,
+			       TO_CHAR(HM.RESIGN_DATE, 'YYYY-MM-DD') RESIGN_DATE,
+			       HM.EMP_OFFICE,
+			       HM.EMP_OFFICE_NAME,
+			       READ_FLAG,
+			       TO_CHAR(HM.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       NVL(HE.LOCAL_NAME, HM.CREATED_BY) CREATED_BY,
+			       TO_CHAR(HM.UPDATE_DATE, 'YYYY-MM-DD') UPDATE_DATE,
+			       NVL(EE.LOCAL_NAME, HM.UPDATED_BY) UPDATED_BY
+			  FROM AR_HRMASTER_STD HM, HR_EMPLOYEE HE, HR_EMPLOYEE EE
+			 WHERE 1 = 1
+			   AND HM.CREATED_BY = HE.PERSON_ID(+)
+			   AND HM.UPDATED_BY = EE.PERSON_ID(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HM.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+			        HM.PERSON_ID NOT IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					HM.PERSON_ID IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HM.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HM.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HM.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HM.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HM.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAS_SEND_DATE">
+			<![CDATA[
+				(TO_CHAR(HM.CREATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR# OR 
+					TO_CHAR(HM.UPDATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR#) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+				TO_CHAR(HM.RESIGN_DATE,'YYYY-MM-DD') = #RESIGN_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HM.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HM.CPNY_ID, HM.EMPID
+		]]>
+	</select>
+	
+	<select id="getArHrmMasterListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_HRMASTER_STD HM, HR_EMPLOYEE HE, HR_EMPLOYEE EE
+			 WHERE 1 = 1
+			   AND HM.CREATED_BY = HE.PERSON_ID(+)
+			   AND HM.UPDATED_BY = EE.PERSON_ID(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HM.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+			        HM.PERSON_ID NOT IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					HM.PERSON_ID IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HM.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HM.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HM.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HM.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HM.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAS_SEND_DATE">
+			<![CDATA[
+				(TO_CHAR(HM.CREATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR# OR 
+					TO_CHAR(HM.UPDATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR#) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+				TO_CHAR(HM.RESIGN_DATE,'YYYY-MM-DD') = #RESIGN_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HM.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getArHrmMasterPreList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HE.CPNY_ID,
+			       HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       get_global_name(HC.CPNY_NO, 'zh') COMPANY_NAME,
+			       HE.DEPTNO,
+			       get_dept_name(HE.DEPTNO, 'zh') DEPT_NAME,
+			       HD.DEPT_DISTINGUISH_NO STORE_CODE,
+			       get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') STORE_NAME,
+			       TO_DATE(TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD'), 'YYYY-MM-DD') RESIGN_DATE,
+			       HE.EMP_OFFICE,
+			       get_global_name(HE.EMP_OFFICE, 'zh') EMP_OFFICE_NAME
+			  FROM HR_EMPLOYEE HE, HR_DEPARTMENT HD, HR_COMPANY HC
+			 WHERE HE.CPNY_ID = HC.CPNY_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+			   AND HE.CPNY_ID = 'C13'
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+					(TO_DATE(TO_CHAR(HE.CREATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') >=
+			        (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD'))
+			           FROM AR_HRMASTER_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			         TO_DATE(TO_CHAR(HE.UPDATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') >=
+			        (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD'))
+			           FROM AR_HRMASTER_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			        HE.PERSON_ID NOT IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#))
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					HE.PERSON_ID IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAS_SEND_DATE">
+			<![CDATA[
+				(TO_CHAR(HE.CREATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR# OR 
+					TO_CHAR(HE.UPDATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR#) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+				TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD') = #RESIGN_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.CPNY_ID, HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getArHrmMasterListPreCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE HE, HR_DEPARTMENT HD, HR_COMPANY HC
+			 WHERE HE.CPNY_ID = HC.CPNY_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+			   AND HE.CPNY_ID = 'C13'
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+					(TO_DATE(TO_CHAR(HE.CREATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') >=
+			        (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD'))
+			           FROM AR_HRMASTER_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			         TO_DATE(TO_CHAR(HE.UPDATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') >=
+			        (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD'))
+			           FROM AR_HRMASTER_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			        HE.PERSON_ID NOT IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#))
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					HE.PERSON_ID IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' 
+		 		            )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAS_SEND_DATE">
+			<![CDATA[
+				(TO_CHAR(HE.CREATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR# OR 
+					TO_CHAR(HE.UPDATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR#) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+				TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD') = #RESIGN_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getArHrmMasterPreExcelList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HE.CPNY_ID,
+			       HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       get_global_name(HC.CPNY_NO, 'zh') COMPANY_NAME,
+			       HE.DEPTNO,
+			       get_dept_name(HE.DEPTNO, 'zh') DEPT_NAME,
+			       HD.PARENT_DEPT_NO,
+			       HD.DEPT_LEVEL,
+			       HD.DEPT_DISTINGUISH_NO STORE_CODE,
+			       get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') STORE_NAME,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') RESIGN_DATE,
+			       HE.EMP_OFFICE,
+			       get_global_name(HE.EMP_OFFICE, 'zh') EMP_OFFICE_NAME,
+			       #CREATED_BY:VARCHAR# CREATED_BY
+			  FROM HR_EMPLOYEE HE, HR_DEPARTMENT HD, HR_COMPANY HC
+			 WHERE HE.CPNY_ID = HC.CPNY_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+					(TO_DATE(TO_CHAR(HE.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') >=
+			        (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS'))
+			           FROM AR_HRMASTER_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			         TO_DATE(TO_CHAR(HE.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') >=
+			        (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS'))
+			           FROM AR_HRMASTER_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			        HE.PERSON_ID NOT IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#))
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					HE.PERSON_ID IN
+			        (SELECT PERSON_ID FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAS_SEND_DATE">
+			<![CDATA[
+				(TO_CHAR(HE.CREATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR# OR 
+					TO_CHAR(HE.UPDATE_DATE, 'YYYY-MM-DD')= #MAS_SEND_DATE:VARCHAR#) 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESIGN_DATE">
+			<![CDATA[
+				TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD') = #RESIGN_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.CPNY_ID, HE.EMPID
+		]]>
+	</select>
+	
+	<delete id="DeleteHrmMaster" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM AR_HRMASTER_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR# AND PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<insert id="InsertHrmMaster" parameterClass="linkMap">
+		<![CDATA[
+		 INSERT INTO AR_HRMASTER_STD(
+					CPNY_ID,
+					EMPID,
+					PERSON_ID,
+					LOCAL_NAME,
+					COMPANY_NAME,
+					DEPTNO,
+					DEPT_NAME,
+					PARENT_DEPT_NO,
+					DEPT_LEVEL,
+					STORE_CODE,
+					STORE_NAME,
+					RESIGN_DATE,
+					EMP_OFFICE,
+					EMP_OFFICE_NAME,
+					READ_FLAG,
+					CREATE_DATE,
+					CREATED_BY
+			)VALUES(
+				 #CPNY_ID:VARCHAR#,
+				 #EMPID:VARCHAR#,
+				 #PERSON_ID:NUMERIC#,
+				 #LOCAL_NAME:VARCHAR#,
+				 #COMPANY_NAME:VARCHAR#,
+				 #DEPTNO:VARCHAR#,
+				 #DEPT_NAME:VARCHAR#,
+				 #PARENT_DEPT_NO:VARCHAR#,
+				 #DEPT_LEVEL:VARCHAR#,
+				 #STORE_CODE:VARCHAR#,
+				 #STORE_NAME:VARCHAR#,
+				 NVL(TO_DATE(#RESIGN_DATE:VARCHAR#,'YYYY-MM-DD'),''),
+				 #EMP_OFFICE:VARCHAR#,
+				 #EMP_OFFICE_NAME:VARCHAR#,
+				 0,
+				 SYSDATE,
+				 #CREATED_BY:VARCHAR#
+			)
+		]]>
+	</insert>
+	
+	<select id="getArDeptMasterPreExcelList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT CPNY_ID,
+			       COMPANY_NAME,
+			       DEPTNO,
+			       DEPT_NAME,
+			       DISTINGUISH_CODE,
+			       DISTINGUISH_NAME,
+			       PARENT_DEPT_NO,
+			       PARENT_DEPT_NAME,
+			       DEPT_LEVEL
+			  FROM AR_DEPARTMENT_STD_VIEW SS
+			 WHERE 1 = 1
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SS.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<isEqual property="MAS_SEND_TYPE" compareValue="N">
+				<![CDATA[
+					(TO_DATE(TO_CHAR(SS.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS'),
+			                'YYYY-MM-DD HH24:MI:SS') >=
+			       (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS'),
+			                            'YYYY-MM-DD HH24:MI:SS'))
+			           FROM AR_DEPARTMENT_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			       TO_DATE(TO_CHAR(SS.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS'),
+			                'YYYY-MM-DD HH24:MI:SS') >=
+			       (SELECT MAX(TO_DATE(TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS'),
+			                            'YYYY-MM-DD HH24:MI:SS'))
+			           FROM AR_DEPARTMENT_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#) OR
+			       SS.DEPTNO NOT IN
+			       (SELECT DEPTNO
+			           FROM AR_DEPARTMENT_STD
+			          WHERE CPNY_ID = #CPNY_ID:VARCHAR#))
+				]]>
+			</isEqual>
+			<isEqual property="MAS_SEND_TYPE" compareValue="Y">
+				<![CDATA[
+					SS.DEPTNO IN
+			        (SELECT DEPTNO FROM AR_DEPARTMENT_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR#)
+				]]>
+			</isEqual>
+		</isNotEmpty>
+	</select>	  	
+	
+	<delete id="DeleteDeptMaster" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM AR_DEPARTMENT_STD WHERE CPNY_ID = #CPNY_ID:VARCHAR# AND DEPTNO = #DEPTNO:VARCHAR#
+		]]>
+	</delete>
+	
+	<insert id="InsertDeptMaster" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO AR_DEPARTMENT_STD(
+		          CPNY_ID,
+		          COMPANY_NAME,
+		          DEPTNO,
+		          DEPT_NAME,
+		          DISTINGUISH_CODE,
+		          DISTINGUISH_NAME,
+		          PARENT_DEPT_NO,
+		          PARENT_DEPT_NAME,
+		          DEPT_LEVEL,
+		          READ_FLAG,
+		          CREATE_DATE,
+		          CREATED_BY
+		      )VALUES(
+		         #CPNY_ID:VARCHAR#,
+		         #COMPANY_NAME:VARCHAR#,
+		         #DEPTNO:VARCHAR#,
+		         #DEPT_NAME:VARCHAR#,
+		         #DISTINGUISH_CODE:VARCHAR#,
+		         #DISTINGUISH_NAME:VARCHAR#,
+		         #PARENT_DEPT_NO:VARCHAR#,
+		         #PARENT_DEPT_NAME:VARCHAR#,
+		         #DEPT_LEVEL:VARCHAR#,
+				 0,
+				 SYSDATE,
+				 #CREATED_BY:VARCHAR#
+			)		 
+		]]>
+	</insert>
+	
+	<insert id="addArMacLogInfo" parameterClass="linkMap">
+		<![CDATA[
+		 	INSERT INTO SY_MAC_RECORD_LOG(
+		          LOG_NO,
+		          CPNY_ID,
+		          IF_TYPE,
+		          SEND_TYPE,
+		          SEND_RESULT,
+		          ACTIVITY,
+		          ORDERNO,
+		          CREATE_DATE,
+		          CREATED_BY
+		      )VALUES(
+		         (select max(LOG_NO)+1 from SY_MAC_RECORD_LOG),
+		         #CPNY_ID:NUMERIC#,
+		         #IF_TYPE:VARCHAR#,
+		         #SEND_TYPE:VARCHAR#,
+		         #SEND_RESULT:VARCHAR#,
+		         1,
+		         (select max(LOG_NO)+1 from SY_MAC_RECORD_LOG),
+		         SYSDATE,
+		         #CREATED_BY:VARCHAR#
+		      )
+		]]>
+	</insert>
+	
+	<select id="getArCardMacNoList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DISTINCT (INTERFACE_RECORD_ID) INTERFACE_RECORD_ID
+			  FROM AR_MAC_RECORDS_STD
+			 WHERE INTERFACE_RECORD_ID IS NOT NULL
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY INTERFACE_RECORD_ID
+		]]>
+	</select>
+	
+	<select id="getArCardRecordList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT AM.AR_MAC_DATA_NO,
+			       HH.CPNY_ID,
+			       get_global_name(HC.CPNY_NO, 'zh') COMPANY_NAME,
+			       HH.EMPID,
+			       HH.LOCAL_NAME,
+			       HH.DEPTNO,
+			       get_dept_name(HH.DEPTNO, 'zh') DEPT_NAME,
+			       HD.DEPT_DISTINGUISH_NO STORE_CODE,
+			       get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') STORE_NAME,
+			       HH.PERSON_ID,
+			       DECODE(AM.DOOR_TYPE,
+			              '0',
+			              'PASS',
+			              '1',
+			              'IN',
+			              '2',
+			              'OUT',
+			              AM.DOOR_TYPE) DOOR_TYPE,
+			       AM.R_DATE,
+			       AM.R_TIME,
+			       AM.INTERFACE_RECORD_ID,
+			       AM.CARD_NO,	       
+			       AM.SEND_STATUS,
+			       TO_CHAR(AM.SEND_DATE, 'YYYY-MM-DD HH24:MI:SS') SEND_DATE,
+			       HE.LOCAL_NAME SEND_BY,
+			       TO_CHAR(AM.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') UPDATE_DATE,
+			       EE.LOCAL_NAME UPDATED_BY
+			  FROM AR_MAC_RECORDS_STD AM,
+			       HR_COMPANY         HC,
+			       HR_EMPLOYEE HE,
+			       HR_EMPLOYEE EE,
+			       (SELECT EMPID,
+			               LOCAL_NAME,
+			               PERSON_ID,
+			               to_number(substr(PERSON_ID, 3, 6)) PERSONID,
+			               DEPTNO,
+			               CPNY_ID
+			          FROM HR_EMPLOYEE
+			         WHERE 1 = 1
+			]]>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+					CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+			         ) HH,
+			       HR_DEPARTMENT HD
+			 WHERE AM.PERSON_ID = HH.PERSONID
+			   AND HH.CPNY_ID = HC.CPNY_ID
+			   AND HH.DEPTNO = HD.DEPTNO(+)
+			   AND AM.SEND_BY = HE.PERSON_ID(+)
+			   AND AM.UPDATED_BY = EE.PERSON_ID(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HH.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HH.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HH.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HH.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HH.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="R_DATE">
+			<![CDATA[
+				AM.R_DATE = #R_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATE_TYPE">
+			<isNotEmpty property="SELECT_DATE">
+				<isEqual property="DATE_TYPE" compareValue="SEND_DATE">
+					<![CDATA[
+						TO_CHAR(AM.SEND_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+				<isEqual property="DATE_TYPE" compareValue="CREATE_DATE">
+					<![CDATA[
+						TO_CHAR(AM.CREATE_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+				<isEqual property="DATE_TYPE" compareValue="UPDATE_DATE">
+					<![CDATA[
+						TO_CHAR(AM.UPDATE_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="READ_TYPE">
+			<isEqual property="READ_TYPE" compareValue="N">
+				<![CDATA[
+					AM.SEND_STATUS IS NULL
+				]]>
+			</isEqual>
+			<isEqual property="READ_TYPE" compareValue="Y">
+				<![CDATA[
+					AM.SEND_STATUS = 'S'
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+				AM.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_MAC_NO">
+			<![CDATA[
+				AM.INTERFACE_RECORD_ID = #AR_MAC_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY AM.R_DATE DESC, AM.R_TIME DESC
+		]]>
+	</select>
+	
+	<select id="getArCardRecordListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_MAC_RECORDS_STD AM,
+			       HR_COMPANY         HC,
+			       HR_EMPLOYEE HE,
+			       HR_EMPLOYEE EE,
+			       (SELECT EMPID,
+			               LOCAL_NAME,
+			               PERSON_ID,
+			               to_number(substr(PERSON_ID, 3, 6)) PERSONID,
+			               DEPTNO,
+			               CPNY_ID
+			          FROM HR_EMPLOYEE
+			         WHERE 1 = 1
+			]]>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+					CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+			         ) HH,
+			       HR_DEPARTMENT HD
+			 WHERE AM.PERSON_ID = HH.PERSONID
+			   AND HH.CPNY_ID = HC.CPNY_ID
+			   AND HH.DEPTNO = HD.DEPTNO(+)
+			   AND AM.SEND_BY = HE.PERSON_ID(+)
+			   AND AM.UPDATED_BY = EE.PERSON_ID(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HH.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HH.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HH.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HH.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HH.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="R_DATE">
+			<![CDATA[
+				AM.R_DATE = #R_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATE_TYPE">
+			<isNotEmpty property="SELECT_DATE">
+				<isEqual property="DATE_TYPE" compareValue="SEND_DATE">
+					<![CDATA[
+						TO_CHAR(AM.SEND_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+				<isEqual property="DATE_TYPE" compareValue="CREATE_DATE">
+					<![CDATA[
+						TO_CHAR(AM.CREATE_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+				<isEqual property="DATE_TYPE" compareValue="UPDATE_DATE">
+					<![CDATA[
+						TO_CHAR(AM.UPDATE_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="READ_TYPE">
+			<isEqual property="READ_TYPE" compareValue="N">
+				<![CDATA[
+					AM.SEND_STATUS IS NULL
+				]]>
+			</isEqual>
+			<isEqual property="READ_TYPE" compareValue="Y">
+				<![CDATA[
+					AM.SEND_STATUS = 'S'
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+				AM.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_MAC_NO">
+			<![CDATA[
+				AM.INTERFACE_RECORD_ID = #AR_MAC_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getArCardRecordExcelList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT AM.AR_MAC_DATA_NO,
+			       HH.CPNY_ID,
+			       get_global_name(HC.CPNY_NO, 'zh') COMPANY_NAME,
+			       HH.EMPID,
+			       HH.LOCAL_NAME,
+			       HH.DEPTNO,
+			       get_dept_name(HH.DEPTNO, 'zh') DEPT_NAME,
+			       HD.DEPT_DISTINGUISH_NO STORE_CODE,
+			       get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') STORE_NAME,
+			       HH.PERSON_ID,
+			       DECODE(AM.DOOR_TYPE,
+			              '0',
+			              'IN',
+			              '1',
+			              'OUT',
+			              '2',
+			              'PASS',
+			              AM.DOOR_TYPE) DOOR_TYPE,
+			       AM.R_DATE,
+			       AM.R_TIME,
+			       AM.INTERFACE_RECORD_ID,
+			       AM.CARD_NO,
+			]]>
+			<isNotEmpty prepend="" property="SEND_MAKED">
+				<![CDATA[
+					   #SEND_MAKED:VARCHAR# SEND_MAKED,
+				]]>
+			</isNotEmpty>
+			<![CDATA[			       
+			       AM.SEND_STATUS,
+			       TO_CHAR(AM.SEND_DATE, 'YYYY-MM-DD HH24:MI:SS') SEND_DATE,
+			       HE.LOCAL_NAME SEND_BY,
+			       TO_CHAR(AM.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') UPDATE_DATE,
+			       EE.LOCAL_NAME UPDATED_BY
+			  FROM AR_MAC_RECORDS_STD AM,
+			       HR_COMPANY         HC,
+			       HR_EMPLOYEE HE,
+			       HR_EMPLOYEE EE,
+			       (SELECT EMPID,
+			               LOCAL_NAME,
+			               PERSON_ID,
+			               to_number(substr(PERSON_ID, 3, 6)) PERSONID,
+			               DEPTNO,
+			               CPNY_ID
+			          FROM HR_EMPLOYEE
+			         WHERE 1 = 1
+			]]>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+					CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+			         ) HH,
+			       HR_DEPARTMENT HD
+			 WHERE AM.PERSON_ID = HH.PERSONID
+			   AND HH.CPNY_ID = HC.CPNY_ID
+			   AND HH.DEPTNO = HD.DEPTNO(+)
+			   AND AM.SEND_BY = HE.PERSON_ID(+)
+			   AND AM.UPDATED_BY = EE.PERSON_ID(+)
+	  	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HH.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HH.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HH.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HH.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HH.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="R_DATE">
+			<![CDATA[
+				AM.R_DATE = #R_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATE_TYPE">
+			<isNotEmpty property="SELECT_DATE">
+				<isEqual property="DATE_TYPE" compareValue="SEND_DATE">
+					<![CDATA[
+						TO_CHAR(AM.SEND_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+				<isEqual property="DATE_TYPE" compareValue="CREATE_DATE">
+					<![CDATA[
+						TO_CHAR(AM.CREATE_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+				<isEqual property="DATE_TYPE" compareValue="UPDATE_DATE">
+					<![CDATA[
+						TO_CHAR(AM.UPDATE_DATE, 'YYYY-MM-DD') = #SELECT_DATE:VARCHAR#
+					]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="READ_TYPE">
+			<isEqual property="READ_TYPE" compareValue="N">
+				<![CDATA[
+					AM.SEND_STATUS IS NULL
+				]]>
+			</isEqual>
+			<isEqual property="READ_TYPE" compareValue="Y">
+				<![CDATA[
+					AM.SEND_STATUS = 'S'
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+				AM.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_MAC_NO">
+			<![CDATA[
+				AM.INTERFACE_RECORD_ID = #AR_MAC_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY AM.R_DATE DESC, AM.R_TIME DESC
+		]]>
+	</select>
+	
+	<delete id="DeleteCardRecord" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM AR_MAC_RECORDS_HTSV 
+			 WHERE PERSON_ID = #PERSON_ID:VARCHAR# 
+			   AND DOOR_TYPE = #DOOR_TYPE# 
+			   AND TO_CHAR(R_TIME,'YYYY-MM-DD') = #R_DATE:VARCHAR#
+		]]>
+	</delete>
+	
+	<update id="UpdateSendFlag" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_MAC_RECORDS_STD 
+			   SET SEND_STATUS = 'S',
+			       SEND_DATE = SYSDATE,
+			       SEND_BY = #SEND_MAKED:VARCHAR#
+			 WHERE AR_MAC_DATA_NO = #AR_MAC_DATA_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<insert id="InsertCardRecord" parameterClass="linkMap">
+		<![CDATA[
+		 INSERT INTO AR_MAC_RECORDS_HTSV(
+				   RECORD_NO,
+			       CARD_NO,
+			       CPNY_ID,
+			       PERSON_ID,
+			       R_TIME,
+			       DOOR_TYPE,
+			       INSERT_BY,
+			       INSERT_TIME,
+			       INTERFACE_RECORD_ID,
+			       ACTIVITY,
+			       CREATED_BY,
+			       CREATE_DATE
+			)VALUES(
+				 (select max(nvl(RECORD_NO,0))+1 from AR_MAC_RECORDS_HTSV ),
+				 #CARD_NO:VARCHAR#,
+				 #CPNY_ID:VARCHAR#,
+				 #PERSON_ID:VARCHAR#,
+				 TO_DATE(#R_DATE:VARCHAR# || ' ' || #R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+				 #DOOR_TYPE:VARCHAR#,
+				 #SEND_MAKED:VARCHAR#,
+				 SYSDATE,
+				 #INTERFACE_RECORD_ID:VARCHAR#,
+				 1,
+				 #SEND_MAKED:VARCHAR#,
+				 SYSDATE
+			)
+	]]>
+	</insert>
+	
+	<select id="getArFingerPrintList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT EMPID,
+			       PERSON_ID,
+			       LOCAL_NAME,
+			       TO_NUMBER(SUBSTR(PERSON_ID, 3, 6)) FINGER_ID,
+			       get_global_name(STATUS_CODE, 'zh') STATUS,
+			       get_global_name(EMP_OFFICE, 'zh') EMP_OFFICE,
+			       get_dept_name(DEPTNO, 'zh') DEPARTMENT,
+			       get_dept_distinguish_name(DEPTNO, 'zh') DISTINGUISH_NAME
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1 = 1
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINGER_ID">
+			<![CDATA[
+				TO_NUMBER(SUBSTR(PERSON_ID, 3, 6)) LIKE '%' ||  #FINGER_ID:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY get_dept_distinguish_name(DEPTNO, 'zh'),
+			          get_dept_name(DEPTNO, 'zh'),
+			          TO_NUMBER(SUBSTR(PERSON_ID, 3, 6))
+		]]>
+	</select>
+	
+	<select id="getArFingerPrintListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1 = 1
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINGER_ID">
+			<![CDATA[
+				TO_NUMBER(SUBSTR(PERSON_ID, 3, 6)) LIKE '%' ||  #FINGER_ID:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getArFingerPrintExcelList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT EMPID,
+			       PERSON_ID,
+			       LOCAL_NAME,
+			       get_global_name(STATUS_CODE, 'zh') STATUS,
+			       TO_NUMBER(SUBSTR(PERSON_ID, 3, 6)) FINGER_ID,
+			       get_dept_name(DEPTNO, 'zh') DEPARTMENT,
+			       get_dept_distinguish_name(DEPTNO, 'zh') DISTINGUISH_NAME
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1 = 1
+	  	]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO
+                       FROM HR_DEPARTMENT HD
+                      START WITH DEPTNO = #DEPT_NO:VARCHAR#
+                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINGER_ID">
+			<![CDATA[
+				TO_NUMBER(SUBSTR(PERSON_ID, 3, 6)) LIKE '%' ||  #FINGER_ID:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY get_dept_distinguish_name(DEPTNO, 'zh'),
+			         get_dept_name(DEPTNO, 'zh'),
+			         TO_NUMBER(SUBSTR(PERSON_ID, 3, 6))
+		]]>
+	</select>
+</sqlMap>

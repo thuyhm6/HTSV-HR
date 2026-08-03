@@ -1,0 +1,2080 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.pa">
+	
+    <select id="getPaTranserList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  SELECT HE.EMPID,
+			         HE.LOCAL_NAME,
+			         HE.PERSON_ID,
+			         HPI.BANK_ID,
+			         GG.CONTENT BANK,
+			         HPI.CARD_NO,
+			         PA.PA_MONTH,
+			         DECODE(PA.CPNY_ID,'C02',NVL(PA.NET_PAY_WAGE,0),NVL(PA.ACTUAL_RELEASE_SALARY,0)) ACTUAL_RELEASE_SALARY
+			    FROM HR_EMPLOYEE    HE,
+			         HR_EMP_PA_INFO HPI,
+			         PA_SUMMARY_HTSV PA,
+			         SY_GLOBAL_NAME GG
+			   WHERE HE.PERSON_ID = HPI.PERSON_ID(+)
+			     AND HE.PERSON_ID = PA.PERSON_ID(+)
+			     AND HPI.BANK_ID = GG.NO(+)
+			     AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+        <isNotEmpty prepend="AND" property="GIVE_DATE">
+            <![CDATA[
+                PA.GIVE_DATE = TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+            ]]>
+        </isNotEmpty>         
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+	      ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getPaTranserTwoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  SELECT HE.EMPID,
+			         HE.LOCAL_NAME,
+			         HE.PERSON_ID,
+			         HPI.BANK_ID,
+			         GG.CONTENT BANK,
+			         HPI.CARD_NO,
+			         PA.PA_MONTH,
+			         PA.NET_PAY_WAGE ACTUAL_RELEASE_SALARY
+			    FROM HR_EMPLOYEE    HE,
+			         HR_EMP_PA_INFO HPI,
+			         PA_SUMMARY_HTSV PA,
+			         SY_GLOBAL_NAME GG
+			   WHERE HE.PERSON_ID = HPI.PERSON_ID(+)
+			     AND HE.PERSON_ID = PA.PERSON_ID(+)
+			     AND HPI.BANK_ID = GG.NO(+)
+			     AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+	      ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getPaTranserListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				  SELECT HE.EMPID,
+				         HE.LOCAL_NAME,
+				         HE.PERSON_ID
+				    FROM HR_EMPLOYEE    HE,
+				         HR_EMP_PA_INFO HPI,
+				         PA_SUMMARY_HTSV PA,
+				         SY_GLOBAL_NAME GG
+				   WHERE HE.PERSON_ID = HPI.PERSON_ID(+)
+				     AND HE.PERSON_ID = PA.PERSON_ID(+)
+				     AND HPI.BANK_ID = GG.NO(+)
+				     AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+			<isNotEmpty prepend="AND" property="GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+			</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			)
+		]]>
+	</select>
+	
+	<select id="getSapDepartList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DD.DEPTNO,
+			       HDN.CONTENT DEPARTMENT,
+			       DD.DEPT_LEVEL,
+			       DD.PARENT_DEPT_NO,
+			       DD.DEPTORDER
+			  FROM (SELECT *
+			          FROM HR_DEPT_TREE_V HD
+			         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO) DD,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE DD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				DD.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				DD.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY DD.DEPTORDER
+		]]>
+	</select>
+	
+	<select id="getSapPaItemList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SAP.CPNY_ID, SAP.FIELD_ID, PI.ITEM_NO, GG.CONTENT ITEM
+			  FROM PA_DATA_TO_SAP SAP, PA_ALL_ITEM_V PI, SY_GLOBAL_NAME GG
+			 WHERE SAP.FIELD_ID = PI.ITEM_ID(+)
+			   AND PI.ITEM_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SAP.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PI.ITEM_TYPE, PI.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getPaHrmCountByDept" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(*) PERSONCNT,
+			       MAX(PA.DEPTNO) DEPTNO,
+			       GET_DEPT_NAME(MAX(PA.DEPTNO), #interLanguage:VARCHAR#) DEPARTMENT
+			  FROM PA_SUMMARY_HTSV PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				PA.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaHrmCountByDeptAndEmptype" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(*) PERSONCNT,
+			       MAX(PA.EMP_TYPE_CODE) EMP_TYPE_CODE,
+			       GET_GLOBAL_NAME(MAX(PA.EMP_TYPE_CODE), #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+			       MAX(PA.DEPTNO) DEPTNO,
+			       GET_DEPT_NAME(MAX(PA.DEPTNO), #interLanguage:VARCHAR#) DEPARTMENT
+			  FROM PA_SUMMARY_HTSV PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				PA.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			GROUP BY PA.EMP_TYPE_CODE
+			ORDER BY PA.EMP_TYPE_CODE
+		]]>
+	</select>
+	
+	<select id="getPaitemSumInfoByDept" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SUM($ITEM_ID$) ITEM_VALUE,
+			       MAX(PA.DEPTNO) DEPTNO,
+			       GET_DEPT_NAME(MAX(PA.DEPTNO), #interLanguage:VARCHAR#) DEPARTMENT
+			  FROM PA_SUMMARY_HTSV PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				PA.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaEmpTypeByDeptno" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM (SELECT DISTINCT (PA.EMP_TYPE_CODE) EMP_TYPE_CODE
+			          FROM PA_SUMMARY_HTSV PA
+			         WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				PA.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[
+			) DD
+		]]>
+	</select>
+	
+	<select id="getOfficeProveList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  SELECT HE.EMPID,
+			         HE.LOCAL_NAME,
+			         HE.PERSON_ID,
+			         PA.PA_MONTH,
+			         NVL(NVL(HPP.IDCARD_NO, HPP.PASSPORT_NO), HPP.FOREIGNER_IDCARD_NO) IDCARD_NO,
+	                 get_global_name(HE.POSITION_NO,#interLanguage:VARCHAR#) POSITION,
+	                 get_global_name(HE.POST_NO,#interLanguage:VARCHAR#) POSTNO,
+	                 TO_CHAR(HE.DATE_STARTED,'YYYY-MM-DD') DATE_STARTED,
+	                 TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD') DATE_LEFT
+			    FROM HR_EMPLOYEE    HE,
+			         HR_PERSONAL_INFO HPP, 
+			         PA_SUMMARY_HTSV PA
+			   WHERE PA.PERSON_ID = HE.PERSON_ID(+)
+			     AND HE.PERSON_ID = HPP.PERSON_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+	      ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getOfficeProveCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				SELECT HE.EMPID,
+				         HE.LOCAL_NAME,
+				         HE.PERSON_ID,
+				         PA.PA_MONTH,
+				         NVL(NVL(HPP.IDCARD_NO, HPP.PASSPORT_NO), HPP.FOREIGNER_IDCARD_NO) IDCARD_NO,
+		                 get_global_name(HE.POSITION_NO,#interLanguage:VARCHAR#) POSITION,
+		                 TO_CHAR(HE.DATE_STARTED,'YYYY-MM-DD') DATE_STARTED,
+		                 TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD') DATE_LEFT
+				    FROM HR_EMPLOYEE    HE,
+				         HR_PERSONAL_INFO HPP, 
+				         PA_SUMMARY_HTSV PA
+				   WHERE PA.PERSON_ID = HE.PERSON_ID(+)
+				     AND HE.PERSON_ID = HPP.PERSON_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = TO_DATE(#GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+	</select>
+	
+	<select id="getPaInfoByItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT PA.CPNY_ID,
+			       get_global_name(HC.CPNY_NO, 'zh') COMPANY_NAME,
+			       PA.PA_MONTH,
+			       TO_CHAR(PA.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE,
+			       PA.PA_MONTH START_MONTH,
+			       PA.PA_MONTH END_MONTH,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       get_dept_name(PA.DEPTNO,'zh') DEPT_NAME,
+			       get_pa_item_name(#ITEM_NO:VARCHAR#, PA.CPNY_ID) ITEM_NAME,
+			       get_pa_actual_release_salary(PA.PERSON_ID,
+			                                    PA.PA_MONTH,
+			                                    #ITEM_NO:VARCHAR#,
+			                                    PA.CPNY_ID) SALARY,
+			       '' REMARK
+			  FROM PA_SUMMARY_HTSV PA, HR_COMPANY HC
+			 WHERE PA.CPNY_ID = HC.CPNY_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GIVE_DATE">
+			<![CDATA[
+				TO_CHAR(PA.GIVE_DATE,'YYYY-MM-DD') = #GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(PA.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR PA.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					PA.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					PA.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+	    	ORDER BY PA.EMPID
+		]]>
+	</select>
+	
+	<select id="getPaInfoByItemListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				SELECT PA.CPNY_ID
+				  FROM PA_SUMMARY_HTSV PA, HR_COMPANY HC
+				 WHERE PA.CPNY_ID = HC.CPNY_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GIVE_DATE">
+			<![CDATA[
+				TO_CHAR(PA.GIVE_DATE,'YYYY-MM-DD') = #GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(PA.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR PA.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					PA.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					PA.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+	</select>
+	
+	
+	<select id="getPaInfoByYearList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT get_global_name(HC.CPNY_NO, 'zh') COMPANY_NAME,
+			       #PA_YEAR:VARCHAR# PA_YEAR,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO,'zh') DEPT_NAME,
+			       get_global_name(HE.POSITION_NO, 'zh') POSITION_NAME,
+			       get_global_name(HE.POST_NO, 'zh') POST_NAME,
+			       get_global_name(HE.POST_GRADE_NO, 'zh') POST_GRADE_NAME,
+			       get_global_name(HE.DUTY_NO, 'zh') DUTY_NAME,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '01'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M01_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '02'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M02_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '03'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M03_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '04'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M04_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '05'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M05_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '06'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M06_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '07'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M07_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '08'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M08_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '09'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M09_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '10'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M10_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '11'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M11_SALARY,
+			       get_pa_actual_release_salary(HE.PERSON_ID,
+			                                    (#PA_YEAR:VARCHAR# || '12'),
+			                                    'ACTUAL_RELEASE_SALARY',
+			                                    HE.CPNY_ID) M12_SALARY,
+			       GET_PA_SALARY_SUM_YEAR(HE.PERSON_ID,#PA_YEAR:VARCHAR#,'ACTUAL_RELEASE_SALARY',
+			       	                     HE.CPNY_ID) SUM_SALARY
+			  FROM HR_EMPLOYEE HE, HR_COMPANY HC
+			 WHERE HE.CPNY_ID = HC.CPNY_ID
+			       
+		]]>
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+				  HE.Person_Id in (select distinct PERSON_ID from $TABLE$ S WHERE SUBSTR(S.PA_MONTH,0,4)=#PA_YEAR:VARCHAR# )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPT_NO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<![CDATA[
+	    	ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getPaInfoByYearListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				SELECT HE.EMPID
+			  FROM HR_EMPLOYEE HE, HR_COMPANY HC
+			 WHERE HE.CPNY_ID = HC.CPNY_ID
+		]]>
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+				  HE.Person_Id in (select distinct PERSON_ID from $TABLE$ S WHERE SUBSTR(S.PA_MONTH,0,4)=#PA_YEAR:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPT_NO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+	</select>
+	<select  id="getPaSummaryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+				SELECT  
+				  DEPTNO,
+				  GET_DEPT_NAME(DEPTNO,'zh') DEPT_NAME,
+				  TO_CHAR(TO_DATE(PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') PAY_MONTH,
+				  NVL(COUNT(DEPTNO),0) PERSON_NUM,
+				  NVL(SUM(P_ENDOWMENT_SUB),0) P_ENDOWMENT_SUB,
+				  NVL(SUM(GROSS_PAY),0) GROSS_PAY,
+				  NVL(SUM(OT_FEE_TOTAL),0) OT_FEE_TOTAL,
+				  NVL(SUM(CPF_PER),0) CPF_PER,
+				  NVL(SUM(NET_PAY),0) NET_PAY,
+				  NVL(SUM(ENDOWMENT_PER),0) ENDOWMENT_PER,
+				  NVL(SUM(UNEMPLOYMENT_PER),0) UNEMPLOYMENT_PER,
+				  NVL(SUM(MEDICARE_PER),0) MEDICARE_PER,
+				  NVL(SUM(PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+				  NVL(SUM(ENDOWMENT_COR),0) ENDOWMENT_COR,
+				  NVL(SUM(MEDICARE_COR),0) MEDICARE_COR,
+				  NVL(SUM(UNEMPLOYMENT_COR),0) UNEMPLOYMENT_COR,
+				  NVL(SUM(ACCIDENT_COR),0) ACCIDENT_COR,
+				  NVL(SUM(MATERNITY_COR),0) MATERNITY_COR,
+				  NVL(SUM(INSURANCE_TOTAL_COR),0) INSURANCE_TOTAL_COR
+				FROM PA_SUMMARY_HAE 
+				WHERE TO_CHAR(TO_DATE(PAY_DATE,'YYYY.MM.DD'),'YYYY/MM') = #MONTH#
+				AND PERSON_ID not like '111111%'
+				AND CPNY_ID = 'HAE'
+				AND DEPTNO IS NOT NULL
+				GROUP BY DEPTNO,PAY_DATE ORDER BY DEPTNO
+			]]>
+		</isEqual>
+		<isEqual property="interCpnyID" compareValue="SPC_NJ">
+			<![CDATA[
+			SELECT SUBSTR(#MONTH#,1,4) YEAR,
+				   SUBSTR(#MONTH#,6,2) MONTH,
+				   SUBSTR(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),1,4) LAST_YEAR,
+				   SUBSTR(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),6,2) LAST_MONTH,
+				   GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YYQZ','1') THIS_YYQZ_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YYQZ','TOTAL_SALARY')THIS_YYQZ_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YYQZ','OT_FEE_TOTAL')THIS_YYQZ_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YYAR','1') THIS_YYAR_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YYAR','TOTAL_SALARY') THIS_YYAR_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YYAR','OT_FEE_TOTAL') THIS_YYAR_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZZY','1') THIS_ZZZY_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZZY','TOTAL_SALARY') THIS_ZZZY_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZZY','OT_FEE_TOTAL') THIS_ZZZY_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZJM','1') THIS_ZZJM_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZJM','TOTAL_SALARY') THIS_ZZJM_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZJM','OT_FEE_TOTAL') THIS_ZZJM_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZDB','1') THIS_ZZDB_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZDB','TOTAL_SALARY') THIS_ZZDB_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZDB','OT_FEE_TOTAL') THIS_ZZDB_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'GL','1') THIS_GL_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'GL','TOTAL_SALARY') THIS_GL_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'GL','OT_FEE_TOTAL') THIS_GL_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZ','1') THIS_ZZ_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZ','TOTAL_SALARY') THIS_ZZ_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'ZZ','OT_FEE_TOTAL') THIS_ZZ_OT_FEE_TOTAL,
+			       
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YY','1') THIS_YY_NUM,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YY','TOTAL_SALARY') THIS_YY_TOTAL_SALARY,
+			       GET_SUMMARY_TOTAL_SPC_NJ(#MONTH#,'YY','OT_FEE_TOTAL') THIS_YY_OT_FEE_TOTAL,
+             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YYQZ','1') LAST_YYQZ_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YYQZ','TOTAL_SALARY')LAST_YYQZ_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YYQZ','OT_FEE_TOTAL')LAST_YYQZ_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YYAR','1') LAST_YYAR_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YYAR','TOTAL_SALARY') LAST_YYAR_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YYAR','OT_FEE_TOTAL') LAST_YYAR_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZZY','1') LAST_ZZZY_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZZY','TOTAL_SALARY') LAST_ZZZY_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZZY','OT_FEE_TOTAL') LAST_ZZZY_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZJM','1') LAST_ZZJM_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZJM','TOTAL_SALARY') LAST_ZZJM_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZJM','OT_FEE_TOTAL') LAST_ZZJM_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZDB','1') LAST_ZZDB_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZDB','TOTAL_SALARY') LAST_ZZDB_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZDB','OT_FEE_TOTAL') LAST_ZZDB_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'GL','1') LAST_GL_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'GL','TOTAL_SALARY') LAST_GL_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'GL','OT_FEE_TOTAL') LAST_GL_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZ','1') LAST_ZZ_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZ','TOTAL_SALARY') LAST_ZZ_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'ZZ','OT_FEE_TOTAL') LAST_ZZ_OT_FEE_TOTAL,
+	             
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YY','1') LAST_YY_NUM,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YY','TOTAL_SALARY') LAST_YY_TOTAL_SALARY,
+	             GET_SUMMARY_TOTAL_SPC_NJ(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'YY','OT_FEE_TOTAL') LAST_YY_OT_FEE_TOTAL
+	             
+			       FROM DUAL
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getOtFeeContrastList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+				SELECT 
+					POST_GRADE_GROUP_NO,
+					get_global_name(POST_GRADE_GROUP_NO,'zh') POST_GRADE_GROUP,
+					TO_CHAR(TO_DATE(#MONTH#,'YYYY/MM'),'YYYY/MM') PAY_DATE,
+					TO_CHAR(TO_DATE(#MONTH#,'YYYY/MM'),'YYYY') PAY_YAER,
+					TO_CHAR(TO_DATE(#MONTH#,'YYYY/MM'),'MM') PAY_MONTH,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = #MONTH# THEN 1 ELSE 0 END) PERSON_NUM,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = #MONTH# THEN OT_FEE_TOTAL ELSE 0 END) OT_FEE_TOTAL,
+					
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY/MM') LAST_MONTH_PAY_DATE,
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY') LAST_MONTH_PAY_YEAR,
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'MM') LAST_MONTH_PAY_MONTH,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY/MM') THEN 1 ELSE 0 END) LAST_MONTH_PERSON_NUM,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY/MM') THEN OT_FEE_TOTAL ELSE 0 END) LAST_MONTH_OT_FEE_TOTAL,
+					
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-12),'YYYY/MM') LAST_YEAR_PAY_DATE,
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-12),'YYYY') LAST_YEAR_PAY_YEAR,
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-12),'MM') LAST_YEAR_PAY_MONTH,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-12),'YYYY/MM') THEN 1 ELSE 0 END) LAST_YEAR_PERSON_NUM,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-12),'YYYY/MM') THEN OT_FEE_TOTAL ELSE 0 END) LAST_YEAR_OT_FEE_TOTAL
+					
+				FROM PA_SUMMARY_HAE
+				WHERE   PERSON_ID not like '111111%'
+					AND POST_GRADE_GROUP_NO IN ('14015813','14015815','14015816','14015818')
+					AND CPNY_ID = 'HAE'
+				GROUP BY POST_GRADE_GROUP_NO
+				ORDER BY POST_GRADE_GROUP_NO
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getGrossPayList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+				SELECT 
+					POST_GRADE_GROUP_NO,
+					get_global_name(POST_GRADE_GROUP_NO,'zh') POST_GRADE_GROUP,
+					TO_CHAR(TO_DATE(#MONTH#,'YYYY/MM'),'YYYY/MM') PAY_DATE,
+					TO_CHAR(TO_DATE(#MONTH#,'YYYY/MM'),'YYYY') PAY_YAER,
+					TO_CHAR(TO_DATE(#MONTH#,'YYYY/MM'),'MM') PAY_MONTH,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = #MONTH# THEN 1 ELSE 0 END) PERSON_NUM,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = #MONTH# THEN GROSS_PAY ELSE 0 END) GROSS_PAY,
+					
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY/MM') LAST_MONTH_PAY_DATE,
+				 	TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY') LAST_MONTH_PAY_YEAR,
+					TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'MM') LAST_MONTH_PAY_MONTH,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY/MM') THEN 1 ELSE 0 END) LAST_MONTH_PERSON_NUM,
+					SUM(CASE WHEN TO_CHAR(TO_DATE(PAY_DATE,'YYYY/MM/DD'),'YYYY/MM') = TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY/MM'),-1),'YYYY/MM') THEN GROSS_PAY ELSE 0 END) LAST_MONTH_GROSS_PAY
+					
+				FROM PA_SUMMARY_HAE
+				WHERE  PERSON_ID not like '111111%'
+					AND POST_GRADE_GROUP_NO IN ('14015813','14015815','14015816','14015818','14015870')
+					AND CPNY_ID = 'HAE'
+				GROUP BY POST_GRADE_GROUP_NO
+				ORDER BY POST_GRADE_GROUP_NO
+			]]>
+		</isEqual>
+		<isEqual property="interCpnyID" compareValue="SPC_DL">
+			<![CDATA[
+				SELECT 
+					   #MONTH# MONTH,
+					   TO_CHAR(TO_DATE(#MONTH#,'YYYY.MM'),'YYYY') YEAR_STR,
+					   TO_CHAR(TO_DATE(#MONTH#,'YYYY.MM'),'MM') MONTH_STR,
+					   GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'0','WAGES_PAID') GL_THIS_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'1','WAGES_PAID') DP_THIS_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'2','WAGES_PAID') GC_THIS_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'3','WAGES_PAID') DPJZ_THIS_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'','COMPANY_SOCIAL_SECURITY') THIS_MONTH_CSS,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'','CPF_COR') THIS_MONTH_CC,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'1','OT_FEE_TOTAL') DP_THIS_MONTH_OFT,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'2','OT_FEE_TOTAL') GC_THIS_MONTH_OFT,
+				       GET_SUMMARY_CONTRAST_SPC_DL(#MONTH#,'','LABOR_MANAGEMENT_FEE') THIS_MONTH_LMF,
+				       GET_STORE_NUMBER_SPC_DL(#MONTH#,'DL',1) JZRS_THIS_MONTH,
+				       
+				       TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM') LAST_MONTH,
+				       TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY') LAST_YEAR_STR,
+					   TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'MM') LAST_MONTH_STR,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'0','WAGES_PAID') GL_LAST_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'1','WAGES_PAID') DP_LAST_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'2','WAGES_PAID') GC_LAST_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'3','WAGES_PAID') DPJZ_LAST_MONTH_WP,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'','COMPANY_SOCIAL_SECURITY') LAST_MONTH_CSS,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'','CPF_COR') LAST_MONTH_CC,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'1','OT_FEE_TOTAL') DP_LAST_MONTH_OFT,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'2','OT_FEE_TOTAL') GC_LAST_MONTH_OFT,
+				       GET_SUMMARY_CONTRAST_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'','LABOR_MANAGEMENT_FEE') LAST_MONTH_LMF,
+				       GET_STORE_NUMBER_SPC_DL(TO_CHAR(ADD_MONTHS(TO_DATE(#MONTH#,'YYYY.MM'),-1),'YYYY.MM'),'DL',1) JZRS_LAST_MONTH
+				FROM DUAL
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getPaDecisionList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT PAY_DATE,
+				   SUBSTR(PAY_DATE,0,4) PAY_YEAR,
+				   SUBSTR(PAY_DATE,0,4)-1 LAST_PAY_YEAR,
+				   SUBSTR(PAY_DATE,6,2) PAY_MONTH,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14644') THEN PERSON_CNT ELSE 0 END)  ZZY_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14644') THEN NET_PAY ELSE 0 END) ZZY_NET_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14645','14646','14015823','14015824','14015825','14015826','14015827') THEN PERSON_CNT ELSE 0 END)  GL_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14645','14646','14015823','14015824','14015825','14015826','14015827') THEN NET_PAY ELSE 0 END)  GL_NET_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015829','14015830','14015831','14015832') THEN PERSON_CNT ELSE 0 END)  DP_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015829','14015830','14015831','14015832') THEN NET_PAY ELSE 0 END) DP_NET_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015828') THEN PERSON_CNT ELSE 0 END)  GL_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015828') THEN NET_PAY ELSE 0 END)  GL_NET_PAY,
+			        SUM(CASE WHEN get_code_no(EMPLOYEE_OWNED,'14015585','HTSV','CODE') IN ('14015588','14015589','14015590') THEN PERSON_CNT ELSE 0 END) WB_PERSON_CNT
+				FROM (
+			     SELECT  
+			       COUNT(1) PERSON_CNT ,
+			       SUM(CASE WHEN get_code_no(EMPLOYEE_OWNED,'14015585','HTSV','CODE') = '14015586' THEN NET_PAY ELSE GROSS_PAY END) NET_PAY,
+			       SUBSTR(PAY_DATE,1,7) PAY_DATE,
+			       WAGE_TYPE,
+			       EMPLOYEE_OWNED 
+			       FROM PA_SUMMARY_HTSV 
+			       WHERE PERSON_ID NOT LIKE '111111%'
+			       ]]>
+			    <isNotEmpty prepend="AND" property="AR_MONTH">
+				<![CDATA[
+					PAY_SCHEDULE_NO IN (SELECT 
+											PAY_SCHEDULE_NO 
+										FROM PA_PAY_SCHEDULE 
+										WHERE  SALARY_DISTIN_NO = '14015882' 
+										AND TO_CHAR(PAY_DATE,'YYYY') IN (SUBSTR(#AR_MONTH#,'0','4'),SUBSTR(#AR_MONTH#,'0','4')-1)
+										)
+				]]>
+				</isNotEmpty>
+			       <![CDATA[
+			     GROUP BY WAGE_TYPE,EMPLOYEE_OWNED,SUBSTR(PAY_DATE,1,7)
+			)
+			GROUP BY PAY_DATE
+			ORDER BY PAY_DATE
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getPaNetPayList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT PAY_DATE,
+				   SUBSTR(PAY_DATE,0,4) PAY_YEAR,
+				   SUBSTR(PAY_DATE,0,4)-1 LAST_PAY_YEAR,
+				   SUBSTR(PAY_DATE,6,2) PAY_MONTH,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14644') THEN PERSON_CNT ELSE 0 END)  ZZY_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14644') THEN GROSS_PAY ELSE 0 END) ZZY_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14645','14646','14015823','14015824','14015825','14015826','14015827') THEN PERSON_CNT ELSE 0 END)  GL_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14645','14646','14015823','14015824','14015825','14015826','14015827') THEN GROSS_PAY ELSE 0 END)  GL_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015829','14015830','14015831','14015832') THEN PERSON_CNT ELSE 0 END)  DP_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015829','14015830','14015831','14015832') THEN GROSS_PAY ELSE 0 END) DP_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015828') THEN PERSON_CNT ELSE 0 END)  GL_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14015828') THEN GROSS_PAY ELSE 0 END)  GL_GROSS_PAY,
+			        SUM(CASE WHEN get_code_no(EMPLOYEE_OWNED,'14015585','HTSV','CODE') IN ('14015588','14015589','14015590') THEN PERSON_CNT ELSE 0 END) WB_PERSON_CNT
+				FROM (
+			     SELECT  
+			       COUNT(1) PERSON_CNT ,
+			       SUM(GROSS_PAY) GROSS_PAY,
+			       SUBSTR(PAY_DATE,1,7) PAY_DATE,
+			       WAGE_TYPE,
+			       EMPLOYEE_OWNED 
+			       FROM PA_SUMMARY_HTSV 
+			       WHERE PERSON_ID NOT LIKE '111111%'
+			       ]]>
+			    <isNotEmpty prepend="AND" property="AR_MONTH">
+				<![CDATA[
+					PAY_SCHEDULE_NO IN (SELECT 
+											PAY_SCHEDULE_NO 
+										FROM PA_PAY_SCHEDULE 
+										WHERE  SALARY_DISTIN_NO = '14015882' 
+										AND TO_CHAR(PAY_DATE,'YYYY') IN (SUBSTR(#AR_MONTH#,'0','4'),SUBSTR(#AR_MONTH#,'0','4')-1)
+										)
+				]]>
+				</isNotEmpty>
+			       <![CDATA[
+			     GROUP BY WAGE_TYPE,EMPLOYEE_OWNED,SUBSTR(PAY_DATE,1,7)
+			)
+			GROUP BY PAY_DATE
+			ORDER BY PAY_DATE
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getPaSendFeeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				SELECT SUBSTR(#AR_MONTH#,1,4) AR_YEAR_STR,
+       			   SUBSTR(#AR_MONTH#,6,2) AR_MONTH_STR,
+				   EMPLOYEE_OWNED EMPLOYEE_OWNED,
+				   TO_CHAR(SYSDATE,'YYYY.MM.DD') CREATE_DATE,
+			       COUNT(1) PERSON_NUM,
+			       SUM(NET_PAY) NET_PAY,
+			       SUM(INSURANCE_TOTAL_COR) INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015825' THEN 1 ELSE 0 END ) WL_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015825' THEN GROSS_PAY ELSE 0 END ) WL_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015825' THEN INSURANCE_TOTAL_COR ELSE 0 END ) WL_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015828' THEN 1 ELSE 0 END ) CJ_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015828' THEN GROSS_PAY ELSE 0 END ) CJ_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015828' THEN INSURANCE_TOTAL_COR ELSE 0 END ) CJ_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14646','14015823') THEN 1 ELSE 0 END ) LW_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14646','14015823') THEN GROSS_PAY ELSE 0 END ) LW_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') IN ('14646','14015823') THEN INSURANCE_TOTAL_COR ELSE 0 END ) LW_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015824' THEN 1 ELSE 0 END ) BA_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015824' THEN GROSS_PAY ELSE 0 END ) BA_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015824' THEN INSURANCE_TOTAL_COR ELSE 0 END ) BA_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015826' THEN 1 ELSE 0 END ) YY_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015826' THEN GROSS_PAY ELSE 0 END ) YY_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015826' THEN INSURANCE_TOTAL_COR ELSE 0 END ) YY_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015827' THEN 1 ELSE 0 END ) HC_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015827' THEN GROSS_PAY ELSE 0 END ) HC_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015827' THEN INSURANCE_TOTAL_COR ELSE 0 END ) HC_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015829' THEN 1 ELSE 0 END ) YYY_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015829' THEN GROSS_PAY ELSE 0 END ) YYY_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015829' THEN INSURANCE_TOTAL_COR ELSE 0 END ) YYY_INSURANCE_TOTAL_COR,
+			       
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015831' THEN 1 ELSE 0 END ) SC_PERSON_CNT,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015831' THEN GROSS_PAY ELSE 0 END ) SC_GROSS_PAY,
+			       SUM(CASE WHEN get_code_no(WAGE_TYPE,'14643','HTSV','CODE') = '14015831' THEN INSURANCE_TOTAL_COR ELSE 0 END ) SC_INSURANCE_TOTAL_COR
+			       
+			  FROM PA_SUMMARY_HTSV
+			 WHERE PERSON_ID NOT LIKE '111111%'
+			 ]]>
+			   <isNotEmpty prepend="AND" property="AR_MONTH">
+				<![CDATA[
+					PAY_SCHEDULE_NO IN (SELECT PAY_SCHEDULE_NO 
+										FROM PA_PAY_SCHEDULE 
+										WHERE  SALARY_DISTIN_NO = '14015882' 
+										AND TO_CHAR(PAY_DATE,'YYYY/MM') = #AR_MONTH#
+										)
+				]]>
+				</isNotEmpty>
+				<![CDATA[
+			   AND get_code_no(EMPLOYEE_OWNED, '14015585', 'HTSV', 'CODE') IN ('14015587', '14015588', '14015589', '14015590')
+			 GROUP BY EMPLOYEE_OWNED
+
+			]]>
+	</select>
+		<select  id="getPaOtFeeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				SELECT GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','GL') GL_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','GL') GL_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','GL') GL_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','GL') GL_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','GL') GL_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','GL') GL_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','GL') GL_HOLIDY_OT_FEE0,
+			       
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','WL') WL_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','WL') WL_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','WL') WL_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','WL') WL_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','WL') WL_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','WL') WL_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','WL') WL_HOLIDY_OT_FEE0,
+			       
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','YYGL') YYGL_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','YYGL') YYGL_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','YYGL') YYGL_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','YYGL') YYGL_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','YYGL') YYGL_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','YYGL') YYGL_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','YYGL') YYGL_HOLIDY_OT_FEE0,
+			       
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','SCGL') SCGL_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','SCGL') SCGL_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','SCGL') SCGL_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','SCGL') SCGL_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','SCGL') SCGL_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','SCGL') SCGL_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','SCGL') SCGL_HOLIDY_OT_FEE0,
+			       
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','SCCJ') SCCJ_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','SCCJ') SCCJ_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','SCCJ') SCCJ_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','SCCJ') SCCJ_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','SCCJ') SCCJ_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','SCCJ') SCCJ_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','SCCJ') SCCJ_HOLIDY_OT_FEE0,
+			       
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','DPYY') DPYY_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','DPYY') DPYY_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','DPYY') DPYY_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','DPYY') DPYY_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','DPYY') DPYY_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','DPYY') DPYY_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','DPYY') DPYY_HOLIDY_OT_FEE0,
+			       
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'1','PA','DPZZ') DPZZ_PERSON_CNT0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKDAY_OT_TOTAL','AR','DPZZ') DPZZ_WEEKDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_TOTAL','AR','DPZZ') DPZZ_WEEKEND_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDAY_OT_TOTAL','AR','DPZZ') DPZZ_HOLIDAY_OT_TOTAL0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WORK_OT_FEE','PA','DPZZ') DPZZ_WORK_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'WEEKEND_OT_FEE','PA','DPZZ') DPZZ_WEEKEND_OT_FEE0,
+			       GET_SUMMARY_TOTAL_HTSV(#AR_MONTH#,'HOLIDY_OT_FEE','PA','DPZZ') DPZZ_HOLIDY_OT_FEE0,
+			       
+			     GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','GL') GL_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','GL') GL_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','GL') GL_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','GL') GL_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','GL') GL_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','GL') GL_WEEKEND_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','GL') GL_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','WL') WL_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','WL') WL_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','WL') WL_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','WL') WL_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','WL') WL_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','WL') WL_WEEKEND_OT_FEE11,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','WL') WL_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','YYGL') YYGL_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','YYGL') YYGL_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','YYGL') YYGL_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','YYGL') YYGL_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','YYGL') YYGL_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','YYGL') YYGL_WEEKEND_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','YYGL') YYGL_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','SCGL') SCGL_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','SCGL') SCGL_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','SCGL') SCGL_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','SCGL') SCGL_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','SCGL') SCGL_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','SCGL') SCGL_WEEKEND_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','SCGL') SCGL_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','SCCJ') SCCJ_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','SCCJ') SCCJ_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','SCCJ') SCCJ_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','SCCJ') SCCJ_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','SCCJ') SCCJ_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','SCCJ') SCCJ_WEEKEND_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','SCCJ') SCCJ_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','DPYY') DPYY_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','DPYY') DPYY_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','DPYY') DPYY_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','DPYY') DPYY_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','DPYY') DPYY_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','DPYY') DPYY_WEEKEND_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','DPYY') DPYY_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','PA','DPZZ') DPZZ_PERSON_CNT1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','DPZZ') DPZZ_WEEKDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','DPZZ') DPZZ_WEEKEND_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','DPZZ') DPZZ_HOLIDAY_OT_TOTAL1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WORK_OT_FEE','PA','DPZZ') DPZZ_WORK_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WEEKEND_OT_FEE','PA','DPZZ') DPZZ_WEEKEND_OT_FEE1,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'HOLIDY_OT_FEE','PA','DPZZ') DPZZ_HOLIDY_OT_FEE1,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','GL') GL_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','GL') GL_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','GL') GL_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','GL') GL_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','GL') GL_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','GL') GL_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','GL') GL_HOLIDY_OT_FEE12,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','WL') WL_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','WL') WL_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','WL') WL_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','WL') WL_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','WL') WL_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','WL') WL_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','WL') WL_HOLIDY_OT_FEE12,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','YYGL') YYGL_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','YYGL') YYGL_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','YYGL') YYGL_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','YYGL') YYGL_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','YYGL') YYGL_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','YYGL') YYGL_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','YYGL') YYGL_HOLIDY_OT_FEE12,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','SCGL') SCGL_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','SCGL') SCGL_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','SCGL') SCGL_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','SCGL') SCGL_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','SCGL') SCGL_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','SCGL') SCGL_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','SCGL') SCGL_HOLIDY_OT_FEE12,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','SCCJ') SCCJ_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','SCCJ') SCCJ_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','SCCJ') SCCJ_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','SCCJ') SCCJ_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','SCCJ') SCCJ_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','SCCJ') SCCJ_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','SCCJ') SCCJ_HOLIDY_OT_FEE12,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','DPYY') DPYY_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','DPYY') DPYY_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','DPYY') DPYY_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','DPYY') DPYY_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','DPYY') DPYY_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','DPYY') DPYY_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','DPYY') DPYY_HOLIDY_OT_FEE12,
+	             
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'1','PA','DPZZ') DPZZ_PERSON_CNT12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKDAY_OT_TOTAL','AR','DPZZ') DPZZ_WEEKDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_TOTAL','AR','DPZZ') DPZZ_WEEKEND_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDAY_OT_TOTAL','AR','DPZZ') DPZZ_HOLIDAY_OT_TOTAL12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WORK_OT_FEE','PA','DPZZ') DPZZ_WORK_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'WEEKEND_OT_FEE','PA','DPZZ') DPZZ_WEEKEND_OT_FEE12,
+	             GET_SUMMARY_TOTAL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-12),'YYYY/MM'),'HOLIDY_OT_FEE','PA','DPZZ') DPZZ_HOLIDY_OT_FEE12
+	      
+			FROM DUAL
+			]]>
+	</select>
+	<select  id="getPayInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+				SUBSTR(#AR_MONTH#,6,2) THIS_AR_MONTH, 
+				SUBSTR(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),6,2) LAST_AR_MONTH, 
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','ZZY','') ZZY_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','ZZY','') ZZY_GROSS_PAY0,
+				
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','GL','SPC') GL_SPC_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','GL','SPC') GL_SPC_GROSS_PAY_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','GL','WB') GL_WB_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','GL','WB') GL_WB_GROSS_PAY_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','GL','PQ') GL_PQ_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','GL','PQ') GL_PQ_GROSS_PAY_CNT0,
+				
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','DP','SPC') DP_SPC_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','DP','SPC') DP_SPC_GROSS_PAY_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','DP','WB') DP_WB_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','DP','WB') DP_WB_GROSS_PAY_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','DP','PQ') DP_PQ_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','DP','PQ') DP_PQ_GROSS_PAY_CNT0,
+				
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','CJ','SPC') CJ_SPC_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','CJ','SPC') CJ_SPC_GROSS_PAY_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','CJ','WB') CJ_WB_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','CJ','WB') CJ_WB_GROSS_PAY_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'1','CJ','PQ') CJ_PQ_PERSON_CNT0,
+				GET_PAY_INFO_EXCEL(#AR_MONTH#,'GROSS_PAY','CJ','PQ') CJ_PQ_GROSS_PAY_CNT0,
+				
+				GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','ZZY','') ZZY_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','ZZY','') ZZY_GROSS_PAY1,
+		        
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','GL','SPC') GL_SPC_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','GL','SPC') GL_SPC_GROSS_PAY_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','GL','WB') GL_WB_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','GL','WB') GL_WB_GROSS_PAY_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','GL','PQ') GL_PQ_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','GL','PQ') GL_PQ_GROSS_PAY_CNT1,
+		        
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','DP','SPC') DP_SPC_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','DP','SPC') DP_SPC_GROSS_PAY_CNT1,
+  	 	        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','DP','WB') DP_WB_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','DP','WB') DP_WB_GROSS_PAY_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','DP','PQ') DP_PQ_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','DP','PQ') DP_PQ_GROSS_PAY_CNT1,
+		        
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','CJ','SPC') CJ_SPC_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','CJ','SPC') CJ_SPC_GROSS_PAY_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','CJ','WB') CJ_WB_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','CJ','WB') CJ_WB_GROSS_PAY_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'1','CJ','PQ') CJ_PQ_PERSON_CNT1,
+		        GET_PAY_INFO_EXCEL(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GROSS_PAY','CJ','PQ') CJ_PQ_GROSS_PAY_CNT1
+			FROM DUAL
+		]]>
+	</select>
+	<select  id="getEmpDeftSpcBjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  
+					SUBSTR(#AR_MONTH#,6,2) THIS_AR_MONTH, 
+					SUBSTR(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),6,2) LAST_AR_MONTH, 
+					GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'GL','1') THIS_GL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'GL','2') THIS_GL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'GL','3') THIS_GL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'GL','4') THIS_GL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'WL','1') THIS_WL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'WL','2') THIS_WL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'WL','3') THIS_WL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'WL','4') THIS_WL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'YYGL','1') THIS_YYGL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'YYGL','2') THIS_YYGL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'YYGL','3') THIS_YYGL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'YYGL','4') THIS_YYGL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPYY','1') THIS_DPYY_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPYY','2') THIS_DPYY_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPYY','3') THIS_DPYY_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPYY','4') THIS_DPYY_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPZZ','1') THIS_DPZZ_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPZZ','2') THIS_DPZZ_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPZZ','3') THIS_DPZZ_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'DPZZ','4') THIS_DPZZ_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCGL','1') THIS_SCGL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCGL','2') THIS_SCGL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCGL','3') THIS_SCGL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCGL','4') THIS_SCGL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCCJ','1') THIS_SCCJ_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCCJ','2') THIS_SCCJ_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCCJ','3') THIS_SCCJ_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(#AR_MONTH#,'SCCJ','4') THIS_SCCJ_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GL','1') LAST_GL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GL','2') LAST_GL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GL','3') LAST_GL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'GL','4') LAST_GL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WL','1') LAST_WL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WL','2') LAST_WL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WL','3') LAST_WL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'WL','4') LAST_WL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'YYGL','1') LAST_YYGL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'YYGL','2') LAST_YYGL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'YYGL','3') LAST_YYGL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'YYGL','4') LAST_YYGL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPYY','1') LAST_DPYY_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPYY','2') LAST_DPYY_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPYY','3') LAST_DPYY_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPYY','4') LAST_DPYY_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPZZ','1') LAST_DPZZ_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPZZ','2') LAST_DPZZ_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPZZ','3') LAST_DPZZ_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'DPZZ','4') LAST_DPZZ_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCGL','1') LAST_SCGL_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCGL','2') LAST_SCGL_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCGL','3') LAST_SCGL_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCGL','4') LAST_SCGL_PERSON_START_CNT,
+			        
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCCJ','1') LAST_SCCJ_PERSON_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCCJ','2') LAST_SCCJ_PERSON_LEFT_CNT,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCCJ','3') LAST_SCCJ_PERSON_LEFT_CNT1,
+			        GET_LEFT_RATE_EXCEL_HTSV(TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH#,'YYYY/MM'),-1),'YYYY/MM'),'SCCJ','4') LAST_SCCJ_PERSON_START_CNT
+			FROM DUAL
+		]]>
+	</select>
+	<select  id="getSalaryTotalSpcBjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			    SELECT A.PERSON_ID  PERSON_ID,
+				       A.SALARY_TOTAL SALARY_TOTAL, 
+				       B.SALARY_TOTAL LAST_SALARY_TOTAL,
+				       A.DEPT_NAME,
+				       A.LOCAL_NAME
+				  FROM PA_SUMMARY_HTSV A, PA_SUMMARY_HTSV B
+				 WHERE A.PERSON_ID = B.PERSON_ID
+				   AND A.PAY_SCHEDULE_NO IN
+				       (SELECT PAY_SCHEDULE_NO
+				          FROM PA_PAY_SCHEDULE
+				         WHERE SALARY_DISTIN_NO = '14015882'
+				           AND TO_CHAR(PAY_DATE, 'YYYY/MM') = #AR_MONTH#)
+				   AND B.PAY_SCHEDULE_NO = A.LASTMONTH_SCHEDULE_NO
+				   AND A.SALARY_TOTAL <> B.SALARY_TOTAL
+		]]>
+		</select>
+	<select  id="getEmpDeftInfoSpcBjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			       SELECT SUBSTR(#AR_MONTH#,6,2) THIS_AR_MONTH, 
+			       		TO_CHAR(LAST_DAY(TO_DATE(#AR_MONTH#,'YYYY/MM')),'MM')THIS_AR_MONTH_CNT,
+			       		GET_DEPT_NAME(DEPTNO,'zh') DEPT_NAME,
+			           GET_GLOBAL_NAME(POSITION,'zh') POSITION,
+			           LOCAL_NAME,
+			           TO_CHAR(DATE_STARTED,'YYYY/MM/DD') DATE_STARTED,
+			           TO_CHAR(DATE_LEFT,'YYYY/MM/DD') DATE_LEFT,
+			           LIZHIREASON
+			        FROM  HR_EMPLOYEE HR
+			        WHERE  CPNY_ID = 'HTSV'
+			        AND TO_CHAR(DATE_LEFT,'YYYY/MM') = #AR_MONTH#
+			        AND DATE_LEFT - DATE_STARTED >= 30	
+		]]>
+		</select>
+	<select  id="getWagesBonusList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT GET_WAGESBONUS_HTSV(#AR_MONTH#,'DPJS','1')  DPJS_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DPJS','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'DPJS','OT_FEE_TOTAL')  DPJS_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DPJS','OT_FEE_TOTAL')  DPJS_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DPJS','P_BONUS')  DPJS_P_BONUS_TOTAL,
+				
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GCZZ','1')  GCZZ_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GCZZ','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'GCZZ','OT_FEE_TOTAL')  GCZZ_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GCZZ','OT_FEE_TOTAL')  GCZZ_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GCZZ','P_BONUS')  GCZZ_P_BONUS_TOTAL,
+				       
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'BGS','1')  BGS_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'BGS','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'BGS','OT_FEE_TOTAL')  BGS_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'BGS','OT_FEE_TOTAL')  BGS_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'BGS','P_BONUS')  BGS_P_BONUS_TOTAL,
+				       
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YYHC','1')  YYHC_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YYHC','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'YYHC','OT_FEE_TOTAL')  YYHC_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YYHC','OT_FEE_TOTAL')  YYHC_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YYHC','P_BONUS')  YYHC_P_BONUS_TOTAL,
+				       
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YY','1')  YY_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YY','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'YY','OT_FEE_TOTAL')  YY_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YY','OT_FEE_TOTAL')  YY_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'YY','P_BONUS')  YY_P_BONUS_TOTAL,
+				       
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GL','1')  GL_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GL','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'GL','OT_FEE_TOTAL')  GL_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GL','OT_FEE_TOTAL')  GL_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'GL','P_BONUS')  GL_P_BONUS_TOTAL,
+				       
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DZYYY','1')  DZYYY_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DZYYY','GROSS_PAY')  - GET_WAGESBONUS_HTSV(#AR_MONTH#,'DZYYY','OT_FEE_TOTAL')  DZYYY_GONGZI_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DZYYY','OT_FEE_TOTAL')  DZYYY_OT_FEE_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'DZYYY','P_BONUS')  DZYYY_P_BONUS_TOTAL,
+				       
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'ZZY','1')  ZZY_PERON_TOTAL,
+				       GET_WAGESBONUS_HTSV(#AR_MONTH#,'ZZY','GROSS_PAY') ZZY_GROSS_PAY
+				FROM DUAL
+			]]>
+		</isEqual>
+		<isEqual property="interCpnyID" compareValue="HAE">
+			<![CDATA[
+				SELECT SUM(CASE WHEN HR.DUTY_NO IN ('14015690') AND HR.EMP_TYPE_CODE <> '10418' THEN 1 ELSE 0 END ) DPJS_PERSON_NUM,
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015690') AND HR.EMP_TYPE_CODE <> '10418' THEN (GROSS_PAY-OT_FEE_TOTAL) ELSE 0 END) DPJS_WAGES_TOTAL,
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015690') AND HR.EMP_TYPE_CODE <> '10418' THEN (OT_FEE_TOTAL) ELSE 0 END) DPJS_OT_FEE_TOTAL,
+				       
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015683','80000011','14015697') AND HR.EMP_TYPE_CODE <> '10418' THEN 1 ELSE 0 END ) YYHC_PERSON_NUM,
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015683','80000011','14015697') AND HR.EMP_TYPE_CODE <> '10418' THEN (GROSS_PAY-OT_FEE_TOTAL) ELSE 0 END) YYHC_WAGES_TOTAL,
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015683','80000011','14015697') AND HR.EMP_TYPE_CODE <> '10418' THEN (OT_FEE_TOTAL) ELSE 0 END) YYHC_OT_FEE_TOTAL,
+				       
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015661','14015656','14015655','14015660','14015679','14016401','14015681','14015676','14015682') AND HR.EMP_TYPE_CODE <> '10418' THEN 1 ELSE 0 END ) YY_PERSON_NUM,
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015661','14015656','14015655','14015660','14015679','14016401','14015681','14015676','14015682') AND HR.EMP_TYPE_CODE <> '10418' THEN (GROSS_PAY-OT_FEE_TOTAL) ELSE 0 END) YY_WAGES_TOTAL,
+				       SUM(CASE WHEN HR.DUTY_NO IN ('14015661','14015656','14015655','14015660','14015679','14016401','14015681','14015676','14015682') AND HR.EMP_TYPE_CODE <> '10418' THEN (OT_FEE_TOTAL) ELSE 0 END) YY_OT_FEE_TOTAL,
+				
+				       SUM(CASE WHEN (HR.DUTY_NO IN ('14015645','14015644','14015647','14015673','14015642','14015649') OR HR.EMP_TYPE_CODE = '10417' ) AND HR.EMP_TYPE_CODE <> '10418' THEN 1 ELSE 0 END ) GL_PERSON_NUM,
+				       SUM(CASE WHEN (HR.DUTY_NO IN ('14015645','14015644','14015647','14015673','14015642','14015649') OR HR.EMP_TYPE_CODE = '10417' ) AND HR.EMP_TYPE_CODE <> '10418' THEN (GROSS_PAY-OT_FEE_TOTAL) ELSE 0 END) GL_WAGES_TOTAL,
+				       SUM(CASE WHEN (HR.DUTY_NO IN ('14015645','14015644','14015647','14015673','14015642','14015649') OR HR.EMP_TYPE_CODE = '10417' ) AND HR.EMP_TYPE_CODE <> '10418' THEN (OT_FEE_TOTAL) ELSE 0 END) GL_OT_FEE_TOTAL,
+				       
+				       SUM(CASE WHEN (HR.DUTY_NO IN ('80000010','14016399') AND HR.EMP_TYPE_CODE <> '10417' ) AND HR.EMP_TYPE_CODE <> '10418' THEN 1 ELSE 0 END ) DP_PERSON_NUM,
+				       SUM(CASE WHEN (HR.DUTY_NO IN ('80000010','14016399') AND HR.EMP_TYPE_CODE <> '10417' ) AND HR.EMP_TYPE_CODE <> '10418' THEN (GROSS_PAY-OT_FEE_TOTAL) ELSE 0 END) DP_WAGES_TOTAL,
+				       SUM(CASE WHEN (HR.DUTY_NO IN ('80000010','14016399') AND HR.EMP_TYPE_CODE <> '10417' ) AND HR.EMP_TYPE_CODE <> '10418' THEN (OT_FEE_TOTAL) ELSE 0 END) DP_OT_FEE_TOTAL,
+				       
+				       SUM(CASE WHEN HR.EMP_TYPE_CODE <> '10418' THEN 1 ELSE 0 END ) ZZY_PERSON_NUM,
+				       SUM(CASE WHEN HR.EMP_TYPE_CODE <> '10418' THEN GROSS_PAY ELSE 0 END) ZZY_WAGES_TOTAL
+				       
+				FROM HR_EMPLOYEE HR,PA_SUMMARY_HAE PA
+				WHERE HR.PERSON_ID = PA.PERSON_ID 
+				AND TO_CHAR(TO_DATE(PAY_DATE,'YYYY.MM.DD'),'YYYY/MM') = #MONTH#
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getPaAllocationList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT DEPT_NAME_STR,
+                 PAY_MONTH,
+                 SUM(PAY_MONTH) PAY_MONTH_COUNT,
+                 SUM(PERSON_NUM) PERSON_NUM,
+                 SUM(P_ENDOWMENT_SUB) P_ENDOWMENT_SUB,
+                 SUM(GROSS_PAY) GROSS_PAY,
+                 SUM(OT_FEE_TOTAL) OT_FEE_TOTAL,
+                 SUM(CPF_PER) CPF_PER,
+                 SUM(NET_PAY) NET_PAY,
+                 SUM(ENDOWMENT_PER) ENDOWMENT_PER,
+                 SUM(UNEMPLOYMENT_PER) UNEMPLOYMENT_PER,
+                 SUM(MEDICARE_PER) MEDICARE_PER,
+                 SUM(PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX,
+                 SUM(ENDOWMENT_COR) ENDOWMENT_COR,
+                 SUM(MEDICARE_COR) MEDICARE_COR,
+                 SUM(UNEMPLOYMENT_COR)UNEMPLOYMENT_COR,
+                 SUM(ACCIDENT_COR) ACCIDENT_COR,
+                 SUM(MATERNITY_COR) MATERNITY_COR,
+                 SUM(INSURANCE_TOTAL_COR) INSURANCE_TOTAL_COR,
+                 SUM(INSURANCE_TOTAL_PER) INSURANCE_TOTAL_PER,
+                 SUM(P_COMMERCIAL_INSUR_PER) P_COMMERCIAL_INSUR_PER
+          FROM ( 
+               SELECT   DEPTNO,
+                        GET_DEPT_NAME(DEPTNO,'zh') DEPT_NAME,
+                        SUBSTR(DEPT_NAME,1,INSTR(GET_DEPT_NAME(DEPTNO,'zh'),'-')-1) DEPT_NAME_STR,
+                        TO_CHAR(TO_DATE(PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') PAY_MONTH,
+                        NVL(COUNT(DEPTNO),0) PERSON_NUM,
+                        NVL(SUM(P_ENDOWMENT_SUB),0) P_ENDOWMENT_SUB,
+                        NVL(SUM(GROSS_PAY),0) GROSS_PAY,
+                        NVL(SUM(OT_FEE_TOTAL),0) OT_FEE_TOTAL,
+                        NVL(SUM(CPF_PER),0) CPF_PER,
+                        NVL(SUM(NET_PAY),0) NET_PAY,
+                        NVL(SUM(ENDOWMENT_PER),0) ENDOWMENT_PER,
+                        NVL(SUM(UNEMPLOYMENT_PER),0) UNEMPLOYMENT_PER,
+                        NVL(SUM(MEDICARE_PER),0) MEDICARE_PER,
+                        NVL(SUM(PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+                        NVL(SUM(ENDOWMENT_COR),0) ENDOWMENT_COR,
+                        NVL(SUM(MEDICARE_COR),0) MEDICARE_COR,
+                        NVL(SUM(UNEMPLOYMENT_COR),0) UNEMPLOYMENT_COR,
+                        NVL(SUM(ACCIDENT_COR),0) ACCIDENT_COR,
+                        NVL(SUM(MATERNITY_COR),0) MATERNITY_COR,
+                        NVL(SUM(INSURANCE_TOTAL_COR),0) INSURANCE_TOTAL_COR,
+                        NVL(SUM(INSURANCE_TOTAL_PER),0) INSURANCE_TOTAL_PER,
+                        NVL(SUM(P_COMMERCIAL_INSUR_PER),0) P_COMMERCIAL_INSUR_PER
+                     FROM PA_SUMMARY_HTSV 
+                        WHERE DEPTNO IN (
+                         SELECT HD.DEPTNO
+                           FROM HR_DEPARTMENT HD
+                           WHERE 1=1
+                  ]]>
+	             <isNotEmpty prepend="AND" property="DEPT_TYPE">
+				<![CDATA[
+					DEPT_TYPE = #DEPT_TYPE#
+				]]>
+				</isNotEmpty>
+				<![CDATA[
+                        AND HD.CPNY_ID = 'HTSV'
+                        AND HD.DEPTNO <> #PARENT_DEPT_NO#
+                        START WITH HD.DEPTNO =#PARENT_DEPT_NO#
+                        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+                      GROUP BY DEPTNO,PAY_DATE,DEPT_NAME)
+                    WHERE PAY_MONTH = #MONTH#
+               GROUP BY DEPT_NAME_STR,PAY_MONTH
+			]]>
+		</isEqual>
+	</select>
+		<select  id="paAllocationForOwned" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT DEPT_NAME_STR,
+                 PAY_MONTH,
+                 SUM(PAY_MONTH) PAY_MONTH_COUNT,
+                 SUM(PERSON_NUM) PERSON_NUM,
+                 SUM(P_ENDOWMENT_SUB) P_ENDOWMENT_SUB,
+                 SUM(GROSS_PAY) GROSS_PAY,
+                 SUM(OT_FEE_TOTAL) OT_FEE_TOTAL,
+                 SUM(CPF_PER) CPF_PER,
+                 SUM(NET_PAY) NET_PAY,
+                 SUM(ENDOWMENT_PER) ENDOWMENT_PER,
+                 SUM(UNEMPLOYMENT_PER) UNEMPLOYMENT_PER,
+                 SUM(MEDICARE_PER) MEDICARE_PER,
+                 SUM(PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX,
+                 SUM(ENDOWMENT_COR) ENDOWMENT_COR,
+                 SUM(MEDICARE_COR) MEDICARE_COR,
+                 SUM(UNEMPLOYMENT_COR)UNEMPLOYMENT_COR,
+                 SUM(ACCIDENT_COR) ACCIDENT_COR,
+                 SUM(MATERNITY_COR) MATERNITY_COR,
+                 SUM(INSURANCE_TOTAL_COR) INSURANCE_TOTAL_COR,
+                 SUM(INSURANCE_TOTAL_PER) INSURANCE_TOTAL_PER,
+                 SUM(P_COMMERCIAL_INSUR_PER) P_COMMERCIAL_INSUR_PER
+          FROM ( 
+               SELECT   PA.DEPTNO,
+                        GET_DEPT_NAME(PA.DEPTNO,'zh') DEPT_NAME,
+                        SUBSTR(DEPT_NAME,1,INSTR(GET_DEPT_NAME(PA.DEPTNO,'zh'),'-')-1) DEPT_NAME_STR,
+                        TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') PAY_MONTH,
+                        NVL(COUNT(PA.DEPTNO),0) PERSON_NUM,
+                        NVL(SUM(PA.P_ENDOWMENT_SUB),0) P_ENDOWMENT_SUB,
+                        NVL(SUM(PA.GROSS_PAY),0) GROSS_PAY,
+                        NVL(SUM(PA.OT_FEE_TOTAL),0) OT_FEE_TOTAL,
+                        NVL(SUM(PA.CPF_PER),0) CPF_PER,
+                        NVL(SUM(PA.NET_PAY),0) NET_PAY,
+                        NVL(SUM(PA.ENDOWMENT_PER),0) ENDOWMENT_PER,
+                        NVL(SUM(PA.UNEMPLOYMENT_PER),0) UNEMPLOYMENT_PER,
+                        NVL(SUM(PA.MEDICARE_PER),0) MEDICARE_PER,
+                        NVL(SUM(PA.PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+                        NVL(SUM(PA.ENDOWMENT_COR),0) ENDOWMENT_COR,
+                        NVL(SUM(PA.MEDICARE_COR),0) MEDICARE_COR,
+                        NVL(SUM(PA.UNEMPLOYMENT_COR),0) UNEMPLOYMENT_COR,
+                        NVL(SUM(PA.ACCIDENT_COR),0) ACCIDENT_COR,
+                        NVL(SUM(PA.MATERNITY_COR),0) MATERNITY_COR,
+                        NVL(SUM(PA.INSURANCE_TOTAL_COR),0) INSURANCE_TOTAL_COR,
+                        NVL(SUM(PA.INSURANCE_TOTAL_PER),0) INSURANCE_TOTAL_PER,
+                        NVL(SUM(PA.P_COMMERCIAL_INSUR_PER),0) P_COMMERCIAL_INSUR_PER
+                     FROM PA_SUMMARY_HTSV PA,HR_EMPLOYEE HR
+                        WHERE PA.PERSON_ID = HR.PERSON_ID
+                        AND PA.DEPTNO IN (
+                         SELECT HD.DEPTNO
+                           FROM HR_DEPARTMENT HD
+                           WHERE 1=1
+                  ]]>
+	             <isNotEmpty prepend="AND" property="DEPT_TYPE">
+					<![CDATA[
+						HD.DEPT_TYPE = #DEPT_TYPE#
+					]]>
+				</isNotEmpty>
+				<![CDATA[
+                        AND HD.CPNY_ID = 'HTSV'
+                        AND HD.DEPTNO <> #PARENT_DEPT_NO#
+                        START WITH HD.DEPTNO =#PARENT_DEPT_NO#
+                        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+                        ]]>
+                <isNotEmpty prepend="AND" property="EMPLOYEE_OWNED">
+					<![CDATA[
+						HR.EMPLOYEE_OWNED = #EMPLOYEE_OWNED#
+					]]>
+				</isNotEmpty>
+				<![CDATA[
+                      GROUP BY PA.DEPTNO,PA.PAY_DATE,DEPT_NAME)
+                    WHERE PAY_MONTH = #MONTH#
+               GROUP BY DEPT_NAME_STR,PAY_MONTH
+			]]>
+		</isEqual>
+	</select>
+		<select  id="paAllocationForFactory" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT DEPT_NAME,
+                 PAY_MONTH,
+                 SUM(PAY_MONTH) PAY_MONTH_CNT,
+                 SUM(PERSON_NUM) PERSON_NUM,
+                 SUM(P_ENDOWMENT_SUB) P_ENDOWMENT_SUB,
+                 SUM(GROSS_PAY) GROSS_PAY,
+                 SUM(OT_FEE_TOTAL) OT_FEE_TOTAL,
+                 SUM(CPF_PER) CPF_PER,
+                 SUM(NET_PAY) NET_PAY,
+                 SUM(ENDOWMENT_PER) ENDOWMENT_PER,
+                 SUM(UNEMPLOYMENT_PER) UNEMPLOYMENT_PER,
+                 SUM(MEDICARE_PER) MEDICARE_PER,
+                 SUM(PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX,
+                 SUM(ENDOWMENT_COR) ENDOWMENT_COR,
+                 SUM(MEDICARE_COR) MEDICARE_COR,
+                 SUM(UNEMPLOYMENT_COR)UNEMPLOYMENT_COR,
+                 SUM(ACCIDENT_COR) ACCIDENT_COR,
+                 SUM(MATERNITY_COR) MATERNITY_COR,
+                 SUM(INSURANCE_TOTAL_COR) INSURANCE_TOTAL_COR,
+                 SUM(INSURANCE_TOTAL_PER) INSURANCE_TOTAL_PER,
+                 SUM(P_COMMERCIAL_INSUR_PER) P_COMMERCIAL_INSUR_PER
+          FROM ( 
+               SELECT   HR.DEPTNO,
+                        GET_DEPT_NAME(HR.DEPTNO,'zh') DEPT_NAME,
+                        TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') PAY_MONTH,
+                        NVL(COUNT(HR.DEPTNO),0) PERSON_NUM,
+                        NVL(SUM(PA.P_ENDOWMENT_SUB),0) P_ENDOWMENT_SUB,
+                        NVL(SUM(PA.GROSS_PAY),0) GROSS_PAY,
+                        NVL(SUM(PA.OT_FEE_TOTAL),0) OT_FEE_TOTAL,
+                        NVL(SUM(PA.CPF_PER),0) CPF_PER,
+                        NVL(SUM(PA.NET_PAY),0) NET_PAY,
+                        NVL(SUM(PA.ENDOWMENT_PER),0) ENDOWMENT_PER,
+                        NVL(SUM(PA.UNEMPLOYMENT_PER),0) UNEMPLOYMENT_PER,
+                        NVL(SUM(PA.MEDICARE_PER),0) MEDICARE_PER,
+                        NVL(SUM(PA.PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+                        NVL(SUM(PA.ENDOWMENT_COR),0) ENDOWMENT_COR,
+                        NVL(SUM(PA.MEDICARE_COR),0) MEDICARE_COR,
+                        NVL(SUM(PA.UNEMPLOYMENT_COR),0) UNEMPLOYMENT_COR,
+                        NVL(SUM(PA.ACCIDENT_COR),0) ACCIDENT_COR,
+                        NVL(SUM(PA.MATERNITY_COR),0) MATERNITY_COR,
+                        NVL(SUM(PA.INSURANCE_TOTAL_COR),0) INSURANCE_TOTAL_COR,
+                        NVL(SUM(PA.INSURANCE_TOTAL_PER),0) INSURANCE_TOTAL_PER,
+                        NVL(SUM(PA.P_COMMERCIAL_INSUR_PER),0) P_COMMERCIAL_INSUR_PER
+                     FROM PA_SUMMARY_HTSV PA,HR_EMPLOYEE HR
+                        WHERE PA.PERSON_ID = HR.PERSON_ID
+                        AND HR.DEPTNO IN (
+                         SELECT HD.DEPTNO
+                           FROM HR_DEPARTMENT HD
+                           WHERE 1=1
+                        AND HD.CPNY_ID = 'HTSV'
+                        AND HD.DEPTNO <> 'BJ060102'
+                        START WITH HD.DEPTNO = 'BJ060102'
+                        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+                 ]]>
+                <isNotEmpty prepend="AND" property="EMPLOYEE_OWNED">
+					<![CDATA[
+						HR.EMPLOYEE_OWNED = #EMPLOYEE_OWNED#
+					]]>
+				</isNotEmpty>
+				<![CDATA[
+                      GROUP BY HR.DEPTNO,PA.PAY_DATE,DEPT_NAME)
+                    WHERE PAY_MONTH = #MONTH#
+               GROUP BY DEPT_NAME,PAY_MONTH
+			]]>
+		</isEqual>
+	</select>
+	<select  id="paAllocationForDept" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="HTSV">
+			<![CDATA[
+				SELECT PAY_MONTH,
+                 SUM(PAY_MONTH) PAY_MONTH_CNT,
+                 SUM(PERSON_NUM) PERSON_NUM,
+                 SUM(P_ENDOWMENT_SUB) P_ENDOWMENT_SUB,
+                 SUM(GROSS_PAY) GROSS_PAY,
+                 SUM(OT_FEE_TOTAL) OT_FEE_TOTAL,
+                 SUM(CPF_PER) CPF_PER,
+                 SUM(NET_PAY) NET_PAY,
+                 SUM(ENDOWMENT_PER) ENDOWMENT_PER,
+                 SUM(UNEMPLOYMENT_PER) UNEMPLOYMENT_PER,
+                 SUM(MEDICARE_PER) MEDICARE_PER,
+                 SUM(PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX,
+                 SUM(ENDOWMENT_COR) ENDOWMENT_COR,
+                 SUM(MEDICARE_COR) MEDICARE_COR,
+                 SUM(UNEMPLOYMENT_COR)UNEMPLOYMENT_COR,
+                 SUM(ACCIDENT_COR) ACCIDENT_COR,
+                 SUM(MATERNITY_COR) MATERNITY_COR,
+                 SUM(INSURANCE_TOTAL_COR) INSURANCE_TOTAL_COR,
+                 SUM(INSURANCE_TOTAL_PER) INSURANCE_TOTAL_PER,
+                 SUM(P_COMMERCIAL_INSUR_PER) P_COMMERCIAL_INSUR_PER
+          FROM ( 
+               SELECT   TO_CHAR(TO_DATE(PA.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') PAY_MONTH,
+                        NVL(COUNT(HR.DEPTNO),0) PERSON_NUM,
+                        NVL(SUM(PA.P_ENDOWMENT_SUB),0) P_ENDOWMENT_SUB,
+                        NVL(SUM(PA.GROSS_PAY),0) GROSS_PAY,
+                        NVL(SUM(PA.OT_FEE_TOTAL),0) OT_FEE_TOTAL,
+                        NVL(SUM(PA.CPF_PER),0) CPF_PER,
+                        NVL(SUM(PA.NET_PAY),0) NET_PAY,
+                        NVL(SUM(PA.ENDOWMENT_PER),0) ENDOWMENT_PER,
+                        NVL(SUM(PA.UNEMPLOYMENT_PER),0) UNEMPLOYMENT_PER,
+                        NVL(SUM(PA.MEDICARE_PER),0) MEDICARE_PER,
+                        NVL(SUM(PA.PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+                        NVL(SUM(PA.ENDOWMENT_COR),0) ENDOWMENT_COR,
+                        NVL(SUM(PA.MEDICARE_COR),0) MEDICARE_COR,
+                        NVL(SUM(PA.UNEMPLOYMENT_COR),0) UNEMPLOYMENT_COR,
+                        NVL(SUM(PA.ACCIDENT_COR),0) ACCIDENT_COR,
+                        NVL(SUM(PA.MATERNITY_COR),0) MATERNITY_COR,
+                        NVL(SUM(PA.INSURANCE_TOTAL_COR),0) INSURANCE_TOTAL_COR,
+                        NVL(SUM(PA.INSURANCE_TOTAL_PER),0) INSURANCE_TOTAL_PER,
+                        NVL(SUM(PA.P_COMMERCIAL_INSUR_PER),0) P_COMMERCIAL_INSUR_PER
+                     FROM PA_SUMMARY_HTSV PA,HR_EMPLOYEE HR
+                        WHERE PA.PERSON_ID = HR.PERSON_ID
+                        AND  HR.DEPTNO IN (
+                         SELECT HD.DEPTNO
+                           FROM HR_DEPARTMENT HD
+                           WHERE 1=1
+                        AND HD.CPNY_ID = 'HTSV'
+                        AND HD.DEPTNO IN ($DEPTNO$))
+                         ]]>
+	                <isNotEmpty prepend="AND" property="EMPLOYEE_OWNED">
+						<![CDATA[
+							HR.EMPLOYEE_OWNED = #EMPLOYEE_OWNED#
+						]]>
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+						<![CDATA[
+							HR.EMP_TYPE_CODE IN ($EMP_TYPE_CODE$)
+						]]>
+					</isNotEmpty>
+					<![CDATA[
+                      GROUP BY PAY_DATE)
+                    WHERE PAY_MONTH = #MONTH#
+               GROUP BY PAY_MONTH
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getPaDetaiByDeptNolList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="SPC_DL">
+			<![CDATA[
+			SELECT PAY_DATE,
+			       GET_DEPT_NAME(#DEPTNO#,'zh') DEPTNAME,
+			       GET_DEPT_NAME((SELECT get_parent_deptno_ORG(#DEPTNO#,'SPC_DL',(SELECT TO_CHAR(AR_END_DATE,'YYYY/MM/DD') FROM PA_PAY_SCHEDULE WHERE CPNY_ID = #interCpnyID# AND TO_CHAR(PAY_DATE,'YYYY.MM') = #MONTH#)) FROM DUAL),'zh') PARENT_DEPTNAME,
+			       SUM(PERSON_NUM) PERSON_NUM,
+			       SUM(WAGES_PAID) WAGES_PAID,
+			       SUM(COMPANY_SOCIAL_SECURITY) COMPANY_SOCIAL_SECURITY,
+			       SUM(CPF_COR) CPF_COR,
+			       SUM(INSURANCE_TOTAL_COR) INSURANCE_TOTAL_COR
+			  FROM ( SELECT PAY_DATE,
+			               DEPTNO DEPTNO,
+			               NVL(COUNT(PERSON_ID),0) PERSON_NUM,
+			               NVL(SUM(CASE WHEN WAGES_PAID IS NOT NULL THEN WAGES_PAID ELSE 0 END),0) WAGES_PAID,
+			               NVL(SUM(CASE WHEN COMPANY_SOCIAL_SECURITY IS NOT NULL THEN COMPANY_SOCIAL_SECURITY ELSE 0 END),0) COMPANY_SOCIAL_SECURITY,
+			               NVL(SUM(CASE WHEN CPF_COR IS NOT NULL THEN CPF_COR ELSE 0 END),0) CPF_COR,
+			               NVL(SUM(CASE WHEN INSURANCE_TOTAL_COR IS NOT NULL THEN INSURANCE_TOTAL_COR ELSE 0 END),0) INSURANCE_TOTAL_COR
+			          FROM PA_SUMMARY_SPC_DL
+			         WHERE PAY_SCHEDULE_NO = (SELECT  PAY_SCHEDULE_NO FROM PA_PAY_SCHEDULE P WHERE P.CPNY_ID = 'SPC_DL' AND  TO_CHAR(PAY_DATE,'YYYY.MM') =#MONTH#)
+			           AND PERSON_ID NOT LIKE '111111%'
+			           AND DEPTNO  IN (
+		                         SELECT DISTINCT(HD.DEPTNO)
+		                           FROM ORG_INFO HD
+		                           WHERE  HD.CPNY_ID = 'SPC_DL'
+		                        START WITH HD.DEPTNO = #DEPTNO#
+		                        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO
+	                        )
+			         GROUP BY DEPTNO, PAY_DATE)
+         		GROUP BY PAY_DATE
+			]]>
+		</isEqual>
+	</select>
+	<select  id="getPositionList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT POSITION,
+				GET_GLOBAL_NAME(POSITION,'zh') POSITION_NAME,
+				get_description(POSITION) POSITION_DES
+		  FROM HR_EMPLOYEE
+		 WHERE POSITION IS NOT NULL
+		   AND POST_FAMILY = #POST_FAMILY#
+		   AND CPNY_ID = #interCpnyID#
+		 GROUP BY POSITION
+		 ORDER BY POSITION
+	</select>
+	<select  id="getPostGradeNOList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT POST_GRADE_NO,
+				GET_GLOBAL_NAME(POST_GRADE_NO,'zh') POST_GRADE_NAME,
+				get_description(POST_GRADE_NO) POST_GRADE_DES
+		  FROM HR_EMPLOYEE
+		 WHERE POST_GRADE_NO IS NOT NULL
+		   AND POSITION = #POSITION#
+		   AND CPNY_ID = #interCpnyID#
+		 GROUP BY POST_GRADE_NO
+		 ORDER BY POST_GRADE_NO
+	</select>
+	<select  id="getPostGradeNOForPostFamilyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT POST_GRADE_NO,
+				GET_GLOBAL_NAME(POST_GRADE_NO,'zh') POST_GRADE_NAME,
+				get_description(POST_GRADE_NO) POST_GRADE_DES
+		  FROM HR_EMPLOYEE
+		 WHERE POST_GRADE_NO IS NOT NULL
+		   AND POST_FAMILY = #POST_FAMILY#
+		   AND CPNY_ID = #interCpnyID#
+		 GROUP BY POST_GRADE_NO
+		 ORDER BY POST_GRADE_NO
+	</select>
+	<select  id="getDeptChildList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT DEPTNO,
+				GET_DEPT_NAME(DEPTNO,'zh') DEPTNAME
+		  FROM HR_DEPARTMENT
+		WHERE PARENT_DEPT_NO IN ( 
+			 SELECT DEPTNO
+			  FROM HR_DEPARTMENT
+			 WHERE PARENT_DEPT_NO IN (#PARENT_DEPT_NO#)
+			  AND CPNY_ID = #interCpnyID#
+		)
+		  AND CPNY_ID = #interCpnyID#
+	</select>
+	<select  id="getDeptChildGroupList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		 SELECT SUBSTR(DEPTNAME,1,INSTR(DEPTNAME,'-')-1) DEPTNAMESTR FROM (
+		SELECT DEPTNO,
+				GET_DEPT_NAME(DEPTNO,'zh') DEPTNAME
+		  FROM HR_DEPARTMENT
+		WHERE PARENT_DEPT_NO IN ( 
+			 SELECT DEPTNO
+			  FROM HR_DEPARTMENT
+			 WHERE PARENT_DEPT_NO IN ($PARENT_DEPT_NO$)
+			  AND CPNY_ID = #interCpnyID#
+		)
+		  AND CPNY_ID = #interCpnyID#) GROUP BY SUBSTR(DEPTNAME,1,INSTR(DEPTNAME,'-')-1)
+	</select>
+	<select id="getDeptForLeve" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DEPTNO ,
+			GET_DEPT_LEVE(DEPTNO,#interCpnyID#) DEPT_LEVE,
+			GET_DEPT_NAME(GET_PARENT_DEPTNO(DEPTNO,#interCpnyID#),#interCpnyID#) PARENT_DEPTNAME
+			FROM HR_DEPARTMENT HR
+			WHERE CPNY_ID = #interCpnyID# 
+				AND GET_DEPT_LEVE(DEPTNO,#interCpnyID#) IN ($DEPT_LEVE$) 
+				AND ((SELECT NVL(SUM(1),0) FROM HR_DEPARTMENT WHERE PARENT_DEPT_NO = HR.DEPTNO)<=0 
+						OR GET_DEPT_LEVE(DEPTNO,#interCpnyID#) IN ($INCLUDE_DEPTNO$))
+				ORDER BY DEPTNO
+		]]>
+	</select>
+	<select  id="getManagementSituationList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="SPC_DL">
+			<![CDATA[
+				SELECT 
+				  #DEPTNO# DEPTNO,
+				  GET_DEPT_NAME(#DEPTNO#,'zh') DEPT_NAME,
+				  HR.POST_GRADE_NO,
+				  GET_GLOBAL_NAME(HR.POST_GRADE_NO,'zh') POST_GRADE_NAME,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN 1 ELSE 0 END ) PERSON_NUM_1,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_1,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_1,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN CPF_COR ELSE 0 END ) CPF_COR_1，
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN 1 ELSE 0 END ) PERSON_NUM_2,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_2,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_2,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN CPF_COR ELSE 0 END ) CPF_COR_2，
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN 1 ELSE 0 END ) PERSON_NUM_3,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_3,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_3,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN CPF_COR ELSE 0 END ) CPF_COR_3,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN 1 ELSE 0 END ) PERSON_NUM_4,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_4,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_4,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN CPF_COR ELSE 0 END ) CPF_COR_4,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN 1 ELSE 0 END ) PERSON_NUM_5,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_5,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_5,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN CPF_COR ELSE 0 END ) CPF_COR_5,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN 1 ELSE 0 END ) PERSON_NUM_6,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_6,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_6,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN CPF_COR ELSE 0 END ) CPF_COR_6,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN 1 ELSE 0 END ) PERSON_NUM_7,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_7,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_7,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN CPF_COR ELSE 0 END ) CPF_COR_7,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN 1 ELSE 0 END ) PERSON_NUM_8,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_8,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_8,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN CPF_COR ELSE 0 END ) CPF_COR_8,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN 1 ELSE 0 END ) PERSON_NUM_9,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_9,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_9,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN CPF_COR ELSE 0 END ) CPF_COR_9,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN 1 ELSE 0 END ) PERSON_NUM_10,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_10,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_10,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN CPF_COR ELSE 0 END ) CPF_COR_10,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN 1 ELSE 0 END ) PERSON_NUM_11,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_11,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_11,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN CPF_COR ELSE 0 END ) CPF_COR_11,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN 1 ELSE 0 END ) PERSON_NUM_12,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_12,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_12,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN CPF_COR ELSE 0 END ) CPF_COR_12
+				FROM PA_SUMMARY_SPC_DL PS ,HR_EMPLOYEE HR 
+				WHERE PS.PERSON_ID = HR.PERSON_ID
+				AND HR.CPNY_ID = #interCpnyID#
+				AND HR.PERSON_ID NOT LIKE '111111%'
+			]]>
+			<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HR.DEPTNO IN (SELECT HD.DEPTNO
+					            FROM HR_DEPARTMENT HD
+					           WHERE  HD.CPNY_ID = #interCpnyID#
+					           START WITH HD.DEPTNO = #DEPTNO#
+					          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			]]>
+			</isNotEmpty>
+		<![CDATA[
+			GROUP BY HR.POST_GRADE_NO
+			ORDER BY HR.POST_GRADE_NO
+		]]>
+		</isEqual>
+	</select>
+	
+	<select  id="getStoreKitchenSituationList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="interCpnyID" compareValue="SPC_DL">
+			<![CDATA[
+				SELECT 
+				  HR.POST_GRADE_NO,
+				  GET_GLOBAL_NAME(HR.POST_GRADE_NO,'zh') POST_GRADE_NAME,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN 1 ELSE 0 END ) PERSON_NUM_1,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_1,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_1,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.01' THEN CPF_COR ELSE 0 END ) CPF_COR_1，
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN 1 ELSE 0 END ) PERSON_NUM_2,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_2,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_2,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.02' THEN CPF_COR ELSE 0 END ) CPF_COR_2，
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN 1 ELSE 0 END ) PERSON_NUM_3,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_3,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_3,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.03' THEN CPF_COR ELSE 0 END ) CPF_COR_3,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN 1 ELSE 0 END ) PERSON_NUM_4,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_4,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_4,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.04' THEN CPF_COR ELSE 0 END ) CPF_COR_4,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN 1 ELSE 0 END ) PERSON_NUM_5,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_5,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_5,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.05' THEN CPF_COR ELSE 0 END ) CPF_COR_5,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN 1 ELSE 0 END ) PERSON_NUM_6,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_6,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_6,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.06' THEN CPF_COR ELSE 0 END ) CPF_COR_6,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN 1 ELSE 0 END ) PERSON_NUM_7,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_7,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_7,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.07' THEN CPF_COR ELSE 0 END ) CPF_COR_7,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN 1 ELSE 0 END ) PERSON_NUM_8,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_8,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_8,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.08' THEN CPF_COR ELSE 0 END ) CPF_COR_8,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN 1 ELSE 0 END ) PERSON_NUM_9,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_9,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_9,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.09' THEN CPF_COR ELSE 0 END ) CPF_COR_9,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN 1 ELSE 0 END ) PERSON_NUM_10,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_10,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_10,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.10' THEN CPF_COR ELSE 0 END ) CPF_COR_10,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN 1 ELSE 0 END ) PERSON_NUM_11,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_11,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_11,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.11' THEN CPF_COR ELSE 0 END ) CPF_COR_11,
+				
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN 1 ELSE 0 END ) PERSON_NUM_12,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN SALARY_TOTAL ELSE 0 END ) SALARY_TOTAL_12,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN COMPANY_SOCIAL_SECURITY ELSE 0 END ) COMPANY_SOCIAL_SECURITY_12,
+				  SUM(CASE WHEN TO_CHAR(TO_DATE(PS.PAY_DATE,'YYYY.MM.DD'),'YYYY.MM') = #YEAR#||'.12' THEN CPF_COR ELSE 0 END ) CPF_COR_12
+				FROM PA_SUMMARY_SPC_DL PS ,HR_EMPLOYEE HR 
+				WHERE PS.PERSON_ID = HR.PERSON_ID
+				AND HR.CPNY_ID = #interCpnyID#
+				AND HR.DEPTNO   IN (
+                        SELECT HD.DEPTNO
+                        FROM HR_DEPARTMENT HD
+                        WHERE HD.CPNY_ID = 'SPC_DL'
+                        START WITH HD.DEPTNO = 'DL04%'
+                        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			]]>
+			<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HR.DEPTNO = #DEPTNO#
+			]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPTNAME">
+			<![CDATA[
+				GET_DEPT_NAME(HR.DEPTNO,'zh') LIKE '$DEPTNAME$%'
+			]]>
+			</isNotEmpty>
+		<![CDATA[
+			GROUP BY HR.POST_GRADE_NO
+			ORDER BY HR.POST_GRADE_NO
+		]]>
+		</isEqual>
+	</select>
+</sqlMap>

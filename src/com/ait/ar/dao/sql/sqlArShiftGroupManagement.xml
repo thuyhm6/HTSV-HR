@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arShiftGroupManagement">
+	<select id="getArBaseEmpInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   select 
+					  hre.PERSON_ID,
+					  hre.EMPID,
+					  hre.LOCAL_NAME,
+					  hrd.org_name_local DEPTNAME,
+					  sgn.content POST_GRADE,
+					  get_work_area_name(hre.cpny_id,hre.WORK_AREA,#interLanguage:VARCHAR#) WORK_AREA_NAME,
+					  get_global_name(hre.WORK_HOUR_TYPE,#interLanguage:VARCHAR#) WORK_HOUR_TYPE,
+					  get_global_name(hre.POSITION,#interLanguage:VARCHAR#) POSITION_NAME
+					from hr_employee hre,hr_department hrd,sy_global_name sgn
+					where hre.cpny_id = #interCpnyID:VARCHAR#
+					and hre.deptno = hrd.deptid
+					and hre.post_grade_no = sgn.no(+)
+					and sgn.language(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HRE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+		 		   hre.POSITION = #POSITION:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		   hre.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+			<![CDATA[
+		 		  hre.post_grade_no = #POST_GRADE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 		  hre.emp_type_code = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  hre.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="includeLeftManYN">
+			<![CDATA[
+		 		  hre.date_left is null
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			   
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY HRE.EMPID
+		]]>
+	</select>
+	<select id="getArBaseEmpInfoCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			select 
+					  count(hre.person_id)
+					from hr_employee hre
+					where hre.cpny_id = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HRE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		   hre.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+			<![CDATA[
+		 		  hre.post_grade_no = #POST_GRADE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 		  hre.emp_type_code = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  hre.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="includeLeftManYN">
+			<![CDATA[
+		 		  hre.date_left is null
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			   
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getArBaseEmpInfoDetail" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+				  HRE.EMPID,
+				  HRE.LOCAL_NAME,
+				  get_dept_name(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+				  get_global_name(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POST_GRADE,
+				  get_global_name(HRE.POSITION,#interLanguage:VARCHAR#)POSITION_NAME,
+				  HRE.EMP_OFFICE,
+				  get_global_name(HRE.EMP_OFFICE,#interLanguage:VARCHAR#)EMP_OFFICE_NAME,
+				  get_global_name(HRE.EMP_TYPE_CODE,#interLanguage:VARCHAR#)EMP_TYPE,
+				  HRE.ID_CARD_NO,
+				  HRE.WORK_HOUR_TYPE,
+				  TO_CHAR(HRE.DATE_STARTED,'YYYY.MM.DD')DATE_STARTED,
+				  TO_CHAR(HRE.END_PROBATION_DATE,'YYYY.MM.DD')END_PROBATION_DATE,
+				  CASE WHEN HRE.END_PROBATION_DATE <= SYSDATE THEN 'N'ELSE 'Y'END PROBATION_YN,
+				  TO_CHAR(HRE.DATE_LEFT,'YYYY.MM.DD')DATE_LEFT,
+				  get_work_area_name(hre.cpny_id,hre.WORK_AREA,#interLanguage:VARCHAR#) WORK_AREA_NAME,
+				  HPI.PHOTO_PATH,
+				  HRE.PERSON_ID,
+				  get_global_name(HRE.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NAME,
+				  HRE.DUTY_NO,
+				  TRUNC(MONTHS_BETWEEN(NVL(HRE.DATE_LEFT,SYSDATE),HRE.DATE_STARTED)/12) || '年' 
+		         || TRUNC(MOD(MONTHS_BETWEEN(NVL(HRE.DATE_LEFT,SYSDATE),HRE.DATE_STARTED),12)) || '个月'  WORK_TIME
+				FROM HR_EMPLOYEE HRE,HR_PERSONAL_INFO HPI
+				WHERE HRE.PERSON_ID = HPI.PERSON_ID
+				AND HRE.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	<select id="getArEmpShiftGroupFinalInfo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT *
+				  FROM (SELECT get_global_name(TT.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME,
+				               TO_CHAR(TT.START_DATE, 'YYYY.MM.DD') START_DATE,
+				               get_emp_local_name(TT.CREATED_BY,#interLanguage:VARCHAR#) || ' ' ||
+				               TT.CREATED_IP CREATED_BY,
+				               TO_CHAR(TT.CREATE_DATE, 'YYYY.MM.DD') CREATE_DATE
+				          FROM AR_SHIFTGROUP_MANAGEMENT TT
+				         WHERE TT.PERSON_ID = #PERSON_ID:VARCHAR#
+				         ORDER BY TT.START_DATE DESC) MYDATA
+				 WHERE ROWNUM = 1
+		]]>
+	</select>
+	<update id="updateArBaseEmpInfoDetail" parameterClass="linkMap">
+				     <![CDATA[
+					    UPDATE HR_EMPLOYEE
+					       SET ID_CARD_NO = #ID_CARD_NO:VARCHAR#,
+					           WORK_HOUR_TYPE = #WORK_HOUR_TYPE#,
+					           UPDATE_DATE = SYSDATE,
+					           UPDATED_BY = #adminID:VARCHAR#,
+					           UPDATED_IP = #adminIP:VARCHAR#
+					     WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+					       AND CPNY_ID = #interCpnyID#
+			    ]]>
+	</update>
+	
+	<select id="getArShiftRecordCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+						SELECT hre.PERSON_ID,
+						       hre.EMPID,
+						       hre.LOCAL_NAME,
+						       hre.emp_type_code,
+						       get_dept_name(hrd.deptno,#interLanguage#) DEPTNAME,
+						       sgn.content POST_GRADE,
+						       get_global_name(hre.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME
+						  from hr_employee hre, hr_department hrd, sy_global_name sgn
+						 where hre.cpny_id = #interCpnyID:VARCHAR#
+						   and hre.deptno = hrd.deptid
+						   and hre.post_grade_no = sgn.no(+)
+						   and sgn.language(+) = #interLanguage:VARCHAR#
+						   and hre.PERSON_ID NOT LIKE '111111%'
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HRE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		   hre.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+			<![CDATA[
+		 		  hre.post_grade_no = #POST_GRADE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 		  hre.emp_type_code = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+		 		  hre.emp_office <> '15120'
+		    ]]>
+		</isEmpty>
+		
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  hre.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="includeLeftManYN">
+			<![CDATA[
+		 		  hre.date_left is null
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			   
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY HRE.EMPID
+		]]>
+	</select>
+	<select id="getArShiftRecordCheckListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			select 
+					  count(hre.person_id)
+					from hr_employee hre
+					where hre.cpny_id = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HRE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		   hre.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+			<![CDATA[
+		 		  hre.post_grade_no = #POST_GRADE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 		  hre.emp_type_code = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		  hre.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="includeLeftManYN">
+			<![CDATA[
+		 		  hre.date_left is null
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="limit">
+			<isEqual prepend="" property="limit" compareValue="ar">
+				<![CDATA[
+			   
+			        ( EXISTS (
+			             SELECT 1 FROM AR_SUPERVISOR_INFO B
+			             WHERE B.DEPTNO = HRE.DEPTNO
+			                AND B.PERSON_ID = #supervisorPersonId#
+			                AND ROWNUM = 1
+			      ) OR HRE.PERSON_ID = #supervisorPersonId# ) 
+	             ]]>
+	        </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getArShiftRecordCheckInfoDetail" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				  SELECT  HAR.PERSON_ID,
+                          TO_CHAR(HAR.START_DATE, 'DD-MM-YYYY') START_DATE,
+                          get_global_name(HAR.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME,
+                          HAR.REMARK  
+                   FROM   AR_SHIFTGROUP_MANAGEMENT HAR,HR_EMPLOYEE HRE
+                  WHERE   HAR.PERSON_ID = HRE.PERSON_ID
+                    AND   HAR.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getArClassCalendarListForNormalShift" parameterClass="linkMap" resultClass="linkMap">
+		 <![CDATA[
+				  SELECT    
+                         TO_CHAR(C.DDATE, 'dd.MM.yyyy') DDATE,
+                         CASE WHEN C.IWEEK = 0 THEN 'CN' ELSE TO_CHAR(C.IWEEK + 1) END IWEEK,
+                         get_global_name(C.TYPEID,#interLanguage:VARCHAR#) DATETYPENAME,
+                         get_global_name(c.shift_no,#interLanguage:VARCHAR#) SHIFT_NAME,
+                         SUBSTR(get_ar_shift_time(c.shift_no,TO_CHAR(DDATE, 'yyyyMMdd'),c.cpny_id,'FIRST'),12,5) || '~' ||
+                         SUBSTR(get_ar_shift_time(c.shift_no,TO_CHAR(DDATE, 'yyyyMMdd'),c.cpny_id,'LAST'),12,5) WORKTIME
+                    FROM AR_CALENDER_GROUP C 
+                   WHERE C.CPNY_ID = #interCpnyID:VARCHAR#
+                     AND C.DDATE BETWEEN GET_AR_FIRST_DATE(TO_CHAR(TO_DATE(#DDATE:VARCHAR#,'MMYYYY'),'YYYYMM'),#interCpnyID:VARCHAR#,'') AND
+                                    GET_AR_LAST_DATE(TO_CHAR(TO_DATE(#DDATE:VARCHAR#,'MMYYYY'),'YYYYMM'),#interCpnyID:VARCHAR#,'')  
+                     AND C.GROUP_ID = #SHIFT_NO:VARCHAR#
+		                
+	    ]]>
+	   <![CDATA[
+		          ORDER BY IYEAR, IMONTH, IDAY
+		]]>
+	</select>
+	<select id="getArClassCalendarList" parameterClass="linkMap" resultClass="linkMap">
+		 <![CDATA[
+						SELECT TO_CHAR(C.DDATE, 'dd.MM.yyyy') DDATE,
+				               CASE WHEN C.IWEEK = 0 THEN 'CN' ELSE TO_CHAR(C.IWEEK + 1) END IWEEK,
+				               S1.CONTENT DATETYPENAME,
+				               S2.CONTENT SHIFT_NAME,
+				               SUBSTR(get_ar_shift_time(c.shift_no,TO_CHAR(DDATE, 'yyyyMMdd'),c.cpny_id,'FIRST'),12,5) || '~' ||
+				               SUBSTR(get_ar_shift_time(c.shift_no,TO_CHAR(DDATE, 'yyyyMMdd'),c.cpny_id,'LAST'),12,5) WORKTIME,
+				               AS010.SHIFT_SHORTNAME
+				          FROM AR_CALENDER C,
+				               SY_GLOBAL_NAME S1,
+				               SY_GLOBAL_NAME S2,
+				               AR_SHIFT010 AS010
+				         WHERE C.TYPEID = S1.NO(+)
+				           AND S1.LANGUAGE(+) = #interLanguage#
+				           AND C.SHIFT_NO = S2.NO(+)
+				           AND S2.LANGUAGE(+) = #interLanguage#
+				           AND C.SHIFT_NO = AS010.SHIFT_NO(+)
+				           AND C.CPNY_ID = #interCpnyID:VARCHAR#    
+				           AND C.DDATE BETWEEN GET_AR_FIRST_DATE(TO_CHAR(TO_DATE(#DDATE:VARCHAR#,'MMYYYY'),'YYYYMM'),#interCpnyID:VARCHAR#,'') AND
+				                          GET_AR_LAST_DATE(TO_CHAR(TO_DATE(#DDATE:VARCHAR#,'MMYYYY'),'YYYYMM'),#interCpnyID:VARCHAR#,'')				    
+	    ]]>  
+    
+	    <![CDATA[
+	      ORDER BY IYEAR, IMONTH, IDAY
+	    ]]>
+	</select>
+	
+	<select id="getArShiftMonthCheckListViewHtmlCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 select 
+					  count(C.DDATE)
+					from AR_CALENDER_GROUP C
+					where C.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		 <isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+		 		 C.SHIFT_NO = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+</sqlMap>

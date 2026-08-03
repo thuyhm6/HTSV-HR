@@ -1,0 +1,42 @@
+.uploadify {
+	POSITION: relative; MARGIN-BOTTOM: 1em
+}
+.uploadify-button {
+	BACKGROUND-IMAGE: url(../img/button_s.png); LINE-HEIGHT: 24px; PADDING-LEFT: 5px; BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: 0px -200px; HEIGHT: 25px
+}
+.uploadify-button SPAN {
+	BACKGROUND-IMAGE: url(../img/button_s.png); LINE-HEIGHT: 24px; PADDING-RIGHT: 5px; BACKGROUND-REPEAT: no-repeat; FONT-FAMILY: "Microsoft YaHei", ??????; BACKGROUND-POSITION: 100% -250px; FLOAT: left; HEIGHT: 24px; COLOR: rgb(97,97,97); FONT-SIZE: 12px; FONT-WEIGHT: normal
+}
+.disabled.uploadify-button {
+	BACKGROUND-COLOR: #d0d0d0; COLOR: #fefefe
+}
+.uploadify-queue {
+	MARGIN-BOTTOM: 1em
+}
+.uploadify-queue-item {
+	PADDING-BOTTOM: 10px; BACKGROUND-COLOR: #f5f5f5; MARGIN-TOP: 5px; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; FONT: 11px Verdana, Geneva, sans-serif; MAX-WIDTH: 350px; PADDING-TOP: 10px; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px
+}
+.uploadify-error {
+	BACKGROUND-COLOR: #fde5dd !important
+}
+.uploadify-queue-item .cancel A {
+	TEXT-INDENT: -9999px; WIDTH: 16px; BACKGROUND: url(../img/uploadify-cancel.png) no-repeat 0px 0px; FLOAT: right; HEIGHT: 16px
+}
+.completed.uploadify-queue-item {
+	BACKGROUND-COLOR: #e5e5e5
+}
+.uploadify-progress {
+	BACKGROUND-COLOR: #e5e5e5; MARGIN-TOP: 10px; WIDTH: 100%
+}
+.uploadify-progress-bar {
+	BACKGROUND-COLOR: #0099ff; WIDTH: 1px; HEIGHT: 3px
+}
+.my-uploadify-button {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BACKGROUND: none transparent scroll repeat 0% 0%; BORDER-TOP: medium none; BORDER-RIGHT: medium none; border-radius: 0; text-shadow: none
+}
+.uploadify:hover .my-uploadify-button {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BACKGROUND: none transparent scroll repeat 0% 0%; BORDER-TOP: medium none; BORDER-RIGHT: medium none
+}
+.fileQueue {
+	BORDER-BOTTOM: #e5e5e5 1px solid; BORDER-LEFT: #e5e5e5 1px solid; WIDTH: 400px; MARGIN-BOTTOM: 10px; HEIGHT: 100px; OVERFLOW: auto; BORDER-TOP: #e5e5e5 1px solid; BORDER-RIGHT: #e5e5e5 1px solid
+}

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "sql-map-2.dtd" >
+<sqlMap namespace="is.companymaintain">
+	<insert id="addIsCompanyInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_COMPANY
+			  (CP_NO, CPNY_ID, CP_NAME, CP_ADDRESS, COST,PERSON_TYPE, CREATE_DATE, CREATE_BY,REMARK)
+			VALUES
+			  (IS_COMPANY_SEQ.NEXTVAL,
+			   #interCpnyID#,
+			   #CP_NAME#,
+			   #CP_ADDR#,
+			   #COST:NUMBRIC#,
+			   #PERSON_TYPE#,
+			   SYSDATE,
+			   #CREATE_BY#,
+			   #REMARK#)
+		]]>
+	</insert>
+	<update id="updateIsCompanyInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_COMPANY
+			   SET CP_NAME     = #CP_NAME:VARCHAR#,
+			       CP_ADDRESS  = #CP_ADDR:VARCHAR#,
+			       COST        = #COST:VARCHAR#,
+			       PERSON_TYPE = #PERSON_TYPE:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATE_BY   = #UPDATE_BY:VARCHAR#,
+			       REMARK = #REMARK:VARCHAR#
+			 WHERE CP_NO = #CP_NO:VARCHAR#
+		]]>
+	</update>
+	<delete id="deleteIsCompanyInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM IS_COMPANY WHERE CP_NO = #CP_NO#
+		]]>
+	</delete>
+	<select id="getIsCorpInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.CP_NO, 
+			       T.CP_NAME,
+			       SY.CONTENT CP_ADDR, 
+			       T.CP_ADDRESS,
+			       T.COST,
+			       T.PERSON_TYPE, 
+			       T.REMARK
+			  FROM IS_COMPANY T,SY_GLOBAL_NAME SY
+			 WHERE T.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.CP_ADDRESS = SY.NO(+)
+			   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="CP_NO">
+			<![CDATA[
+				T.CP_NO=#CP_NO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CP_NAME">
+			<![CDATA[
+				T.CP_NAME=#CP_NAME#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="COST">
+			<![CDATA[
+				T.COST=#COST#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_TYPE">
+			<![CDATA[
+				T.PERSON_TYPE=#PERSON_TYPE#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getIsCorpInfoNotCH" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.CP_NO, 
+			       T.CP_NAME,
+			       SY.CONTENT CP_ADDR, 
+			       SY1.CONTENT JOB_TYPE_NAME,
+			       T.CP_ADDRESS,
+			       T.COST,
+			       T.PERSON_TYPE, 
+			       T.REMARK
+			  FROM IS_COMPANY T,SY_GLOBAL_NAME SY,SY_GLOBAL_NAME SY1
+			 WHERE T.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.CP_ADDRESS = SY.NO(+)
+			   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+			   AND T.PERSON_TYPE = SY1.NO(+)
+			   AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+			   
+		]]>
+		<isNotEmpty prepend="AND" property="CP_NO">
+			<![CDATA[
+				T.CP_NO=#CP_NO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CP_NAME">
+			<![CDATA[
+				T.CP_NAME=#CP_NAME#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="COST">
+			<![CDATA[
+				T.COST=#COST#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_TYPE">
+			<![CDATA[
+				T.PERSON_TYPE=#PERSON_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getIsCorpCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			  FROM IS_COMPANY T,SY_GLOBAL_NAME SY
+			 WHERE T.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.CP_ADDRESS = SY.NO(+)
+			   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CP_NO">
+			<![CDATA[
+				T.CP_NO=#CP_NO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CP_NAME">
+			<![CDATA[
+				T.CP_NAME=#CP_NAME#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="COST">
+			<![CDATA[
+				T.COST=#COST#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_TYPE">
+			<![CDATA[
+				T.PERSON_TYPE=#PERSON_TYPE#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getIsCorpCntNotCH" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			 FROM IS_COMPANY T,SY_GLOBAL_NAME SY,SY_GLOBAL_NAME SY1
+			 WHERE T.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.CP_ADDRESS = SY.NO(+)
+			   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+			   AND T.PERSON_TYPE = SY1.NO(+)
+			   AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CP_NO">
+			<![CDATA[
+				T.CP_NO=#CP_NO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CP_NAME">
+			<![CDATA[
+				T.CP_NAME=#CP_NAME#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="COST">
+			<![CDATA[
+				T.COST=#COST#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_TYPE">
+			<![CDATA[
+				T.PERSON_TYPE=#PERSON_TYPE#
+			]]>
+		</isNotEmpty>
+	</select>
+</sqlMap>

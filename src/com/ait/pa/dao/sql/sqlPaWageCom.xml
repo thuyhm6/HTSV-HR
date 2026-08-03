@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.WageCom">
+
+	<sql id="paSearchEmployeeListCondition">
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="seach_DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.Deptno = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.Deptno = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.Deptno = HR_DEPARTMENT.Parent_Dept_No
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="AR_ADMIN_ID">
+			<![CDATA[
+						EXISTS (SELECT *
+						          FROM AR_SUPERVISOR_INFO
+						         WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+						           AND AR_SUPERVISOR_NO = #AR_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SELECT_TYPE">
+			<isEqual property="SELECT_TYPE" compareValue="PA_INSURANCE">
+	          	<![CDATA[	          	
+	          	    NOT EXISTS(SELECT *
+							     FROM $isSummeryTable$
+							    WHERE IS_MONTH = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.EMPID)
+
+		    	]]>
+			</isEqual>
+
+			<isEqual property="SELECT_TYPE" compareValue="PA_BONUS">
+	          	<![CDATA[
+		 		  	 NOT EXISTS(SELECT *
+							     FROM $bnSummeryTable$
+							    WHERE BN_MONTH  = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.EMPID)
+		    	]]>
+			</isEqual>
+
+			<isEqual property="SELECT_TYPE" compareValue="PA_BONUS">
+	          	<![CDATA[
+		 		  	 NOT EXISTS(SELECT *
+							     FROM $bnSummeryTable$
+							    WHERE BN_MONTH  = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.EMPID)
+		    	]]>
+			</isEqual>
+
+
+		</isNotEmpty>
+	</sql>
+	<select id="getPaContrastList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	<![CDATA[ 
+				select 					t.person_id 							as PERSONID,
+                                       t.local_name 							as LOCAL_NAME,
+                                       t.dept_name 							AS DEPTNAME,
+                                       #name# 								AS ITEM,
+                                       (select $id$
+                                          from pa_summary_lgech
+                                         where pa_summary_lgech.person_id = t.person_id
+                                           and pa_month = #Monthfrom#) 		AS BENYUE,
+                                       (select $id$
+                                          from pa_summary_lgech
+                                         where pa_summary_lgech.person_id = t.person_id
+                                           and pa_month = #Monthto#) 		AS shangyue,
+                                       ((select $id$
+                                           from pa_summary_lgech
+                                          where pa_summary_lgech.person_id = t.person_id
+                                            and pa_month = #Monthfrom#) -
+                                       (select $id$
+                                           from pa_summary_lgech
+                                          where pa_summary_lgech.person_id = t.person_id
+                                            and pa_month = #Monthto#)) 		AS CHAE,
+                                       abs(((select $id$
+                                               from pa_summary_lgech
+                                              where pa_summary_lgech.person_id = t.person_id
+                                                and pa_month = #Monthfrom#) /
+                                           decode(((select $id$
+                                                       from pa_summary_lgech
+                                                      where pa_summary_lgech.person_id = t.person_id
+                                                        and pa_month = #Monthfrom#) -
+                                                   (select $id$
+                                                       from pa_summary_lgech
+                                                      where pa_summary_lgech.person_id = t.person_id
+                                                        and pa_month = #Monthto#)),
+                                                   0,
+                                                   1))) 					AS BAIFENBI
+                                  from pa_summary_lgech t, hr_employee hr
+ 									where  t.person_id = hr.person_id
+                                 and  abs(((select $id$
+                                               from pa_summary_lgech
+                                              where pa_summary_lgech.person_id = t.person_id
+                                                and pa_month = #Monthfrom#) /
+                                           decode(((select $id$
+                                                       from pa_summary_lgech
+                                                      where pa_summary_lgech.person_id = t.person_id
+                                                        and pa_month = #Monthfrom#) -
+                                                   (select $id$
+                                                       from pa_summary_lgech
+                                                      where pa_summary_lgech.person_id = t.person_id
+                                                        and pa_month = #Monthto#)),
+                                                   0,
+                                                   1))) $TYPE2$  #money:Integer#
+				
+		]]>
+		
+				<isNotEmpty prepend="AND" property="seach_KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #seach_KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#seach_KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #seach_KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_EMP_TYPE">
+			<![CDATA[
+		 		  HR.EMP_TYPE_CODE=#seach_EMP_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="seach_DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.Deptno = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.Deptno = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.Deptno = HR_DEPARTMENT.Parent_Dept_No
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+
+	</select>
+
+	<select id="getPaScreeningList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	<![CDATA[ 
+				select t.person_id as PERSONID,
+                 t.local_name as LOCAL_NAME,
+                 t.dept_name AS DEPTNAME,
+                 #name# AS ITEM,
+                 (select $id$
+                    from pa_summary_lgech
+                   where pa_summary_lgech.person_id = t.person_id
+                     and pa_month = #Monthfrom#) BENYUE,
+                 #money# SHANGYUE,
+                 (select $id$
+                    from pa_summary_lgech
+                   where pa_summary_lgech.person_id = t.person_id
+                     and pa_month = #Monthfrom#) - #money# CHAE
+            from pa_summary_lgech t , hr_employee hr
+ 					where  t.person_id = hr.person_id
+
+		]]>
+				<isNotEmpty prepend="AND" property="seach_KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #seach_KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#seach_KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #seach_KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_EMP_TYPE">
+			<![CDATA[
+		 		  HR.EMP_TYPE_CODE=#seach_EMP_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="seach_DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.Deptno = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.Deptno = #seach_DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.Deptno = HR_DEPARTMENT.Parent_Dept_No
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	<select id="getPaItem" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+	<![CDATA[ 
+			$sql$
+	]]>
+	</select>
+
+</sqlMap>

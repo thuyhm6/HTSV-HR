@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.differencePersonnel">
+	
+	<sql id="getDifferencePersonnelListCondition" >
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTID = HR.DEPTID
+					 START WITH HR_DEPARTMENT.DEPTID = #DEPTID:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.SUPERVISED_DEPTID = HR.DEPTID
+					   AND AR_SUPERVISOR_ID = #AR_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+	</sql>
+	
+	<select id="getDifferencePersonnelList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PA_MONTH, 
+				   T.EMPID, 
+				   EMP_INFO.CHINESENAME,
+				   EMP_INFO.CHINESE_PINYIN,
+				   EMP_INFO.STATUS_NAME,
+    			   EMP_INFO.DEPTID,
+    			   EMP_INFO.DEPTNAME,
+			       EMP_INFO.POST_GRADE_NAME
+			  FROM PA_DIFFERENCE_PERSONNEL T, 
+		]]>
+		
+		<isNotEmpty prepend="" property="DATA_SOURCE">
+			 <isEqual property="DATA_SOURCE" compareValue="HR_EMPLOYEE" >
+	          	<![CDATA[
+		 		  	(
+			 		  	 SELECT #PA_MONTH:VARCHAR# AS PA_MONTH,
+			 		  	 		HR.EMPID,
+						        HR.CHINESENAME,
+						        HR.CHINESE_PINYIN,
+						        HR.STATUS_CODE,
+       							SY0.CODE_NAME AS STATUS_NAME,
+						        HR.DEPTID,
+						        HD.DEPTNAME,
+						        HR.POST_GRADE_CODE,
+						        SY1.POST_GRADE_NAME
+						   FROM HR_EMPLOYEE HR, HR_DEPARTMENT HD, SY_CODE SY0, HR_POST_GRADE SY1
+						  WHERE HR.DEPTID = HD.DEPTID
+						    AND HR.STATUS_CODE = SY0.CODE_ID
+						    AND HR.POST_GRADE_CODE = SY1.POST_GRADE_ID
+				]]>
+				
+				<include refid="getDifferencePersonnelListCondition"/>
+				
+				<![CDATA[
+					  ) 
+		    	]]>
+	        </isEqual>
+	        
+	        <isEqual property="DATA_SOURCE" compareValue="PA_HISTORY" >
+	          	<![CDATA[
+		 		  	(
+			 		  	 SELECT HR.PA_MONTH,
+						        HR.EMPID,
+						        HR.CHINESENAME,
+						        HR.PINYINNAME AS CHINESE_PINYIN,
+						        '' AS STATUS_CODE,
+						        HR.STATUS AS STATUS_NAME,
+						        HR.DEPTID,
+						        HR.DEPARTMENT AS DEPTNAME,
+						        '' AS POST_GRADE_CODE,
+						        HR.POST_GRADE AS POST_GRADE_NAME
+						   FROM PA_HISTORY HR
+						  WHERE HR.PA_MONTH = #PA_MONTH:VARCHAR#
+				]]>
+				
+				<include refid="getDifferencePersonnelListCondition"/>
+				
+				<![CDATA[
+					  ) 
+		    	]]>
+	        </isEqual>
+		</isNotEmpty>
+		<![CDATA[
+					EMP_INFO
+			  WHERE T.EMPID = EMP_INFO.EMPID
+			    AND T.PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+		 
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY EMP_INFO.DEPTID, EMP_INFO.EMPID
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getDifferencePersonnelCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_DIFFERENCE_PERSONNEL T, 
+		]]>
+		
+		<isNotEmpty prepend="" property="DATA_SOURCE">
+			 <isEqual property="DATA_SOURCE" compareValue="HR_EMPLOYEE" >
+	          	<![CDATA[
+		 		  	(
+			 		  	 SELECT #PA_MONTH:VARCHAR# AS PA_MONTH,
+			 		  	 		HR.EMPID
+						   FROM HR_EMPLOYEE HR, HR_DEPARTMENT HD
+						  WHERE HR.DEPTID = HD.DEPTID
+				]]>
+				
+				<include refid="getDifferencePersonnelListCondition"/>
+				
+				<![CDATA[
+					  ) 
+		    	]]>
+	        </isEqual>
+	        
+	        <isEqual property="DATA_SOURCE" compareValue="PA_HISTORY" >
+	          	<![CDATA[
+		 		  	(
+			 		  	 SELECT HR.PA_MONTH,
+						        HR.EMPID,
+						        HR.CHINESENAME,
+						        HR.PINYINNAME AS CHINESE_PINYIN,
+						        HR.DEPTID
+						   FROM PA_HISTORY HR
+						  WHERE HR.PA_MONTH = #PA_MONTH:VARCHAR#
+				]]>
+				
+				<include refid="getDifferencePersonnelListCondition"/>
+				
+				<![CDATA[
+					  ) 
+		    	]]>
+	        </isEqual>
+		</isNotEmpty>
+		
+		<![CDATA[
+					EMP_INFO
+			  WHERE T.EMPID = EMP_INFO.EMPID
+			    AND T.PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+		
+	</select>
+	
+	<insert id="addDifferencePersonnelInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DIFFERENCE_PERSONNEL
+				(
+					PA_MONTH,
+					EMPID,
+					SEQ_NO,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+			VALUES(
+					#PA_MONTH:VARCHAR#,
+					#EMPID:VARCHAR#,
+					PA_DIFFERENCE_PERSONNEL_SEQ.NEXTVAL ,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					NULL,
+					1
+				)
+		]]>
+	</insert>
+	
+	<delete id="deleteDifferencePersonnelInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_DIFFERENCE_PERSONNEL WHERE PA_MONTH = #PA_MONTH:VARCHAR# AND EMPID = #EMPID:VARCHAR#
+		]]>
+	</delete>
+
+</sqlMap>

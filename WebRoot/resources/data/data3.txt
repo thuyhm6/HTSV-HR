@@ -1,0 +1,20 @@
+{"y_axis":{"min":0,"max":200,"steps":10},
+"title":{"text":"人员结构分析"},
+"is_decimal_separator_comma":0,
+"elements":[{
+	"colour":["#d01f3c", "#356aa0", "#C79810"],
+	"text":"人员数量",
+	"values":[6,16,73,183,7,7],
+	"font-size":10,
+	"type":"pie"}],
+	
+	"num_decimals":2,
+	"is_fixed_num_decimals_forced":0,
+	"x_axis":{"labels":{
+		"labels":[{"text":"部长"},
+				  {"text":"经理"},
+				  {"text":"主管"},
+				  {"text":"职员"},
+				  {"text":"实习生"},
+				  {"text":"外包人员"}]}},
+				  "is_thousand_separator_disabled":0} 

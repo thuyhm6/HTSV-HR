@@ -1,0 +1,49 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java"  errorPage="" %>
+<%@ include file="/WEB-INF/view/inc/initTaglibs.jsp"%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+ <html>
+ <title></title>
+ <head>   
+   <meta http-equiv="X-UA-Compatible" content="IE=edge" >	
+   </head>
+<style type="text/css">
+	ul.rightTools {float:right; display:block;}
+	ul.rightTools li{float:left; display:block; margin-left:5px}
+</style>
+
+<div class="pageContent" style="padding:5px">
+	<div class="tabs">
+		<div class="tabsHeader">
+			<div class="tabsHeaderContent">
+				<ul>
+					<li><a href="javascript:;"><span><%--报表类型--%><spring:message code="rp.report.title.reporttype"/></span></a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="tabsContent">
+			<div>
+				<div layoutH="51" style="float:left; display:block; overflow:auto; width:240px; border:solid 1px #CCC; line-height:21px; background:#fff">
+					<c:forEach var="codeInfo" items="${codeInfoTreeList}" varStatus="i"> 
+						<ul class="tree treeFolder">
+							<li><a href="javascript:;">${codeInfo.CONTENT}</a>
+								<c:forEach items="${reportList}" var="report">
+									<c:if test="${report.REPORT_TYPE_NO eq codeInfo.CODE_NO}">
+										<ul><li>  
+											<a href="${report.URL_JSP }?pageNum=1" target="ajax" rel="jbsxBoxPa">${report.REPORT_CONTENT}</a>
+										</li></ul>
+									</c:if>
+								</c:forEach>
+							</li>
+						</ul>
+					</c:forEach>
+				</div>
+				<div id="jbsxBoxPa" class="unitBox" style="margin-left:246px;">
+					<!--#include virtual="list1.html" -->
+				</div>
+			</div>
+		</div>
+		<div class="tabsFooter">
+			<div class="tabsFooterContent"></div>
+		</div>
+	</div>
+</div>

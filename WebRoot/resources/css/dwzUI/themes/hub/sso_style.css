@@ -1,0 +1,19 @@
+@charset "utf-8";
+/* CSS Document */
+
+body{overflow-x:hidden;overflow-y:auto;}
+.pageContent { display:block;overflow:visible;position:relative;padding:0px 5px;margin-bottom:10px}
+.pageFormContent {padding:0px;}
+
+
+.table {border-top:2px solid #E6B8C5;border-left:1px solid #C9C9C9;}
+.table table, .user_table table {border-top:0px solid #E6B8C5;border-left:1px solid #C9C9C9;}
+.table th {line-height:26px;background:#F1F1F1;border-right:1px solid #C9C9C9;border-bottom:1px solid #C9C9C9; text-align:center}
+.table td {line-height:26px;background:#FFF;border-right:1px solid #C9C9C9;border-bottom:1px solid #C9C9C9;}
+.table .talbe, .table .user_table, .user_table .talbe, .user_table .user_table {border-top:0px solid #E6B8C5;border-left:1px solid #C9C9C9;}
+
+.user_table {border-top:2px solid #E6B8C5;}
+.user_table td{border-right:1px solid #C9C9C9;border-bottom:1px solid #C9C9C9;}
+.td_title, .user_table td.td_title {background:#F1F1F1;color:#4B4746;border-right:1px solid #C9C9C9;width:auto;}
+.th_title {border-right:1px solid #C9C9C9;background:#F1F1F1;color:#276FA4;width:auto;}
+

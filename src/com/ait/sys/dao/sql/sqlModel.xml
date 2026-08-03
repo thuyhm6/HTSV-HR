@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.model">
+	
+	<delete id="deleteModel" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM  SY_MODEL			
+			WHERE MTYPE = #mtype#
+			 AND MJSP = #mjsp#
+			 AND MNAME= #mname#
+		]]>	  
+	</delete>
+	<insert id="insertModel" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MODEL(MTYPE,MJSP,MNAME,MCONTENT)
+			VALUES(#mtype#,#mjsp#,#mname#,#mcontent#)
+		]]>	  
+	</insert>
+	
+	<select id="getModel" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SUBSTR(MNAME,1,LENGTH(MNAME)-5) MNAME,MCONTENT
+			FROM SY_MODEL			
+			WHERE MTYPE = #mtype#
+			 AND MJSP = #mjsp#
+		]]>	  
+	</select>
+	
+	<select id="getPosition" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SC.CODE_ID CODE_ID,
+				(CASE WHEN #language# = 'en' then 
+					SC.CODE_EN_NAME
+				ELSE
+					SC.CODE_NAME
+				END) AS CODE_NAME,
+				HP.POST_GRADE_ID
+				
+			FROM HR_POSTGRADE_POSITIONS HP,SY_CODE SC
+			WHERE HP.POSITION_CODE=SC.CODE_ID
+				AND SC.ACTIVITY = 1
+			ORDER BY SC.ORDERNO,NLSSORT(SC.CODE_NAME,'NLS_SORT=SCHINESE_PINYIN_M')
+			]]>
+		  
+	</select>
+	
+	<select id="getPostGrade" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+				(CASE WHEN #language# = 'en' then 
+					POST_GRADE_EN_NAME
+				ELSE
+					POST_GRADE_NAME
+				END) AS POST_GRADE_NAME,
+				POST_GRADE_ID
+				
+			FROM HR_POST_GRADE
+			WHERE ACTIVITY = 1
+			ORDER BY POST_GRADE_ID
+		]]>
+		  
+	</select>
+	
+	<select id="getPostGroup" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+				(CASE WHEN #language# = 'en' then 
+					POST_GROUP_EN_NAME
+				ELSE
+					POST_GROUP_NAME
+				END) AS POST_GROUP_NAME,
+				POST_GROUP_ID
+				
+			FROM HR_POST_GROUP
+			WHERE ACTIVITY = 1
+			ORDER BY POST_GROUP_ID
+		]]>
+		  
+	</select>
+	
+	<select id="getPost" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+				(CASE WHEN #language# = 'en' then 
+					POST_EN_NAME
+				ELSE
+					POST_NAME
+				END) AS POST_NAME,
+				POST_ID,
+				POST_GROUP_ID
+				
+			FROM HR_POST
+			WHERE ACTIVITY = 1
+			ORDER BY NLSSORT(POST_NAME,'NLS_SORT=SCHINESE_PINYIN_M')
+		]]>
+		  
+	</select>
+	
+	<select id="getLanguage" parameterClass="string" resultClass="linkMap">
+		<![CDATA[
+			 SELECT A.LANGUAGE,
+			        B.CONTENT
+			   FROM SY_LANGUAGE    A,
+			        SY_GLOBAL_NAME B
+			  WHERE A.LANGUAGE = B.LANGUAGE(+)
+			    AND B.NO(+) = #codeNo:VARCHAR#
+			    AND A.ACTIVITY = 1
+		]]>
+	</select>
+    
+    <select id="getParentCodeNo" parameterClass="linkMap" resultClass="CodeBean">
+		<![CDATA[
+			SELECT A.CODE_NO AS codeNo
+			  FROM SY_CODE A
+			 WHERE A.DEPTH = 1
+			   /*AND A.CODE_NO = '1439'*/
+			   AND A.ACTIVITY = 1
+			 ORDER BY A.PARENT_CODE_NO,A.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getCode" parameterClass="string" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.CODE_NO,
+				   A.PARENT_CODE_NO
+			  FROM SY_CODE   A
+			 WHERE A.ACTIVITY = 1
+			   AND A.DEPTH = 2
+		]]>
+		<![CDATA[
+			ORDER BY A.ORDERNO
+		]]>
+	</select>
+    
+    <select id="getCodeLanguage" parameterClass="string" resultClass="linkMap">
+		<![CDATA[
+			SELECT C.CODE_NO,C.PARENT_CODE_NO,A.LANGUAGE, B.CONTENT
+			  FROM SY_LANGUAGE A, SY_GLOBAL_NAME B, SY_CODE C
+			 WHERE A.LANGUAGE = B.LANGUAGE(+)
+			   AND B.NO = C.CODE_NO
+			   AND C.ACTIVITY = 1
+			   AND A.ACTIVITY = 1
+		]]>
+	</select>
+    
+    <select id="getCodeParamList" parameterClass="string" resultClass="linkMap">
+		<![CDATA[
+			 SELECT T.CPNY_ID, 
+			        T.CODE_NO 
+			   FROM SY_CODE_PARAM T 
+			  WHERE T.ACTIVITY = 1
+		]]>
+		<![CDATA[
+			ORDER BY T.ORDERNO
+		]]>
+	</select>
+    <select id="getSelectTable" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			select get_global_name($PARENTTABLEFIELD$,#language#) CODE_NAME,$PARENTTABLEFIELD$ CODE_NO from $TABLENAME$
+			where CPNY_ID=#CPNY_ID# AND ACTIVITY = 1
+		]]>
+	</select>
+	 <select id="getSelectTableByHrDept" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			select get_dept_name($PARENTTABLEFIELD$,#language#) CODE_NAME,$PARENTTABLEFIELD$ CODE_NO from $TABLENAME$
+			where CPNY_ID=#CPNY_ID# AND ACTIVITY = 1
+		]]>
+	</select>
+</sqlMap>

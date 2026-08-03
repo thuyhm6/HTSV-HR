@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.hrmAffirmConfig">
+
+	<!-- 查询人事令页面设置参数(表头信息) -->
+	<select id="getHrmAffirmConfigDistinctList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT  
+               		T1.DISTINCT_FIELD                      				 DISTINCT_FIELD,
+			  		GET_GLOBAL_NAME(T1.ID,#interLanguage:VARCHAR#)       TITLE_NAME,
+               		T1.ORDERNO
+			FROM    
+			         HR_TRANS_CONFIG_PARAM  T1,
+			         SY_GLOBAL_NAME         T2
+			WHERE   
+			         T1.ID=T2.NO
+			AND      T1.ACTIVITY=1
+			AND      T2.LANGUAGE=#interLanguage:VARCHAR#
+		  	ORDER BY T1.ORDERNO
+		]]>
+	</select>
+	
+	<!-- 查询人事令页面设置参数(发令类型) -->
+	<select id="getHrmAffirmConfigTransCodeList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT	T1.CODE_NO      CODE_NO,
+					T2.CONTENT      TRANSFER_TYPE
+			FROM	SY_CODE         T1,
+					SY_GLOBAL_NAME  T2,
+					SY_CODE_PARAM SCP
+			WHERE	T1.CODE_NO=T2.NO
+			AND		T1.PARENT_CODE_NO=123313
+			AND		T1.ACTIVITY=1
+			AND		T2.LANGUAGE=#interLanguage:VARCHAR#
+			AND		T1.CODE_NO = SCP.CODE_NO
+			AND		SCP.CPNY_ID = #interCpnyID:VARCHAR#
+			ORDER BY T1.ORDERNO
+		]]>
+	</select>
+	
+	<!-- 获得上次保存的配置记录 -->
+	<select id="getPreHrmAffirmConfigRecordList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+		           T1.DISTINCT_FIELD       DISTINCT_FIELD,
+		           T1.TRANS_CODE           TRANS_CODE,
+		           GET_GLOBAL_NAME(T1.TRANS_CODE,#interLanguage:VARCHAR#) TRANS_CODE_NAME,
+		           T1.TRANS_CONFIG_FLAG    TRANS_CONFIG_FLAG,
+		           T1.TRANS_SEARCH_FLAG    TRANS_SEARCH_FLAG,
+		           GET_RECORD_FLAG(T1.TRANS_CODE,T1.DISTINCT_FIELD,#interCpnyID:VARCHAR#)  ISCHECKED
+		      FROM 
+		           HR_TRANS_CONFIG T1
+		      WHERE
+		           T1.CPNY_ID=#interCpnyID:VARCHAR#
+		      AND
+		           T1.ACTIVITY=1
+		]]>
+		<isNotEmpty prepend="AND" property="TRANS_CODE">
+			<![CDATA[
+				TRANS_CODE = #TRANS_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY T1.ORDERNO
+		]]>
+	</select>
+	
+	<!-- 查询人事令类型编号 -->
+	<select id="getHrmAffirmConfigTransCodeNoList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+			         T1.CODE_NO      CODE_NO
+			FROM     
+			         SY_CODE         T1,
+			         SY_GLOBAL_NAME  T2
+			WHERE 
+			         T1.CODE_NO=T2.NO
+			AND      T1.PARENT_CODE_NO=123313
+			AND      T1.ACTIVITY=1
+			AND      T2.LANGUAGE=#interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="TRANS_CODE">
+			<![CDATA[
+				T1.CODE_NO = #TRANS_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY 
+					 T1.CODE_NO
+		]]>
+	</select>
+
+	<!-- 保存人事令配置选项 -->
+	<procedure id="saveHrmAffirmConfig" parameterClass="linkMap">
+		<![CDATA[
+			{call save_hrmaffirmcconfig(#CPNY_ID:VARCHAR#,#DISTINCT_FIELD:VARCHAR#,#TRANS_CODE:VARCHAR#,#TRANS_CONFIG_FLAG:VARCHAR#,#TRANS_SEARCH_FLAG:VARCHAR#,#CREATE_BY:VARCHAR#,#ACTIVITY:VARCHAR#)}
+		]]>
+	</procedure>
+	
+	<!-- 按法人删除 -->
+	<delete id="deleteHrmAffirmConfigByCpnyId" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_TRANS_CONFIG H
+			WHERE H.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="TRANS_CODE">
+			<![CDATA[
+				H.TRANS_CODE = #TRANS_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<!-- 按法人ID查询是否存在配置记录 -->
+	<select id="selectHrmAffirmConfigRecords" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0) FROM HR_TRANS_CONFIG H
+			WHERE H.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="TRANS_CODE">
+			<![CDATA[
+				H.TRANS_CODE = #TRANS_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+</sqlMap>

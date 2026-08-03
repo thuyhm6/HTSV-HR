@@ -1,0 +1,70 @@
+package com.ait.web.util;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+
+public class TempltUtil {
+
+	public static final String WORD_TEMPLATE = "/SPC Personal Data Card.ftl";
+	public static final String TEMPLATE_PATH = "/resources/template/hrmCard";
+	public static final String PREVIEW_DOC = "/SPC Personal Data Card.doc";
+	public static final String PREVIEW_DOC1 = "/SPC Become regular.doc";
+	public static final String WORD_TEMPLATE1 = "/SPC Become regular.ftl";
+	
+	public static Template configTemplate(HttpServletRequest request,
+			String temp) throws IOException {
+		Configuration config = new Configuration();
+		ServletContext sc = request.getSession().getServletContext();
+		config.setDirectoryForTemplateLoading(new File(sc
+				.getRealPath(TEMPLATE_PATH)));
+		config.setObjectWrapper(new DefaultObjectWrapper());
+		Template template = config.getTemplate(temp, "UTF-8");
+		return template;
+	}
+
+	public static void toPreviewBJ(HttpServletRequest request, String temp,
+			Map<?, ?> root) {
+		try {
+			String previewPath = request.getSession().getServletContext()
+					.getRealPath("")
+					+ PREVIEW_DOC;
+			Template template = configTemplate(request, temp);
+			FileOutputStream fos = new FileOutputStream(previewPath);
+			Writer out = new OutputStreamWriter(fos, "UTF-8");
+			template.process(root, out);
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public static void toPreviewBJ1(HttpServletRequest request, String temp,
+			Map<?, ?> root) {
+		try {
+			String previewPath = request.getSession().getServletContext()
+					.getRealPath("")
+					+ PREVIEW_DOC1;
+			Template template = configTemplate(request, temp);
+			FileOutputStream fos = new FileOutputStream(previewPath);
+			Writer out = new OutputStreamWriter(fos, "UTF-8");
+			template.process(root, out);
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

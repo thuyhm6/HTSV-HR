@@ -1,0 +1,817 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusInputItemData">
+	<sql id="getBonusInputItemDataListDistinctFieldIsEmpidCondition">
+
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				<![CDATA[
+			 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+					EXISTS(
+			 		  	SELECT *
+						  FROM PA_SUPERVISOR_INFO
+						 WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+						   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+                       T.START_MONTH IS NOT NULL
+                       AND LENGTH(T.START_MONTH)=6
+					   AND ((T.END_MONTH IS NOT NULL AND LENGTH(T.END_MONTH)=6) OR T.END_MONTH IS NULL )
+                       AND ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -0) BETWEEN
+                       TO_DATE(T.START_MONTH, 'YYYYMM') AND
+                       NVL(TO_DATE(T.END_MONTH, 'YYYYMM'), TO_DATE('204912','YYYYMM'))
+		     ]]>
+		</isNotEmpty>
+	</sql>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsEmpid"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			 SELECT HE.EMPID,
+			        HE.LOCAL_NAME,
+			        HD.CONTENT     DEPT_NAME,
+			        SY0.CONTENT    POST_GRADE_NAME,
+			        GET_GLOBAL_NAME(HE.EMP_OFFICE,#interLanguage:VARCHAR#)  EMP_OFFICE,
+		       		HE.IN_THE_DIFFERENCE	IN_THE_DIFFERENCE,
+			        SY2.CONTENT    CPNY_NAME,
+			        T.START_MONTH,
+			        T.END_MONTH,
+			        T.RETURN_VALUE,
+			        T.PARAM_DATA_NO,
+			        T.REMARK
+			   FROM BN_PARAM_DATA      T,
+			        HR_EMPLOYEE        HE,
+			        HR_COMPANY         HR,
+			        HR_DEPARTMENT_NAME HD,
+			        SY_GLOBAL_NAME     SY0,
+			        SY_GLOBAL_NAME     SY2
+			  WHERE T.PERSON_ID = HE.PERSON_ID
+			    AND HE.DEPTNO = HD.DEPTNO(+)
+			    AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.POST_GRADE_NO = SY0.NO(+)
+			    AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.CPNY_ID = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY2.NO(+)
+			    AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+	
+		]]>
+
+		<include refid="getBonusInputItemDataListDistinctFieldIsEmpidCondition" />
+
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  order by HE.EMPID
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsEmpidCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 SELECT COUNT(0)
+			      FROM BN_PARAM_DATA      T,
+			        HR_EMPLOYEE        HE,
+			        HR_COMPANY         HR,
+			        HR_DEPARTMENT_NAME HD,
+			        SY_GLOBAL_NAME     SY0,
+			        SY_GLOBAL_NAME     SY1,
+			        SY_GLOBAL_NAME     SY2
+			  WHERE T.PERSON_ID = HE.PERSON_ID
+			    AND HE.DEPTNO = HD.DEPTNO(+)
+			    AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.POST_GRADE_NO = SY0.NO(+)
+			    AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.STATUS_CODE = SY1.NO(+)
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.CPNY_ID = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY2.NO(+)
+			    AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+	
+		]]>
+
+		<include
+			refid="getBonusInputItemDataListDistinctFieldIsEmpidCondition" />
+
+	</select>
+
+	<sql id="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition">
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  A.PARAM_NO = #PARAM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  A.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="C01_ADMINID">
+			<![CDATA[
+		 		  A.FIELD1_VALUE IN (
+		 		  SELECT DISTINCT T.DEPT_DISTINGUISH_NO FROM HR_DEPARTMENT T WHERE T.DEPTNO IN 
+		 		  (SELECT DEPTNO FROM PA_SUPERVISOR_INFO T WHERE T.PERSON_ID = #C01_ADMINID:VARCHAR#)
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</sql>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsNotEmpid"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       SY1.CONTENT     FIELD1_NAME,
+			       SY2.CONTENT     FIELD2_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK
+			  FROM BN_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+		
+		<include refid="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsNotEmpidCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				     FROM  BN_PARAM_DATA_OTHER A,
+					       HR_COMPANY          HR,
+					       SY_GLOBAL_NAME      SY1,
+					       SY_GLOBAL_NAME      SY2,
+					       SY_GLOBAL_NAME      SY3
+					 WHERE A.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY3.NO(+)
+					   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND A.FIELD1_VALUE = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND A.FIELD2_VALUE = SY2.NO(+)
+					   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#		
+		]]>
+		
+		<include refid="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsCpnyId"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       SY1.CONTENT     FIELD1_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK
+			  FROM BN_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY1,
+			       HR_COMPANY          HC,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = HC.CPNY_ID
+			   AND HC.CPNY_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+
+		]]>
+		
+		<include refid="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsCpnyIdCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM BN_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY1,
+			       HR_COMPANY          HC,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = HC.CPNY_ID
+			   AND HC.CPNY_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>
+		
+		<include refid="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+	
+	<select id="getBonusInputItemDataListDistinctFieldIsDeptNo"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       get_global_name(A.FIELD1_VALUE,#interLanguage:VARCHAR#)     FIELD1_NAME,
+			       SY2.CONTENT     FIELD2_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK
+			  FROM BN_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       hr_department_name      SY2,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.deptno(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+		
+		<include refid="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getBonusInputItemDataListDistinctFieldIsDeptNoCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM BN_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       hr_department_name      SY2,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.deptno(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>
+		
+		<include refid="getBonusInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+
+	<delete id="deleteBonusInputItemDataInfo"
+		parameterClass="linkMap">
+		<![CDATA[
+			DELETE BN_PARAM_DATA WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	<delete id="deleteBonusInputItemDataInfoType"
+		parameterClass="linkMap">
+		<![CDATA[
+			DELETE BN_PARAM_DATA_OTHER WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	<delete id="deleteBonusInputItemDataBatchInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE BN_PARAM_DATA 
+			 WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+        ]]>
+	</delete>
+	
+	<delete id="deleteBonusInputItemDataBatchInfoType" parameterClass="linkMap">
+		<![CDATA[
+			DELETE BN_PARAM_DATA_OTHER 
+			 WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+        ]]>
+	</delete>
+	
+	
+
+	<update id="updateBonusInputItemDataInfo"
+		parameterClass="linkMap">
+		<![CDATA[		
+			UPDATE BN_PARAM_DATA SET
+					RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+					START_MONTH = #START_MONTH:VARCHAR#,
+					END_MONTH = #END_MONTH:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					REMARK = #REMARK:VARCHAR#		 
+			WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#					
+		]]>
+	</update>
+	
+	<update id="updateBonusInputItemDataInfoOther"
+		parameterClass="linkMap">
+		<![CDATA[		
+			UPDATE BN_PARAM_DATA_OTHER SET
+					RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+					START_MONTH = #START_MONTH:VARCHAR#,
+					END_MONTH = #END_MONTH:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					REMARK = #REMARK:VARCHAR#		 		 
+			WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#					
+		]]>
+	</update>
+
+	<select id="checkUpdateBonusInputItemDataPersonInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+                 SELECT COUNT(T.PARAM_DATA_NO) FROM BN_PARAM_DATA T 
+                 WHERE T.PARAM_NO = #PARAM_NO:NUMERIC#
+                 AND   T.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="checkBonusInputItemDataInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+                 SELECT COUNT(T.PARAM_DATA_NO) FROM BN_PARAM_DATA T 
+                 WHERE T.PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</select>
+	
+	<select id="checkBonusInputItemDataInfoType" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+                 SELECT COUNT(T.PARAM_DATA_NO) FROM BN_PARAM_DATA_OTHER T 
+                 WHERE T.PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</select>
+
+	<procedure id="createAddBonusInputItemDataInfo"
+		parameterClass="linkMap">
+		{call BN_PARAM_LIST_P(#PARAM_NO:VARCHAR#)}
+	</procedure>
+	
+	<select id="getBnParamDataList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT DISTINCT IL.FIELD_VALUE,
+			        SY.CONTENT      FIELD_NAME
+			   FROM BN_PARAM_DATA_LIST IL,
+			        SY_GLOBAL_NAME     SY
+			  WHERE IL.FIELD_VALUE = SY.NO(+)
+			    AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField1:VARCHAR# 
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getBnParamDataIsCpnyIdList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  IL.FIELD_VALUE,
+			        SY.CONTENT      FIELD_NAME
+			   FROM BN_PARAM_DATA_LIST IL,
+			 		HR_COMPANY HR,
+			        SY_GLOBAL_NAME     SY
+			  WHERE IL.FIELD_VALUE = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY.NO(+)
+			    AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField1:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getBnParamDataIsDeptNoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT DISTINCT IL.FIELD_VALUE,
+			        SY.CONTENT      FIELD_NAME
+			   FROM BN_PARAM_DATA_LIST IL,
+			        HR_DEPARTMENT_NAME     SY
+			  WHERE IL.FIELD_VALUE = SY.DEPTNO(+)
+			    AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField2:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getBnParamDataTwoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT DISTINCT IL.FIELD_VALUE,
+			        SY1.CONTENT     FIELD_NAME
+			   FROM BN_PARAM_DATA_LIST IL,
+			        SY_GLOBAL_NAME     SY1
+			  WHERE IL.FIELD_VALUE = SY1.NO(+)
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField2:VARCHAR# 	 
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<sql id="getBonusInputItemDataPersonListCondition">
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		   ( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		    A.PERSON_ID =  #PERSON_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		    A.CPNY_ID =  #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                FROM HR_DEPARTMENT
+               WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO
+               START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+              CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.Parent_Dept_No)
+		    ]]>
+		</isNotEmpty>
+	</sql>
+
+	<select id="getBonusInputItemDataPersonList"
+		parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT A.LOCAL_NAME,
+					       B.CONTENT DEPT_NAME,
+					       A.PERSON_ID,
+					       A.EMPID,
+					       B.DEPTNO,
+					       A.CPNY_ID
+					  FROM HR_EMPLOYEE        A,
+					       HR_DEPARTMENT_NAME B
+					 WHERE A.DEPTNO = B.DEPTNO(+)
+					   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+ 
+		]]>
+		<include refid="getBonusInputItemDataPersonListCondition" />
+
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by A.DEPTNO,
+                         A.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<insert id="addBonusInputItemDataInfo" parameterClass="linkMap">
+		<![CDATA[
+		
+			INSERT INTO BN_PARAM_DATA (
+				        PARAM_DATA_NO,
+				        PARAM_NO,
+				        PERSON_ID,
+				        RETURN_VALUE,
+				        CPNY_ID,
+				        ACTIVITY,
+				        CREATE_DATE,
+				        CREATED_BY,
+				        Start_Month,
+				        END_MONTH,
+				        REMARK
+				      )
+				      VALUES(
+				        BN_PARAM_DATA_SEQ.NEXTVAL,
+				        #PARAM_NO:NUMERIC#,
+				        #PERSON_ID:VARCHAR#,
+				        #RETURN_VALUE:VARCHAR#,
+				        #CPNY_ID:VARCHAR#,
+				        1,
+				        SYSDATE,
+				        #CREATED_BY:VARCHAR#,
+				        #START_MONTH:VARCHAR#,
+				        #END_MONTH:VARCHAR#,
+				        #REMARK:VARCHAR#
+				      )    
+		]]>
+	</insert>
+	
+		<insert id="addBonusInputItemOtherDataInfo" parameterClass="linkMap">
+		<![CDATA[
+		
+			INSERT INTO BN_PARAM_DATA_OTHER (
+				        PARAM_DATA_NO,
+				        PARAM_NO,
+				        FIELD1_VALUE,
+				        RETURN_VALUE,
+				        FIELD2_VALUE,
+				        CPNY_ID,
+				        ACTIVITY,
+				        CREATE_DATE,
+				        CREATED_BY,
+				        Start_Month,
+				        END_MONTH,
+				        REMARK
+				      )
+				      VALUES(
+				        BN_PARAM_DATA_SEQ.NEXTVAL,
+				        #PARAM_NO:NUMERIC#,
+				        #FIELD1_VALUE:VARCHAR#,
+				        #RETURN_VALUE:VARCHAR#,
+				        #FIELD2_VALUE:VARCHAR#,
+				        #CPNY_ID:VARCHAR#,
+				        1,
+				        SYSDATE,
+				        #CREATED_BY:VARCHAR#,
+				        #START_MONTH:VARCHAR#,
+				        #END_MONTH:VARCHAR#,
+				        #REMARK:VARCHAR#
+				      )    
+		]]>
+	</insert>
+	
+	<update id="updateBonusInputItemDataInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE BN_PARAM_DATA SET
+					END_MONTH = TO_CHAR(to_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM'),
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#		 
+			WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM BN_PARAM_DATA
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                            AND PERSON_ID = #PERSON_ID:VARCHAR#)
+                  WHERE RN = 1)			
+
+					
+		]]>
+	</update>
+	
+	<update id="updateBonusInputItemDataOtherInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE BN_PARAM_DATA_OTHER SET
+					END_MONTH = TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM'),
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#		 
+			 WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM BN_PARAM_DATA_OTHER
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                            AND FIELD1_VALUE = #FIELD1_VALUE:VARCHAR#
+                            AND CPNY_ID = #CPNY_ID:VARCHAR#	
+							
+		]]>
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE = #FIELD2_VALUE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+			<![CDATA[
+				)
+                  WHERE RN = 1)	
+			]]>
+	</update>
+
+	<select id="getBonusInputItemDataPersonCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+					SELECT COUNT(0)
+					   FROM HR_EMPLOYEE        A,
+					       HR_DEPARTMENT_NAME B
+					 WHERE A.DEPTNO = B.DEPTNO(+)
+					   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<include refid="getBonusInputItemDataPersonListCondition" />
+	</select>
+	
+	<select id="getAddBonusPersonalInputList"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+					SELECT A.PARAM_DATA_NO,
+					       BP.PARAM_NO,
+					       BP.DISTINCT_FIELD,
+					       BP.DISTINCT_FIELD_2ND,
+					       BP.PARAM_ITEM_NO,
+					       NVL(A.START_MONTH, TO_CHAR(SYSDATE, 'YYYYMM')) AS START_MONTH,
+					       NVL(A.END_MONTH, TO_CHAR(SYSDATE, 'YYYYMM')) AS END_MONTH,
+					       NVL(A.RETURN_VALUE, 0) AS RETURN_VALUE,
+					       BP.CPNY_ID,
+					       SY0.CONTENT ITEM_NAME,
+					       SY1.CONTENT CPNY_NAME,
+					       A.REMARK
+					  FROM BN_PARAM_ITEM_PARAM BP,
+					       BN_PARAM_DATA       A,
+					       HR_COMPANY          HR,
+					       SY_GLOBAL_NAME      SY0,
+					       SY_GLOBAL_NAME      SY1
+					 WHERE BP.PARAM_NO = A.PARAM_NO(+)
+					   AND BP.PARAM_ITEM_NO = SY0.NO(+)
+					   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.DISTINCT_FIELD = 'PERSON_ID'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  BP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  A.PERSON_ID(+) = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by A.PARAM_DATA_NO
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getAddBonusPersonalInputListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+					SELECT COUNT(0)
+					     FROM BN_PARAM_ITEM_PARAM BP,
+					       BN_PARAM_DATA       A,
+					       HR_COMPANY          HR,
+					       SY_GLOBAL_NAME      SY0,
+					       SY_GLOBAL_NAME      SY1
+					 WHERE BP.PARAM_NO = A.PARAM_NO(+)
+					   AND BP.PARAM_ITEM_NO = SY0.NO(+)
+					   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  BP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  A.PERSON_ID(+) = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by A.PARAM_DATA_NO
+			]]>
+		</isEmpty>
+
+	</select>
+	
+	<insert id="addBonusInputItemDataPersonInfo" parameterClass="linkMap">
+		<![CDATA[		
+			INSERT INTO BN_PARAM_DATA
+			(
+			   PARAM_DATA_NO,
+			   PARAM_NO,
+			   CPNY_ID,
+			   START_MONTH,
+			   END_MONTH,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY,
+			   RETURN_VALUE,
+			   PERSON_ID,
+			   REMARK,
+			 )
+			VALUES(
+				BN_PARAM_DATA_SEQ.NEXTVAL,
+				#PARAM_NO:NUMERIC#,
+				#CPNY_ID:VARCHAR#,
+				#START_MONTH:VARCHAR#,
+				#END_MONTH:VARCHAR#,
+				SYSDATE,
+				#CREATED_BY:VARCHAR#,
+				1,
+				#RETURN_VALUE:VARCHAR#,
+				#PERSON_ID:VARCHAR#,
+				#REMARK:VARCHAR#
+			)		
+		]]>
+	</insert>
+	
+	<update id="updateBonusInputItemDataPersonInfo"
+		parameterClass="linkMap">
+		<![CDATA[		
+			UPDATE BN_PARAM_DATA SET
+					RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+					START_MONTH = #START_MONTH:VARCHAR#,
+					END_MONTH = #END_MONTH:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					REMARK = #REMARK:VARCHAR#		 
+			WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#					
+		]]>
+	</update>
+</sqlMap>

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusPersonnel">
+
+	<sql id="getBonusPersonnelListCondition">
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+		 		  HPI.BN_CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="BONUS_CALC_FLAG">
+			<![CDATA[
+		 		  C.CALC_FLAG = #BONUS_CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		 		  HR.STATUS_CODE = #STATUS_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="BONUS_GIVE_DATE">
+			<![CDATA[
+				C.GIVE_DATE = TO_DATE(#BONUS_GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				C.PA_MONTH=#PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="bonusYear">
+			<isNotEmpty prepend="" property="bonusMonth">
+				<![CDATA[
+					C.PA_MONTH=#bonusYear:VARCHAR# || #bonusMonth:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<!-- 过滤权限 start -->
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+				    HR.DEPTNO IN  
+				             ]]>
+             <include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+   				    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+    	<!-- 过滤权限 end -->
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		 HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		 HR.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_INFO
+					 WHERE PA_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+	</sql>
+
+	<select id="getBonusPersonnelList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID,
+			       HR.PERSON_ID,
+			       HR.LOCAL_NAME,
+			       HR.CHINESE_PINYIN,
+			       HR.STATUS_CODE,
+			       SY0.CONTENT STATUS_NAME,
+			       HR.DEPTNO,
+			       HD.CONTENT DEPT_NAME,
+			       SY1.CONTENT POST_GRADE_NAME,
+			       HPI.BN_CALC_FLAG,
+			       TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       TO_CHAR(HRE.SETTLEMENT_DATE, 'YYYY-MM-DD') SETTLEMENT_DATE
+			  FROM HR_EMPLOYEE        HR,
+			       HR_EMP_PA_INFO     HPI,
+			       HR_DEPARTMENT_NAME HD,
+			       HR_RESIGNATION     HRE,
+			       SY_GLOBAL_NAME     SY0,
+			       SY_GLOBAL_NAME     SY1
+			 WHERE HR.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HR.PERSON_ID = HRE.PERSON_ID(+)
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.STATUS_CODE = SY0.NO(+)
+			   AND SY0.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HR.POST_GRADE_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND (HRE.ACTIVITY = 1 or nvl(HRE.ACTIVITY,0)= 0)
+
+		]]>
+		 
+		<include refid="getBonusPersonnelListCondition"/>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.EMPID,HR.DEPTNO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getBonusPersonnelCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			     FROM HR_EMPLOYEE        HR,
+			       HR_EMP_PA_INFO     HPI,
+			       HR_DEPARTMENT_NAME HD,
+			       HR_RESIGNATION     HRE,
+			       SY_GLOBAL_NAME     SY0,
+			       SY_GLOBAL_NAME     SY1
+			 WHERE HR.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HR.PERSON_ID = HRE.PERSON_ID(+)
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.STATUS_CODE = SY0.NO(+)
+			   AND SY0.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HR.POST_GRADE_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+		 
+		<include refid="getBonusPersonnelListCondition"/>
+
+	</select>
+
+	<!--<insert id="addBonusPersonnelInfo" parameterClass="linkMap">
+		<![CDATA[
+					INSERT INTO BN_PERSONNEL
+					  (
+					   PA_MONTH,
+					   PERSON_ID,
+					   SEQ_NO,
+					   CREATE_DATE,
+					   CREATED_BY,
+					   ORDERNO,
+					   ACTIVITY,
+					   CPNY_ID
+					   )
+					VALUES
+					  (
+					   #PA_MONTH:VARCHAR#,
+					   #PERSON_ID:VARCHAR#,
+					   BN_PERSONNEL_SEQ.NEXTVAL,
+					   SYSDATE,
+					   #CREATED_BY:VARCHAR#,
+					   (SELECT MAX(NVL(ORDERNO,0))+1 FROM BN_PERSONNEL),
+					   1,
+					   #CPNY_ID:VARCHAR#
+					   )
+		]]>
+	</insert>
+
+
+    <select id="checkAddBonusPersonnelInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					SELECT COUNT(0)
+					  FROM BN_PERSONNEL B
+					 WHERE B.PA_MONTH  = #PA_MONTH:VARCHAR#
+					   AND B.PERSON_ID = #PERSON_ID:VARCHAR#		
+		]]>		
+	</select>
+
+	<delete id="deleteBonusPersonnelInfo" parameterClass="linkMap">
+		<![CDATA[
+				   DELETE BN_PERSONNEL
+				    WHERE PA_MONTH = #PA_MONTH:VARCHAR#
+				      AND PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>  -->
+	<update id="updateBonusPersonnelInfo" parameterClass="linkMap">
+		 	UPDATE HR_EMP_PA_INFO T
+		 	   SET T.BN_CALC_FLAG = #BN_CALC_FLAG:VARCHAR#,
+		 	       T.UPDATE_DATE  = SYSDATE,
+		 	       T.UPDATED_BY   = #UPDATED_BY:VARCHAR#
+		 	WHERE  T.PERSON_ID = #PERSON_ID:VARCHAR#
+	</update>
+
+	<select id="getBonusObjectList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID				EMPID,
+				   HR.PERSON_ID			PERSON_ID,
+			       HR.LOCAL_NAME			CHINESE_NAME,
+			       HR.EMP_OFFICE			EMP_OFFICE,
+			       GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#)  EMP_STATUS,
+		           HR.IN_THE_DIFFERENCE	IN_THE_DIFFERENCE,
+		           HR.POST_GRADE_NO		POST_GRADE_NO,
+		           GET_GLOBAL_NAME(HR.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+		           HR.DEPTNO				DEPTNO,
+                   B.CONTENT         DEPTNAME,
+                   HD.DEPT_DISTINGUISH_NO  DEPT_DISTINGUISH_NO,
+                   GET_GLOBAL_NAME(HD.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) DEPT_DISTINGUISH_NAME,
+                   TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+                   TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+                   TO_CHAR(HRE.SETTLEMENT_DATE, 'YYYY-MM-DD') SETTLEMENT_DATE,
+                   C.CALC_FLAG                CALC_FLAG,
+                   C.PA_MONTH        PA_MONTH,
+                   TO_CHAR(C.GIVE_DATE,'YYYY-MM-DD')      GIVE_DATE,
+                   C.REMARK        REMARK
+            FROM   HR_EMPLOYEE        HR,
+            	   HR_RESIGNATION     HRE,
+                   HR_PERSONAL_INFO   HP,
+                   HR_DEPARTMENT      HD,
+                   HR_DEPARTMENT_NAME B,
+                   BN_CALC_OBJECT     C
+           WHERE   HR.PERSON_ID = HP.PERSON_ID(+)
+             AND   HR.PERSON_ID = HRE.PERSON_ID(+)
+             AND   HR.DEPTNO = HD.DEPTNO(+)
+             AND   HD.DEPTNO = B.DEPTNO(+)
+             AND   B.LANGUAGE = #interLanguage:VARCHAR#
+             AND   C.PERSON_ID = HR.PERSON_ID(+)
+
+		]]>
+		 
+		<include refid="getBonusPersonnelListCondition"/>
+		
+	
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.EMPID,HR.DEPTNO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getBonusObjectListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT 
+				   COUNT(*)
+            FROM   HR_EMPLOYEE        HR,
+            	   HR_RESIGNATION     HRE,
+                   HR_PERSONAL_INFO   HP,
+                   HR_DEPARTMENT      HD,
+                   HR_DEPARTMENT_NAME B,
+                   BN_CALC_OBJECT     C
+           WHERE   HR.PERSON_ID = HP.PERSON_ID(+)
+             AND   HR.PERSON_ID = HRE.PERSON_ID(+)
+             AND   HR.DEPTNO = HD.DEPTNO(+)
+             AND   HD.DEPTNO = B.DEPTNO(+)
+             AND   B.LANGUAGE = #interLanguage:VARCHAR#
+             AND   C.PERSON_ID = HR.PERSON_ID(+)
+
+		]]>
+		 
+		<include refid="getBonusPersonnelListCondition"/>
+
+	</select>
+
+	<update id="updateBonusCalcFlagByPersonId" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE BN_CALC_OBJECT SET
+				CALC_FLAG = #CALC_FLAG:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+</sqlMap>

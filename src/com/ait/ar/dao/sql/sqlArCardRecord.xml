@@ -1,0 +1,812 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arCardRecord">
+<select id="getArCardRecordList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.RECORD_NO,
+			          A.PERSON_ID,
+					  A.CARD_NO,
+					  GET_GLOBAL_NAME(GET_AR_SHIFTNO(B.PERSON_ID,A.AR_DATE_STR,#CPNY_ID:VARCHAR#),#LANGUAGE:VARCHAR#) SHIFT_NAME,
+					  GET_AR_SHIFTNO_WORKTIME(GET_AR_SHIFTNO(B.PERSON_ID,A.AR_DATE_STR,#CPNY_ID:VARCHAR#)) SHIFT_TIME,
+					  TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,
+					  TO_CHAR(A.R_TIME,'DD-MM-YYYY HH24:MI:SS') R_TIME,
+					  TO_CHAR(A.R_TIME,'DD-MM-YYYY') R_DATE,
+					  TO_CHAR(A.R_TIME,'HH24') R_HOUR,
+					  TO_CHAR(A.R_TIME,'MI') R_MINITE,
+					  A.DOOR_TYPE,
+					  A.REMARK,
+					  B.EMPID,
+					  B.LOCAL_NAME,
+					  get_DEPT_NAME(B.DEPTNO,#LANGUAGE:VARCHAR#)		DEPTNAME,
+					  GET_CODE_NAME(B.POST_GRADE_NO,#LANGUAGE:VARCHAR#) POST_GRADE_NAME,
+					  GET_GLOBAL_NAME(GET_AR_SHIFTNO(A.PERSON_ID, A.AR_DATE_STR, B.CPNY_ID),#LANGUAGE:VARCHAR#) SHIFT_NAME,
+                      GET_AR_SHIFTNO_WORKTIME(GET_AR_SHIFTNO(A.PERSON_ID, A.AR_DATE_STR, B.CPNY_ID)) SHIFT_TIME,
+					  INSERT_BY,
+					  DECODE(INSERT_BY,'M','Auto','A','Apply','Manual') INSERT_BY_NAME
+				 FROM AR_MAC_RECORDS_HTSV A,	  HR_EMPLOYEE B
+				WHERE  A.PERSON_ID =  B.PERSON_ID
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+		 		A.RECORD_NO = #RECORD_NO:NUMERIC#
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_FAMILY_Multi">
+			<![CDATA[
+		 		B.POST_FAMILY IN ( $POST_FAMILY_Multi$ )
+	    	]]>
+		</isNotEmpty>
+	   	<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+				GET_GLOBAL_NAME(GET_AR_SHIFTNO(B.PERSON_ID,A.AR_DATE_STR,#CPNY_ID:VARCHAR#),#interLanguage:VARCHAR#)  = #SHIFT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+       	<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE B.DEPTNO = F.DEPTNO
+	 					     AND F.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STIME">
+			<![CDATA[
+				A.AR_DATE_STR >= TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD-MM-YYYY'),'YYYY/MM/DD')
+	    	]]>
+		</isNotEmpty>
+	   	<isEmpty prepend="" property="KEY">
+			<isEmpty prepend="AND" property="STIME">
+				<![CDATA[
+					A.AR_DATE_STR >= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+		    	]]>
+			</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="RTIME">
+		<![CDATA[
+				A.AR_DATE_STR <= TO_CHAR((TO_DATE(#RTIME:VARCHAR#,'DD-MM-YYYY')),'YYYY/MM/DD')
+	    ]]>
+		</isNotEmpty>
+	   	<isEmpty prepend="" property="KEY">
+			<isEmpty prepend="AND" property="RTIME">
+				<![CDATA[
+					A.AR_DATE_STR <= TO_CHAR(SYSDATE ,'YYYY/MM/DD')
+		    	]]>
+			</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="DoorType">
+		<![CDATA[
+		 	     A.DOOR_TYPE = #DoorType:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RecordSource">
+		<![CDATA[
+		 	     A.INSERT_BY = #RecordSource:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     B.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			     B.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.R_TIME DESC,B.DEPTNO,B.EMPID,A.DOOR_TYPE
+		]]>
+	</select>
+	
+<select id="getArCardRecordListS" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.RECORD_NO,
+			          A.PERSON_ID,
+					  A.CARD_NO,
+					  A.AR_DATE_STR,
+					  TO_CHAR(A.R_TIME,'DD-MM-YYYY HH24:MI:SS') R_TIME,
+					  TO_CHAR(A.R_TIME,'DD-MM-YYYY') R_DATE,
+					  TO_CHAR(A.R_TIME,'HH24') R_HOUR,
+					  TO_CHAR(A.R_TIME,'MI') R_MINITE,
+					  A.DOOR_TYPE,
+					  A.REMARK,
+					  B.EMPID,
+					  B.LOCAL_NAME,
+					  get_DEPT_NAME(B.DEPTNO,#LANGUAGE:VARCHAR#)		DEPTNAME,
+					  GET_CODE_NAME(B.POST_GRADE_NO,#LANGUAGE:VARCHAR#) POST_GRADE_NAME,
+					  GET_GLOBAL_NAME(GET_AR_SHIFTNO(A.PERSON_ID, A.AR_DATE_STR, B.CPNY_ID),#LANGUAGE:VARCHAR#) SHIFT_NAME,
+                      GET_AR_SHIFTNO_WORKTIME(GET_AR_SHIFTNO(A.PERSON_ID, A.AR_DATE_STR, B.CPNY_ID)) SHIFT_TIME,
+					  INSERT_BY
+				 FROM AR_MAC_RECORDS_HTSV A, HR_EMPLOYEE B
+				WHERE  A.PERSON_ID =  B.PERSON_ID
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+		 		A.RECORD_NO = #RECORD_NO:NUMERIC#
+	    	]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getArCardRecordDayList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				 SELECT D.LOCAL_NAME,
+				        TO_NUMBER(D.EMPID) EMPID,
+				        D.EMPID AS EMPLOYEE_ID,
+				        D.DEPTNAME,
+				        D.DEPT_TEAM,
+				        D.POST_GRADE_NO_NAME,
+				        GET_AR_EATDEDUCT_TIMES(D.AR_DATE_STR, D.AR_DATE_STR, D.PERSON_ID, 'EAT_TIME') EAT_TIMES,
+				        (SELECT (GET_GLOBAL_NAME(E.LEAVE_TYPE_CODE, #interLanguage:VARCHAR#) ||' ('|| TO_CHAR(E.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') 
+				              ||' - '|| TO_CHAR(E.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI') || ')') FROM ESS_LEAVE_APPLY_TB E
+                         WHERE E.CPNY_ID = D.CPNY_ID
+                           AND E.ACTIVITY = '1'
+                           AND E.BATCH_YN <> '2'
+                           AND E.CONFIRM_FLAG <> '2'
+                           AND E.AFFIRM_FLAG NOT IN ('14014310','14014309')
+                           AND E.PERSON_ID = D.PERSON_ID
+                           AND  D.DDATE_STR BETWEEN TO_CHAR(E.LEAVE_FROM_TIME, 'YYYY/MM/DD') AND TO_CHAR(E.LEAVE_TO_TIME - 8/24, 'YYYY/MM/DD')
+                           AND ROWNUM = 1) LEAVE_CONTENT,
+				        DECODE(D.EMP_TYPE_CODE,'10418',GET_GLOBAL_NAME(D.EMP_TYPE_CODE, #interLanguage:VARCHAR#)) REMAX,
+				        GET_GLOBAL_NAME(GET_AR_SHIFTNO(D.PERSON_ID, D.AR_DATE_STR, D.CPNY_ID),#interLanguage:VARCHAR#) SHIFT_NAME,
+				        GET_AR_SHIFTNO_WORKTIME(GET_AR_SHIFTNO(D.PERSON_ID, D.AR_DATE_STR, D.CPNY_ID)) SHIFT_TIME,
+				        (SELECT GET_EMP_LOCAL_NAME(ARS.CREATED_BY,#interCpnyID:VARCHAR# ) || ' ' || TO_CHAR(ARS.CREATE_DATE, 'DD/MM/YYYY HH24:MI') 
+				             FROM AR_SCHEDULE_HTSV ARS WHERE D.PERSON_ID = ARS.PERSON_ID AND D.AR_DATE_STR = ARS.AR_DATE_STR ) CHANGE_SHIFT_PERSON,
+				        GET_GLOBAL_NAME(D.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+				        D.EMP_TYPE_CODE,
+				        TO_CHAR(TO_DATE(D.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,
+				        D.DDATE_STR,
+				        TO_CHAR(D.IN_TIME,'DD/MM/YYYY') IN_DAY,
+				        TO_CHAR(D.IN_TIME,'HH24:MI') IN_TIME,
+				        TO_CHAR(D.OUT_TIME,'DD/MM/YYYY') OUT_DAY,
+				        TO_CHAR(D.OUT_TIME,'HH24:MI') OUT_TIME
+				   FROM (SELECT HR.LOCAL_NAME,
+				                HR.EMPID,
+				                HR.PERSON_ID,
+                                HR.CPNY_ID,
+                                HR.EMP_TYPE_CODE,
+				                TO_CHAR(HR.DATE_LEFT,'YYYY/MM/DD') DATE_LEFT,
+				                GET_DEPT_NAME(HR.DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+				                GET_DEPT_NAME(GET_DEPT_NO_BY_LEVEL(HR.deptno,hr.cpny_id,'2'), #interLanguage:VARCHAR#) DEPT_TEAM,
+				                GET_GLOBAL_NAME(HR.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NO_NAME,
+				                AR.DDATE_STR AR_DATE_STR,
+				                AR.DDATE_STR DDATE_STR,
+				                (SELECT MIN(IN_TIME) IN_TIME
+				                   FROM (SELECT PERSON_ID,
+				                                AR_DATE_STR,
+				                                DECODE(DOOR_TYPE, 'IN', MIN(R_TIME)) IN_TIME,
+				                                CASE
+				                                  WHEN DOOR_TYPE IS NULL OR DOOR_TYPE <> 'IN' THEN
+				                                   MAX(R_TIME)
+				                                END OUT_TIME
+				                           FROM AR_MAC_RECORDS_HTSV
+				                          WHERE 1 = 1
+				                         ]]>
+			<isNotEmpty prepend="AND" property="STIME">
+				<![CDATA[
+					R_TIME >= TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY')
+		    	]]>
+			</isNotEmpty>
+		   	<isEmpty prepend="" property="KEY">
+				<isEmpty prepend="AND" property="STIME">
+					<![CDATA[
+						R_TIME >= TO_DATE(TO_CHAR(SYSDATE,'YYYY/MM/DD'),'YYYY/MM/DD')
+			    	]]>
+				</isEmpty>
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="RTIME">
+				<![CDATA[
+					R_TIME <= TO_DATE(#RTIME:VARCHAR#,'DD/MM/YYYY')+ 2
+		    	]]>
+			</isNotEmpty>
+		   	<isEmpty prepend="" property="KEY">
+				<isEmpty prepend="AND" property="RTIME">
+					<![CDATA[
+						R_TIME <= TO_DATE(TO_CHAR(SYSDATE,'YYYY/MM/DD'),'YYYY/MM/DD') + 2
+			    	]]>
+				</isEmpty>
+			</isEmpty>
+		                        <![CDATA[                    
+				                          GROUP BY PERSON_ID, AR_DATE_STR, DOOR_TYPE) C
+				                    WHERE C.PERSON_ID = HR.PERSON_ID AND C.AR_DATE_STR = AR.DDATE_STR
+				                 GROUP BY PERSON_ID, AR_DATE_STR) IN_TIME,
+				                 (SELECT MAX(OUT_TIME) OUT_TIME
+				                   FROM (SELECT PERSON_ID,
+				                                AR_DATE_STR,
+				                                DECODE(DOOR_TYPE, 'IN', MIN(R_TIME)) IN_TIME,
+				                                CASE
+				                                  WHEN DOOR_TYPE IS NULL OR DOOR_TYPE <> 'IN' THEN
+				                                   MAX(R_TIME)
+				                                END OUT_TIME
+				                           FROM AR_MAC_RECORDS_HTSV
+				                          WHERE 1 = 1
+				                          ]]>
+			<isNotEmpty prepend="AND" property="STIME">
+				<![CDATA[
+					R_TIME >= TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY')
+		    	]]>
+			</isNotEmpty>
+		   	<isEmpty prepend="" property="KEY">
+				<isEmpty prepend="AND" property="STIME">
+					<![CDATA[
+						R_TIME >= TO_DATE(TO_CHAR(SYSDATE,'YYYY/MM/DD'),'YYYY/MM/DD')
+			    	]]>
+				</isEmpty>
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="RTIME">
+				<![CDATA[
+					R_TIME <= TO_DATE(#RTIME:VARCHAR#,'DD/MM/YYYY')+ 2
+		    	]]>
+			</isNotEmpty>
+		   	<isEmpty prepend="" property="KEY">
+				<isEmpty prepend="AND" property="RTIME">
+					<![CDATA[
+						R_TIME <= TO_DATE(TO_CHAR(SYSDATE,'YYYY/MM/DD'),'YYYY/MM/DD') + 2
+			    	]]>
+				</isEmpty>
+			</isEmpty>
+		                        <![CDATA[
+				                          GROUP BY PERSON_ID, AR_DATE_STR, DOOR_TYPE) C
+				                    WHERE C.PERSON_ID = HR.PERSON_ID AND C.AR_DATE_STR = AR.DDATE_STR
+				                 GROUP BY PERSON_ID, AR_DATE_STR) OUT_TIME
+				           FROM AR_CALENDER AR,HR_EMPLOYEE HR
+				          WHERE AR.CPNY_ID = #interCpnyID:VARCHAR#
+				            AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+				            AND HR.EMPID NOT LIKE '111111%'
+				            AND HR.EMP_TYPE_CODE <> '10418'
+				            ]]>
+				            <!--AND GET_AR_SHIFTNO(HR.PERSON_ID,AR.DDATE_STR,#interCpnyID:VARCHAR#) NOT IN ('14015838','217887')-->
+			<isNotEmpty prepend="AND" property="STIME">
+				<![CDATA[
+					AR.DDATE_STR >= TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+		    	]]>
+			</isNotEmpty>
+		   	<isEmpty prepend="" property="KEY">
+				<isEmpty prepend="AND" property="STIME">
+					<![CDATA[
+						AR.DDATE_STR >= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+			    	]]>
+				</isEmpty>
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="RTIME">
+				<![CDATA[
+					AR.DDATE_STR <= TO_CHAR(TO_DATE(#RTIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+		    	]]>
+			</isNotEmpty>
+		   	<isEmpty prepend="" property="KEY">
+				<isEmpty prepend="AND" property="RTIME">
+					<![CDATA[
+					    AR.DDATE_STR <= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+			    	]]>
+				</isEmpty>
+			</isEmpty>
+		  	<isNotEmpty prepend="AND" property="PERSON_ID">
+				<![CDATA[
+				     HR.PERSON_ID = #PERSON_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+				<![CDATA[
+				     HR.POST_GRADE_NO = #POST_GRADE_NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+		  	<isNotEmpty prepend="AND" property="KEY">
+				<![CDATA[
+			 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    	]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="SHIFT_NO">
+			<![CDATA[
+				GET_GLOBAL_NAME(GET_AR_SHIFTNO(HR.PERSON_ID ,AR.DDATE_STR ,HR.CPNY_ID),#interLanguage:VARCHAR#)  = #SHIFT_NO:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+		  	<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+			 		EXISTS(
+			 		  	SELECT 1
+						  FROM HR_DEPARTMENT
+					     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+						 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+						CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+			 		  )
+		    	]]>
+			</isNotEmpty>
+			<isEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+			 		EXISTS(
+			 		  	SELECT AR_SUPERVISOR_INFO.DEPTNO
+			              FROM AR_SUPERVISOR_INFO
+			             WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+			               AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID#
+			 		  )
+		    	]]>
+			</isEmpty>
+		  	<isNotEmpty prepend="AND" property="POST_FAMILY_Multi">
+				<![CDATA[
+			 		HR.POST_FAMILY IN ( $POST_FAMILY_Multi$ )
+		    	]]>
+			</isNotEmpty>
+			
+			<![CDATA[
+				                 ) D
+               WHERE (DATE_LEFT IS NULL OR DATE_LEFT >= DDATE_STR)
+            ]]>
+            <isNotEmpty prepend="AND" property="CARD_FLAG">
+				<isEqual prepend="" property="CARD_FLAG" compareValue="1">
+			       <![CDATA[
+						(IN_TIME IS NULL AND OUT_TIME IS NOT NULL)
+			    	]]>
+			 	</isEqual>
+			 	<isEqual prepend="" property="CARD_FLAG" compareValue="2">
+			       <![CDATA[
+						(OUT_TIME IS NULL AND IN_TIME IS NOT NULL)
+			    	]]>
+			 	</isEqual>
+			 	<isEqual prepend="" property="CARD_FLAG" compareValue="3">
+			       <![CDATA[
+			       		(IN_TIME IS NULL AND OUT_TIME IS NULL)
+			    	]]>
+			 	</isEqual>
+			 	<isEqual prepend="" property="CARD_FLAG" compareValue="4">
+			       <![CDATA[
+						(IN_TIME IS NOT NULL AND OUT_TIME IS NOT NULL)
+			    	]]>
+			 	</isEqual>
+			</isNotEmpty>
+            <![CDATA[
+            ORDER BY DDATE_STR DESC,IN_TIME
+		  	]]>
+	</select>
+	
+	<select id="getArCardRecordForSelfList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.RECORD_NO,
+					  A.CARD_NO,
+					  TO_CHAR(A.R_TIME,'YYYY-MM-DD HH24:MI:SS') R_TIME,
+					  GET_DEPT_NAME((SELECT DISTINCT HR.DEPTNO FROM HR_EMPLOYEE HR WHERE HR.EMPID = A.CARD_NO), #interLanguage#) DEPTNAME,
+					  TO_CHAR(A.R_TIME,'YYYY-MM-DD') R_DATE,
+					  TO_CHAR(A.R_TIME,'HH24') R_HOUR,
+					  TO_CHAR(A.R_TIME,'MI') R_MINITE,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD HH24:MI') INSERT_TIME,
+					  A.DOOR_TYPE,
+					  A.DEVICENAME,
+					  A.EMPLOYEE_NAME,
+					  A.INSERT_BY
+				 FROM AR_MAC_RECORDS_SST A
+				WHERE  1=1
+				  
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( A.CARD_NO LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.EMPLOYEE_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STIME">
+			<![CDATA[
+				A.R_TIME >= TO_DATE(#STIME:VARCHAR#,'DD-MM-YYYY')
+	    	]]>
+		</isNotEmpty>
+			<isEmpty prepend="AND" property="STIME">
+				<![CDATA[
+					A.R_TIME >= TO_DATE(TO_CHAR(SYSDATE,'YYYY-MM-DD'),'YYYY-MM-DD')
+		    	]]>
+			</isEmpty>
+		<isNotEmpty prepend="AND" property="RTIME">
+			<![CDATA[
+					A.R_TIME <= TO_DATE(#RTIME:VARCHAR#,'DD-MM-YYYY')+ 1
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RTIME">
+			<![CDATA[
+				A.R_TIME <= TO_DATE(TO_CHAR(SYSDATE,'YYYY-MM-DD'),'YYYY-MM-DD') + 1
+	    	]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = (SELECT DISTINCT HR.DEPTNO FROM HR_EMPLOYEE HR WHERE HR.EMPID = A.CARD_NO)
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    	]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_CHAR(A.R_TIME,'YYYY-MM-DD') DESC,A.DOOR_TYPE
+		]]>
+
+	</select>
+	
+		<select id="getArCardRecordListForSelfCnt" parameterClass="linkMap" resultClass="int"  >
+		<![CDATA[
+			  SELECT  COUNT(*)
+				 FROM AR_MAC_RECORDS_HTSV A,
+					  HR_EMPLOYEE B,
+					  HR_DEPARTMENT_NAME C
+				WHERE  A.PERSON_ID =  B.PERSON_ID
+				  AND B.DEPTNO = C.DEPTNO(+)
+				  AND C.LANGUAGE(+) = #LANGUAGE:VARCHAR#
+				  and a.person_id = #PERSONID#
+				  
+	  	]]>
+		<isNotEmpty prepend="AND" property="STIME">
+		<![CDATA[
+				TO_DATE(TO_CHAR(A.R_TIME,'YYYY-MM-DD'),'YYYY-MM-DD') >= TO_DATE(#STIME:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RTIME">
+		<![CDATA[
+				TO_DATE(TO_CHAR(A.R_TIME,'YYYY-MM-DD'),'YYYY-MM-DD') <= TO_DATE(#RTIME:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+	</select>
+ 
+	<select id="getArCardRecordListCnt" parameterClass="linkMap" resultClass="int"  >
+		<![CDATA[
+			  SELECT  COUNT(1)
+				 FROM AR_MAC_RECORDS_HTSV A,
+					  HR_EMPLOYEE B 
+				WHERE  A.PERSON_ID =  B.PERSON_ID
+				   
+				  
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+		 		A.RECORD_NO = #RECORD_NO:NUMERIC#
+	    	]]>
+		</isNotEmpty>
+	   	<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    	]]>
+		</isNotEmpty>
+       	<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE B.DEPTNO = F.DEPTNO
+	 					     AND F.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STIME">
+			<![CDATA[
+				A.AR_DATE_STR >= TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD-MM-YYYY'),'YYYY/MM/DD')
+	    	]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="STIME">
+			<![CDATA[
+				A.AR_DATE_STR >= TO_CHAR(SYSDATE,'YYYY/MM/DD')
+	    	]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="RTIME">
+		<![CDATA[
+				A.AR_DATE_STR < TO_CHAR((TO_DATE(#RTIME:VARCHAR#,'DD-MM-YYYY')+ 1),'YYYY/MM/DD')
+	    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RTIME">
+			<![CDATA[
+				A.AR_DATE_STR < TO_CHAR(SYSDATE + 1,'YYYY/MM/DD')
+	    	]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="DoorType">
+		<![CDATA[
+		 	     A.DOOR_TYPE = #DoorType:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RecordSource">
+		<![CDATA[
+		 	     A.INSERT_BY = #RecordSource:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     B.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			     B.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	 <update id="updateArCardRecordInfo" parameterClass="linkMap" >
+		<![CDATA[
+			  UPDATE AR_MAC_RECORDS_HTSV A
+			     SET R_TIME    = DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'DD-MM-YYYY HH24:MI')),
+				 	 DOOR_TYPE = #DOOR_TYPE:VARCHAR#,
+				 	 AR_DATE_STR = #AR_DATE_STR:VARCHAR#,
+					 INSERT_BY = 'H',
+					 UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					 UPDATE_DATE = SYSDATE,
+					 REMARK = #REMARK:VARCHAR#
+			   WHERE A.RECORD_NO = #RECORD_NO:NUMERIC# 
+	 	]]>
+	 </update>
+	 
+	 <delete id="deleteArCardRecordInfo" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A WHERE A.RECORD_NO = #RECORD_NO# 
+	 	]]>
+	 </delete>
+	 
+	 <delete id="deleteArCardMealInfo" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV_EAT A WHERE A.SEQ = #SEQ# 
+	 	]]>
+	 </delete>
+	 
+	 <delete id="deleteArCardRepeat" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A 
+			  	WHERE A.PERSON_ID = #PERSON_ID:VARCHAR# 
+			  	  AND TO_CHAR(A.R_TIME,'DD-MM-YYYY HH24:MI') = #R_TIME:VARCHAR#
+	 	]]>
+	 </delete>
+	 
+	 <insert id="insertMacRecordList" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI')),
+					  #DOOR_TYPE:VARCHAR#,
+					  1,
+					  'H',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>
+	
+	<insert id="addArCardRecordInfo" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  AR_DATE_STR,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  CREATED_IP,
+					  CREATE_DATE,
+					  
+					  UPDATED_BY,
+					  UPDATED_IP,
+					  UPDATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'DD-MM-YYYY HH24:MI')),
+					  #DoorType:VARCHAR#,
+					  #AR_DATE_STR:VARCHAR#,
+					  1,
+					  'H',
+					  #CREATED_BY:VARCHAR#,
+					  #adminIP:VARCHAR#,
+					  SYSDATE,
+					  
+					  #CREATED_BY:VARCHAR#,
+					  #adminIP:VARCHAR#,
+					  SYSDATE,
+					  
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>
+	 <insert id="addArShiftChangeInfo" parameterClass="linkMap" >
+		<![CDATA[	
+				 	insert into ar_shift_change
+					  (no, person_id, cpny_id, date_str,  create_date, end_date_str,CHANGE_TYPE)
+					values
+					  (ar_shift_change_seq.nextval,
+					   #PERSON_ID#,
+					   #CPNY_ID#,
+					   TO_CHAR(TO_DATE(#R_TIME#,'DD-MM-YYYY HH24:MI')-1,'YYYY/MM/DD'),
+					   sysdate,
+					   TO_CHAR(TO_DATE(#R_TIME#,'DD-MM-YYYY HH24:MI'),'YYYY/MM/DD'),
+					   #CHANGE_TYPE#
+					   )
+		  ]]>
+	 </insert>
+	  <insert id="addArShiftChangeForPreDeleteInfo" parameterClass="linkMap" >
+		<![CDATA[	
+				 	insert into ar_shift_change
+					  (no, person_id, cpny_id, date_str,  create_date, end_date_str,CHANGE_TYPE)
+				    SELECT ar_shift_change_seq.nextval,A.PERSON_ID,
+						#CPNY_ID#,  TO_CHAR(A.R_TIME -1,'YYYY/MM/DD'),
+					    sysdate,
+					    TO_CHAR(A.R_TIME,'YYYY/MM/DD'),
+					    '页面删除刷卡'
+					   FROM AR_MAC_RECORDS_HTSV A WHERE A.RECORD_NO = #RECORD_NO# 
+		  ]]>
+	 </insert>
+	 
+	 <select id="getArCardRecordMealList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.SEQ,
+			          A.EMPID,
+			          A.EAT_DATE,
+			          A.EAT_NAME,
+					  A.EMPLOYEE_NAME,
+					  NVL(B.LOCAL_NAME, A.EMPLOYEE_NAME) LOCAL_NAME,
+					  TO_CHAR(A.R_TIME,'YYYY-MM-DD') R_DATE,
+                      TO_CHAR(A.R_TIME,'HH24:MI:SS') R_TIME,
+					  A.AMOUNT,
+					  (CASE WHEN A.EAT_DATE IN ('BREAKFAST','NIGHT') THEN TO_CHAR(A.R_TIME - 1 , 'YYYY/MM/DD')
+                             ELSE TO_CHAR(A.R_TIME,'YYYY-MM-DD') END ) AS ATTENDANCE_DATE,
+					  GET_AR_TIME_BY_CPNYID(GET_PERSON_ID(A.EMPID), CASE WHEN A.EAT_DATE IN ('BREAKFAST','NIGHT') THEN TO_CHAR(A.R_TIME - 1 , 'YYYY/MM/DD')
+                             ELSE 
+                              TO_CHAR(A.R_TIME,'YYYY-MM-DD') END , 'OUT_DATE_TIME', #CPNY_ID:VARCHAR#) OUTDOOR_TIME,
+					  CASE WHEN get_DEPT_NAME(B.DEPTNO,#LANGUAGE:VARCHAR#) = '' OR get_DEPT_NAME(B.DEPTNO,#LANGUAGE:VARCHAR#) IS NULL THEN A.DEPART_NAME
+                            ELSE get_DEPT_NAME(B.DEPTNO,#LANGUAGE:VARCHAR#) END DEPTNAME,
+					  A.REMARK,
+					  GET_CODE_NAME(B.POST_GRADE_NO,#LANGUAGE:VARCHAR#) POST_GRADE_NAME,
+					  INSERT_BY
+				 FROM AR_MAC_RECORDS_HTSV_EAT A,
+					  HR_EMPLOYEE B
+				WHERE  A.EMPID =  B.EMPID(+)
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+		 		A.RECORD_NO = #RECORD_NO:NUMERIC#
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				TO_CHAR(A.R_TIME,'YYYY-MM-DD') = (SELECT CASE WHEN GET_AR_SHIFTNO(ES.PERSON_ID, TO_CHAR(ES.APPLY_OT_DATE,'YYYY/MM/DD'), ES.CPNY_ID) IN ('14015595','90000447','80000003') THEN TO_CHAR(ES.APPLY_OT_DATE+1, 'YYYY-MM-DD')
+                                                         ELSE TO_CHAR(ES.APPLY_OT_DATE, 'YYYY-MM-DD') END FROM ESS_APPLY_OT ES  WHERE ES.APPLY_NO = #APPLY_NO:VARCHAR# AND ROWNUM = 1)
+				AND B.PERSON_ID = (SELECT ES.PERSON_ID FROM ESS_APPLY_OT ES  WHERE ES.APPLY_NO = #APPLY_NO:VARCHAR# AND ROWNUM = 1)
+			]]>
+		</isNotEmpty>
+	   	<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+						   	OR NVL(B.LOCAL_NAME, A.EMPLOYEE_NAME) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR CONVERTTOUNSIGN(UPPER(NVL(B.LOCAL_NAME, A.EMPLOYEE_NAME))) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' 
+       						OR CONVERTTOUNSIGN(UPPER(NVL(B.EMPID, A.EMPID))) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+	    	]]>
+		</isNotEmpty>
+       	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EAT_DATE_FLAG">
+			<![CDATA[
+				A.EAT_DATE = #EAT_DATE_FLAG:VARCHAR#
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="OUT_TIME_FROM">
+			<![CDATA[
+				SUBSTR(GET_AR_TIME_BY_CPNYID(GET_PERSON_ID(A.EMPID), TO_CHAR(A.R_TIME,'YYYY-MM-DD'), 'OUT', #CPNY_ID:VARCHAR#),0,2) >= #OUT_TIME_FROM:VARCHAR#
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="OUT_TIME_TO">
+			<![CDATA[
+				SUBSTR(GET_AR_TIME_BY_CPNYID(GET_PERSON_ID(A.EMPID), TO_CHAR(A.R_TIME,'YYYY-MM-DD'), 'OUT', #CPNY_ID:VARCHAR#),0,2) <= #OUT_TIME_TO:VARCHAR#
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STIME">
+			<![CDATA[
+				TO_CHAR(A.R_TIME,'YYYY-MM-DD') >= TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD')
+	    	]]>
+		</isNotEmpty>
+	   	<isEmpty prepend="" property="KEY">
+	   	<isEmpty prepend="" property="APPLY_NO">
+			<isEmpty prepend="AND" property="STIME">
+				<![CDATA[
+					TO_CHAR(A.R_TIME,'YYYY-MM-DD') >= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+		    	]]>
+			</isEmpty>
+		</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="RTIME">
+		<![CDATA[
+				TO_CHAR(A.R_TIME,'YYYY-MM-DD') < TO_CHAR(TO_DATE(#RTIME:VARCHAR#,'DD-MM-YYYY')+ 1,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+	   	<isEmpty prepend="" property="KEY">
+	   	<isEmpty prepend="" property="APPLY_NO">
+			<isEmpty prepend="AND" property="RTIME">
+				<![CDATA[
+					TO_CHAR(A.R_TIME,'YYYY-MM-DD') < TO_CHAR(SYSDATE,'YYYY-MM-DD')
+		    	]]>
+			</isEmpty>
+		</isEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.R_TIME ASC
+		]]>
+	</select>
+	
+	<select id="mealInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.SEQ,
+			          A.EMPID,
+			          A.EAT_DATE,
+			          A.EAT_NAME,
+					  A.EMPLOYEE_NAME,
+					  TO_CHAR(A.R_TIME,'YYYY-MM-DD') R_DATE,
+                      TO_CHAR(A.R_TIME,'HH24:MI:SS') R_TIME,
+					  A.AMOUNT,
+					  A.INSERT_BY
+				 FROM AR_MAC_RECORDS_HTSV_EAT A
+				WHERE  1 = 1
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+		 		TO_CHAR(A.R_TIME, 'DD/MM/YYYY') = #AR_DATE_STR:VARCHAR#
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPLOYEE_ID">
+			<![CDATA[
+		 		A.EMPID = #EMPLOYEE_ID:VARCHAR#
+	    	]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.R_TIME ASC
+		]]>
+	</select>
+</sqlMap>

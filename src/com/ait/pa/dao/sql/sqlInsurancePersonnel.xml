@@ -1,0 +1,1027 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.insurancePersonnel">
+	
+	<sql id="getInsurancePersonnelListCondition" >
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FUND_KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #FUND_KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#FUND_KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #FUND_KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		 		  HR.STATUS_CODE = #STATUS_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<!-- 工资发放日期 -->
+		<isNotEmpty prepend="AND" property="INSURANCE_GIVE_DATE">
+			<![CDATA[
+				C.GIVE_DATE = TO_DATE(#INSURANCE_GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				C.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<!-- 工资发放月 -->
+		<isNotEmpty prepend="AND" property="INS_YEAR_PA0413">
+			<isNotEmpty prepend="" property="INS_MONTH_PA0413">
+				<![CDATA[
+					C.PA_MONTH=#INS_YEAR_PA0413:VARCHAR# || #INS_MONTH_PA0413:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<!-- 工资发放月 -->
+		<isNotEmpty prepend="AND" property="FUND_YEAR_PA0421">
+			<isNotEmpty prepend="" property="FUND_MONTH_PA0421">
+				<![CDATA[
+					C.PA_MONTH=#FUND_YEAR_PA0421:VARCHAR# || #FUND_MONTH_PA0421:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<!-- 工资发放月 -->
+		<isNotEmpty prepend="AND" property="insYear">
+			<isNotEmpty prepend="" property="insMonth">
+				<![CDATA[
+					C.PA_MONTH=#insYear:VARCHAR# || #insMonth:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+	
+		<!-- 过滤权限 start -->
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+				    HR.DEPTNO IN  
+				             ]]>
+             <include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+   				    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+    	<!-- 过滤权限 end -->
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		 HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		 HR.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_INFO
+					 WHERE PA_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+		 		  HPI.IS_CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="INS_CALC_FLAG">
+			<![CDATA[
+				C.CALC_FLAG = #INS_CALC_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 保险 参保人员List -->
+	<select id="getInsurancePersonnelList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID,
+			       HR.PERSON_ID,
+			       HR.LOCAL_NAME,
+			       HR.CHINESE_PINYIN,
+			       HR.STATUS_CODE,
+			       SY0.CONTENT STATUS_NAME,
+			       HR.DEPTNO,
+			       HD.CONTENT DEPT_NAME,
+			       SY1.CONTENT POST_GRADE_NAME,
+			       HPI.IS_CALC_FLAG,
+			       TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       TO_CHAR(HRE.SETTLEMENT_DATE, 'YYYY-MM-DD') SETTLEMENT_DATE
+			  FROM HR_EMPLOYEE        HR,
+			       HR_EMP_PA_INFO     HPI,
+			       HR_DEPARTMENT_NAME HD,
+			       (SELECT max(t.person_id) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as person_id,
+			               max(t.activity) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as activity,
+                           max(t.settlement_date) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as settlement_date,
+                           max(t.resign_date) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as resign_date
+                           FROM HR_RESIGNATION T GROUP BY T.PERSON_ID 
+                    )      HRE,
+			       SY_GLOBAL_NAME     SY0,
+			       SY_GLOBAL_NAME     SY1,
+			       IS_CALC_OBJECT C
+			 WHERE HR.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HR.PERSON_ID = HRE.PERSON_ID(+)
+			   AND HR.PERSON_ID=C.PERSON_ID(+)
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.STATUS_CODE = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.POST_GRADE_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND (HRE.ACTIVITY = 1 or nvl(HRE.ACTIVITY,0)= 0 or HRE.ACTIVITY = 2)
+		]]>
+		 
+		<include refid="getInsurancePersonnelListCondition"/>
+		
+		
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY HR.EMPID, HR.DEPTNO
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<!-- 保险 参保人员List条数 -->
+	<select id="getInsurancePersonnelCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE        HR,
+			       HR_EMP_PA_INFO     HPI,
+			       HR_DEPARTMENT_NAME HD,
+			       (SELECT max(t.person_id) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as person_id,
+			               max(t.activity) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as activity,
+                           max(t.settlement_date) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as settlement_date,
+                           max(t.resign_date) KEEP(dense_rank FIRST ORDER BY t.exp_inside_no desc) as resign_date
+                           FROM HR_RESIGNATION T GROUP BY T.PERSON_ID 
+                    )      HRE, 
+			       SY_GLOBAL_NAME     SY0,
+			       SY_GLOBAL_NAME     SY1,
+			       IS_CALC_OBJECT C
+			 WHERE HR.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HR.PERSON_ID = HRE.PERSON_ID(+)
+			   AND HR.PERSON_ID=C.PERSON_ID(+)
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.STATUS_CODE = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.POST_GRADE_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND (HRE.ACTIVITY = 1 or nvl(HRE.ACTIVITY,0)= 0 or HRE.ACTIVITY = 2)
+
+		]]>
+		<include refid="getInsurancePersonnelListCondition"/>
+	</select>
+	
+	<update id="updateIsCalcFlagByPersonId" parameterClass="linkMap">
+		 	UPDATE HR_EMP_PA_INFO T
+		 	   SET T.IS_CALC_FLAG = #IS_CALC_FLAG:VARCHAR#,
+		 	       T.UPDATE_DATE  = SYSDATE,
+		 	       T.UPDATED_BY   = #UPDATED_BY:VARCHAR#
+		 	WHERE  T.PERSON_ID = #PERSON_ID:VARCHAR#
+	</update>
+
+	<update id="updateInsurancePersonnelInfo" parameterClass="linkMap">
+		 	UPDATE HR_EMP_PA_INFO T
+		 	   SET T.IS_CALC_FLAG = #IS_CALC_FLAG:VARCHAR#,
+		 	       T.UPDATE_DATE  = SYSDATE,
+		 	       T.UPDATED_BY   = #UPDATED_BY:VARCHAR#
+		 	WHERE  T.PERSON_ID = #PERSON_ID:VARCHAR#
+	</update>
+	
+	<select id="getInsuranceObjectList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT HR.EMPID				EMPID,
+					 HR.PERSON_ID			PERSON_ID,
+			         HR.LOCAL_NAME			CHINESE_NAME,
+			         HR.EMP_OFFICE			EMP_OFFICE,
+			         GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#)  EMP_STATUS,
+		             HR.POST_GRADE_NO		POST_GRADE_NO,
+		             GET_GLOBAL_NAME(HR.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+		             HR.DEPTNO				DEPTNO,
+		             B.CONTENT 				DEPTNAME,
+		             HD.DEPT_DISTINGUISH_NO	DEPT_DISTINGUISH_NO,
+		             GET_GLOBAL_NAME(HD.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) DEPT_DISTINGUISH_NAME,
+		             TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+		             TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+		             
+		             C.CALC_FLAG								CALC_FLAG,
+		             C.CALC_GJJ_FLAG							CALC_GJJ_FLAG,
+		             C.PA_MONTH				PA_MONTH,
+		             TO_CHAR(C.GIVE_DATE,'YYYY-MM-DD')			GIVE_DATE,
+		             C.REMARK				REMARK
+		        FROM HR_EMPLOYEE        HR,
+		             HR_PERSONAL_INFO   HP,
+                     HR_DEPARTMENT      HD,
+                 	 HR_DEPARTMENT_NAME B,
+                 	 IS_CALC_OBJECT     C
+              WHERE HR.PERSON_ID = HP.PERSON_ID(+)
+                AND HR.DEPTNO = HD.DEPTNO(+)
+                AND HD.DEPTNO = B.DEPTNO(+)
+                AND B.LANGUAGE = #interLanguage:VARCHAR#
+                AND C.PERSON_ID = HR.PERSON_ID(+)
+                AND C.CPNY_ID = #CPNY_ID#
+		]]>
+		<include refid="getInsurancePersonnelListCondition"/>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+					EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				]]>   				  
+            </isEqual>
+            <isNotEqual prepend="" property="SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+   				    HR.DEPTNO = #DEPTNO:VARCHAR#
+				]]>   				  
+            </isNotEqual>
+		</isNotEmpty>            
+		
+		<isNotEmpty prepend="AND" property="JOB_TP">
+			<![CDATA[
+				 HR.EMP_TYPE_CODE IN
+			       (SELECT EMP_TYPE_CODE CODE_NO
+			          FROM PA_SUPERVISOR_EMPTYPE_INFO P, HR_JOB_TYPE_SETUP HP
+			         WHERE P.EMP_TYPE_CODE = HP.JOBTYPE_NO
+			           AND HP.CPNY_ID = #CPNY_ID:VARCHAR#
+			           AND P.PERSON_ID = #supervisorPersonId:VARCHAR#
+			           AND (DECODE(DECODE(#JOB_TP#, '', 0, '211807'), 0, 0, 1) = 0 OR
+			               HP.JOBTYPE_GROUP_NO = #JOB_TP#)) 
+			]]>
+		</isNotEmpty> 
+		
+		
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY HR.EMPID, HR.DEPTNO
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getInsuranceObjectListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+		      FROM HR_EMPLOYEE        HR,
+		           HR_PERSONAL_INFO   HP,
+                   HR_DEPARTMENT      HD,
+                   HR_DEPARTMENT_NAME B,
+                   IS_CALC_OBJECT     C
+             WHERE HR.PERSON_ID = HP.PERSON_ID(+)
+               AND HR.DEPTNO = HD.DEPTNO(+)
+               AND HD.DEPTNO = B.DEPTNO(+)
+               AND B.LANGUAGE = #interLanguage:VARCHAR#
+               AND C.PERSON_ID = HR.PERSON_ID(+)
+               AND C.CPNY_ID = #CPNY_ID#		
+             ]]>
+		<include refid="getInsurancePersonnelListCondition"/>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+					EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				]]>   				  
+            </isEqual>
+            <isNotEqual prepend="" property="SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+   				    HR.DEPTNO = #DEPTNO:VARCHAR#
+				]]>   				  
+            </isNotEqual>
+		</isNotEmpty>  
+		<isNotEmpty prepend="AND" property="JOB_TP">
+			<![CDATA[
+				 HR.EMP_TYPE_CODE IN
+			       (SELECT EMP_TYPE_CODE CODE_NO
+			          FROM PA_SUPERVISOR_EMPTYPE_INFO P, HR_JOB_TYPE_SETUP HP
+			         WHERE P.EMP_TYPE_CODE = HP.JOBTYPE_NO
+			           AND HP.CPNY_ID = #CPNY_ID:VARCHAR#
+			           AND P.PERSON_ID = #supervisorPersonId:VARCHAR#
+			           AND (DECODE(DECODE(#JOB_TP#, '', 0, '211807'), 0, 0, 1) = 0 OR
+			               HP.JOBTYPE_GROUP_NO = #JOB_TP#)) 
+			]]>
+		</isNotEmpty> 
+	</select>
+	
+	<update id="updateInsCalcFlagByPersonId" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE IS_CALC_OBJECT SET
+				CALC_FLAG = #CALC_FLAG:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	<update id="updateInsCalcGJJFlagByPersonId" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE IS_CALC_OBJECT SET
+				CALC_GJJ_FLAG = #CALC_GJJ_FLAG:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	
+	<delete id="deleteInsurancePersonnelInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+			 FROM IS_CALC_OBJECT 
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR# 
+			  AND PA_MONTH  = #PA_MONTH:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 要初始化保险计算对象的月份的薪资是否已经锁定 -->
+	<select id="getPaLockFlagByMonth" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT MAX(PR.PA_LOCK_FLAG)
+			  FROM PA_PROGRESS PR
+			 WHERE PR.CPNY_ID = #CPNY_ID#
+			   AND PR.PA_MONTH_STR = #IS_MONTH#							
+		]]>
+	</select>
+	
+	<delete id="deleteInsCalcObjectPre" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM IS_CALC_OBJECT SS
+			 WHERE SS.PA_MONTH = #IS_MONTH#
+			   AND SS.CPNY_ID = #CPNY_ID#
+			   AND (SS.CREATED_BY = #CREATED_BY# OR
+			       SS.PERSON_ID IN (SELECT PERSON_ID
+						           FROM HR_EMPLOYEE HE
+						          WHERE HE.CPNY_ID = #CPNY_ID#
+						            AND EXISTS (SELECT *
+						                   FROM PA_SUPERVISOR_INFO
+						                  WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+						                    AND PA_SUPERVISOR_INFO.PERSON_ID = #SUPERVISOR_NO# 
+						                        )
+			                         )
+			          )
+		]]>
+	</delete>
+	
+	<insert id="initIncCalcObjectFromLastMonth" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_CALC_OBJECT
+				  (PA_MONTH,
+				   PERSON_ID,
+				   CALC_FLAG,
+				   CPNY_ID,
+				   
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY
+				   )
+				  SELECT #IS_MONTH#,
+				         SS.PERSON_ID,
+				         'Y',
+				         #CPNY_ID#,
+				         
+				         SYSDATE,
+				         #CREATED_BY#,
+				         1
+				    FROM IS_CALC_OBJECT SS,HR_EMPLOYEE HE
+				   WHERE SS.PERSON_ID = HE.PERSON_ID
+				     AND SS.ACTIVITY = 1
+				     AND SS.CALC_FLAG = 'Y'
+				     AND SS.CPNY_ID = #CPNY_ID#
+				     AND EXISTS(SELECT *
+							  FROM PA_SUPERVISOR_INFO
+							 WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+							   AND PA_SUPERVISOR_INFO.PERSON_ID = #SUPERVISOR_NO:VARCHAR#)
+				     AND SS.PA_MONTH = TO_CHAR(ADD_MONTHS(TO_DATE(#IS_MONTH#,'YYYYMM'), -1), 'YYYYMM')
+		]]>
+	</insert>
+	
+	<select id="getInsCalcObjectTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SY.CPNY_ID,
+			       SY.PA_MONTH,
+			       SY.PERSON_ID,
+			       SY.LOCAL_NAME,
+			       SY.DEPT_NAME,
+			       
+			       SY.CALC_FLAG,
+			       SY.CALC_GJJ_FLAG,
+			       SY.REMARK,
+			       SY.CHECK_FLAG,
+			       SY.CHECK_ERROR,
+			       
+			       SY.CREATED_BY,
+			       TO_CHAR(SY.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE
+			  FROM IS_CALC_OBJECT_TEMP SY
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				SY.CHECK_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty> 
+		<![CDATA[
+			ORDER BY SY.CREATE_DATE	
+		]]>
+	</select>
+	
+	<select id="getInsCalcObjectTempCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			  FROM IS_CALC_OBJECT_TEMP SY
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				SY.CHECK_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getInsCalcObjectTempErrorCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			  FROM IS_CALC_OBJECT_TEMP SY
+			 WHERE SY.CHECK_FLAG = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- 导入的保险计算对象插入正式表之前要删除临时表里的数据 -->
+	<delete id="delInsObjectDataImportBatch" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE 
+			  FROM IS_CALC_OBJECT_TEMP SS 
+			 WHERE CREATED_BY = #CREATED_BY# 
+		]]>
+	</delete>
+	
+	<!-- 导入的保险计算对象插入到正式表中 -->
+	<insert id="addInsObjectDataImport" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_CALC_OBJECT
+				(
+				  PA_MONTH,
+       			  CPNY_ID,
+       			  PERSON_ID,
+       			  CALC_FLAG,
+       			  CALC_GJJ_FLAG,
+       			  REMARK,
+       			  
+       			  ACTIVITY,
+       			  CREATE_DATE,
+       			  CREATED_BY
+				)
+			VALUES
+				(
+			      #PA_MONTH#,
+			      #CPNY_ID#,
+			      #PERSON_ID#,
+			      #CALC_FLAG#,
+			      #CALC_GJJ_FLAG#,
+			      #REMARK#,
+			        		
+			      #ACTIVITY#,
+			      SYSDATE,
+			      #CREATED_BY#
+			    )
+		]]>
+		
+	</insert>	
+	
+	<update id="updateInsObjectDataCheckResult" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_CALC_OBJECT_TEMP T
+			   SET T.CHECK_ERROR = T.CHECK_ERROR || #ERROR_CONTENT#,
+			       T.CHECK_FLAG  = 1
+			 WHERE T.PA_MONTH = #PA_MONTH#
+			   AND T.PERSON_ID = #PERSON_ID#
+		]]>
+	</update>
+	
+	<update id="updateInsObjectDataFormalResult" parameterClass="linkMap">
+		<![CDATA[
+			
+				DELETE
+				  FROM IS_CALC_OBJECT T2
+				 WHERE EXISTS 
+				       (SELECT T1.PA_MONTH, HR.PERSON_ID
+				          FROM HR_EMPLOYEE HR, IS_CALC_OBJECT_TEMP T1
+				         WHERE HR.EMPID = T1.PERSON_ID
+				           AND T1.CPNY_ID = HR.CPNY_ID
+				           AND T1.CREATED_BY = #CREATED_BY:VARHCAR#
+				           AND T2.PA_MONTH = T1.PA_MONTH
+				           AND T2.PERSON_ID = HR.PERSON_ID)
+             AND t2.cpny_id=#CPNY_ID:VARHCAR#
+		]]>
+	</update>
+	
+	<update id="updateInsObjectDataCheckFlag" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_CALC_OBJECT_TEMP T
+			   SET T.CHECK_FLAG = 0
+			 WHERE CREATED_BY = #CREATED_BY#
+		]]>
+	</update>
+	
+	<select id="getInsObjectInfoExistTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT T.*
+			  FROM IS_CALC_OBJECT_TEMP T, HR_EMPLOYEE HE
+			 WHERE T.PERSON_ID = HE.EMPID
+			   AND T.CPNY_ID = #CPNY_ID#
+			   AND T.PA_MONTH = #PA_MONTH#
+			   AND T.PERSON_ID = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="getInsObjectInfoExistList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT T.*
+			  FROM IS_CALC_OBJECT T, HR_EMPLOYEE HE
+			 WHERE T.PERSON_ID = HE.PERSON_ID
+			   AND T.CPNY_ID = #CPNY_ID#
+			   AND T.PA_MONTH = #PA_MONTH#
+			   AND HE.EMPID = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="getEmpidInfoExistList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT EMPID, PERSON_ID, LOCAL_NAME, CPNY_ID
+  			  FROM HR_EMPLOYEE HE
+ 			 WHERE HE.CPNY_ID = #CPNY_ID#
+   			   AND HE.EMPID = #PERSON_ID#
+		]]>
+	</select>
+	
+	<delete id="delInsObjectImport" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+			 FROM IS_CALC_OBJECT_TEMP
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR# 
+			  AND PA_MONTH  = #PA_MONTH:VARCHAR#
+		]]>
+	</delete>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getFundObjectList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT HR.EMPID				EMPID,
+					 HR.PERSON_ID			PERSON_ID,
+			         HR.LOCAL_NAME			CHINESE_NAME,
+			         HR.EMP_OFFICE			EMP_OFFICE,
+			         GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#)  EMP_STATUS,
+		             HR.POST_GRADE_NO		POST_GRADE_NO,
+		             GET_GLOBAL_NAME(HR.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+		             HR.DEPTNO				DEPTNO,
+		             B.CONTENT 				DEPTNAME,
+		             HD.DEPT_DISTINGUISH_NO	DEPT_DISTINGUISH_NO,
+		             GET_GLOBAL_NAME(HD.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) DEPT_DISTINGUISH_NAME,
+		             TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+		             TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+		             
+		             C.CALC_FLAG								CALC_FLAG,
+		             C.PA_MONTH				PA_MONTH,
+		             TO_CHAR(C.GIVE_DATE,'YYYY-MM-DD')			GIVE_DATE,
+		             C.REMARK				REMARK
+		        FROM HR_EMPLOYEE             HR,
+		             HR_PERSONAL_INFO        HP,
+                     HR_DEPARTMENT           HD,
+                 	 HR_DEPARTMENT_NAME      B,
+                 	 IS_CALC_OBJECT_FUND     C
+              WHERE HR.PERSON_ID = HP.PERSON_ID(+)
+                AND HR.DEPTNO = HD.DEPTNO(+)
+                AND HD.DEPTNO = B.DEPTNO(+)
+                AND B.LANGUAGE = #interLanguage:VARCHAR#
+                AND C.PERSON_ID = HR.PERSON_ID(+)
+                AND C.CPNY_ID = #CPNY_ID#
+		]]>
+		<include refid="getInsurancePersonnelListCondition"/>
+		
+		<isNotEmpty prepend="AND" property="FUND_DEPTNO">
+			<isEqual prepend="" property="FUND_SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+					EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				]]>   				  
+            </isEqual>
+            <isNotEqual prepend="" property="FUND_SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+   				    HR.DEPTNO = #DEPTNO:VARCHAR#
+				]]>   				  
+            </isNotEqual>
+		</isNotEmpty>
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY HR.EMPID, HR.DEPTNO
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getFundObjectListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+		      FROM HR_EMPLOYEE           HR,
+		           HR_PERSONAL_INFO      HP,
+                   HR_DEPARTMENT         HD,
+                   HR_DEPARTMENT_NAME    B,
+                   IS_CALC_OBJECT_FUND   C
+             WHERE HR.PERSON_ID = HP.PERSON_ID(+)
+               AND HR.DEPTNO = HD.DEPTNO(+)
+               AND HD.DEPTNO = B.DEPTNO(+)
+               AND B.LANGUAGE = #interLanguage:VARCHAR#
+               AND C.PERSON_ID = HR.PERSON_ID(+)
+               AND C.CPNY_ID = #CPNY_ID#		
+		]]>
+		<include refid="getInsurancePersonnelListCondition"/>
+		
+		<isNotEmpty prepend="AND" property="FUND_DEPTNO">
+			<isEqual prepend="" property="FUND_SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+					EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				]]>   				  
+            </isEqual>
+            <isNotEqual prepend="" property="FUND_SON_DEPT_FLAG" compareValue="YES">
+				<![CDATA[
+   				    HR.DEPTNO = #DEPTNO:VARCHAR#
+				]]>   				  
+            </isNotEqual>
+		</isNotEmpty>    
+	</select>
+	
+	<delete id="deleteFundCalcObjectPre" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM IS_CALC_OBJECT SS
+			 WHERE SS.PA_MONTH = #IS_MONTH#
+			   AND SS.CPNY_ID = #CPNY_ID#
+			   AND (SS.CREATED_BY = #CREATED_BY# OR
+			       SS.PERSON_ID IN (SELECT PERSON_ID
+						           FROM HR_EMPLOYEE HE
+						          WHERE HE.CPNY_ID = #CPNY_ID#
+						            AND EXISTS (SELECT *
+						                   FROM PA_SUPERVISOR_INFO
+						                  WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+						                    AND PA_SUPERVISOR_INFO.PERSON_ID = #SUPERVISOR_NO# 
+						                        )
+			                         )
+			          )
+		]]>
+	</delete>
+	
+	<insert id="initFundCalcObjectFromLastMonth" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_CALC_OBJECT
+				  (PA_MONTH,
+				   PERSON_ID,
+				   CALC_FLAG,
+				   CPNY_ID,
+				   
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY
+				   )
+				  SELECT #IS_MONTH#,
+				         SS.PERSON_ID,
+				         'Y',
+				         #CPNY_ID#,
+
+				         SYSDATE,
+				         #CREATED_BY#,
+				         1
+				    FROM HR_EMP_PA_INFO SS,HR_EMPLOYEE HE
+				   WHERE SS.PERSON_ID = HE.PERSON_ID
+				     AND SS.ACTIVITY = 1
+				     AND SS.IS_CALC_FLAG = 'Y'
+				     AND HE.CPNY_ID = #CPNY_ID#
+				     AND HE.EMP_OFFICE <> '15120'
+				     AND EXISTS(SELECT *
+							  FROM PA_SUPERVISOR_INFO
+							 WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+							   AND PA_SUPERVISOR_INFO.PERSON_ID = #SUPERVISOR_NO:VARCHAR#)
+		]]>
+	</insert>
+	
+	<delete id="deleteFundPersonnelInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+			 FROM IS_CALC_OBJECT_FUND 
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR# 
+			  AND PA_MONTH  = #PA_MONTH:VARCHAR#
+		]]>
+	</delete>
+	
+	<update id="updateFundCalcFlagByPersonId" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE IS_CALC_OBJECT_FUND SET
+				CALC_FLAG = #CALC_FLAG:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getFundCalcObjectTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SY.CPNY_ID,
+			       SY.PA_MONTH,
+			       SY.PERSON_ID,
+			       SY.LOCAL_NAME,
+			       SY.DEPT_NAME,
+			       
+			       SY.CALC_FLAG,
+			       SY.REMARK,
+			       SY.CHECK_FLAG,
+			       SY.CHECK_ERROR,
+			       
+			       SY.CREATED_BY,
+			       TO_CHAR(SY.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE
+			  FROM IS_CALC_OBJECT_FUND_TEMP SY
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				SY.CHECK_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty> 
+		<![CDATA[
+			ORDER BY SY.CREATE_DATE	
+		]]>
+	</select>
+	
+	<select id="getFundCalcObjectTempCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			  FROM IS_CALC_OBJECT_FUND_TEMP SY
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				SY.CHECK_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getFundCalcObjectTempErrorCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			  FROM IS_CALC_OBJECT_FUND_TEMP SY
+			 WHERE SY.CHECK_FLAG = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- 导入的公积金计算对象插入正式表之前要删除临时表里的数据 -->
+	<delete id="delFundObjectDataImportBatch" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE 
+			  FROM IS_CALC_OBJECT_FUND_TEMP SS 
+			 WHERE CREATED_BY = #CREATED_BY# 
+		]]>
+	</delete>
+	
+	<!-- 导入的公积金计算对象插入到正式表中 -->
+	<insert id="addFundObjectDataImport" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_CALC_OBJECT_FUND
+				(
+				  PA_MONTH,
+       			  CPNY_ID,
+       			  PERSON_ID,
+       			  CALC_FLAG,
+       			  REMARK,
+       			  
+       			  ACTIVITY,
+       			  CREATE_DATE,
+       			  CREATED_BY
+				)
+			VALUES
+				(
+			      #PA_MONTH#,
+			      #CPNY_ID#,
+			      #PERSON_ID#,
+			      #CALC_FLAG#,
+			      #REMARK#,
+			        		
+			      #ACTIVITY#,
+			      SYSDATE,
+			      #CREATED_BY#
+			    )
+		]]>		
+	</insert>	
+	
+	<update id="updateFundObjectDataCheckResult" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_CALC_OBJECT_FUND_TEMP T
+			   SET T.CHECK_ERROR = T.CHECK_ERROR || #ERROR_CONTENT#,
+			       T.CHECK_FLAG  = 1
+			 WHERE T.PA_MONTH = #PA_MONTH#
+			   AND T.PERSON_ID = #PERSON_ID#
+		]]>
+	</update>
+	
+	<update id="updateFundObjectDataCheckFlag" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_CALC_OBJECT_FUND_TEMP T
+			   SET T.CHECK_FLAG = 0
+			 WHERE CREATED_BY = #CREATED_BY#
+		]]>
+	</update>
+	
+	<select id="getFundObjectInfoExistTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT T.*
+			  FROM IS_CALC_OBJECT_FUND_TEMP T, HR_EMPLOYEE HE
+			 WHERE T.PERSON_ID = HE.EMPID
+			   AND T.CPNY_ID = #CPNY_ID#
+			   AND T.PA_MONTH = #PA_MONTH#
+			   AND T.PERSON_ID = #PERSON_ID#
+		]]>
+	</select>
+	
+	<select id="getFundObjectInfoExistList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT T.*
+			  FROM IS_CALC_OBJECT_FUND T, HR_EMPLOYEE HE
+			 WHERE T.PERSON_ID = HE.PERSON_ID
+			   AND T.CPNY_ID = #CPNY_ID#
+			   AND T.PA_MONTH = #PA_MONTH#
+			   AND HE.EMPID = #PERSON_ID#
+		]]>
+	</select>
+	
+	<delete id="delFundObjectImport" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+			 FROM IS_CALC_OBJECT_FUND_TEMP
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR# 
+			  AND PA_MONTH  = #PA_MONTH:VARCHAR#
+		]]>
+	</delete>
+	<select id="getInsuranceInputDataPerList" parameterClass="linkMap" resultClass="linkMap" >		
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       T.PARAM_ITEM_NO,
+			       SY0.CONTENT AS CPNY_NAME,
+			       T.DISTINCT_FIELD,
+			       T.DISTINCT_FIELD_2ND, 
+			       T.DEFAULT_VAL,
+			       SY3.CONTENT ALIAS_NAME,
+			       IPI.PARAM_ID,
+			       T.CPNY_ID,
+			       T.APPLY_FLAG,
+			       T.ACTIVITY ,
+			       GET_IS_DATA(#PA_MONTH#,#PERSON_ID#,T.PARAM_NO,'VALUE_DATA') BASE_VALUE,
+			       GET_IS_DATA(#PA_MONTH#,#PERSON_ID#,T.PARAM_NO,'S_MONTH') START_MONTH,
+			        GET_IS_DATA(#PA_MONTH#,#PERSON_ID#,T.PARAM_NO,'E_MONTH') END_MONTH
+			  FROM IS_PARAM_ITEM_PARAM T,
+			       IS_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY3 
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = 'zh' 
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = 'zh' 
+			   AND T.CPNY_ID = #CPNY_ID#
+			   AND T.ACTIVITY = '1' 
+			   AND IPI.PARAM_ID NOT IN ('P_IS_AJUST_PER','P_IS_AJUST_COR')
+			 ORDER BY T.ORDERNO
+		]]>
+	</select>
+	<delete id="deleteInsurancePerInputItemData" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_PARAM_DATA T WHERE T.PARAM_NO= #PARAM_NO:VARCHAR# AND T.PERSON_ID=#PERSON_ID:VARCHAR# AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+	</delete>
+	<insert id="insertInsurancePerInputItemData" parameterClass="linkMap">
+		INSERT INTO IS_PARAM_DATA
+				  (PARAM_DATA_NO,
+				   PARAM_NO,
+				   PERSON_ID,
+				   RETURN_VALUE,
+				   CPNY_ID,
+				   START_MONTH,
+				   END_MONTH,
+				   REMARK,
+				   BATCH_IMPORT_MARK,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY)
+				VALUES
+				  (IS_PARAM_DATA_SEQ.NEXTVAL,
+				   #PARAM_NO#,
+				   #PERSON_ID#,
+				   #RETURN_VALUE#,
+				   #CPNY_ID#,
+				   #START_MONTH#,
+				   #END_MONTH#,
+				   #REMARK#,
+				   #BATCH_IMPORT_MARK#,
+				   SYSDATE,
+				   #CREATED_BY#, 
+				   1
+				   )
+						
+	</insert>
+</sqlMap>

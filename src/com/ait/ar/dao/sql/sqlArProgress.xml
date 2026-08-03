@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arProgress">
+	<select id="getArProgressList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			   SELECT PA.PA_MONTH_STR,
+					  PA.ATT_MO_FLAG,
+					      PA.ATT_APPLY_LOCK_FLAG,
+	            PA.ATT_MO_LOCK_FLAG,
+	            PA.PA_APPLY_LOCK_FLAG,
+	            PA.PA_LOCK_FLAG,
+					  PA.LOCK_USER_ID,
+					  TO_CHAR(PA.LOCK_DATE,'YYYY-MM-DD') LOCK_DATE,
+					  PA.PA_OPEN_FLAG,
+					  PA.CPNY_ID,
+					  TO_CHAR(PA.PA_OPEN_DATE,'YYYY-MM-DD') PA_OPEN_DATE,
+					  PA.ACTIVITY,
+					  PA.STAT_NO,
+					  S1.CONTENT STAT_NAME,
+					  GET_DEPT_NAME(PA.AR_DEPT_NO,#interLanguage:VARCHAR#) AR_DEPT_NAME,
+					  PA.AR_DEPT_NO
+				 FROM PA_PROGRESS PA,
+				 	  SY_GLOBAL_NAME S1
+				 WHERE 1 = 1
+				   AND PA.STAT_NO = S1.NO(+)
+				   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+	  	]]>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+				  PA.PA_MONTH_STR = #arMonth#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  PA.STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				  PA.CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	    <isEqual property="interCpnyID" compareValue='TSTO' >
+	      <isNotEmpty prepend="AND" property="DEPT_NO">
+	        <![CDATA[	
+				   PA.AR_DEPT_NO = #DEPT_NO:VARCHAR#
+			]]>
+			</isNotEmpty>
+	    </isEqual>
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PA.PA_MONTH_STR DESC
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getArProgressCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+				 SELECT COUNT(*)
+					 FROM PA_PROGRESS
+					 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+				  PA_MONTH_STR = #arMonth#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				  CPNY_ID = #interCpnyID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		 
+         <isEqual property="interCpnyID" compareValue='TSTO' >
+	        <![CDATA[	
+				    AND  AR_DEPT_NO = #DEPT_NO:VARCHAR#
+			]]>
+	    </isEqual>
+	</select>
+	
+	<update id="updateArProgressInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PROGRESS SET
+				LOCK_USER_ID = #PERSON_ID:VARCHAR# 
+		]]>
+
+		<isNotEmpty prepend="" property="PA_LOCK_FLAG">
+			<![CDATA[
+		 		  ,PA_LOCK_FLAG = #PA_LOCK_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="ATT_MO_FLAG">
+			<![CDATA[
+		 		  ,ATT_MO_FLAG = #ATT_MO_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="ATT_MO_LOCK_FLAG">
+			<![CDATA[
+		 		  ,ATT_MO_LOCK_FLAG = #ATT_MO_LOCK_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="PA_OPEN_FLAG">
+			<![CDATA[
+		 		  ,PA_OPEN_FLAG = #PA_OPEN_FLAG:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[		
+				,LOCK_DATE = SYSDATE
+			WHERE PA_MONTH_STR = #arMonth:VARCHAR#
+			  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			  AND STAT_NO = #STAT_NO:VARCHAR#
+			  
+			 
+		]]>
+		<isNotEmpty prepend="AND" property="AR_DEPT_NO">
+			<![CDATA[
+		 		   AR_DEPT_NO = #AR_DEPT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</update>
+</sqlMap>

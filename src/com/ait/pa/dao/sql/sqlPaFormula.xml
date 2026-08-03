@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.paFormula">
+	
+	<sql id="getPaFormulaListCondition" >
+	
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FORMULAR_NO">
+			<![CDATA[
+		 		  FORMULAR_NO = #FORMULAR_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+	</sql>
+	
+	<select id="getPaFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT FORMULAR_NO,
+					ITEM_NO,
+					CONDITION,
+					FORMULAR,
+					CONDITION_SEQ,
+					DESCRIPTION,
+					CPNY_ID
+			   FROM PA_FORMULAR T
+		]]>
+		
+		<dynamic prepend="WHERE">
+			<include refid="getPaFormulaListCondition"/>
+		 </dynamic>
+		 
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY CONDITION_SEQ DESC
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+		<sql id="getPaDayFormulaListCondition" >
+	
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FORMULAR_NO">
+			<![CDATA[
+		 		  FORMULAR_NO = #FORMULAR_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+	</sql>
+	
+	<select id="getPaDayFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT FORMULAR_NO,
+					ITEM_NO,
+					CONDITION,
+					FORMULAR,
+					CONDITION_SEQ,
+					DESCRIPTION,
+					CPNY_ID
+			   FROM PA_DAILY_FORMULAR T
+		]]>
+		
+		<dynamic prepend="WHERE">
+			<include refid="getPaDayFormulaListCondition"/>
+		 </dynamic>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY CONDITION_SEQ DESC
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<update id="updatePaFormularByCalcuOrderOne" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_FORMULAR 
+			 SET CONDITION_SEQ = #CONDITIONSEQ:NUMERIC#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+				  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updatePaFormularByCalcuOrderTwo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_FORMULAR 
+			 SET CONDITION_SEQ = #ORDER:VARCHAR#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE ITEM_NO = #ITEM_NO:VARCHAR#
+				  AND CONDITION_SEQ = #CALORDER:VARCHAR#
+				  AND CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updatePaFormularByCalcuOrderThree" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_FORMULAR SET
+					CONDITION_SEQ = #CALORDER:VARCHAR#,
+			 	 	UPDATE_DATE = SYSDATE,
+			 	 	UPDATED_BY = #UPDATED_BY:VARHCAR#
+			WHERE CONDITION_SEQ = 0
+			  AND FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+			  AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updatePaDayFormularByCalcuOrderOne" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_DAILY_FORMULAR 
+			 SET CONDITION_SEQ = #CONDITION_SEQ:VARCHAR#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updatePaDayFormularByCalcuOrderTwo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_DAILY_FORMULAR 
+			 SET CONDITION_SEQ = #ORDER:VARCHAR#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE ITEM_NO = #ITEM_NO:VARCHAR#
+				 AND  CONDITION_SEQ = #CALORDER:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updatePaDayFormularByCalcuOrderThree" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_DAILY_FORMULAR SET
+					CONDITION_SEQ = #CALORDER:VARCHAR#,
+			 	 	UPDATE_DATE = SYSDATE,
+			 	    UPDATED_BY = #UPDATED_BY:VARHCAR#
+			WHERE CONDITION_SEQ = 0
+			AND   FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<insert id="addPaFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_FORMULAR (
+				FORMULAR_NO,
+				ITEM_NO,
+				CONDITION,
+				FORMULAR,
+				CONDITION_SEQ,
+				CPNY_ID,
+				ACTIVITY,
+				CREATE_DATE,
+				CREATED_BY
+			)
+			VALUES(
+				PA_FORMULAR_SEQ.NEXTVAL,
+				#ITEM_NO:NUMERIC#,
+				#CONDITION:VARCHAR#,
+				#FORMULAR:VARCHAR#,
+				(SELECT NVL(MAX(CONDITION_SEQ), 0) + 1 AS CONDITION_SEQ
+				  FROM PA_FORMULAR
+				 WHERE ITEM_NO = #ITEM_NO:NUMERIC#
+				 AND CPNY_ID = #CPNY_ID:VARCHAR#),
+				#CPNY_ID:VARCHAR#,
+				1,
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#
+			)
+		]]>
+	</insert>
+	
+	<insert id="addPaDayFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DAILY_FORMULAR (
+				FORMULAR_NO,
+				ITEM_NO,
+				CONDITION,
+				FORMULAR,
+				CONDITION_SEQ,
+				CPNY_ID,
+				ACTIVITY,
+				CREATE_DATE,
+				CREATED_BY
+			)
+			VALUES(
+				PA_DAILY_FORMULAR_SEQ.NEXTVAL,
+				#ITEM_NO:NUMERIC#,
+				#CONDITION:VARCHAR#,
+				#FORMULAR:VARCHAR#,
+				(SELECT NVL(MAX(CONDITION_SEQ), 0) + 1 AS CONDITION_SEQ
+				  FROM PA_DAILY_FORMULAR
+				 WHERE ITEM_NO = #ITEM_NO:NUMERIC#
+				 AND  CPNY_ID = #CPNY_ID:VARCHAR#),
+				#CPNY_ID:VARCHAR#,
+				1,
+			    SYSDATE,
+			    #CREATED_BY:VARCHAR#
+			)
+		]]>
+	</insert>
+	
+	<update id="updatePaFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_FORMULAR SET
+				CONDITION = #CONDITION:VARCHAR#,
+				FORMULAR = #FORMULAR:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR# 
+			WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</update>
+	
+	<update id="updatePaDayFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_DAILY_FORMULAR SET
+				CONDITION = #CONDITION:VARCHAR#,
+				FORMULAR = #FORMULAR:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR# 
+			WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</update>
+	
+	<delete id="deletePaFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_FORMULAR  WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	<delete id="deletePaDayFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_DAILY_FORMULAR  WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</delete>
+	
+</sqlMap>

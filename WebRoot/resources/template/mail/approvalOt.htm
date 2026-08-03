@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>加班审批</title>
+  <style type="text/css">
+	.user_table {border-bottom:1px solid #DEEDF8;border-left:1px solid #DEEDF8;}
+	.user_table td{border-right:1px solid #DEEDF8;border-top:1px solid #DEEDF8;}
+	.user_photo p {background:url(images/photo/photo.jpg) no-repeat left top;}
+	.td_title {background:#F5FBFE;color:#276FA4;font:12px/20px arial,sans-serif;}
+	.th_title {border-right:1px solid #DEEDF8;background:#F5FBFE;color:#276FA4;}
+	.td_type {color:#333;font:12px/20px arial,sans-serif;}
+	.user_table td.td_title {text-align:center;}
+	.tablea th {background:url(./images/grid/tableth.png) repeat-x scroll 0 0 #F0EFF0;}
+</style>
+ </head>
+ <body>
+   <div style="width:700px;">
+	   <div width="100%"  style="font:bold 14px/20px arial,sans-serif;text-align:center">
+			<a style="text-decoration:none;" href="http://{MAIL_LOGIN_HOST}?reqSysType=Partner&reqCpny=SST&emp_number=[MAIL_LOGIN_EMPID]">【加班申请】</a>
+	   </div>
+		<div>
+						<table class="user_table" width="70%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td class="td_title" style="text-align:right;width:20%;">标题&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="td_type" style="text-align:left;width:80%;">&nbsp;&nbsp;&nbsp;&nbsp;[TITLE]</td>
+							</tr>
+							<tr>
+								<td class="td_title" style="text-align:right;width:20%;">期案者&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="td_type" style="text-align:left;width:80%;">&nbsp;&nbsp;&nbsp;&nbsp;[APPLY_PERSON_INFO]</td>
+							</tr>
+						</table>
+						<table class="user_table"  width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td class="td_title" style="text-align: center;width:5%;"><!-- 决裁等级 -->
+									顺次
+								</td>
+								<td class="td_title" style="text-align: center;width:10%;"><!-- 决裁者 -->
+									审批区分
+								</td>
+								<td class="td_title" style="text-align: center;width:10%;"><!-- 决裁情况 -->
+									审批状态
+								</td>
+								<td class="td_title" style="text-align: center;width:10%;"><!-- 审批时间 -->
+									姓名
+								</td>
+								<td class="td_title" style="text-align: center;width:25%;"><!-- 审批时间 -->
+									批注
+								</td>
+								<td class="td_title" style="text-align: center;width:20%;"><!-- 决裁批注 -->
+									处理事务时
+								</td>
+								<td class="td_title" style="text-align: center;width:20%;"><!-- 决裁批注 -->
+									部门名
+								</td>
+							</tr>
+							[AFFIRM_CONTENT]		
+						</table>
+		</div>
+	<div style="font:bold 12px/20px arial,sans-serif;margin-top:15px;">申请者信息</div>
+						<table class="user_table" width="70%" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="td_title" style="text-align:right;width:15%;">姓名&nbsp;&nbsp;</td>
+								<td class="td_type" style="text-align:left;width:35%;">&nbsp;&nbsp;[LOCAL_NAME]</td>
+								<td class="td_title" style="text-align:right;width:15%;">工号&nbsp;&nbsp;</td>
+								<td class="td_type" style="text-align:left;width:35%;">&nbsp;&nbsp;[EMPID]</td>
+							</tr>
+							<tr>
+								<td class="td_title" style="text-align:right;width:15%;">部门&nbsp;&nbsp;</td>
+								<td class="td_type" style="text-align:left;width:35%;">&nbsp;&nbsp;[DEPTNAME]</td>
+								<td class="td_title" style="text-align:right;width:15%;">等级&nbsp;&nbsp;</td>
+								<td class="td_type" style="text-align:left;width:35%;">&nbsp;&nbsp;[POST_GRADE_NAME]</td>
+							</tr>
+						</table>
+	<div style="font:bold 12px/20px arial,sans-serif;margin-top:15px;">申请信息</div>
+						<table class="user_table" width="100%" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="td_title" style="text-align:center;width:10%;">日期</td>
+								<td class="td_title" style="text-align:center;width:10%;">星期</td>
+								<td class="td_title" style="text-align:center;width:10%;">加班类型</td>
+								<td class="td_title" style="text-align:center;width:15%;">加班开始时间</td>
+								<td class="td_title" style="text-align:center;width:15%;">结束时间</td>
+								<td class="td_title" style="text-align:center;width:10%;">加班时长</td>
+								<td class="td_title" style="text-align:center;width:10%;">本月累计时长</td>
+								<td class="td_title" style="text-align:center;width:20%;">原因</td>
+							</tr>
+							<tr>
+								<td class="td_type" style="text-align:center;">[APPLY_OT_DATE]</td>
+								<td class="td_type" style="text-align:center;">[APPLY_WEEK]</td>
+								<td class="td_type" style="text-align:center;">[OT_TYPE_NAME]</td>
+								<td class="td_type" style="text-align:center;">[OT_FROM_TIME]</td>
+								<td class="td_type" style="text-align:center;">[OT_TO_TIME]</td>
+								<td class="td_type" style="text-align:center;">[OT_LENGTH]小时</td>
+								<td class="td_type" style="text-align:center;">[OT_LENGTH_OLD]小时</td>
+								<td class="td_type" style="text-align:left;">[APPLY_REMARK]</td>
+							</tr>
+						</table>
+   </div>
+ </body>
+</html>

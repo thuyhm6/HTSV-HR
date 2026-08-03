@@ -1,0 +1,1072 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.salarycode">
+	<!--工资基础 :基础项目,基础项目参数(添加) 公用 -->
+	<select id="getSalaryCodeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT * FROM(
+             SELECT P.ITEM_TYPE,
+                    P.PARAM_ITEM_NO ITEM_NO,
+                    P.PARAM_ITEM_ID ITEM_ID,
+                    P.MAP_CODE,
+                    SY2.CONTENT ITEM_NAME,
+                    P.DATA_TYPE,
+                    P.DESCR,
+                    get_emp_local_name(P.CREATED_BY,#CPNY_ID:VARCHAR#)||' '||P.CREATED_IP CREATED_BY,
+			      TO_CHAR(P.CREATE_DATE,'YYYY-MM-DD HH24:MI')CREATE_DATE,
+                    P.ACTIVITY
+               FROM PA_PARAM_ITEM P, SY_GLOBAL_NAME SY2
+              WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND P.ACTIVITY = 1
+             UNION ALL
+             SELECT 6  ITEM_TYPE,
+                    PA.ITEM_NO, 
+                    PA.ITEM_ID, 
+                    PA.MAP_CODE,
+                    SY3.CONTENT ITEM_NAME, 
+                    PA.DATATYPE DATA_TYPE,
+                    PA.DESCR,
+                    get_emp_local_name(PA.CREATED_BY,#CPNY_ID:VARCHAR#)||' '||PA.CREATED_IP CREATED_BY,
+			      TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD HH24:MI')CREATE_DATE,
+                    PA.ACTIVITY
+               FROM PA_ITEM PA, SY_GLOBAL_NAME SY3
+              WHERE PA.ITEM_NO = SY3.NO(+)
+                AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND PA.ACTIVITY = 1) SD
+			   ]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  ITEM_NO = #NO:NUMERIC# 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  ITEM_TYPE LIKE '%' || #TYPE:NUMERIC# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+		</dynamic>
+	</select>
+
+	<!-- 工资代码申请决裁查看 -->
+	<select id="getAffirmSalaryCodeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PROJECT_TYPE,
+                   T.ITEM_ID,
+                   SY.CONTENT ITEM_NAME,
+                   T.CREATE_DATE,
+                   T.AFFIRM_REASON,
+                   T.AFFIRM_DESCR,
+                   T.ACTIVITY,
+                   T.ACTIVITY_TYPE,
+                   T.AFFIRM_ITEM_NO,
+                   T.AFFIRM_CPNY_ID
+                FROM PA_ITEM_AFFIRM T,SY_GLOBAL_NAME SY
+                WHERE T.AFFIRM_CPNY_ID = #CPNY_ID:VARCHAR#
+                AND T.AFFIRM_ITEM_NO = SY.NO(+)
+                AND SY.LANGUAGE = #interLanguage:VARCHAR#
+			   ]]>
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  SY.CONTENT LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PROJECT_TYPE">
+			<![CDATA[
+		 		  PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  T.PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEYVALUE">
+			<![CDATA[
+		 		  T.ACTIVITY  = #KEYVALUE:NUMBER#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+
+	<select id="getSalaryCodeCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(*) FROM(
+             SELECT P.ITEM_TYPE,
+                    P.PARAM_ITEM_NO ITEM_NO,
+                    P.PARAM_ITEM_ID ITEM_ID,
+                    SY2.CONTENT ITEM_NAME,
+                    P.DATA_TYPE,
+                    P.DESCR,
+                    P.ACTIVITY
+               FROM PA_PARAM_ITEM P, SY_GLOBAL_NAME SY2
+              WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND P.ACTIVITY = 1
+             UNION ALL
+            SELECT 6  ITEM_TYPE,
+                    PA.ITEM_NO, 
+                    PA.ITEM_ID, 
+                    SY3.CONTENT ITEM_NAME, 
+                    PA.DATATYPE DATE_TYPE,
+                    PA.DESCR,
+                    PA.ACTIVITY
+                FROM PA_ITEM PA, SY_GLOBAL_NAME SY3
+                WHERE PA.ITEM_NO = SY3.NO(+)
+                AND PA.ACTIVITY = 1
+                AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#) SD
+ 			  
+		]]>
+
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  ITEM_NO = #NO:NUMERIC# 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  ITEM_TYPE LIKE '%' || #TYPE:NUMERIC# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+		</dynamic>
+	</select>
+
+
+	<select id="getAffirmSalaryCodeCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(*) FROM(SELECT T.PROJECT_TYPE,
+                   T.ITEM_ID,
+                   SY.CONTENT ITEM_NAME,
+                   T.CREATE_DATE,
+                   T.AFFIRM_REASON,
+                   T.AFFIRM_DESCR,
+                   T.ACTIVITY,
+                   T.AFFIRM_ITEM_NO,
+                   T.AFFIRM_CPNY_ID
+                FROM PA_ITEM_AFFIRM T,SY_GLOBAL_NAME SY
+                WHERE T.AFFIRM_CPNY_ID = #CPNY_ID:VARCHAR#
+                AND T.AFFIRM_ITEM_NO = SY.NO(+)
+                AND SY.LANGUAGE = #interLanguage:VARCHAR#) SD
+ 			  
+		]]>
+
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  SD.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  SD.ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  SD.PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="KEYVALUE">
+			<![CDATA[
+		 		  SD.ACTIVITY  = #KEYVALUE:NUMBER#
+		    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<!-- 工资代码申请决裁查看 -->
+	<select id="getAffirmSalaryList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PROJECT_TYPE,
+                   T.ITEM_ID,
+                   SY.CONTENT ITEM_NAME,
+                   T.CREATE_DATE,
+                   T.AFFIRM_REASON,
+                   T.AFFIRM_DESCR,
+                   T.ACTIVITY,
+                   T.ACTIVITY_TYPE,
+                   T.AFFIRM_ITEM_NO,
+                   T.AFFIRM_CPNY_ID
+                FROM PA_ITEM_AFFIRM T,SY_GLOBAL_NAME SY
+                WHERE T.AFFIRM_ITEM_NO = SY.NO(+)
+                AND SY.LANGUAGE = #interLanguage:VARCHAR#
+			   ]]>
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.AFFIRM_CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.AFFIRM_ITEM_NO = #ITEM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  T.ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  T.PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEYVALUE">
+			<![CDATA[
+		 		  T.ACTIVITY  = #KEYVALUE:NUMBER#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sortname">
+			<![CDATA[
+		 		  ORDER BY T.ACTIVITY,T.CREATE_DATE
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getAffirmSalaryCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(*) FROM(SELECT T.PROJECT_TYPE,
+                   T.ITEM_ID,
+                   SY.CONTENT ITEM_NAME,
+                   T.CREATE_DATE,
+                   T.AFFIRM_REASON,
+                   T.AFFIRM_DESCR,
+                   T.ACTIVITY,
+                   T.ACTIVITY_TYPE,
+                   T.AFFIRM_ITEM_NO,
+                   T.AFFIRM_CPNY_ID
+                FROM PA_ITEM_AFFIRM T,SY_GLOBAL_NAME SY
+                WHERE T.AFFIRM_ITEM_NO = SY.NO(+)
+                AND SY.LANGUAGE = #interLanguage:VARCHAR#) SD
+ 			  
+		]]>
+
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  SD.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  SD.AFFIRM_CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+
+            <isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  SD.AFFIRM_ITEM_NO = #ITEM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  SD.ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  SD.PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="KEYVALUE">
+			<![CDATA[
+		 		  SD.ACTIVITY  = #KEYVALUE:NUMBER#
+		    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="getSalary" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		   SELECT E.LOCAL_NAME,
+                 PA.ACTIVITY,
+                 PA.AFFIRM_DESCR,
+                 PA.AFFIRM_DATE
+            FROM HR_EMPLOYEE E , 
+                 SY_USER S , 
+                 SY_ROLE_GROUP_RELATION SE,
+                 SY_USER_RELATION N,
+                 PA_ITEM_AFFIRM PA
+           WHERE E.PERSON_ID = S.PERSON_ID
+             AND S.USER_NO = N.USER_NO
+             AND SE.ROLE_GROUP_NO = N.ROLE_GROUP_NO 
+             AND SE.ROLE_GROUP_NO = '218133'
+             AND PA.AFFIRM_ITEM_NO = #ITEM_NO:VARCHAR#
+		]]>
+	</select>
+
+
+	<!-- 人员和工资代码权限匹配 -->
+	<select id="getApplicationSalaryCodeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		    SELECT T.PERSON_ID,
+		           T.SALARY_CODE,
+		           T.SALARY_NAME,
+		           T.CPNY_ID,
+		           E.PERSON_ID PERSON_IDE,
+		           E.LOCAL_NAME,
+		           E.EMPID,
+		           E.DEPTNO DEPTNOE,
+		           D.DEPTNO DEPTNOD,
+		           DT.DEPTNO DEPTNODT,
+		           DT.CONTENT DEPT_NAME
+		      FROM PA_APPLICATION_FEE T,HR_EMPLOYEE E,HR_DEPARTMENT D,HR_DEPARTMENT_NAME DT
+             WHERE T.PERSON_ID = E.PERSON_ID
+                   AND E.DEPTNO = D.DEPTNO
+                   AND D.DEPTNO = DT.DEPTNO
+                   AND DT.LANGUAGE = #interLanguage:VARCHAR#
+                  
+			   ]]>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( E.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR E.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SALARYCODE">
+			<![CDATA[
+		 		  T.SALARY_CODE LIKE '%' || #SALARYCODE:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  T.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	<select id="getApplicationSalaryCodeCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(1) FROM(SELECT T.PERSON_ID,
+		           T.SALARY_CODE,
+		           T.SALARY_NAME,
+		           T.CPNY_ID,
+		           E.PERSON_ID PERSON_IDE,
+		           E.LOCAL_NAME,
+		           E.EMPID,
+		           E.EMP_TYPE_CODE,
+		           E.emp_office,
+		           E.DEPTNO DEPTNOE,
+		           D.DEPTNO DEPTNOD,
+		           DT.DEPTNO DEPTNODT,
+		           DT.CONTENT DEPT_NAME
+		      FROM PA_APPLICATION_FEE T,HR_EMPLOYEE E,HR_DEPARTMENT D,HR_DEPARTMENT_NAME DT
+             WHERE T.PERSON_ID = E.PERSON_ID
+                   AND E.DEPTNO = D.DEPTNO
+                   AND D.DEPTNO = DT.DEPTNO
+                   AND DT.LANGUAGE = #interLanguage:VARCHAR#
+                ) SD
+ 			  
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( SD.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(SD.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR SD.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  SD.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  SD.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     SD.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     SD.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				SD.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+			<!-- <isNotEmpty prepend="AND" property="SALARYCODE"> -->
+			<!-- <![CDATA[ -->
+			<!-- T.SALARY_CODE LIKE '%' || #SALARYCODE:VARCHAR# || '%' -->
+			<!-- ]]> -->
+			<!-- </isNotEmpty> -->
+		</dynamic>
+	</select>
+
+
+	<insert id="addApplicationSalaryInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_APPLICATION_FEE
+				(
+					PERSON_SALARYCODE_NO,
+					PERSON_ID,
+					SALARY_CODE,
+					CPNY_ID,
+					SALARY_NAME,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY
+				)
+			VALUES(
+					PERSON_SALARYCODE_NO_SEQ.NEXTVAL,
+					#PERSON_ID:VARCHAR#,
+					#SALARY_CODE:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					#SALARY_NAME:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1
+				)
+		]]>
+	</insert>
+
+
+	<update id="updateApplicationSalaryInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_APPLICATION_FEE
+			   SET 
+			   	   SALARY_CODE        = #SALARY_CODE:VARCHAR#,
+			   	   SALARY_NAME        = #SALARY_NAME:VARCHAR#,
+			       UPDATE_DATE        = SYSDATE,
+			        UPDATED_BY        = #UPDATED_BY:VARCHAR#
+			   WHERE PERSON_ID        = #PERSON_ID:VARCHAR#
+					
+		]]>
+	</update>
+
+
+	<delete id="deleteApplicationSalaryInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_APPLICATION_FEE WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+
+	<select id="getPaInputItemApplicationList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		   SELECT T.PARAM_ITEM_NO ITEM_NO,
+                 SY.CONTENT ITEM_NAME
+               FROM PA_PARAM_ITEM_PARAM T,SY_GLOBAL_NAME SY
+            WHERE T.PARAM_ITEM_NO = SY.NO(+)
+             AND SY.LANGUAGE = #interLanguage:VARCHAR#
+              AND T.ONLINE_FLAG = 'Y'
+              AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<!--工资项目参数  -->
+	<select id="getSalaryCodeMappingList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PROJECT_TYPE,
+             	   ITEM_NO,
+                   ITEM_ID,
+                   MAP_CODE,
+                   ITEM_NAME,
+                   CPNY_ID,
+                   ACTIVITY,
+                   TO_FINANCE_FLAG 
+        	 FROM( SELECT '基础项目'  PROJECT_TYPE,
+                   PT.ITEM_NO,
+                   T.ITEM_ID,
+                   PT.MAP_CODE,
+                   SY1.CONTENT AS ITEM_NAME,
+                   PT.CPNY_ID, 
+                   PT.ACTIVITY,
+                   PT.TO_FINANCE_FLAG
+              FROM PA_BASIC_ITEM T, SY_GLOBAL_NAME SY1,PA_BASIC_ITEM_PARAM PT
+             WHERE T.ITEM_NO = SY1.NO(+)
+               AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND T.ITEM_NO = PT.ITEM_NO
+             UNION ALL
+             SELECT '输入项目'  PROJECT_TYPE,
+                    PN.PARAM_ITEM_NO ITEM_NO,
+                    P.PARAM_ITEM_ID ITEM_ID,
+                    PN.MAP_CODE,
+                    SY2.CONTENT ITEM_NAME,
+                    PN.CPNY_ID,
+                    PN.ACTIVITY,
+                    PN.TO_FINANCE_FLAG
+               FROM PA_PARAM_ITEM P, SY_GLOBAL_NAME SY2,PA_PARAM_ITEM_PARAM PN
+              WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND P.PARAM_ITEM_NO = PN.PARAM_ITEM_NO
+             UNION ALL
+            SELECT '计算项目'  PROJECT_TYPE,
+                    PK.ITEM_NO, 
+                    PA.ITEM_ID, 
+                    PK.MAP_CODE,
+                    SY3.CONTENT ITEM_NAME, 
+                    PK.CPNY_ID,
+                    PK.ACTIVITY,
+                    PK.TO_FINANCE_FLAG
+               FROM PA_ITEM PA, SY_GLOBAL_NAME SY3,PA_ITEM_PARAM PK
+              WHERE PA.ITEM_NO = SY3.NO(+)
+                AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND PA.ITEM_NO = PK.ITEM_NO
+             UNION ALL
+             SELECT '保险输入项目'  PROJECT_TYPE,
+                    IPN.PARAM_ITEM_NO ITEM_NO,
+                    IP.PARAM_ID ITEM_ID,
+                    IPN.MAP_CODE,
+                    SY5.CONTENT ITEM_NAME,
+                    IPN.CPNY_ID,
+                    IPN.ACTIVITY,
+                    IPN.TO_FINANCE_FLAG
+               FROM IS_PARAM_ITEM IP, SY_GLOBAL_NAME SY5,IS_PARAM_ITEM_PARAM IPN
+              WHERE IP.PARAM_ITEM_NO = SY5.NO(+)
+                AND SY5.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND IP.PARAM_ITEM_NO = IPN.PARAM_ITEM_NO   
+                UNION ALL
+            SELECT '保险计算项目'  PROJECT_TYPE,
+                    IPK.ITEM_NO, 
+                    IPA.ITEM_ID, 
+                    IPK.MAP_CODE,
+                    SY6.CONTENT ITEM_NAME, 
+                    IPK.CPNY_ID,
+                    IPK.ACTIVITY,
+                    IPK.TO_FINANCE_FLAG
+               FROM IS_ITEM IPA, SY_GLOBAL_NAME SY6,IS_ITEM_PARAM IPK
+              WHERE IPA.ITEM_NO = SY6.NO(+)
+                AND SY6.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND IPA.ITEM_NO = IPK.ITEM_NO) SD
+			   ]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="CPNY">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY:VARCHAR# 
+		    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+			</isNotEmpty>
+			
+
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+		</dynamic>
+	</select>
+	
+	<select id="getSalaryCodeMappingCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(*) FROM(SELECT '基础项目'  PROJECT_TYPE,
+                   PT.ITEM_NO,
+                   T.ITEM_ID,
+                   PT.MAP_CODE,
+                   SY1.CONTENT AS ITEM_NAME,
+                   PT.CPNY_ID,       
+                   PT.ACTIVITY
+              FROM PA_BASIC_ITEM T, SY_GLOBAL_NAME SY1,PA_BASIC_ITEM_PARAM PT
+             WHERE T.ITEM_NO = SY1.NO(+)
+               AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND T.ITEM_NO = PT.ITEM_NO
+             UNION ALL
+             SELECT '输入项目'  PROJECT_TYPE,
+                    PN.PARAM_ITEM_NO ITEM_NO,
+                    P.PARAM_ITEM_ID ITEM_ID,
+                    PN.MAP_CODE,
+                    SY2.CONTENT ITEM_NAME,
+                    PN.CPNY_ID,
+                    PN.ACTIVITY
+               FROM PA_PARAM_ITEM P, SY_GLOBAL_NAME SY2,PA_PARAM_ITEM_PARAM PN
+              WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND P.PARAM_ITEM_NO = PN.PARAM_ITEM_NO
+             UNION ALL
+            SELECT '计算项目'  PROJECT_TYPE,
+                    PK.ITEM_NO, 
+                    PA.ITEM_ID, 
+                    PK.MAP_CODE,
+                    SY3.CONTENT ITEM_NAME, 
+                    PK.CPNY_ID,
+                    PK.ACTIVITY
+               FROM PA_ITEM PA, SY_GLOBAL_NAME SY3,PA_ITEM_PARAM PK
+              WHERE PA.ITEM_NO = SY3.NO(+)
+                AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND PA.ITEM_NO = PK.ITEM_NO
+                 UNION ALL
+             SELECT '保险输入项目'  PROJECT_TYPE,
+                    IPN.PARAM_ITEM_NO ITEM_NO,
+                    IP.PARAM_ID ITEM_ID,
+                    IPN.MAP_CODE,
+                    SY5.CONTENT ITEM_NAME,
+                    IPN.CPNY_ID,
+                    IPN.ACTIVITY
+               FROM IS_PARAM_ITEM IP, SY_GLOBAL_NAME SY5,IS_PARAM_ITEM_PARAM IPN
+              WHERE IP.PARAM_ITEM_NO = SY5.NO(+)
+                AND SY5.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND IP.PARAM_ITEM_NO = IPN.PARAM_ITEM_NO   
+                UNION ALL
+            SELECT '保险计算项目'  PROJECT_TYPE,
+                    IPK.ITEM_NO, 
+                    IPA.ITEM_ID, 
+                    IPK.MAP_CODE,
+                    SY6.CONTENT ITEM_NAME, 
+                    IPK.CPNY_ID,
+                    IPK.ACTIVITY
+               FROM IS_ITEM IPA, SY_GLOBAL_NAME SY6,IS_ITEM_PARAM IPK
+              WHERE IPA.ITEM_NO = SY6.NO(+)
+                AND SY6.LANGUAGE(+) = #interLanguage:VARCHAR#
+                AND IPA.ITEM_NO = IPK.ITEM_NO) SD
+ 			  
+		]]>
+
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="CPNY">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY:VARCHAR# 
+		    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+			</isNotEmpty>
+
+			
+			<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ITEM_NAME LIKE '%' || #KEY:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="TYPE">
+			<![CDATA[
+		 		  PROJECT_TYPE LIKE '%' || #TYPE:VARCHAR# || '%' 
+		    ]]>
+			</isNotEmpty>
+
+		</dynamic>
+	</select>
+	
+	<!-- 工资财务代码管理 -->
+	<select id="viewPaItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       PA_ITEM_SEQ,
+			       GET_GLOBAL_NAME(PA_ITEM_SEQ,'zh') ITEM_NAME,
+			       PA_DES,
+			       CODE_40,
+			       CODE_50,
+			       CODE_NAME,
+			       CODE_NAME_40,
+			       CODE_NAME_50,
+			       START_DATE,
+			       END_DATE,
+			       ACTIVITY,
+			       GET_GLOBAL_NAME(ACTIVITY,'zh') ACTIVITY_NAME,
+			       TO_CHAR(UPDATE_DATE,'YYYY.MM.DD HH24:MI') UPDATE_DATE,
+				   GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+		  		FROM PA_ITEM_MANAGE A
+			   WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_ITEM">
+			<![CDATA[
+				A.PA_ITEM_SEQ = #PA_ITEM#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(A.SEQ)
+		]]>
+	</select>
+	
+	<insert id="addPaItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  	INSERT INTO PA_ITEM_MANAGE
+				  (SEQ,
+				   PA_ITEM_SEQ,
+				   PA_DES,
+				   CODE_40,
+				   CODE_50,
+				   CODE_NAME,
+				   CODE_NAME_40,
+				   CODE_NAME_50,
+				   START_DATE,
+				   END_DATE,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   CPNY_ID)
+				VALUES
+				  (PA_ITEM_MANAGE_SEQ.NEXTVAL,
+				   #PA_ITEM_SEQ:VARCHAR#,
+				   get_global_name(#PA_ITEM_SEQ:VARCHAR#,'zh'),
+				   #CODE_40:VARCHAR#,
+				   #CODE_50:VARCHAR#,
+				   #CODE_NAME:VARCHAR#,
+				   #CODE_NAME_40:VARCHAR#,
+				   #CODE_NAME_50:VARCHAR#,
+				   #START_DATE:VARCHAR#,
+				   #END_DATE:VARCHAR#,
+				   #ACTIVITY:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+   				   #interCpnyID:VARCHAR#)
+		]]>
+	</insert>
+	
+	<update id="updatePaItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE PA_ITEM_MANAGE
+		   SET PA_ITEM_SEQ = #PA_ITEM_SEQ:VARCHAR#,
+		       PA_DES = #PA_DES:VARCHAR#,
+		       CODE_40 = #CODE_40:VARCHAR#,
+		       CODE_50 = #CODE_50:VARCHAR#,
+		       CODE_NAME = #CODE_NAME:VARCHAR#,
+		       CODE_NAME_40 = #CODE_NAME_40:VARCHAR#,
+		       CODE_NAME_50 = #CODE_NAME_50:VARCHAR#,
+		       START_DATE = #START_DATE:VARCHAR#,
+		       END_DATE = #END_DATE:VARCHAR#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+			   UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+ 		 WHERE SEQ = #SEQ#
+		]]>
+	</update>
+	
+	<update id="deletePaItemInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE PA_ITEM_MANAGE
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 部门id是否已经存在  -->
+	<select id="isHavePaItemNo" resultClass="int" remapResults="true" parameterClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM PA_ITEM_MANAGE
+			 WHERE PA_ITEM_SEQ = #PA_ITEM_SEQ:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = '14013912'
+		 ]]>
+	</select>
+	
+	
+	<!-- 工资财务代码管理 -->
+	<select id="getPaItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT ITEM.ITEM_NO,
+			               ITEM.ITEM_ID,
+			               '计算 -> ' || ITEM.DESCR DESCR,
+			               ITEM.ORDERNO,
+			               1 ORDER_NO
+			          FROM PA_ITEM ITEM, PA_ITEM_PARAM PARAM
+			         WHERE ITEM.ITEM_NO = PARAM.ITEM_NO
+			           AND PARAM.CPNY_ID = #interCpnyID:VARCHAR#
+			           AND ITEM.ACTIVITY = 1
+			        UNION ALL
+			        SELECT ITEM.PARAM_ITEM_NO,
+			               ITEM.PARAM_ITEM_ID,
+			               '输入 -> ' || ITEM.DESCR,
+			               ITEM.ORDER_NO,
+			               2
+			          FROM PA_PARAM_ITEM ITEM, PA_PARAM_ITEM_PARAM PARAM
+			         WHERE ITEM.PARAM_ITEM_NO = PARAM.PARAM_ITEM_NO
+			           AND PARAM.CPNY_ID = #interCpnyID:VARCHAR#
+			           AND ITEM.ACTIVITY = 1)
+			 ORDER BY ORDER_NO, ORDERNO
+		]]>
+	</select>
+	
+	
+	<!-- 工资财务代码公式管理 -->
+	<select id="viewPaItemFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT ITEM_NAME,
+			       DR_CR,
+			       ACCOUNT,
+			       PARENT_ACCOUNT,
+			       FORMULA,
+			       REMARK,
+			       SUM_TYPE,
+			       DECODE(SUM_TYPE,1,'部门',2,'公司') SUM_TYPE_NAME,
+			       FAN_JIZHANG,
+			       WBS,
+			       ACTIVITY,
+			       GET_GLOBAL_NAME(ACTIVITY,'zh') ACTIVITY_NAME,
+			       CPNY_ID,
+			       ORDER_NO,
+			       SEQ,
+			       REPORT_TYPE,
+			       CONTENT,
+				   TO_CHAR(UPDATE_DATE,'YYYY.MM.DD HH24:MI') UPDATE_DATE,
+				   GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+			  FROM PA_ITEM_MANAGE_FORMULA A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACCOUNT">
+			<![CDATA[
+				A.ACCOUNT LIKE '%$ACCOUNT$%'
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY ORDER_NO
+		]]>
+	</select>
+	
+	<insert id="addPaItemFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  	INSERT INTO PA_ITEM_MANAGE_FORMULA
+				  (ITEM_NAME,
+				   DR_CR,
+				   ACCOUNT,
+				   FORMULA,
+				   REMARK,
+				   SUM_TYPE,
+				   FAN_JIZHANG,
+				   WBS,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   CPNY_ID,
+				   ORDER_NO,
+				   SEQ,
+				   PARENT_ACCOUNT,
+			       REPORT_TYPE,
+			       CONTENT)
+				VALUES
+				  (#ITEM_NAME:VARCHAR#,
+				   #DR_CR:VARCHAR#,
+				   #ACCOUNT:VARCHAR#,
+				   #FORMULA:VARCHAR#,
+				   #REMARK:VARCHAR#,
+				   #SUM_TYPE:VARCHAR#,
+				   #FAN_JIZHANG:VARCHAR#,
+				   #WBS:VARCHAR#,
+				   #ACTIVITY:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   #interCpnyID:VARCHAR#,
+				   #ORDER_NO:VARCHAR#,
+				   PA_ITEM_MANAGE_SEQ.NEXTVAL,
+				   #PARENT_ACCOUNT:VARCHAR#,
+				   #REPORT_TYPE:VARCHAR#,
+				   #CONTENT:VARCHAR#)
+		]]>
+	</insert>
+	
+	<update id="updatePaItemFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE PA_ITEM_MANAGE_FORMULA
+		   SET ITEM_NAME = #ITEM_NAME:VARCHAR#,
+		       DR_CR = #DR_CR:VARCHAR#,
+		       ACCOUNT = #ACCOUNT:VARCHAR#,
+		       PARENT_ACCOUNT = #PARENT_ACCOUNT:VARCHAR#,
+		       FORMULA = #FORMULA:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       SUM_TYPE = #SUM_TYPE:VARCHAR#,
+		       FAN_JIZHANG = #FAN_JIZHANG:VARCHAR#,
+		       WBS = #WBS:VARCHAR#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+			   UPDATE_DATE = SYSDATE,
+			   UPDATED_BY = #adminID:VARCHAR#,
+			   UPDATED_IP = #adminIP:VARCHAR#,
+		       ORDER_NO = #ORDER_NO:VARCHAR#,
+		       REPORT_TYPE = #REPORT_TYPE:VARCHAR#,
+		       CONTENT = #CONTENT:VARCHAR#
+		 WHERE SEQ = #SEQ#
+		]]>
+	</update>
+	
+	<update id="deletePaItemFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE PA_ITEM_MANAGE_FORMULA
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 部门id是否已经存在  -->
+	<select id="isHavePaItemFormulaNo" resultClass="int" remapResults="true" parameterClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM PA_ITEM_MANAGE_FORMULA
+			 WHERE ITEM_NAME = #ITEM_NAME:VARCHAR#
+			   AND DR_CR = #DR_CR:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = '14013912'
+		 ]]>
+	</select>
+	
+</sqlMap>

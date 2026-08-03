@@ -1,0 +1,908 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arReadCard">
+<select id="getArCardRecordList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.RECORD_NO,
+					  A.CARD_NO,
+					  TO_CHAR(A.R_TIME,'YYYY-MM-DD HH24:MI:SS') R_TIME,
+					  TO_CHAR(A.R_TIME,'YYYY-MM-DD') R_DATE,
+					  TO_CHAR(A.R_TIME,'HH24') R_HOUR,
+					  TO_CHAR(A.R_TIME,'MI') R_MINITE,
+					  TO_CHAR(A.INSERT_TIME,'YYYY-MM-DD HH24:MI') INSERT_TIME,
+					  A.DOOR_TYPE,
+					  A.REMARK,
+					  B.EMPID,
+					  B.LOCAL_NAME,
+					  C.CONTENT		DEPTNAME,
+					  INSERT_BY
+				 FROM AR_MAC_RECORDS_HTSV A,
+					  HR_EMPLOYEE B,
+					  HR_DEPARTMENT_NAME C
+				WHERE  A.PERSON_ID =  B.PERSON_ID
+				  AND B.DEPTNO = C.DEPTNO(+)
+				  AND C.LANGUAGE(+) = #LANGUAGE:VARCHAR#
+				  
+	  	]]>
+	  	
+	  	<isNotEmpty prepend="AND" property="RECORD_NO">
+		<![CDATA[
+		 		A.RECORD_NO = #RECORD_NO:NUMERIC#
+	    ]]>
+		</isNotEmpty>
+	   
+	   <isNotEmpty prepend="AND" property="condition">
+		<![CDATA[
+		 		  ( B.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+					          OR B.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%'
+		                 )
+	    ]]>
+		</isNotEmpty>
+		
+       <isNotEmpty prepend="AND" property="supervisor">
+		<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE B.DEPTNO = F.DEPTNO
+	 					     AND F.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptNO">
+		<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #deptNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STIME">
+		<![CDATA[
+				TO_DATE(TO_CHAR(A.R_TIME,'YYYY-MM-DD'),'YYYY-MM-DD') >= TO_DATE(#STIME:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RTIME">
+		<![CDATA[
+				TO_DATE(TO_CHAR(A.R_TIME,'YYYY-MM-DD'),'YYYY-MM-DD') <= TO_DATE(#RTIME:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DoorType">
+		<![CDATA[
+		 	     A.DOOR_TYPE = #DoorType:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RecordSource">
+		<![CDATA[
+		 	     A.INSERT_BY = #RecordSource:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			 ORDER BY TO_CHAR(A.R_TIME,'YYYY-MM-DD') DESC,B.EMPID,A.DOOR_TYPE
+		]]>
+	</select>
+ 
+	<select id="getArCardRecordListCnt" parameterClass="linkMap" resultClass="int"  >
+		<![CDATA[
+			  SELECT  COUNT(*)
+				 FROM AR_MAC_RECORDS_HTSV A,
+					  HR_EMPLOYEE B,
+					  HR_DEPARTMENT_NAME C
+				WHERE  A.PERSON_ID =  B.PERSON_ID
+				  AND B.DEPTNO = C.DEPTNO(+)
+				  AND C.DEPTNO(+) = #LANGUAGE:VARCHAR#
+				  
+	  	]]>
+	   
+	   <isNotEmpty prepend="AND" property="RECORD_NO">
+		<![CDATA[
+		 		A.RECORD_NO = #RECORD_NO:NUMERIC#
+	    ]]>
+		</isNotEmpty>
+		
+	   <isNotEmpty prepend="AND" property="condition">
+		<![CDATA[
+		 		  ( B.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+					          OR B.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%'
+		                 )
+	    ]]>
+		</isNotEmpty>
+		
+       <isNotEmpty prepend="AND" property="supervisor">
+		<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE B.DEPTNO = F.DEPTNO
+	 					     AND F.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptNO">
+		<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #deptNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STIME">
+		<![CDATA[
+				TO_DATE(TO_CHAR(A.R_TIME,'YYYY-MM-DD'),'YYYY-MM-DD') >= TO_DATE(#STIME:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RTIME">
+		<![CDATA[
+				TO_DATE(TO_CHAR(A.R_TIME,'YYYY-MM-DD'),'YYYY-MM-DD') <= TO_DATE(#RTIME:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DoorType">
+		<![CDATA[
+		 	     A.DOOR_TYPE = #DoorType:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RecordSource">
+		<![CDATA[
+		 	     A.INSERT_BY = #RecordSource:VARCHAR#  
+	    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	 <update id="updateArCardRecordInfo" parameterClass="linkMap" >
+		<![CDATA[
+			  UPDATE AR_MAC_RECORDS_HTSV A
+			     SET R_TIME    = DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI')),
+				 	 DOOR_TYPE = #DOOR_TYPE:VARCHAR#,
+					 INSERT_BY = 'H',
+					 UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					 UPDATE_DATE = SYSDATE,
+					 REMARK = #REMARK:VARCHAR#
+			   WHERE A.RECORD_NO = #RECORD_NO:NUMERIC# 
+	 	]]>
+	 </update>
+	 
+	 <delete id="deleteArCardRecordInfo" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A WHERE A.RECORD_NO = #RECORD_NO# 
+	 	]]>
+	 </delete>
+	 
+	 <delete id="deleteArCardRepeat" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A 
+			  	WHERE A.PERSON_ID = #PERSON_ID:VARCHAR# 
+			  	  AND TO_CHAR(A.R_TIME,'YYYY-MM-DD HH24:MI') = #R_TIME:VARCHAR#
+	 	]]>
+	 </delete>
+	 
+	 <insert id="addArCardRecordInfo" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI')),
+					  #DoorType:VARCHAR#,
+					  1,
+					  'H',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>
+	
+	<insert id="insertMacRecordList" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY/MM/DD HH24:MI:SS')),
+					  DECODE(#DOOR_TYPE:VARCHAR#,'I','IN','O','OUT',#DOOR_TYPE:VARCHAR#),
+					  1,
+					  'A',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>
+	 
+	 <insert id="insertMacRecordListC12" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY/MM/DD HH24:MI:SS')),
+					  DECODE(#DOOR_TYPE:VARCHAR#,'I','IN','O','OUT',#DOOR_TYPE:VARCHAR#),
+					  1,
+					  'A',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>
+	 
+	 <insert id="insertMacRecordListC13" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY/MM/DD HH24:MI:SS')),
+					  DECODE(#DOOR_TYPE:VARCHAR#,'I','IN','O','OUT',#DOOR_TYPE:VARCHAR#),
+					  1,
+					  'A',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>
+	 
+	<insert id="insertMacRecordListTemp" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV_TEMP
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY/MM/DD HH24:MI:SS')),
+					  DECODE(#DOOR_TYPE:VARCHAR#,'I','IN','O','OUT',#DOOR_TYPE:VARCHAR#),
+					  1,
+					  'A',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>	 
+	 
+	 
+	 <insert id="insertMacRecordListTempC12" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV_TEMP
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY/MM/DD HH24:MI:SS')),
+					  DECODE(#DOOR_TYPE:VARCHAR#,'I','IN','O','OUT',#DOOR_TYPE:VARCHAR#),
+					  1,
+					  'A',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>	 
+	 
+	 <insert id="insertMacRecordListTempC13" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_HTSV_TEMP
+					( RECORD_NO,
+					  PERSON_ID,
+					  R_TIME,
+					  DOOR_TYPE,
+					  ACTIVITY,
+					  INSERT_BY,
+					  CREATED_BY,
+					  INSERT_TIME,
+					  CREATE_DATE,
+					  REMARK)
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			   		  #PERSON_ID:VARCHAR#,
+			   		  DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'YYYY/MM/DD HH24:MI:SS')),
+					  DECODE(#DOOR_TYPE:VARCHAR#,'I','IN','O','OUT',#DOOR_TYPE:VARCHAR#),
+					  1,
+					  'A',
+					  #CREATED_BY:VARCHAR#,
+					  SYSDATE,
+					  SYSDATE,
+					  #REMARK:VARCHAR#
+			     )
+		  ]]>
+	 </insert>	 
+	 
+	 <delete id="deleteMacRecordList" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A 
+			  	WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+			  	  AND A.R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+	 	]]>
+	 </delete>
+	 
+	  <delete id="deleteMacRecordListC12" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A 
+			  	WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+			  	  AND A.R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+	 	]]>
+	 </delete>
+	 
+	 <delete id="deleteMacRecordListC13" parameterClass="linkMap" >
+		<![CDATA[
+			  DELETE FROM AR_MAC_RECORDS_HTSV A 
+			  	WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+			  	  AND A.R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+	 	]]>
+	 </delete>
+	 
+	 <delete id="deleteMacRecordTempC11" >
+		<![CDATA[
+			truncate table AR_MAC_RECORDS_C11_TEMP
+	 	]]>
+	 </delete>	 
+	 
+	 <delete id="deleteMacRecordTempC12" >
+		<![CDATA[
+			truncate table AR_MAC_RECORDS_C12_TEMP
+	 	]]>
+	 </delete>	
+	 
+	  <delete id="deleteMacRecordTempC13" >
+		<![CDATA[
+			truncate table AR_MAC_RECORDS_C13_TEMP
+	 	]]>
+	 </delete>	
+	 
+	 <delete id="delMacRecordTempC03" >
+		<![CDATA[
+			truncate table AR_MAC_RECORDS_C03_TEMP
+	 	]]>
+	 </delete>	 	 
+	 
+	<insert id="insertMacRecordListC03" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_C03_TEMP
+					( 
+						ID_CARD_NO,
+						R_TIME_IN,
+						R_TIME_OUT,
+						CREATE_DATE,
+						CREATED_BY					
+					  )
+			    VALUES ( 
+			    		 #ID_CARD_NO:VARCHAR#,
+			   		     TO_DATE(DECODE(#R_TIME_IN:VARCHAR#,'',null,#R_TIME_IN:VARCHAR#),'YYYY-MM-DD HH24:MI:SS'),
+			   		     TO_DATE(DECODE(#R_TIME_OUT:VARCHAR#,'',null,#R_TIME_OUT:VARCHAR#),'YYYY-MM-DD HH24:MI:SS'),
+					  	 SYSDATE,
+					  	 'A'
+			     )
+		  ]]>
+	 </insert>	 	 
+	 
+	<procedure id="insertMacRecordsC03ByP" >
+		<![CDATA[
+             {CALL AR_ADD_MAC_RECORDS_C03_P()}
+		]]>
+	</procedure>	 
+	 
+	<insert id="insertMacRecordListC04" parameterClass="linkMap" >
+		<![CDATA[	
+		INSERT INTO AR_MAC_RECORDS_C04_TEMP
+					( 
+						RECORD_NO,
+						CARD_NO,
+						R_TIME,
+						DOOR_TYPE,
+						INSERT_BY,
+						INSERT_TIME,
+						CPNY_ID,
+						ACTIVITY,
+						CREATE_DATE,
+						CREATED_BY					
+					  )
+			    VALUES ( AR_RECORDS_SEQ.NEXTVAL,
+			    		 #CARD_NO:VARCHAR#,
+			   		     TO_DATE(DECODE(#R_TIME:VARCHAR#,'',null,#R_TIME:VARCHAR#),'YYYY/MM/DD HH24:MI:SS'),
+					     #DOOR_TYPE:VARCHAR#,
+					     #CREATED_BY:VARCHAR#,
+					     sysdate,
+					     #CPNY_ID:VARCHAR#,
+					     1,
+					  	 SYSDATE,
+					  	 #CREATED_BY:VARCHAR#
+			     )
+		  ]]>
+	 </insert>	 
+	 
+	<procedure id="updatePersonIdAndInsert" parameterClass="linkMap">
+		<![CDATA[
+             {CALL AR_UPDATE_PERSONID_C04(#startDate:VARCHAR#,#endDate:VARCHAR#)}
+		]]>
+	</procedure>
+	
+	<procedure id="updateC11inout" parameterClass="linkMap">
+		<![CDATA[
+             {CALL ar_add_input_c11_p()}
+		]]>
+	</procedure>	
+	
+	<procedure id="updateC12inout" parameterClass="linkMap">
+		<![CDATA[
+             {CALL ar_add_input_c12_p()}
+		]]>
+	</procedure>
+		 
+	<procedure id="updateC13inout" parameterClass="linkMap">
+		<![CDATA[
+             {CALL ar_add_input_c13_p()}
+		]]>
+	</procedure>		 
+		 
+	 <delete id="delHrTsmsEntryC03" >
+		<![CDATA[
+			  DELETE HR_TSMS_ENTRY_C03 
+	 	]]>
+	 </delete>		
+	 
+	<insert id="insertHrTsmsEntryC03" parameterClass="linkMap" >
+		<![CDATA[	
+			INSERT INTO HR_TSMS_ENTRY_C03(
+			DATE_STARTED,
+			DEPTNO,
+			LOCAL_NAME,
+			JOIN_COMPANY_DATE,
+			ID_CARD_NO,
+			POSITION_NO,
+			DUTY_NO
+			)		
+			VALUES(
+			TO_DATE(DECODE(#IN_DATE_STARTED:VARCHAR#,'',null,#IN_DATE_STARTED:VARCHAR#),'YYYY-MM-DD HH24:MI:SS'),
+			#IN_DEPT_NO:VARCHAR#,
+			#IN_LOCAL_NAME:VARCHAR#,
+			TO_DATE(DECODE(#IN_JOIN_COMPANY_DATE:VARCHAR#,'',null,#IN_JOIN_COMPANY_DATE:VARCHAR#),'YYYY-MM-DD HH24:MI:SS'),
+			#IN_ID_CARD_NO:VARCHAR#,
+			#IN_POSITION_NO:VARCHAR#,
+			DECODE(#IN_POSITION_NO:VARCHAR#,'122617','122620','122618','122621','14588','14568','14589','14569','122619','122622',#IN_POSITION_NO:VARCHAR#)
+			)		
+		  ]]>
+	 </insert>	
+	 
+	 <insert id="insertHrTsmsEntryC03BEIFEN" parameterClass="linkMap" >
+		<![CDATA[	
+			INSERT INTO HR_TSMS_ENTRY_C03_BEIFEN(
+				DATE_STARTED,
+				DEPTNO,
+				LOCAL_NAME,
+				JOIN_COMPANY_DATE,
+				ID_CARD_NO,
+				POSITION_NO,
+				DUTY_NO,
+				CREATE_DATE,
+				CREATED_BY
+			)		
+			VALUES(
+				TO_DATE(DECODE(#IN_DATE_STARTED:VARCHAR#,'',null,#IN_DATE_STARTED:VARCHAR#),'YYYY-MM-DD HH24:MI:SS'),
+				#IN_DEPT_NO:VARCHAR#,
+				#IN_LOCAL_NAME:VARCHAR#,
+				TO_DATE(DECODE(#IN_JOIN_COMPANY_DATE:VARCHAR#,'',null,#IN_JOIN_COMPANY_DATE:VARCHAR#),'YYYY-MM-DD HH24:MI:SS'),
+				#IN_ID_CARD_NO:VARCHAR#,
+				#IN_POSITION_NO:VARCHAR#,
+				DECODE(#IN_POSITION_NO:VARCHAR#,'122617','122620','122618','122621','14588','14568','14589','14569','122619','122622',#IN_POSITION_NO:VARCHAR#),
+				SYSDATE,
+				'SYS'
+			)		
+		  ]]>
+	 </insert>	  			  
+	
+	<procedure id="updateEmpInfosByP" >
+		<![CDATA[
+             {CALL HR_TSMS_ENTRY_C03_P()}
+		]]>
+	</procedure>	
+	
+	 <delete id="deleteDuplicateRecordCompanyList" parameterClass="linkMap">
+		<![CDATA[
+              DELETE FROM AR_MAC_RECORDS_SST
+                  WHERE rowid not in (SELECT MIN(rowid)
+                    FROM AR_MAC_RECORDS_SST WHERE TO_CHAR(R_TIME,'YYYY-MM-DD') >= #START_TIME:VARCHAR# AND TO_CHAR(R_TIME,'YYYY-MM-DD') <= #END_TIME:VARCHAR#
+                   GROUP BY CARD_NO, R_TIME) 
+                   AND TO_CHAR(R_TIME,'YYYY-MM-DD') >= #START_TIME:VARCHAR# AND TO_CHAR(R_TIME,'YYYY-MM-DD') <= #END_TIME:VARCHAR#
+        ]]>
+	 </delete>	
+	 
+	<insert id="insertEmpResignListC03" parameterClass="linkMap" >
+		<![CDATA[	
+			INSERT INTO HR_TSMS_RESIGNATION_C03(
+				RESIGN_DATE,
+				CREATE_DATE,
+				CREATED_BY,
+				ACTIVITY,
+				SETTLEMENT_DATE,
+				IDCARD_NO
+			)		
+			VALUES(
+				TO_DATE(DECODE(#R_DATE#,'',null,#R_DATE#),'YYYY-MM-DD HH24:MI:SS'),
+				sysdate,
+				'A',
+				1,
+				TO_DATE(DECODE(#R_DATE#,'',null,#R_DATE#),'YYYY-MM-DD HH24:MI:SS'),
+				#ID_CARD_NO#
+			)		
+		  ]]>
+	 </insert>		 
+	 
+	<procedure id="hrTsmsResignationC03P" >
+		<![CDATA[
+             {CALL HR_TSMS_RESIGNATION_C03_P()}
+		]]>
+	</procedure>		 	
+	
+	 
+    <procedure id="ar_record_read_supervisor_proc" parameterClass="linkMap">
+		<![CDATA[
+		  {CALL ar_record_read_supervisor_proc(#from_date:VARCHAR#, #to_date:VARCHAR#, #interCpnyID:VARCHAR#,#person_id:VARCHAR#, #empid,jdbcType=VARCHAR,mode=INOUT#)}
+		]]>
+	</procedure>
+	  <procedure id="ar_record_read_personid_proc" parameterClass="linkMap">
+		<![CDATA[
+		  {CALL ar_record_read_personid_proc(#from_date:VARCHAR#, #to_date:VARCHAR#, #interCpnyID:VARCHAR#,#person_id:VARCHAR#, #empid,jdbcType=VARCHAR,mode=INOUT#)}
+		]]>
+	</procedure>
+	
+	
+	<select id="getImportExcelTempMacRecordsList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			 SELECT T.EMPID,
+			       NVL(E.LOCAL_NAME,T.EMPID) CHINESENAME,
+			       GET_DEPT_NAME(E.DEPTNO,#interLanguage#) DEPT,
+			       T.AR_DATE_STR,
+			       T.R_DATE || ' ' || T.R_TIME R_TIME,
+			       T.DOOR_TYPE,
+			       T.REMARK,
+			       T.UPLOAD_ERROR_MSG,
+		           T.LINE_ID,
+			       T.RESULT_FLAG,
+			       E.LOCAL_NAME UPLOAD_BY,
+			       TO_CHAR(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE
+			  FROM AR_MAC_RECORDS_TEMP T,HR_EMPLOYEE E
+			 WHERE T.EMPID = E.EMPID(+)
+			   AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY T.LINE_ID
+	</select>
+	
+	<select id="getImportExcelTempMacRecordsListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+			  FROM AR_MAC_RECORDS_TEMP T
+		     WHERE T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getImportExcelTempMacRecordsListErrCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM AR_MAC_RECORDS_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<procedure id="importMacRecordsExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_MACRECORD_EXCEL_IMP.PR_IMPORT_MACRECORD_DATA(
+						 #PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<select id="ChenkMacRecordListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			 
+			   SELECT AR_GET_DATE_FLAG(#FILENAME:VARCHAR#) FROM DUAL;
+		]]>
+	</select>
+	
+	<insert id="insertMacRecordRawList" parameterClass="linkMap" >
+		<![CDATA[
+            
+            INSERT INTO AR_MAC_RECORDS_SST(
+                RECORD_NO,
+                CARD_NO,
+                EMPLOYEE_NAME,
+                DOOR_TYPE,
+                R_TIME,
+                INSERT_BY,
+                CREATE_DATE,
+                CREATED_BY,
+                AR_DATE_STR,
+                DEVICENAME
+            )
+            VALUES(
+                AR_MAC_RECORDS_APPLY_SEQ.NEXTVAL,
+                #CARD_NO#,
+                #EMPLOYEE_NAME#,
+                #DOOR_TYPE#,
+                TO_DATE(TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS'),
+                'M',
+                sysdate,
+                #EMPID#,
+                TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD'),
+                #DEVICENAME#
+            )       
+          ]]>
+	 </insert>	
+	
+	<insert id="insertMacRecordRawListSST" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_MAC_RECORDS_HTSV
+				  (RECORD_NO,
+				   CARD_NO,
+				   PERSON_ID,
+				   R_TIME,
+				   DOOR_TYPE,
+				   INSERT_BY,
+				   CREATE_DATE,
+				   UPDATE_DATE,
+				   ACTIVITY)
+				(SELECT AR_RECORDS_SEQ.NEXTVAL,
+							#EMPID:VARCHAR#,
+							PERSON_ID,
+							TO_DATE(TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS'),
+							#DOOR_TYPE:VARCHAR#,
+							'M',
+							SYSDATE,
+							SYSDATE,
+							1
+					 FROM HR_EMPLOYEE HR
+					WHERE EMPID = #EMPID:VARCHAR#
+					  AND CPNY_ID = #CPNY_ID:VARCHAR#
+					  AND EMP_OFFICE <> '15120'
+					  AND NOT EXISTS (
+							SELECT 1 FROM AR_MAC_RECORDS_HTSV A
+							 WHERE R_TIME = TO_DATE(TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS')
+							   AND CARD_NO = #EMPID:VARCHAR#
+							   AND A.PERSON_ID = HR.PERSON_ID
+						)
+			)
+		  ]]>
+	 </insert>	
+	 
+	 <insert id="addSyLogInfo" parameterClass="linkMap" >
+		<![CDATA[	
+			INSERT INTO SY_LOG_INFO
+			  (CPNY_ID, TYPE_NAME, YYYYMMDD, START_TIME, REMARK, ERROR_INFO)
+			VALUES
+			  (#CPNY_ID#,
+			   #TYPE_NAME#,
+			   TO_CHAR(SYSDATE,'YYYYMMDD'),
+			   SYSDATE,
+			   #REMARK#,
+			   #ERROR_INFO:VARCHAR#)
+   		  ]]>
+	 </insert>
+	 
+	<insert id="readMacRecordHTSVList" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_MAC_RECORDS_HTSV
+				  (RECORD_NO,
+				   CARD_NO,
+				   PERSON_ID,
+				   R_TIME,
+				   DOOR_TYPE,
+				   INSERT_BY,
+				   CREATE_DATE,
+				   UPDATE_DATE,
+				   ACTIVITY)
+				(SELECT AR_RECORDS_SEQ.NEXTVAL,
+							#EMPID:VARCHAR#,
+							HR.PERSON_ID,
+							TO_DATE(TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS'),
+							#DOOR_TYPE:VARCHAR#,
+							'M',
+							SYSDATE,
+							SYSDATE,
+							1
+					 FROM HR_EMPLOYEE HR
+					WHERE HR.EMPID = #EMPID:VARCHAR#
+					  AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+					  AND HR.EMP_OFFICE <> '15120'
+					  AND NOT EXISTS (
+							SELECT 1 FROM AR_MAC_RECORDS_HTSV A
+							 WHERE (TO_CHAR(A.R_TIME, 'YYYY-MM-DD HH24:MI:SS') = TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS')
+							      OR TO_CHAR(A.R_TIME + 1/24/60, 'YYYY-MM-DD HH24:MI:SS') = TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS')
+							      OR TO_CHAR(A.R_TIME - 1/24/60, 'YYYY-MM-DD HH24:MI:SS') = TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'))
+							   AND A.CARD_NO = #EMPID:VARCHAR#
+							   AND A.PERSON_ID = HR.PERSON_ID
+						)
+			)
+		  ]]>
+	 </insert>
+	 
+	 <insert id="readMealRecordHTSVList" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_MAC_RECORDS_HTSV_EAT
+		          (SEQ,
+		           CARD_NO,
+		           PERSON_ID,
+		           EMPID,
+		           EAT_NAME,
+		           EMPLOYEE_NAME,
+		           DEPART_NAME,
+		           R_TIME,
+		           INSERT_BY,
+		           CREATE_DATE,
+		           UPDATE_DATE,
+		           ACTIVITY)
+		        (SELECT AR_MAC_RECORDS_TSTO_EAT_SEQ.NEXTVAL,
+		              #EMPID:VARCHAR#,
+		              get_person_id(#EMPID:VARCHAR#),
+		              #EMPID:VARCHAR#,
+		              #DOOR_NAME:VARCHAR#,
+		              #EMPLOYEE_NAME:VARCHAR#,
+		              #DEPART_NAME:VARCHAR#,
+		              TO_DATE(TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS'),
+		              'M',
+		              SYSDATE,
+		              SYSDATE,
+		              1
+		           FROM DUAL HR
+		          WHERE NOT EXISTS (
+		              SELECT 1 FROM AR_MAC_RECORDS_HTSV_EAT A
+		               WHERE (TO_CHAR(A.R_TIME, 'YYYY-MM-DD HH24:MI:SS') = TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS')
+							      OR TO_CHAR(A.R_TIME + 1/24/60, 'YYYY-MM-DD HH24:MI:SS') = TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS')
+							      OR TO_CHAR(A.R_TIME - 1/24/60, 'YYYY-MM-DD HH24:MI:SS') = TO_CHAR(TO_TIMESTAMP(#CARD_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SSXFF'),'YYYY-MM-DD HH24:MI:SS'))
+		                 AND A.CARD_NO = #EMPID:VARCHAR#
+		            )
+		      )
+		  ]]>
+	 </insert>	
+	 
+	<insert id="readMacRecordHZList" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_MAC_RECORDS_HTSV
+				  (RECORD_NO,
+				   CARD_NO,
+				   PERSON_ID,
+				   R_TIME,
+				   INSERT_BY,
+				   CREATE_DATE,
+				   UPDATE_DATE,
+				   ACTIVITY)
+				(SELECT AR_RECORDS_SEQ.NEXTVAL,
+							#EMPID:VARCHAR#,
+							PERSON_ID,
+							TO_DATE(#CARD_TIME:VARCHAR# ,'YYYY-MM-DD HH24:MI:SS'),
+							'M',
+							SYSDATE,
+							SYSDATE,
+							1
+					 FROM HR_EMPLOYEE HR
+					WHERE EMPID = #EMPID:VARCHAR#
+					  AND CPNY_ID = #CPNY_ID:VARCHAR#
+					  AND EMP_OFFICE <> '15120'
+					  AND NOT EXISTS (
+							SELECT 1 FROM AR_MAC_RECORDS_HTSV A
+							 WHERE R_TIME = TO_DATE(#CARD_TIME:VARCHAR# ,'YYYY-MM-DD HH24:MI:SS')
+							   AND CARD_NO = #EMPID:VARCHAR#
+							   AND A.PERSON_ID = HR.PERSON_ID
+						)
+			)
+		  ]]>
+	 </insert>	
+	 
+	<insert id="readMacRecordDLList" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_MAC_RECORDS_HTSV
+				  (RECORD_NO,
+				   CARD_NO,
+				   PERSON_ID,
+				   R_TIME,
+				   INSERT_BY,
+				   CREATE_DATE,
+				   UPDATE_DATE,
+				   ACTIVITY)
+				(SELECT AR_RECORDS_SEQ.NEXTVAL,
+							#EMPID:VARCHAR#,
+							PERSON_ID,
+							TO_DATE(#CARD_TIME:VARCHAR# ,'YYYY-MM-DD HH24:MI:SS'),
+							'M',
+							SYSDATE,
+							SYSDATE,
+							1
+					 FROM HR_EMPLOYEE HR
+					WHERE (EMPID = #EMPID:VARCHAR# OR EMPID = 'YY' || #EMPID:VARCHAR# )
+					  AND CPNY_ID = #CPNY_ID:VARCHAR#
+					  AND EMP_OFFICE <> '15120'
+					  AND NOT EXISTS (
+							SELECT 1 FROM AR_MAC_RECORDS_HTSV A
+							 WHERE R_TIME = TO_DATE(#CARD_TIME:VARCHAR# ,'YYYY-MM-DD HH24:MI:SS')
+							   AND CARD_NO = #EMPID:VARCHAR#
+							   AND A.PERSON_ID = HR.PERSON_ID
+						)
+			)
+		  ]]>
+	 </insert>
+	 
+	<procedure id="updateMacArDateStr" >
+		<![CDATA[
+             {CALL AR_MAC_UPDATE_DOOR_TYPE()}
+		]]>
+	</procedure>	
+</sqlMap>

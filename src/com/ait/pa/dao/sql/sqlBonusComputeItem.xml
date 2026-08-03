@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusComputeItem">
+	
+	<sql id="getBonusComputeItemListCondition" >
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  B.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>		
+	                 
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID like '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+		 		 ( SY.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+         
+	</sql>
+	
+	<select id="getBonusComputeItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_NO,
+			       SY.CONTENT ITEM_NAME,
+			       T.DESCR,
+			       T.DATATYPE,
+			       T.ITEM_ID,
+			       B.CPNY_ID,
+			       GET_ITEM_ID(T.ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)  ISCHECKED,
+			       GET_ITEM_ORDERNO(T.ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)  ORDERNO
+			  FROM BN_ITEM T, BN_ITEM_PARAM B, SY_GLOBAL_NAME SY
+			 WHERE T.ITEM_NO = B.ITEM_NO
+			   AND T.ITEM_NO = SY.NO(+)
+			   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		<include refid="getBonusComputeItemListCondition"/>
+	
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY SY.CONTENT
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getBonusComputeItemCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(T.ITEM_NO)
+			  		FROM BN_ITEM T, BN_ITEM_PARAM B, SY_GLOBAL_NAME SY
+					 WHERE T.ITEM_NO = B.ITEM_NO
+					   AND T.ITEM_NO = SY.NO(+)
+					   AND SY.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getBonusComputeItemListCondition"/>
+		
+	</select>
+	
+	<sql id="getBonusComputeItemNoParamListCondition" >
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>	
+	                 
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID like '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+		 		 ( SY.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+         
+	</sql>
+	
+	<select id="getBonusComputeItemNoParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT  T.ITEM_NO, 
+							SY.CONTENT ITEM_NAME, 
+							T.DESCR, T.DATATYPE, 
+							T.ITEM_ID
+						  FROM BN_ITEM T, SY_GLOBAL_NAME SY
+						 WHERE T.ITEM_NO = SY.NO(+)
+						   AND SY.LANGUAGE = 'zh'
+		]]>
+		
+		    <include refid="getBonusComputeItemNoParamListCondition"/>
+        
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY SY.CONTENT
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getBonusComputeItemNoParamCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+ 			SELECT COUNT(T.ITEM_NO)
+			  		FROM BN_ITEM T, SY_GLOBAL_NAME SY
+						 WHERE T.ITEM_NO = SY.NO(+)
+						   AND SY.LANGUAGE = 'zh'
+		]]>
+		
+		<include refid="getBonusComputeItemNoParamListCondition"/>
+		
+	</select>
+	
+	<select id="checkAddBonusComputeItemInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(ITEM_NO)
+			  FROM BN_ITEM T 
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+				<![CDATA[
+			 		  T.ITEM_ID = #ITEM_ID:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  T.ITEM_NO <> #ITEM_NO:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<insert id="addBonusComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_ITEM
+				(
+					ITEM_NO,
+					DESCR,
+					DATATYPE,
+					ITEM_ID,
+					CREATE_DATE,
+					ACTIVITY,
+					CREATED_BY
+				)
+			VALUES(
+					#NO:VARCHAR#,
+					#DESCR:VARCHAR#,
+					#DATATYPE:VARCHAR#,
+					#ITEM_ID:VARCHAR#,
+					SYSDATE,
+					1,
+					#CREATED_BY:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<update id="updateBonusComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE BN_ITEM
+				   SET 
+				   	   ITEM_ID      = #ITEM_ID:VARCHAR#,
+				       DESCR        = #DESCR:VARCHAR#,
+				       DATATYPE     = #DATATYPE:VARCHAR#,
+				       UPDATE_DATE  = SYSDATE,
+				       UPDATED_BY   = #UPDATED_BY:VARCHAR#
+				 WHERE ITEM_NO = #NO:NUMERIC#
+									
+		]]>
+	</update>
+	
+	<select id="checkDeleteBonusComputeItemInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT ((SELECT COUNT(*)
+				          FROM USER_TAB_COLS
+				         WHERE TABLE_NAME = 'BN_SUMMARY' || #CPNY_ID:VARCHAR#
+				           AND COLUMN_NAME = #ITEM_ID:VARCHAR#)
+				         +
+				        (SELECT COUNT(*) 
+				          FROM BN_ITEM_PARAM 
+				         WHERE ITEM_NO = #ITEM_NO:VARCHAR#  
+				         )
+				        ) AS A
+				  FROM DUAL
+		]]>
+	</select>
+	
+	<delete id="deleteBonusComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE BN_ITEM WHERE ITEM_NO = #NO:VARVHAR#
+		]]>
+	</delete>
+
+</sqlMap>

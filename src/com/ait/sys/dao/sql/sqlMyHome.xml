@@ -1,0 +1,1573 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.myhome">
+	
+	<delete id="deleteModel" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM SY_MYHOME			
+			WHERE EMPID = #empid#
+			AND PAGE = #page#
+		]]>	  
+	</delete>
+	<insert id="insertModel" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MYHOME(EMPID,MSTATE,MID,MCONTENT,PAGE)
+			VALUES(#empid#,#mstate#,#mid#,#mcontent#,#page#)
+		]]>	  
+	</insert>
+	
+	<select id="getModel" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SUBSTR(MID,1,LENGTH(MID)-5) MID,MSTATE,MCONTENT
+			FROM SY_MYHOME			
+			WHERE EMPID = #ADMINID#
+			AND PAGE=#page#
+		]]>	
+		<isNotEmpty prepend="AND" property="model"> 
+			<![CDATA[
+			MID=#model#
+		]]>	
+		</isNotEmpty>
+	</select>
+	
+	<select id="getHomePurview" remapResults="true" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+				SELECT 	MID,
+					MNAME_$language$ AS MNAME,
+					MDIV,
+					(CASE WHEN MID IN(SELECT MID FROM SY_MYHOME 
+						WHERE EMPID = #ADMINID# 
+						AND MSTATE='1'
+						AND PAGE = #page#)
+					THEN 1 ELSE 0 END ) AS MSTATE
+				FROM SY_HOME_ELEMENT
+				WHERE MID IN(
+					SELECT MID FROM SY_HOME_PURVIEW WHERE SCREEN_GRANT_NO IN(
+					 select TO_NUMBER(column_value) SCREEN_GRANT_NO from (
+					  select * from table (cast (split (( select SCREEN_GRANT_NO 
+					  from SY_ADMIN where ADMINID=#ADMINID#), ',') as TYPE_SPLIT) )
+					  )
+					)
+				)
+				ORDER BY ORDERNO
+				
+		]]>	  
+	</select>
+	
+	<select id="getHomePage"  parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT 	APPCNT					
+				FROM SY_ADMIN
+				WHERE ADMINID = #ADMINID#
+				
+		]]>	  
+	</select>
+	<update id="updateApp"  parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_ADMIN SET APPCNT = #appcnt#
+				WHERE ADMINID = #ADMINID#
+				
+		]]>	  
+	</update>
+	<delete id="deletePage"  parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM  SY_MYHOME 
+			WHERE EMPID = #ADMINID#
+			AND PAGE=#page#
+				
+		]]>	  
+	</delete>
+	<update id="updatePage"  parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_MYHOME SET PAGE=PAGE-1
+			WHERE EMPID = #ADMINID#
+			AND PAGE > TO_NUMBER(#page#)
+				
+		]]>	  
+	</update>
+	
+	<select id="getSyMenu" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.MENU_CODE,
+				(CASE WHEN #language# = 'en' THEN
+					NVL(T.MENU_EN_INTRO, ' ')
+				ELSE
+			       T.MENU_INTRO
+			    END) AS MENU_INTRO,
+			       T.MENU_URL,
+			       T.MENU_PARENT_CODE,
+			    (CASE WHEN T.MENU_CODE IN(SELECT MENU FROM SY_MYSHORT 
+						WHERE EMPID = #ADMINID# 
+						AND PAGE = #page#)
+					THEN 'true' ELSE 'false' END ) AS ISCHECKED
+			  FROM SY_MENU T
+			  WHERE T.ACTIVITY = 1
+			  AND T.MENU_CODE IN ( 
+			  		SELECT SCREEN_CODE FROM SY_SCREEN_GRANT 
+			  			WHERE SCREEN_GRANT_NO IN(
+					 select TO_NUMBER(column_value) SCREEN_GRANT_NO from (
+					  select * from table (cast (split (( select SCREEN_GRANT_NO 
+					  from SY_ADMIN where ADMINID=#ADMINID#), ',') as TYPE_SPLIT) )
+					  )
+					)
+				)
+			  ORDER BY MENU_NO
+		]]>	  
+	</select>
+	
+	<delete id="deleteShort" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM SY_MYSHORT			
+			WHERE EMPID = #empid#
+			AND PAGE = #page#
+		]]>	  
+	</delete>
+	<insert id="insertShort" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MYSHORT(EMPID,MENU,PAGE)
+			VALUES(#empid#,#menu#,#page#)
+		]]>	  
+	</insert>
+	
+	<select id="getShort"  parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SMS.EMPID,SMS.MENU,(CASE WHEN #language# = 'en' THEN
+					NVL(SM.MENU_EN_INTRO, ' ')
+				ELSE
+			       SM.MENU_INTRO
+			    END) AS MENU_INTRO, 
+			    SM.MENU_URL				
+				FROM SY_MYSHORT SMS,SY_MENU SM
+				WHERE SMS.EMPID = #ADMINID#
+				AND SMS.PAGE = #page#
+				AND SMS.MENU = SM.MENU_CODE
+				
+		]]>	  
+	</select>
+
+	<select id="getBirthday" resultClass="linkMap" >
+		<![CDATA[ 
+		
+			SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+			   select     h.empid                                         empid,
+				          h.chinesename                                   chineseName,
+				          hr_get_flevel_deptname(h.deptid)                department,
+				          get_position_name(h.position_code)              position,
+				          get_post_grade_name(h.post_grade_code)          postGrade,
+				          to_char(t.dob,'mm-dd')                          dob
+				from hr_employee h,hr_personal_info t 
+				where h.empid=t.empid and to_char(t.dob,'mm')=to_char(sysdate,'mm')
+				AND (h.date_left IS NULL OR h.date_left >= sysdate) 
+				
+				)
+				ORDER BY dob 
+			) H
+		   
+	                                             
+  	 ]]>
+	</select>
+	
+	<select id="getMonthExperience" resultClass="linkMap" >
+		<![CDATA[ 
+		
+			SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+			   select   GET_SYS_CODE(H.TRANS_CODE) TRANSTYPE,  
+                  h.empid                                         empid,
+				          GET_EMP_NAME(h.EMPID)                           chineseName,
+				          hr_get_flevel_deptname(h.deptid)                department,
+				          get_position_name(h.position_code)              position,
+				          get_post_grade_name(h.post_grade_code)          postGrade,
+				          to_char(H.START_DATE,'YYYY-mm-dd')              STARTDATE
+				from hr_experience_inside H
+				where H.START_DATE between add_months(sysdate,-2) and sysdate
+					AND H.ACTIVITY = 1
+				
+				)
+				ORDER BY STARTDATE
+			) H
+		   
+	                                             
+  	 ]]>
+	</select>
+	
+	<select id="getExpiredContract" resultClass="linkMap" >
+		<![CDATA[ 
+		
+		SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+		     	select 
+				  c.empid                                         empid,
+				  h.chinesename                                   chineseName,
+				  hr_get_flevel_deptname(h.deptid)                department,
+				  get_position_name(h.position_code)              position,
+				  get_post_grade_name(h.post_grade_code)          postGrade,       
+				  to_char(c.end_contract_date,'yyyy-mm-dd')       endContractDate,
+				  round(c.end_contract_date-sysdate)              days
+				  
+				from hr_employee h,hr_personal_info t,
+				(
+				select v.empid,(select max(tt.end_contract_date) from hr_contract tt where tt.empid=v.empid) end_contract_date
+				from (select c.empid from hr_contract c group by c.empid ) v) c
+				where c.empid=h.empid and t.empid=c.empid and h.emp_type_code<>'EmpDivision2' and t.nationality_code<>'NationalityCode100'
+				and c.end_contract_date<=add_months(sysdate,2)
+				and (h.date_left is null or h.date_left>sysdate)
+        		and h.status_code<>'EmpStatus3'
+        		AND not exists (select * from hr_contract v where v.end_contract_date is null and v.empid=h.empid)
+			  )
+				ORDER BY endContractDate
+			) H
+	                                             
+  	 ]]>
+	</select>
+	
+	<select id="getNotExistContract" resultClass="linkMap">
+		<![CDATA[
+		SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+			select    h.empid                                         empid,
+			          h.chinesename                                   chineseName,
+			          hr_get_flevel_deptname(h.deptid)                department,
+			          get_position_name(h.position_code)              position,
+			          get_post_grade_name(h.post_grade_code)          postGrade,
+			          to_char(h.date_started,'yyyy-mm-dd')            joinDate
+			from hr_employee h,hr_personal_info t
+			where  h.empid=t.empid and h.emp_type_code<>'EmpDivision2' and t.nationality_code<>'NationalityCode100' 
+				   and not exists (
+			       select empid from hr_contract t where t.empid=h.empid)
+			       and h.status_code<>'EmpStatus3'
+			)
+				ORDER BY joinDate
+			) H
+		]]>
+	</select>
+	
+	<select id="getExpiredProbation" resultClass="linkMap">
+		<![CDATA[  
+		SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+				   select 
+			            h.empid                                         empid,
+			            h.chinesename                                   chineseName,
+			            hr_get_flevel_deptname(h.deptid)                department,
+			            get_position_name(h.position_code)              position,
+			            get_post_grade_name(h.post_grade_code)          postGrade,
+			            to_char(h.end_probation_date,'yyyy-mm-dd')      endProbationDate
+			      from hr_employee h,hr_personal_info t
+			      where t.empid=h.empid
+			           and ((h.status_code='EmpStatus2') or (h.status_code='EmpStatus1' and h.end_probation_date <= add_months(sysdate,2))) 
+		             and h.emp_type_code<>'EmpDivision2' 
+		             and t.nationality_code<>'NationalityCode100'
+		             and to_char(h.date_started,'yyyy-mm-dd')<>to_char(h.end_probation_date,'yyyy-mm-dd')
+			      )
+				ORDER BY endProbationDate
+			) H
+    	 ]]>
+	</select>
+	
+	 <select id="getDispatchInfo" resultClass="linkMap">
+	 	<![CDATA[
+	 	SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+			 		select 
+					      h.empid                                         empid,
+					      h.chinesename                                   chineseName,
+					      hr_get_flevel_deptname(h.deptid)                department,
+					      get_position_name(h.position_code)              position,
+					      get_post_grade_name(h.post_grade_code)          postGrade, 
+					      get_code_name(t.dis_diffent)                    disDiffent,
+					      t.contents                                      contents,
+					      to_char(t.start_date,'yyyy-mm-dd')              startDate,
+					      to_char(t.propose_end_date,'yyyy-mm-dd')        proposeEndDate
+					from hr_dispatch t,hr_employee h
+					where t.empid=h.empid
+					      and t.trans_code='TransDispatchType01' and t.isupdatestatus=1 and t.activity=0
+					 )
+				ORDER BY proposeEndDate
+			) H
+	 	]]>
+	 </select>
+	 
+	  <select id="getEduOutside" resultClass="linkMap">
+	 	<![CDATA[
+	 	 SELECT H.*,ROWNUM RN FROM( 
+			 SELECT * FROM (
+			 		 select 
+					      t.empid             empid,
+					      t.chinesename       chineseName,
+					      t.department        department,
+					      t.position 		  position,
+					      t.post_grade		  postGrade,
+				     	 t.plan_Start_Date	  planStartDate,
+					     t.plan_End_Date 	  planEndDate
+					 from ETN_PLAN_PERSONAL_TOTAL t
+					 where t.plan_sort_name='行外培训'
+					 and t.plan_Start_Date between add_months(sysdate,-6)
+					 and sysdate
+				 )
+				ORDER BY planEndDate
+			) H
+      
+	 	]]>
+	 </select>
+	 
+	 <select id="getTipsMenu" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			select distinct
+			       M.MENU_CODE,
+			       SRR.SELECTR
+			  from sy_user                u,
+			       sy_user_relation       r,
+			       sy_role_group          p,
+			       sy_role_group_relation rn,
+			       sy_role                sr,
+			       sy_role_relation       srr,
+			       sy_menu                m,
+       			   sy_menu_param          smp
+			 where u.user_no = r.user_no(+)
+			   and r.role_group_no = p.role_group_no(+)
+			   and p.role_group_no = rn.role_group_no(+)
+			   and rn.role_no = sr.role_no(+)
+			   and sr.role_no=srr.role_no(+)
+			   and srr.menu_no = m.menu_no(+)
+			   and m.menu_no = smp.menu_no
+			   and smp.cpny_id = #CPNY_ID:VARCHAR#
+			   and u.person_id= #PERSON_ID:VARCHAR#
+			   and m.menu_code in ('sy0501','ar0903','ar0901','ar0909','ess0601', 'ess0603')
+			   and srr.selectr = 1
+		]]>	  
+	</select>
+	
+	 <select id="getManualMenu" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			select distinct
+			       M.MENU_CODE,
+			       SRR.SELECTR
+			  from sy_user                u,
+			       sy_user_relation       r,
+			       sy_role_group          p,
+			       sy_role_group_relation rn,
+			       sy_role                sr,
+			       sy_role_relation       srr,
+			       sy_menu                m,
+       			   sy_menu_param          smp
+			 where u.user_no = r.user_no(+)
+			   and r.role_group_no = p.role_group_no(+)
+			   and p.role_group_no = rn.role_group_no(+)
+			   and rn.role_no = sr.role_no(+)
+			   and sr.role_no=srr.role_no(+)
+			   and srr.menu_no = m.menu_no(+)
+			   and m.menu_no = smp.menu_no
+			   and smp.cpny_id = #CPNY_ID:VARCHAR#
+			   and u.person_id= #PERSON_ID:VARCHAR#
+			   and m.menu_code in ('ess0000','ar0000','hr0000','org0000','pa0000','sy0000','tc0000')
+			   and srr.selectr = 1
+		]]>	  
+	</select>
+	
+	<select id="getPersonalInfoApplyCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+         select count(*) from ess_personal_info where ACTIVITY='0' and PERSON_ID=#PERSON_ID:VARCHAR#
+       ]]>
+	</select>
+     
+     <select id="getPersonalApplyOtCountold" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+	      SELECT COUNT(OT.PERSON_ID)
+            FROM ESS_APPLY_OT       OT,
+                 HR_EMPLOYEE_V      HRV,
+                 SY_GLOBAL_NAME     SG,
+                 HR_DEPARTMENT      HD,
+                 HR_DEPARTMENT_NAME HDN,
+                 SY_GLOBAL_NAME     PON,
+                 SY_GLOBAL_NAME     POSN,
+                    hr_affirm            ha,
+                       hr_experience_inside hei
+           WHERE HRV.DEPTNO = HD.DEPTNO
+             AND OT.PERSON_ID = HRV.PERSON_ID
+             AND HRV.POST_NO = PON.NO(+)
+             AND HRV.POSITION_NO = POSN.NO(+)
+             AND HDN.DEPTNO = HRV.DEPTNO
+             AND SG.LANGUAGE(+) = #language:VARCHAR#
+             AND HDN.LANGUAGE(+) = #language:VARCHAR#
+             AND PON.LANGUAGE(+) = #language:VARCHAR#
+             AND POSN.LANGUAGE(+) = #language:VARCHAR#
+             AND OT.OT_TYPE_CODE = SG.NO(+)
+              and ot.person_id = hei.person_id(+)
+               and hei.exp_inside_no = ha.exp_inside_no(+)
+             AND OT.OT_TYPE_NO = #OT_TYPE_NO:VARCHAR#
+             and ha.affirmor_id = #PERSON_ID:VARCHAR#
+             and  OT.person_id =  #PERSON_ID:VARCHAR#
+             AND (EXISTS (SELECT *
+                            FROM AR_SUPERVISOR_INFO
+                           WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+                             AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+       ]]>
+	</select>
+	
+	<select id="getPersonalApplyOtCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+	      SELECT COUNT(*)
+  FROM ESS_APPLY_OT EL, HR_EMPLOYEE_V HRV
+ WHERE EL.PERSON_ID = HRV.PERSON_ID
+   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND (EXISTS
+        (SELECT *
+           FROM AR_SUPERVISOR_INFO
+          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+
+       ]]>
+	</select>
+	
+	 <select id="getPersonalApplyErvectionCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+       SELECT COUNT(*)
+	  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE_V HRV
+	 WHERE EL.PERSON_ID = HRV.PERSON_ID
+	   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+	   AND EL.LEAVE_TYPE_NO = '18'
+	   AND (EXISTS
+	        (SELECT *
+	           FROM AR_SUPERVISOR_INFO
+	          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+	            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+
+       ]]>
+	</select>
+	
+	<select id="getPersonalGoOutApplyCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+         SELECT COUNT(*)
+  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE_V HRV
+ WHERE EL.PERSON_ID = HRV.PERSON_ID
+   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND EL.LEAVE_TYPE_NO = '16201'
+   AND (EXISTS
+        (SELECT *
+           FROM AR_SUPERVISOR_INFO
+          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+       ]]>
+	</select>
+	
+	<select id="getPersonalInfoInOutApplyCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+  FROM AR_MAC_RECORDS_APPLY EL, HR_EMPLOYEE_V HRV
+ WHERE EL.PERSON_ID = HRV.PERSON_ID
+   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND (EXISTS
+        (SELECT 1
+           FROM AR_SUPERVISOR_INFO
+          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+       ]]>
+	</select>
+	
+	<select id="getPersonalApplyLeavelCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM ESS_LEAVE_APPLY_TB EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.AFFIRM_FLAG IN (0,4)
+       ]]>
+	</select>
+	<select id="getPersonalApplyLeftPayCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+		SELECT COUNT(1)
+		  FROM PA_LEFTMEN_APPLY PA
+		 WHERE PA.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND PA.AFFIRM_FLAG IN (0,4)
+       ]]>
+	</select>
+	<select id="getPersonalApplyContractCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM HR_CONTRACT EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+
+       ]]>
+	</select>
+	<select id="getApplyOtCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM ESS_APPLY_OT EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.AFFIRM_FLAG IN (0,4)
+
+       ]]>
+	</select>
+	<select id="getApplyArMacRecordCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM AR_MAC_RECORDS_APPLY EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.AFFIRM_FLAG NOT IN (1,2,-1)
+
+       ]]>
+	</select>
+	<select id="getApplyArMacTempSaleCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM PA_TEMP_SELLER_EVENT EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.ACCRUAL_FLAG = 'N'
+		   AND EL.SUBMIT_STATUS = 1
+		   AND EL.AFFIRM_FLAG IN (0,-1)
+       ]]>
+	</select>
+	<select id="getApplyArMacTempSaleAccrualCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM PA_TEMP_SELLER_EVENT EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.ACCRUAL_FLAG = 'Y'
+		   AND EL.SUBMIT_STATUS = 1
+		   AND EL.AFFIRM_FLAG IN (0,-1)
+       ]]>
+	</select>
+	<select id="getApplyArMacTempSaleDetailCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM PA_TEMP_SELLER_EVENT EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.ACCRUAL_FLAG IN ( 'CONFIRM_Y','CONFIRM_N')
+		   AND EL.SUBMIT_STATUS = 1
+		   AND EL.AFFIRM_FLAG IN (0,-1)
+       ]]>
+	</select>
+	<select id="getApplyDimissionCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM ESS_APPLY_DIMISSION EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.AFFIRM_FLAG IN (0,4)
+       ]]>
+	</select>
+	<select id="getApplyAnnualCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM ESS_ANNUAL_LEAVE_APPLY_TB EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.AFFIRM_FLAG NOT IN (1,2)
+       ]]>
+	</select>
+	<select id="getApplyCardApplyCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+		  FROM ESS_CARD_APPLY_TB EL
+		 WHERE EL.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+		   AND EL.AFFIRM_FLAG NOT IN (1,2)
+       ]]>
+	</select>
+	<select id="getApplyFeeCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+			  FROM ESS_WAGEAPPLICATION T,
+			       ESS_AFFIRM N,
+			       (SELECT APPLY_NO, MIN(AFFIRM_LEVEL) AFFIRM_LEVEL
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			           AND AFFIRM_FLAG IN (0, 3)
+			         GROUP BY APPLY_NO) O,
+			       (SELECT APPLY_NO,
+			               CASE
+			                 WHEN MAX(AFFIRM_FLAG) = 0 THEN
+			                  0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN
+			                  2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+			                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN
+			                  1
+			                 ELSE
+			                  3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M
+			 WHERE T.ID = N.APPLY_NO
+			   AND O.APPLY_NO = N.APPLY_NO
+			   AND O.APPLY_NO = M.APPLY_NO
+			   AND O.AFFIRM_LEVEL = N.AFFIRM_LEVEL
+			   AND N.APPLY_TYPE = 217886
+			   AND AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+			   AND M.FLAG IN (0, 3)
+       ]]>
+	</select>
+	
+	
+		<select id="getPersonalApplyLikeLeavelCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE_V HRV
+ WHERE EL.PERSON_ID = HRV.PERSON_ID
+   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND EL.LEAVE_TYPE_NO = '123634'
+   AND (EXISTS
+        (SELECT 1
+           FROM AR_SUPERVISOR_INFO
+          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+
+       ]]>
+	</select>
+		<select id="getPersonalApplyWorkDaysCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+            SELECT COUNT(1)
+  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE_V HRV
+ WHERE EL.PERSON_ID = HRV.PERSON_ID
+   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND EL.LEAVE_TYPE_NO = '123645'
+   AND (EXISTS
+        (SELECT 1
+           FROM AR_SUPERVISOR_INFO
+          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+
+       ]]>
+	</select>
+	
+	<select id="getCountOt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		
+           SELECT COUNT(0)
+		  FROM ESS_APPLY_OT AP, HR_EMPLOYEE H, ESS_AFFIRM EA
+		 WHERE AP.PERSON_ID = H.PERSON_ID
+		   AND AP.APPLY_NO = EA.APPLY_NO
+		   and ap.current_affirm_id = ea.affirmor_id
+		   AND AP.ACTIVITY = 0
+		   AND AP.OT_TYPE_NO ='31'
+		   AND EA.AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+         
+		]]>
+	</select>  
+
+	<select id="getCountLeave" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+		select count(1) from 
+             ( select 1 from ess_affirm t 
+         where  t.affirm_flag = 0 
+          and ( ( t.apply_no in 
+                  (select tt.apply_no 
+                        from ess_affirm tt 
+                       where tt.apply_no = t.apply_no 
+                         and tt.affirmor_id <> t.affirmor_id 
+                         and tt.affirm_flag = 1 
+                         and tt.affirm_level = t.affirm_level - 1
+                         and tt.APPLY_TYPE = '21')
+             ) or t.affirm_level = '1')
+             
+          and t.apply_type = '21'
+                         
+         AND t.affirmor_id = #PERSON_ID:VARCHAR#
+ 
+        )
+       
+		]]>
+	</select>
+
+	<select id="getCountEvection" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+        select count(1) from 
+             ( select 1 from ess_affirm t 
+			   where  t.affirm_flag = 0 
+			    and ( ( t.apply_no in 
+			            (select tt.apply_no 
+			                  from ess_affirm tt 
+			                 where tt.apply_no = t.apply_no 
+			                   and tt.affirmor_id <> t.affirmor_id 
+			                   and tt.affirm_flag = 1 
+			                   and tt.affirm_level = t.affirm_level - 1
+			                   and tt.APPLY_TYPE = '18')
+			       ) or t.affirm_level = '1')
+			       
+			    and t.apply_type = '18'
+			                   
+			 	AND t.affirmor_id = #PERSON_ID:VARCHAR#
+ 
+		  	)
+        
+		]]>
+	</select>
+	
+	<select id="getCountOut" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+        select count(1) from 
+             ( select 1 from ess_affirm t 
+			   where  t.affirm_flag = 0 
+			    and ( ( t.apply_no in 
+			            (select tt.apply_no 
+			                  from ess_affirm tt 
+			                 where tt.apply_no = t.apply_no 
+			                   and tt.affirmor_id <> t.affirmor_id 
+			                   and tt.affirm_flag = 1 
+			                   and tt.affirm_level = t.affirm_level - 1
+			                   and tt.APPLY_TYPE = '16201')
+			       ) or t.affirm_level = '1')
+			       
+			    and t.apply_type = '16201'
+			                   
+			 	AND t.affirmor_id = #PERSON_ID:VARCHAR#
+ 
+		  	)
+        
+		]]>
+	</select>
+	<select id="getCountInOut" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+        select count(1) from 
+             ( select 1 from ess_affirm t 
+			   where  t.affirm_flag = 0 
+			    and ( ( t.apply_no in 
+			            (select tt.apply_no 
+			                  from ess_affirm tt 
+			                 where tt.apply_no = t.apply_no 
+			                   and tt.affirmor_id <> t.affirmor_id 
+			                   and tt.affirm_flag = 1 
+			                   and tt.affirm_level = t.affirm_level - 1
+			                   and tt.APPLY_TYPE = '123499')
+			       ) or t.affirm_level = '1')
+			       
+			    and t.apply_type = '123499'
+			                   
+			 	AND t.affirmor_id = #PERSON_ID:VARCHAR#
+ 
+		  	)
+        
+		]]>
+	</select>
+	<select id="getCountLikeLeave" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+        select count(1) from 
+             ( select 1 from ess_affirm t 
+			   where  t.affirm_flag = 0 
+			    and ( ( t.apply_no in 
+			            (select tt.apply_no 
+			                  from ess_affirm tt 
+			                 where tt.apply_no = t.apply_no 
+			                   and tt.affirmor_id <> t.affirmor_id 
+			                   and tt.affirm_flag = 1 
+			                   and tt.affirm_level = t.affirm_level - 1
+			                   and tt.APPLY_TYPE = '123634')
+			       ) or t.affirm_level = '1')
+			       
+			    and t.apply_type = '123634'
+			                   
+			 	AND t.affirmor_id = #PERSON_ID:VARCHAR#
+ 
+		  	)
+        
+		]]>
+	</select>
+	<select id="getCountWorkingDays" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+        select count(1) from 
+             ( select 1 from ess_affirm t 
+			   where  t.affirm_flag = 0 
+			    and ( ( t.apply_no in 
+			            (select tt.apply_no 
+			                  from ess_affirm tt 
+			                 where tt.apply_no = t.apply_no 
+			                   and tt.affirmor_id <> t.affirmor_id 
+			                   and tt.affirm_flag = 1 
+			                   and tt.affirm_level = t.affirm_level - 1
+			                   and tt.APPLY_TYPE = '123645')
+			       ) or t.affirm_level = '1')
+			       
+			    and t.apply_type = '123645'
+			                   
+			 	AND t.affirmor_id = #PERSON_ID:VARCHAR#
+ 
+		  	)
+        
+		]]>
+	</select>
+
+	<select id="getEssPersonalInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT  count(A.PERSON_ID)
+			   FROM ESS_PERSONAL_INFO A,
+			   		HR_EMPLOYEE HR
+			  WHERE A.PERSON_ID = HR.PERSON_ID(+)
+			  AND A.ACTIVITY=0 
+			  AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		HR.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select>    
+	<select id="checkPermission" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+				select count(1)
+				  from sy_user_relation a, 
+				       sy_role_group_relation b,
+				       sy_role c
+				 where a.role_group_no = b.role_group_no
+				       and b.role_no = c.role_no
+				       and a.user_no = #USER_NO:VARCHAR#
+				       and c.role_id=#role_id:VARCHAR#
+				       and c.cpny_id = #interCpnyID:VARCHAR#
+		]]>
+	</select> 
+	<select id="getParamValue" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			 SELECT A.PARAM_VALUE
+               FROM SY_MAIN_PARAM_INFO_PARAM A,
+                    SY_MAIN_PARAM_INFO       B
+              WHERE A.PARAM_NO = B.PARAM_NO
+                    AND A.CPNY_ID = #interCpnyID:VARCHAR#
+                    AND B.MAIN_PARAM_INFO_NO = #MAIN_PARAM_INFO_NO:NUMERIC#
+		]]>
+	</select> 
+	<select id="getInfoViewCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[ 
+		         SELECT COUNT(1)
+				  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE_V HRV
+				 WHERE EL.PERSON_ID = HRV.PERSON_ID
+				   AND HRV.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND (EXISTS
+				        (SELECT 1
+				           FROM AR_SUPERVISOR_INFO
+				          WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+				            AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#) OR HRV.PERSON_ID = #PERSON_ID:VARCHAR#)
+       ]]>
+	</select>
+	<select id="getEssAffirmInfoCnt" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+		select count(1) from 
+             ( select 1 from ess_affirm t 
+         where  t.affirm_flag = 0 
+          and ( ( t.apply_no in 
+                  (select tt.apply_no 
+                        from ess_affirm tt 
+                       where tt.apply_no = t.apply_no 
+                         and tt.affirmor_id <> t.affirmor_id 
+                         and tt.affirm_flag = 1 
+                         and tt.affirm_level = t.affirm_level - 1)
+             ) or t.affirm_level = '1')
+         AND t.affirmor_id = #PERSON_ID:VARCHAR#
+        )
+		]]>
+	</select>
+	<select id="getEssConfirmInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_APPLY_OT EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1) OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+				   AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select> 
+	
+	<select id="getEssOtInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_APPLY_OT EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND EL.OT_TYPE_NO = '31'
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1
+				                AND EL.OT_TYPE_NO = '31') OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+				   AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select> 
+	
+	<select id="getEssLeaveInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND EL.LEAVE_TYPE_NO = '21'
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1
+				                AND EL.LEAVE_TYPE_NO = '21') OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+				   AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select> 
+	
+	<select id="getEssLikeLeaveInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND EL.LEAVE_TYPE_NO = '123634'
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1
+				                AND EL.LEAVE_TYPE_NO = '123634') OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+				   AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+             <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select> 
+	
+	<select id="getEssWorkDaysInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND EL.LEAVE_TYPE_NO = '123645'
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1
+				                AND EL.LEAVE_TYPE_NO = '123645') OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+					 AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select> 
+	
+	
+	<select id="getEssEvectionInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND EL.LEAVE_TYPE_NO = '18'
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1
+				                AND EL.LEAVE_TYPE_NO = '18') OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+					AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select> 
+	
+	<select id="getEssEgressionInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(1)
+				  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE H
+				 WHERE EL.PERSON_ID = H.PERSON_ID
+				   AND EL.ACTIVITY = 0
+				   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND EL.LEAVE_TYPE_NO = '16201'
+				   AND (0 = (SELECT COUNT(0)
+				               FROM ESS_AFFIRM EA
+				              WHERE EA.APPLY_NO = EL.APPLY_NO
+				                AND EA.AFFIRM_FLAG <> 1
+				                AND EL.LEAVE_TYPE_NO = '16201') OR
+				       0 = (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+				 	AND (EXISTS (SELECT 1
+				                  FROM AR_SUPERVISOR_INFO
+				                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+				                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		H.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    1 = 2
+            </isEqual>
+		</isNotEmpty>
+	</select>
+	
+	
+	
+	<select id="getHireCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_EXPERIENCE_INSIDE T
+			 WHERE T.TRANS_NO = '1359'
+			   AND T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR# 
+        ]]>
+	</select>
+	
+	<select id="getAttendanceForDayCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM AR_SHOP_SHIFT AR,
+			       HR_EMP_HISTORY_STATUS HR
+			 WHERE AR.PERSON_ID = HR.PERSON_ID
+			   AND AR.AR_DATE_STR = HR.DATE_STR
+               AND HR.CPNY_ID = #interCpnyID#
+               AND HR.POST_FAMILY_NO IN ('14015815','14015816')
+               AND AR.ACTIVITY = '0'
+               AND AR.AR_DATE_STR = TO_CHAR(SYSDATE - 1,'YYYY/MM/DD')
+               AND EXISTS
+	           (SELECT B1.DEPTID
+	                    FROM HR_DEPARTMENT B1
+	                   WHERE B1.DEPTNO = HR.DEPTNO
+	                   START WITH B1.DEPTNO in
+	                              (SELECT HRD.DEPTID
+	                                 FROM HR_DEPARTMENT HRD
+	                                WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#)
+	                  CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	              UNION
+	              SELECT AR_SUPERVISOR_INFO.DEPTNO
+	                FROM AR_SUPERVISOR_INFO
+	               WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+	                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+	                  )    
+        ]]>
+        
+
+	</select>
+	<select id="getAttendanceForDayShCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	      			SELECT COUNT(1)
+			  FROM AR_SHOP_SHIFT_SH AR,
+			       HR_EMP_HISTORY_STATUS HR
+			 WHERE AR.PERSON_ID = HR.PERSON_ID
+			   AND AR.AR_DATE_STR = HR.DATE_STR
+			   AND AR.ACTIVITY = '0'
+               AND HR.CPNY_ID = #interCpnyID#
+                AND AR.AR_DATE_STR = TO_CHAR(SYSDATE - 1,'YYYY/MM/DD')
+			   AND EXISTS
+	           (SELECT B1.DEPTID
+	                    FROM HR_DEPARTMENT B1
+	                   WHERE B1.DEPTNO = HR.DEPTNO
+	                   START WITH B1.DEPTNO in
+	                              (SELECT HRD.DEPTID
+	                                 FROM HR_DEPARTMENT HRD
+	                                WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#)
+	                  CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	              UNION
+	              SELECT AR_SUPERVISOR_INFO.DEPTNO
+	                FROM AR_SUPERVISOR_INFO
+	               WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+	                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+	                  )    
+        ]]>
+	</select>
+
+	<select id="getChangShopConfirmCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_EMPLOYEE HR,
+			  	   ESS_CHANGE_SHOP SHOP
+			 WHERE HR.PERSON_ID = SHOP.PERSON_ID
+			   AND HR.CPNY_ID = #interCpnyID#
+			   AND SHOP.ACTIVITY = '0'
+			   AND  	            EXISTS
+	           (SELECT B1.DEPTID
+	                    FROM HR_DEPARTMENT B1
+	                   WHERE B1.DEPTNO = SHOP.DEPTNO
+	                   START WITH B1.DEPTNO in
+	                              (SELECT HRD.DEPTID
+	                                 FROM HR_DEPARTMENT HRD
+	                                WHERE HRD.MANAGER_EMP_ID = #adminID:VARCHAR#)
+	                  CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	              UNION
+	              SELECT AR_SUPERVISOR_INFO.DEPTNO
+	                FROM AR_SUPERVISOR_INFO
+	               WHERE AR_SUPERVISOR_INFO.DEPTNO = SHOP.DEPTNO
+	                 AND AR_SUPERVISOR_INFO.PERSON_ID = #adminID:VARCHAR#
+	                  )  
+        ]]>
+	</select>
+	
+	<select id="getPayriseCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_PAYRISE T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	
+	<select id="getProbationCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_PROBATION T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getAgentCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_AGENT T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getRewardCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_REWARD T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getPunishmentCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_PUNISHMENT T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getResignationCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_RESIGNATION T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getTransferOrderCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_EXPERIENCE_INSIDE T
+			 WHERE T.TRANS_NO = '1365'
+			   AND T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getTransferPromoteCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_EXPERIENCE_INSIDE T
+			 WHERE T.TRANS_NO = '1363'
+			   AND T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getPluralityCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_PLURALITY T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getSuspendCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_SUSPENSION T
+			 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	
+	 
+	 <select id="getMenuCodeList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.MENU_CODE,
+			       S.CONTENT AS MENU_NAME,
+			       T.MENU_URL,
+			       T.DEPTH,
+			       T.MENU_NO
+			  FROM SY_MENU T, SY_MENU_PARAM T2,SY_GLOBAL_NAME S
+			 WHERE T.ACTIVITY = 1
+			   AND T2.ACTIVITY = 1
+			   AND T.MENU_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #language:VARCHAR#
+			   AND T.MENU_NO = T2.MENU_NO
+			   AND T2.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.MENU_PARENT_NO in (#parentNo:VARCHAR#,#parentNo1:VARCHAR#)
+			   AND T.MENU_NO IN
+			       (SELECT A.MENU_NO
+			              FROM SY_ROLE_RELATION A
+			             WHERE A.SELECTR=1 AND A.ROLE_NO IN
+			                   (SELECT T.ROLE_NO
+			                      FROM SY_ROLE_GROUP_RELATION T
+			                     WHERE T.ROLE_GROUP_NO IN
+			                           (SELECT ROLE_GROUP_NO
+			                              FROM SY_USER_RELATION
+			                             WHERE USER_NO =#USERNO:VARCHAR#)))
+			 ORDER BY T.MENU_CODE
+		]]>	  
+	</select>
+	
+	<select id="getTipsInMenu" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.MENU_CODE,
+			       S.CONTENT AS MENU_NAME,
+			       T.MENU_URL,
+			       T.DEPTH,
+			       T.MENU_NO
+			  FROM SY_MENU T, SY_MENU_PARAM T2,SY_GLOBAL_NAME S
+			 WHERE T.ACTIVITY = 1
+			   AND T2.ACTIVITY = 1
+			   AND T.MENU_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #language:VARCHAR#
+			   AND T.MENU_NO = T2.MENU_NO
+			   AND T2.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.MENU_PARENT_NO IN $parentNo$
+			   AND T.MENU_NO IN
+			       (SELECT A.MENU_NO
+			              FROM SY_ROLE_RELATION A
+			             WHERE A.SELECTR=1 AND A.ROLE_NO IN
+			                   (SELECT T.ROLE_NO
+			                      FROM SY_ROLE_GROUP_RELATION T
+			                     WHERE T.ROLE_GROUP_NO IN
+			                           (SELECT ROLE_GROUP_NO
+			                              FROM SY_USER_RELATION
+			                             WHERE USER_NO =#USERNO:VARCHAR#)))
+			 ORDER BY T.MENU_CODE
+		]]>	  
+	</select>
+    
+    <select id="getTransferOrderCountForQuickMenu" parameterClass="linkMap" resultClass="int">
+        <![CDATA[
+            SELECT COUNT(1)
+              FROM HR_EXPERIENCE_INSIDE T
+             WHERE T.TRANS_CODE = #TRANS_CODE:VARCHAR#
+               AND T.ACTIVITY = 0
+               AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+    </select>
+    <select id="getInfoNotAffirm" parameterClass="linkMap" resultClass="linkMap">
+    	<![CDATA[
+    		SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       TB.LEAVE_TYPE_NO TYPE_NO,
+			       GET_CODE_NAME(TB.LEAVE_TYPE_NO, #interLanguage#) TYPE_NAME
+			  FROM ESS_AFFIRM T, HR_EMPLOYEE HE, ESS_LEAVE_APPLY_TB TB
+			 WHERE T.AFFIRM_FLAG = 0
+			   AND ((T.APPLY_NO IN
+			       (SELECT TT.APPLY_NO
+			            FROM ESS_AFFIRM TT
+			           WHERE TT.APPLY_NO = T.APPLY_NO
+			             AND TT.AFFIRMOR_ID <> T.AFFIRMOR_ID
+			             AND TT.AFFIRM_FLAG = 1
+			             AND TT.AFFIRM_LEVEL = T.AFFIRM_LEVEL - 1)) OR
+			       T.AFFIRM_LEVEL = '1')
+			   AND T.APPLY_NO = TB.APPLY_NO
+			   AND HE.PERSON_ID = TB.PERSON_ID
+			   AND T.AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+    	]]>
+    </select>
+    <select id="getOtInfoNotAffirm" parameterClass="linkMap" resultClass="linkMap">
+    	<![CDATA[
+    		SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       AP.OT_TYPE_NO TYPE_NO,
+			       GET_CODE_NAME(31, #interLanguage#) TYPE_NAME
+			  FROM ESS_APPLY_OT AP, HR_EMPLOYEE H, ESS_AFFIRM EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND AP.APPLY_NO = EA.APPLY_NO
+			   and ap.current_affirm_id = ea.affirmor_id
+			   AND AP.ACTIVITY = 0
+			   AND AP.OT_TYPE_NO ='31'
+			   AND EA.AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+    	]]>
+    </select>
+     <select id="getInfoNotConfirm" parameterClass="linkMap" resultClass="linkMap">
+    	<![CDATA[
+    		SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       EL.LEAVE_TYPE_NO TYPE_NO,
+			       GET_CODE_NAME(EL.LEAVE_TYPE_NO, #interLanguage#) TYPE_NAME
+			  FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE H
+			 WHERE EL.PERSON_ID = H.PERSON_ID
+			   AND EL.ACTIVITY = 0
+			   AND (0 = (SELECT COUNT(0)
+			               FROM ESS_AFFIRM EA
+			              WHERE EA.APPLY_NO = EL.APPLY_NO
+			                AND EA.AFFIRM_FLAG <> 1) OR
+			       0 =
+			       (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = EL.APPLY_NO))
+			   AND (EXISTS (SELECT 1
+			                  FROM AR_SUPERVISOR_INFO
+			                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+			                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+    	]]>
+    </select>
+    <select id="getOtInfoNotConfirm" parameterClass="linkMap" resultClass="linkMap">
+    	<![CDATA[
+    		SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       AP.OT_TYPE_NO TYPE_NO,
+			       GET_CODE_NAME(31, #interLanguage#) TYPE_NAME
+			  FROM ESS_APPLY_OT AP, HR_EMPLOYEE H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND AP.ACTIVITY = 0
+			   AND AP.OT_TYPE_NO ='31'
+			   AND (0 = (SELECT COUNT(0)
+			               FROM ESS_AFFIRM EA
+			              WHERE EA.APPLY_NO = AP.APPLY_NO
+			                AND EA.AFFIRM_FLAG <> 1) OR
+			       0 =
+			       (SELECT COUNT(0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = AP.APPLY_NO))
+			   AND (EXISTS (SELECT 1
+			                  FROM AR_SUPERVISOR_INFO
+			                 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+			                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+    	]]>
+    </select>
+    <select id="getPersonInfoNotConfirm" parameterClass="linkMap" resultClass="linkMap">
+    	<![CDATA[	
+			SELECT  HR.EMPID, 
+					HR.LOCAL_NAME,
+					'PersonalInfo' TYPE_NAME
+			   FROM ESS_PERSONAL_INFO A,
+			   		HR_EMPLOYEE HR
+			  WHERE A.PERSON_ID = HR.PERSON_ID(+)
+			  AND A.ACTIVITY=0 
+			  AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND (EXISTS (SELECT 1
+                  FROM AR_SUPERVISOR_INFO
+                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#))
+		]]>
+    </select>
+    <select id="getTransferOrderList" parameterClass="linkMap" resultClass="linkMap">
+    	<![CDATA[
+    		SELECT HRE.EMPID, HRE.LOCAL_NAME, T.TRANS_NO, T.TRANS_CODE
+				  FROM HR_EXPERIENCE_INSIDE T
+				  LEFT JOIN HR_EMPLOYEE HRE ON T.PERSON_ID = HRE.PERSON_ID
+				 WHERE T.ACTIVITY = 0
+    	]]>
+    </select>
+    <select id="getRewardNoAffirmInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HR.EMPID, HR.LOCAL_NAME, 'RewardInfo' TYPE_NAME
+				  FROM HR_REWARD T
+				  LEFT JOIN HR_EMPLOYEE HR ON HR.PERSON_ID = T.PERSON_ID
+				 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getPunishNoAffirmInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HR.EMPID, HR.LOCAL_NAME, 'PunishInfo' TYPE_NAME
+				  FROM HR_PUNISHMENT T
+				  LEFT JOIN HR_EMPLOYEE HR ON HR.PERSON_ID = T.PERSON_ID
+				 WHERE T.ACTIVITY = 0
+			   AND T.CURRENT_AFFIRM_ID = #PERSON_ID:VARCHAR#
+        ]]>
+	</select>
+	<select id="getSystemDate" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			 SELECT V_DATE ,COUNT(1) CNT 
+			   FROM(
+			          SELECT  TO_CHAR(SYSDATE,'yyyymmddhh24miss') V_DATE, EMP_ID
+			          FROM SEALCN.SEAL_LOGIN A 
+			          WHERE A.EMP_ID = #empId:VARCHAR#
+			          UNION ALL
+			          SELECT TO_CHAR(SYSDATE,'yyyymmddhh24miss') V_DATE ,'' EMP_ID 
+			          FROM DUAL ) S
+			 GROUP BY V_DATE
+		]]>
+	</select>
+	
+	<update id="updateLoginInfo" parameterClass="linkMap" >
+	    <![CDATA[  
+	        UPDATE SEALCN.SEAL_LOGIN A 
+			   SET A.LOGIN_PWD  = #pwd#,
+			       A.LOGIN_DATE = SYSDATE,
+			       A.LOGIN_FROM = 'CHRS'
+			 WHERE A.EMP_ID = #empId:VARCHAR#
+			   AND A.COM_CD = #cpnyId#
+	    ]]>
+	</update>
+	
+	<insert id="addLoginInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SEALCN.SEAL_LOGIN
+        	VALUES (#empId:VARCHAR#,#pwd#,Sysdate,'CHRS',#cpnyId# )
+		]]>
+	</insert>
+	
+	<select id="getSealControl" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+		   SELECT DECODE(COUNT(1),0,'N','Y') AS SEAL_LOGIN
+			 FROM SYS_SEAL_CONTROL
+			WHERE CPNY_ID = #CPNY_ID#  
+			  AND USE_YN  = 'Y'
+			  AND ROWNUM  = 1
+		]]>
+	</select>
+</sqlMap>

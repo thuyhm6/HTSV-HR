@@ -1,0 +1,64 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: Compile Java",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/scripts/build.bat",
+            "problemMatcher": ["$javac"],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "Tomcat: Start (JPDA debug)",
+            "type": "shell",
+            "command": "D:/Java/apache-tomcat/bin/catalina.bat",
+            "args": ["jpda", "run"],
+            "options": {
+                "cwd": "${workspaceFolder}/.tomcat",
+                "env": {
+                    "JAVA_HOME": "C:/Program Files/Java/jdk1.8.0_231",
+                    "CATALINA_HOME": "D:/Java/apache-tomcat",
+                    "CATALINA_BASE": "${workspaceFolder}/.tomcat"
+                }
+            },
+            "dependsOn": ["Build: Compile Java"],
+            "dependsOrder": "sequence",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^SEVERE:\\s+(.*)$",
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^INFO: Starting Servlet Engine",
+                    "endsPattern": "^INFO: Server startup in"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Tomcat: Stop",
+            "type": "shell",
+            "command": "D:/Java/apache-tomcat/bin/catalina.bat",
+            "args": ["stop"],
+            "options": {
+                "cwd": "${workspaceFolder}/.tomcat",
+                "env": {
+                    "JAVA_HOME": "C:/Program Files/Java/jdk1.8.0_231",
+                    "CATALINA_HOME": "D:/Java/apache-tomcat",
+                    "CATALINA_BASE": "${workspaceFolder}/.tomcat"
+                }
+            },
+            "problemMatcher": []
+        }
+    ]
+}

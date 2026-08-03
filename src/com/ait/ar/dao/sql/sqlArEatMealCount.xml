@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.eatMealCount">
+	<select id="getInitDateList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+			select to_char((to_date(#FROM_DATE:VARCHAR#, 'YYYY-MM-DD') + rownum - 1),
+			               'YYYY-MM-DD') FROM_DATE
+			  from dual
+			connect by rownum < to_date(#TO_DATE:VARCHAR#, 'YYYY-MM-DD') -
+			           to_date(#FROM_DATE:VARCHAR#, 'YYYY-MM-DD') + 2
+		]]>
+	</select>    
+	
+	<select id="getEatMealCountC12" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PERSON_ID, 
+			       AR_DATE_STR, 
+			       CPNY_ID, 
+			       CREATED_BY, 
+			       MEAL_NUM,
+			       'N' LOCK_FLAG,
+			       'system' REMARK
+			  FROM (
+			  		SELECT HE.PERSON_ID,
+			               SHIFT_NO,
+			               #FROM_DATE:VARCHAR# AR_DATE_STR,
+			               'C12' CPNY_ID,
+			               #CREATED_BY:VARCHAR# CREATED_BY,
+			               (CASE
+			                 WHEN TB1.HOURS <= 8 THEN
+			                  '1'
+			                 WHEN TB1.HOURS > 8 THEN
+			                  '2'
+			                 ELSE
+			                  '1'
+			               END) MEAL_NUM
+			          FROM HR_EMPLOYEE HE,
+			               (SELECT TB1.PERSON_ID,
+			                       SS.ITEM_NO,
+			                       TB1.SHIFT_NO,
+			                       SS.TO_TIME,
+			                       SS.FROM_TIME,
+			                       SS.DEDUCT_TIME,
+			                       SS.HOURS
+			                  FROM AR_SCHEDULE_C12 TB1, AR_SHIFT_LENGTH_V SS
+			                 WHERE TB1.SHIFT_NO = SS.SHIFT_NO
+			                   AND SS.ITEM_NO NOT IN ('16382', '18134')
+			                   AND (TB1.AR_DATE_STR =
+			                       TO_CHAR(to_date(#FROM_DATE:VARCHAR#, 'yyyy-mm-dd'),
+			                                'yyyy/mm/dd') OR
+			                       TB1.AR_DATE_STR =
+			                       TO_CHAR(to_date(#FROM_DATE:VARCHAR#, 'yyyy-mm-dd'),
+			                                'yyyy-mm-dd'))) TB1
+			         WHERE CPNY_ID = 'C12'
+			           AND HE.PERSON_ID = TB1.PERSON_ID
+			           AND (HE.DATE_LEFT IS NULL OR
+			               HE.DATE_LEFT > to_date(#FROM_DATE:VARCHAR#, 'yyyy-mm-dd'))
+			           AND HE.PERSON_ID NOT IN
+			               (SELECT PERSON_ID FROM AR_EMP_GROUP WHERE GROUP_NO = '123001')
+			        
+			        UNION ALL
+			        
+			        SELECT PERSON_ID,
+			               'TEMP' SHIFT_NO,
+			               #FROM_DATE:VARCHAR# AR_DATE_STR,
+			               'C12' CPNY_ID,
+			               #CREATED_BY:VARCHAR# CREATED_BY,
+			               '2' MEAL_NUM
+			          FROM AR_EMP_GROUP
+			         WHERE GROUP_NO = '123001'
+			           )
+			 WHERE MEAL_NUM > 0
+		]]>
+	</select>  
+
+	<select id="getEmpMealCountByDateList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, 'zh') DEPARTMENT,
+			       get_global_name(HE.EMP_OFFICE, 'zh') EMP_OFFICE,
+			       get_global_name(HE.POSITION_NO, 'zh') POSITION_NAME,
+			       EAT.AR_DATE_STR,
+			       EAT.AR_EAT_COUNT_NO,
+			       EAT.MEAL_NUM,
+			       EAT.LOCK_FLAG
+			  FROM AR_EAT_COUNT_ATT EAT, HR_EMPLOYEE HE
+			 WHERE EAT.PERSON_ID = HE.PERSON_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="LOCK_FLAG">
+			<![CDATA[
+			   EAT.LOCK_FLAG = #LOCK_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			   EAT.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_EAT_COUNT_NO">
+			<![CDATA[
+			   EAT.AR_EAT_COUNT_NO = #AR_EAT_COUNT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			   EAT.AR_DATE_STR = #AR_DATE_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+			   EAT.AR_DATE_STR >= #FROM_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+			   EAT.AR_DATE_STR <= #TO_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getEmpMealCountByDateCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_EAT_COUNT_ATT EAT
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="LOCK_FLAG">
+			<![CDATA[
+			   EAT.LOCK_FLAG = #LOCK_FLAG:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			   EAT.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_EAT_COUNT_NO">
+			<![CDATA[
+			   EAT.AR_EAT_COUNT_NO = #AR_EAT_COUNT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			   EAT.AR_DATE_STR = #AR_DATE_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+			   EAT.AR_DATE_STR >= #FROM_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+			   EAT.AR_DATE_STR <= #TO_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<delete id="deleteEmpEatMealCountByDate" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+			  FROM AR_EAT_COUNT_ATT 
+			 WHERE 1 = 1
+			   AND PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			   AR_DATE_STR = #AR_DATE_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			   AR_DATE_STR = TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			]]>
+		</isEmpty>
+	</delete>
+
+	<insert id="insertEmpEatMealCountByDate" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  AR_EAT_COUNT_ATT ( 
+			       AR_EAT_COUNT_NO,
+			       CPNY_ID,
+			       AR_DATE_STR,
+			       PERSON_ID,
+			       MEAL_NUM,
+			       
+			       LOCK_FLAG,
+			       REMARK,
+			             
+			       CREATE_DATE,
+			       CREATED_BY,
+			       ACTIVITY,
+			       ORDERNO
+			       ) VALUES
+			       (
+			       AR_EAT_COUNT_SEQ.NEXTVAL,
+			       #CPNY_ID:VARCHAR#,
+			       #AR_DATE_STR:VARCHAR#,
+			       #PERSON_ID:VARCHAR#,
+			       #MEAL_NUM:VARCHAR#,
+			       
+			       #LOCK_FLAG:VARCHAR#,
+			       #REMARK:VARCHAR#,
+			       
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       1,
+			       AR_EAT_COUNT_SEQ.NEXTVAL
+			  )
+    	]]>
+	</insert>
+
+	<select id="getEatMealCountList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+     		SELECT ATT.AR_EAT_COUNT_NO,
+     			   HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, 'zh') DEPARTMENT,
+			       get_global_name(HE.EMP_OFFICE, 'zh') EMP_OFFICE,
+			       get_dept_distinguish_name(HE.DEPTNO, 'zh') DISTINGUISH_NAME,
+			       ATT.AR_DATE_STR,
+			       ATT.MEAL_NUM,
+			       ATT.LOCK_FLAG,
+			       to_char(ATT.LOCK_DATE,'yyyy-mm-dd') LOCK_DATE,
+			       ATT.LOCK_BY,
+			       to_char(ATT.CREATE_DATE,'yyyy-mm-dd') CREATE_DATE,
+			       ATT.CREATED_BY
+			  FROM AR_EAT_COUNT_ATT ATT, HR_EMPLOYEE HE
+			 WHERE ATT.PERSON_ID = HE.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_EAT_COUNT_NO">
+			<![CDATA[
+				ATT.AR_EAT_COUNT_NO = #AR_EAT_COUNT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					 FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+				HE.PERSON_ID IN
+			       (SELECT PERSON_ID FROM AR_EMP_GROUP WHERE GROUP_NO = #GROUP_NO:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		
+		<!-- 开始日期不为空 -->
+		<isNotEmpty prepend="AND" property="BEGIN_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR >= #BEGIN_DATE_STR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!-- 结束日期不为空 -->
+		<isNotEmpty prepend="AND" property="END_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR <= #END_DATE_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<!-- 开始日期为空 -->
+		<isEmpty prepend="AND" property="BEGIN_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR >= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+		    ]]>
+		</isEmpty>
+		<!-- 结束日期为空 -->
+		<isEmpty prepend="AND" property="END_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR <= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			]]>
+		</isEmpty>
+		
+		<![CDATA[
+			ORDER BY ATT.AR_DATE_STR DESC, HE.EMPID		
+		]]>
+	</select>
+
+	<select id="getEatMealCountCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+     		SELECT COUNT(*)
+			  FROM AR_EAT_COUNT_ATT ATT, HR_EMPLOYEE HE
+			 WHERE ATT.PERSON_ID = HE.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_EAT_COUNT_NO">
+			<![CDATA[
+				ATT.AR_EAT_COUNT_NO = #AR_EAT_COUNT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					 FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+				HE.PERSON_ID IN
+			       (SELECT PERSON_ID FROM AR_EMP_GROUP WHERE GROUP_NO = #GROUP_NO:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		
+		<!-- 开始日期不为空 -->
+		<isNotEmpty prepend="AND" property="BEGIN_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR >= #BEGIN_DATE_STR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!-- 结束日期不为空 -->
+		<isNotEmpty prepend="AND" property="END_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR <= #END_DATE_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<!-- 开始日期为空 -->
+		<isEmpty prepend="AND" property="BEGIN_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR >= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+		    ]]>
+		</isEmpty>
+		<!-- 结束日期为空 -->
+		<isEmpty prepend="AND" property="END_DATE_STR">
+			<![CDATA[
+				ATT.AR_DATE_STR <= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getEatMealCountPersonList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+     		SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, 'zh') DEPARTMENT,
+			       get_global_name(HE.EMP_OFFICE, 'zh') EMP_OFFICE,
+			       get_global_name(HE.POSITION_NO, 'zh') POSITION_NAME,
+			       get_dept_distinguish_name(HE.DEPTNO, 'zh') DISTINGUISH_NAME
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1 = 1    		
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					 FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+				HE.PERSON_ID IN
+			       (SELECT PERSON_ID FROM AR_EMP_GROUP WHERE GROUP_NO = #GROUP_NO:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		
+		<!-- 在职区分不为空 ，按条件查询-->
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!-- 在职区分为空,默认查询在职员工 -->
+		<isEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = '15119'
+			]]>
+		</isEmpty>
+		
+		<![CDATA[
+			ORDER BY HE.EMPID		
+		]]>
+	</select>
+	
+	<select id="getEatMealCountPersonListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+     		SELECT COUNT(*)
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1 = 1    		
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					 FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+				HE.PERSON_ID IN
+			       (SELECT PERSON_ID FROM AR_EMP_GROUP WHERE GROUP_NO = #GROUP_NO:VARCHAR#)
+             ]]>
+		</isNotEmpty>
+		
+		<!-- 在职区分不为空 ，按条件查询-->
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!-- 在职区分为空,默认查询在职员工 -->
+		<isEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = '15119'
+			]]>
+		</isEmpty>
+	</select>
+	
+	<delete id="deleteEmpEatMealCountByDataNo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE 
+			  FROM AR_EAT_COUNT_ATT 
+			 WHERE 1 = 1
+			   AND AR_EAT_COUNT_NO = #AR_EAT_COUNT_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<update id="updateEmpEatMealCountByDataNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_EAT_COUNT_ATT
+			   SET MEAL_NUM    = #MEAL_NUM:VARCHAR#,
+			       LOCK_FLAG   = 'Y',
+			       LOCK_DATE   = SYSDATE,
+			       LOCK_BY     = #UPDATED_BY:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			 WHERE AR_EAT_COUNT_NO = #AR_EAT_COUNT_NO:VARCHAR#
+		]]>
+	</update>
+</sqlMap>		

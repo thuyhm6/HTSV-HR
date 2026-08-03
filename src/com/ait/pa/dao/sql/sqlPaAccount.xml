@@ -1,0 +1,1249 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.account">
+	
+	<sql id="getPaAccountListCondition" >
+	
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+		 		  HR.STATUS_CODE = #STATUS_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+ 		<isNotEmpty prepend="AND" property="PA_GIVE_DATE"> 
+ 			<![CDATA[ 
+ 				C.GIVE_DATE = TO_DATE(#PA_GIVE_DATE:VARCHAR#,'YYYY-MM-DD') 
+ 			]]> 
+ 		</isNotEmpty> 
+		
+ 		<isNotEmpty prepend="AND" property="PA_MONTH"> 
+ 			<![CDATA[
+ 				C.PA_MONTH=#PA_MONTH:VARCHAR# 
+ 			]]> 
+ 		</isNotEmpty> 
+		
+ 		<isNotEmpty prepend="AND" property="paYear"> 
+ 			<isNotEmpty prepend="" property="paMonth"> 
+ 				<![CDATA[ 
+ 					C.PA_MONTH=#paYear:VARCHAR# || #paMonth:VARCHAR# 
+ 				]]>
+ 			</isNotEmpty> 
+ 		</isNotEmpty> 
+		
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<!-- 过滤权限 start -->
+		<isNotEmpty prepend="AND" property="specialParam">
+		<isNotEqual prepend="" property="specialParam" compareValue="general">
+			<![CDATA[
+		   		HR.DEPTNO IN  
+             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+    	<!-- 过滤权限 end -->
+		
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+		 		  A.CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CALC_FLAG_NEW">
+			<![CDATA[
+		 		  C.CALC_FLAG = #CALC_FLAG_NEW:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="NOT_FLAG">
+			<![CDATA[
+		 		  C.NOT_FLAG = #NOT_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  HR.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+	    <!-- 异常账号信息（账号为空、姓名为空或者不一致、银行为空、江苏玛特(C01)银行为中国银行时支行的选择） start -->
+	    <isNotEmpty prepend="" property="EXCEPTION_PA_COUNT">
+	    	<isEqual property="EXCEPTION_PA_COUNT" compareValue="YES">
+			    <isNotEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+					<![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL)
+		             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+				    <![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL OR
+					       (A.BANK_ID = '1031' AND A.BANK_BRANCH_CD IS NULL))
+		             ]]>
+	            </isEqual>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 异常账号信息 end -->
+	    
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_INFO
+					 WHERE PA_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getPaAccountList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID,
+             HR.PERSON_ID,
+             HR.LOCAL_NAME CHINESE_NAME,
+             HP.NATIONALITY_CODE,
+             get_global_name(HP.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_NAME,
+             A.CARD_NAME,
+             HR.CHINESE_PINYIN,
+             HR.DEPTNO,
+             HD.ORG_NAME_LOCAL DEPTNAME,
+             get_global_name(HD.DEPT_DISTINGUISH_NO,#interLanguage:VARCHAR#) DISTINGUISH_NAME,
+             GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#)  STATUS_NAME,
+             HR.POST_GRADE_NO,
+             GET_GLOBAL_NAME(HR.POST_GRADE_NO,#interLanguage:VARCHAR#) AS POST_GRADE_NAME,
+             A.BANK_ID,
+             GET_GLOBAL_NAME(A.BANK_ID,#interLanguage:VARCHAR#) AS BANK_NAME,
+             A.CARD_NO,
+             A.CALC_FLAG,
+             A.BANK_BRANCH_CD,
+             A.EXPNS_BANK_BRNCH_NM BANK_BRANCH_NAME,
+             A.PROB_PAY_RAT,
+             A.C_PROB_PAY_RAT,
+             TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+             TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+             GET_LOCAL_NAME_PERSONID(A.UPDATED_BY,HR.CPNY_ID) AS UPDATE_NAME,
+             A.UPDATE_REMARK
+        FROM HR_EMPLOYEE        HR,
+             HR_PERSONAL_INFO   HP,
+             HR_EMP_PA_INFO     A,
+             HR_DEPARTMENT      HD
+       WHERE HR.PERSON_ID = A.PERSON_ID(+)
+         AND HR.PERSON_ID = HP.PERSON_ID(+)
+         AND HR.DEPTNO = HD.DEPTNO(+)
+		]]>
+			
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			     HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+			     A.CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  HR.DEPTNO IN (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<!-- 异常账号信息（账号为空、姓名为空或者不一致、银行为空、江苏玛特(C01)银行为中国银行时支行的选择） start -->
+	    <isNotEmpty prepend="" property="EXCEPTION_PA_COUNT">
+	    	<isEqual property="EXCEPTION_PA_COUNT" compareValue="YES">
+			    <isNotEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+					<![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL)
+		             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+				    <![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL OR
+					       (A.BANK_ID = '1031' AND A.BANK_BRANCH_CD IS NULL))
+		             ]]>
+	            </isEqual>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 异常账号信息 end -->
+	    
+	    <!-- 本考勤月开始前离职人员 start -->
+	    <isNotEmpty prepend="" property="do_DIMISSION_PA_COUNT">
+	    	<isEqual property="do_DIMISSION_PA_COUNT" compareValue="NO">
+			     <![CDATA[
+                     AND (TO_CHAR(HR.DATE_LEFT,'YYYYMMDD') >= TO_CHAR(GET_AR_START_DATE(#PA_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#, (SELECT TT.STAT_NO FROM AR_STATISTIC_DATE_PARAM TT,AR_STATISTIC_EMPTYPE TTT WHERE TT.STAT_NO = TTT.STAT_NO AND HR.EMP_TYPE_CODE = TTT.EMP_TYPE_CODE AND TT.CPNY_ID = #CPNY_ID:VARCHAR#)),'YYYYMMDD') OR HR.DATE_LEFT IS NULL)   
+		         ]]>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 本考勤月开始前离职人员 end -->
+	    
+	    <isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  HR.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR# )
+               AND HR.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM PA_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY HR.EMPID,DEPTNO 
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaAccountCnt"   parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		   SELECT COUNT(0)
+			     FROM HR_EMPLOYEE        HR,
+                      HR_PERSONAL_INFO   HP,
+                      HR_EMP_PA_INFO     A,
+                      HR_DEPARTMENT      HD
+                WHERE HR.PERSON_ID = A.PERSON_ID(+)
+                  AND HR.PERSON_ID = HP.PERSON_ID(+)
+                  AND HR.DEPTNO = HD.DEPTNO(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			     HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+			     A.CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  HR.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO PA_INFO WHERE PA_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR# )
+               AND HR.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM PA_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  HR.DEPTNO IN (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<!-- 异常账号信息（账号为空、姓名为空或者不一致、银行为空、江苏玛特(C01)银行为中国银行时支行的选择） start -->
+	    <isNotEmpty prepend="" property="EXCEPTION_PA_COUNT">
+	    	<isEqual property="EXCEPTION_PA_COUNT" compareValue="YES">
+			    <isNotEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+					<![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL)
+		             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+				    <![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL OR
+					       (A.BANK_ID = '1031' AND A.BANK_BRANCH_CD IS NULL))
+		             ]]>
+	            </isEqual>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 异常账号信息 end -->
+	    
+	     <!-- 本考勤月开始前离职人员 start -->
+	    <isNotEmpty prepend="" property="do_DIMISSION_PA_COUNT">
+	    	<isEqual property="do_DIMISSION_PA_COUNT" compareValue="NO">
+			     <![CDATA[
+                     AND (TO_CHAR(HR.DATE_LEFT,'YYYYMMDD') >= TO_CHAR(GET_AR_START_DATE(#PA_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#, (SELECT TT.STAT_NO FROM AR_STATISTIC_DATE_PARAM TT,AR_STATISTIC_EMPTYPE TTT WHERE TT.STAT_NO = TTT.STAT_NO AND HR.EMP_TYPE_CODE = TTT.EMP_TYPE_CODE AND TT.CPNY_ID = #CPNY_ID:VARCHAR#)),'YYYYMMDD') OR HR.DATE_LEFT IS NULL)   
+		         ]]>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 本考勤月开始前离职人员 end -->
+		
+	</select>
+	
+	<select id="getPaAccountHistoryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID,
+			       HR.PERSON_ID,
+			       HR.LOCAL_NAME CHINESE_NAME,
+			       HP.NATIONALITY_CODE,
+       			   get_global_name(HP.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_NAME,
+			       A.CARD_NAME,
+			       HR.CHINESE_PINYIN,
+			       A.PA_MONTH,
+			       HR.DEPTNO,
+			       HD.ORG_NAME_LOCAL DEPTNAME,
+			       get_global_name(HD.DEPT_DISTINGUISH_NO,#interLanguage:VARCHAR#) DISTINGUISH_NAME,
+			       GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#)  STATUS_NAME,
+			       HR.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(HR.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       A.BANK_ID,
+			       GET_GLOBAL_NAME(A.BANK_ID,#interLanguage:VARCHAR#) AS BANK_NAME,
+			       A.CARD_NO,
+			       A.CALC_FLAG,
+			       A.BANK_BRANCH_CD,
+			       A.EXPNS_BANK_BRNCH_NM BANK_BRANCH_NAME,
+			       A.PROB_PAY_RAT,
+			       A.C_PROB_PAY_RAT,
+			       TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       GET_LOCAL_NAME_PERSONID(A.UPDATED_BY,HR.CPNY_ID) AS UPDATE_NAME,
+			       A.UPDATE_REMARK
+			  FROM HR_EMPLOYEE        HR,
+			  	   HR_PERSONAL_INFO   HP,
+			       HR_EMP_PA_INFO_HISTORY     A,
+			       HR_DEPARTMENT      HD
+			 WHERE HR.PERSON_ID = A.PERSON_ID(+)
+			   AND HR.PERSON_ID = HP.PERSON_ID(+)
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+		]]>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			     A.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+			     A.CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HR.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				A.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  HR.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR# )
+               AND HR.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM PA_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<!-- 异常账号信息（账号为空、姓名为空或者不一致、银行为空、江苏玛特(C01)银行为中国银行时支行的选择） start -->
+	    <isNotEmpty prepend="" property="EXCEPTION_PA_COUNT">
+	    	<isEqual property="EXCEPTION_PA_COUNT" compareValue="YES">
+			    <isNotEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+					<![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL)
+		             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+				    <![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL OR
+					       (A.BANK_ID = '1031' AND A.BANK_BRANCH_CD IS NULL))
+		             ]]>
+	            </isEqual>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 异常账号信息 end -->
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY A.PA_MONTH,HR.EMPID,HR.DEPTNO 
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaAccountHistoryCnt"   parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		   SELECT COUNT(0)
+			     FROM 
+			       HR_EMPLOYEE        HR,
+			       HR_PERSONAL_INFO   HP,
+			       HR_EMP_PA_INFO_HISTORY A,
+			       HR_DEPARTMENT B
+			 WHERE HR.PERSON_ID = A.PERSON_ID(+)
+			   AND HR.PERSON_ID = HP.PERSON_ID(+)
+			   AND HR.DEPTNO = B.DEPTNO
+		]]>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		   HR.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR# )
+               AND HR.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM PA_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			     A.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CALC_FLAG">
+			<![CDATA[
+			     A.CALC_FLAG = #CALC_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+				HR.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				A.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<!-- 异常账号信息（账号为空、姓名为空或者不一致、银行为空、江苏玛特(C01)银行为中国银行时支行的选择） start -->
+	    <isNotEmpty prepend="" property="EXCEPTION_PA_COUNT">
+	    	<isEqual property="EXCEPTION_PA_COUNT" compareValue="YES">
+			    <isNotEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+					<![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL)
+		             ]]>
+	            </isNotEqual>
+	            <isEqual prepend="AND" property="CPNY_ID" compareValue="C01">
+				    <![CDATA[
+				   		((HR.LOCAL_NAME <> A.CARD_NAME AND HP.NATIONALITY_CODE = '871') OR
+					       A.CARD_NO IS NULL OR A.BANK_ID IS NULL OR
+					       (A.BANK_ID = '1031' AND A.BANK_BRANCH_CD IS NULL))
+		             ]]>
+	            </isEqual>
+		    </isEqual>
+		</isNotEmpty>
+	    <!-- 异常账号信息 end -->
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY A.PA_MONTH,HR.EMPID,HR.DEPTNO 
+			]]>
+		</isEmpty>
+	</select>
+	
+	
+	
+	
+	<update id="updatePaCalcFlagByPersonId"   parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE HR_EMP_PA_INFO SET
+				CALC_FLAG = #CALC_FLAG:VARCHAR#,
+				UPDATE_REMARK = #REMARK:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updatePaAccountInfo"   parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE HR_EMP_PA_INFO SET
+				BANK_ID = #BANK_NAME_CODE:VARCHAR# ,
+				CARD_NO = #CARD_NO:VARCHAR# ,
+				CARD_NAME = #CARD_NAME:VARCHAR# ,
+				CALC_FLAG = #CALC_FLAG:VARCHAR#,
+				BANK_BRANCH_CD = DECODE(#BANK_BRANCH_CD:VARCHAR#,'1','',#BANK_BRANCH_CD:VARCHAR#),
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	<select id="getPaAccountInfoByPersonid"   parameterClass="linkMap"  resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 		SELECT COUNT(*) COUNT FROM HR_EMP_PA_INFO WHERE PERSON_ID=#PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	<insert id="savePaAccountInfo"   parameterClass="linkMap">
+		<![CDATA[
+	 		 INSERT INTO HR_EMP_PA_INFO 
+        		(PERSON_ID,CREATE_DATE,CREATED_BY)
+ 			VALUES 
+        		(#PERSON_ID:VARCHAR#,SYSDATE,#CREATED_BY:VARCHAR#) 
+		]]>
+	</insert>
+	<select id="getBankList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HB.BANK_ID,
+			       SY.CONTENT BANK_NAME
+			  FROM HR_BANK        HB,
+			       SY_GLOBAL_NAME SY
+			 WHERE HB.BANK_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HB.ACTIVITY = 1
+		   ]]>
+	</select>
+	
+	<select id="getBankBranchList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HB.BANK_BRANCH_CD,
+			       DECODE(NVL(#interLanguage:VARCHAR#, 'zh'),
+			              'ko',
+			              HB.BANK_BRANCH_NAME_KO,
+			              'en',
+			              HB.BANK_BRANCH_NAME_EN,
+			              HB.BANK_BRANCH_NAME_CN) BANK_BRANCH_NAME
+			  FROM HR_BANK_BRANCH HB
+			 WHERE HB.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		 (HB.CPNY_ID =  #CPNY_ID:VARCHAR# OR HB.CPNY_ID = 'C00')
+		    ]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="BANK_NO" compareValue="1031">
+		 	<![CDATA[
+		    	HB.BANK_NO = #BANK_NO:VARCHAR#
+		    ]]>
+           </isEqual>
+	    <isNotEqual prepend="AND" property="BANK_NO" compareValue="1031">
+		 	<![CDATA[
+		    	(HB.BANK_NO = #BANK_NO:VARCHAR# OR HB.BANK_NO = '1')
+		    ]]>
+           </isNotEqual> 
+		<![CDATA[
+			 ORDER BY HB.BANK_NO, HB.BANK_BRANCH_CD
+		 ]]>
+	</select>
+	
+	<select id="getPaSalaryObjectList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT HR.EMPID				EMPID,
+			  		 HR.PERSON_ID			PERSON_ID,
+			         HR.LOCAL_NAME			CHINESE_NAME,
+			         HR.EMP_OFFICE			EMP_OFFICE,
+			         GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#)  EMP_STATUS,
+		             HR.POST_GRADE_NO		POST_GRADE_NO,
+		             GET_GLOBAL_NAME(HR.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+		             HR.DEPTNO				DEPTNO,
+		             B.CONTENT 				DEPTNAME,
+		             HD.DEPT_DISTINGUISH_NO	DEPT_DISTINGUISH_NO,
+		             GET_GLOBAL_NAME(HD.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) DEPT_DISTINGUISH_NAME,
+		             TO_CHAR(HR.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+		             TO_CHAR(HR.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+		             TO_CHAR(HR.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+		             TO_CHAR(HRE.SETTLEMENT_DATE, 'YYYY-MM-DD') SETTLEMENT_DATE,
+		             C.CALC_FLAG								CALC_FLAG,
+		             C.PA_MONTH				PA_MONTH,
+		             TO_CHAR(C.GIVE_DATE,'YYYY-MM-DD')			PA_GIVE_DATE,
+		             C.NOT_FLAG				NOT_FLAG,
+		             C.REMARK				REMARK
+		        FROM HR_EMPLOYEE        HR,
+		        	 HR_RESIGNATION     HRE,
+		             HR_PERSONAL_INFO   HP,
+		             HR_DEPARTMENT      HD,
+		             HR_DEPARTMENT_NAME B,
+		             PA_CALC_OBJECT     C
+		       WHERE HR.PERSON_ID = HP.PERSON_ID(+)
+		         AND HR.PERSON_ID = HRE.PERSON_ID(+)
+		         AND HR.DEPTNO = HD.DEPTNO(+)
+		         AND HD.DEPTNO = B.DEPTNO(+)
+		         AND B.LANGUAGE = #interLanguage:VARCHAR#
+		         AND C.PERSON_ID = HR.PERSON_ID(+)
+		]]>
+			
+		<include refid="getPaAccountListCondition"/>
+		
+		
+		<isEmpty prepend="" property="orderField">
+			<![CDATA[
+				ORDER BY HR.EMPID,DEPTNO 
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getPaSalaryObjectCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT 
+	 				COUNT(*)
+		      FROM  HR_EMPLOYEE        HR,
+		      		HR_RESIGNATION     HRE,
+		            HR_PERSONAL_INFO   HP,
+		            HR_DEPARTMENT      HD,
+		            HR_DEPARTMENT_NAME B,
+		            PA_CALC_OBJECT     C
+		       WHERE HR.PERSON_ID = HP.PERSON_ID(+)
+		       	 AND HR.PERSON_ID = HRE.PERSON_ID(+)
+		         AND HR.DEPTNO = HD.DEPTNO(+)
+		         AND HD.DEPTNO = B.DEPTNO(+)
+		         AND B.LANGUAGE = #interLanguage:VARCHAR#
+		         AND C.PERSON_ID = HR.PERSON_ID(+)
+		]]>
+		
+		<include refid="getPaAccountListCondition"/>
+		
+	</select>
+	
+	<update id="updatePaSalCalcFlagByPersonId" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE PA_CALC_OBJECT SET
+				CALC_FLAG = #CALC_FLAG:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<procedure id="salaryCalculationObject" parameterClass="linkMap">
+		<![CDATA[
+			{CALL PA_PACAL_OBJECT_P_NEW(#PA_MONTH_STR:VARCHAR#,#PA_GIVE_DATE:VARCHAR#,#SUPERVISOR_NO:VARCHAR#,#CPNY_ID:VARCHAR#,#CALTYPE:VARCHAR#,#OUTPUT_STR:VARCHAR#)}
+		]]>
+	</procedure>
+	
+	<insert id="copyLastMonthData"   parameterClass="linkMap">
+		<![CDATA[
+	 		 INSERT INTO 
+	 		 	IS_CALC_OBJECT(
+	 		 		PA_MONTH,
+	 		 		GIVE_DATE,
+	 		 		PERSON_ID,
+	 		 		CALC_FLAG,
+	 		 		REMARK,
+	 		 		CREATE_DATE,
+	 		 		CREATED_BY,
+	 		 		ACTIVITY,
+	 		 		CPNY_ID
+	 		 	)  
+			SELECT TO_CHAR(SYSDATE,'YYYYMM'),
+				   GIVE_DATE,PERSON_ID,
+				   CALC_FLAG,REMARK,
+				   SYSDATE,
+				   #PERSON_ID:VARCHAR#,
+				   1,
+				   #CPNY_ID:VARCHAR#
+			 FROM IS_CALC_OBJECT
+			WHERE ACTIVITY = 1 
+			  AND CALC_FLAG = 'Y' 
+			  AND PA_MONTH = TO_CHAR(ADD_MONTHS(TRUNC(SYSDATE),-1),'YYYYMM')
+		]]>
+	</insert>
+	
+	
+	<update id="updatePaObjectInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE PA_CALC_OBJECT SET
+				CALC_FLAG=#CALC_FLAG:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getPersonType" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			SELECT S1.NO CODE_NO, NVL(S1.CONTENT, ' ') CONTENT
+			  FROM HR_JOB_TYPE_SETUP T, SY_GLOBAL_NAME S1, SY_GLOBAL_NAME S2
+			 WHERE T.JOBTYPE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = 'zh'
+			   AND T.JOBTYPE_GROUP_NO = S2.NO(+)
+			   AND S2.LANGUAGE(+) = 'zh'
+			   AND S2.NO IN ( '211812','211811')
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY T.CPNY_ID
+		]]>
+	</select>
+	
+	<select id="getPositionList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			SELECT DISTINCT T.POSITION_NO,
+				   E.CONTENT
+		      FROM HR_POSITION T,
+		           SY_GLOBAL_NAME E
+		     WHERE T.POSITION_NO = E.NO
+		       AND E.LANGUAGE(+) = #language:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getPersonAllowance" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 		SELECT ALLOWANCE_ID,
+		       C.PERSON_ID,
+		       E.EMPID,
+		       E.CPNY_ID,
+		       E.POSITION_NO,
+		       M.CONTENT EMPTYPE,
+		       GET_HR_EMP_NAME(C.PERSON_ID) CHINESENAME,
+		       POSITION_ALLOWANCE,
+		        CASE 
+        WHEN (#CPNY_ID:VARCHAR# = 'TSTO' AND C.POSITION_ALLOWANCE_C IS NULL) 
+          THEN  
+          (
+                SELECT T.POSITION_ALLOWANCE POSITION_ALLOWANCE_C  
+                FROM HR_ALLOWANCE_GROUP T
+                WHERE T.CPNY_NAME = 'TSTO'
+                AND T.CPNY_NAME = E.CPNY_ID AND C.PERSON_ID = E.PERSON_ID 
+                AND E.DEPTNO = T.DEPT_ID AND E.EMP_TYPE_CODE = T.TYPE_ALLOWANCE 
+                AND T.DUTY_ALLOWANCE = E.POSITION_NO)
+             ELSE C.POSITION_ALLOWANCE_C end POSITION_ALLOWANCE_C,
+		       PERCENT_ALLOWANCE,
+		       START_DATE,
+		       TO_CHAR(CHANGE_DATE,'YYYY-MM-DD') CHANGE_DATE,
+		       VALID_MONTH,
+		       DEMO_ALLOWANCE,
+		       C.ACTIVITY
+		  FROM HR_ALLOWANCE C, HR_EMPLOYEE E,SY_GLOBAL_NAME M
+		 WHERE C.PERSON_ID = E.PERSON_ID
+		   AND E.EMP_TYPE_CODE = M.NO
+		   AND M.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="duty">
+			<![CDATA[
+				E.POSITION_NO = #duty:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="type">
+			<![CDATA[
+				E.EMP_TYPE_CODE = #type:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CORPORATION">
+			<![CDATA[
+				E.CPNY_ID = #CORPORATION:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				E.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="noName">
+			<![CDATA[
+				(E.LOCAL_NAME LIKE '%' || #noName:VARCHAR# || '%' 
+				OR E.ENGLISH_NAME LIKE '%' || #noName:VARCHAR# || '%'  
+				OR E.EMPID LIKE '%' || #noName:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			    E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY  E.EMPID, CHANGE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getAllowance" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	 SELECT ALLOWANCE_ID, 
+	 			POSITION_ALLOWANCE, 
+	 			DUTY_ALLOWANCE, 
+	 			GET_CODE_NAME(TYPE_ALLOWANCE,'zh') TYPE_ALLOWANCE,
+		        CPNY_NAME,
+		        GET_DEPT_NAME(DEPT_ID,'zh') DEPT_ID
+			FROM HR_ALLOWANCE_GROUP P
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+				P.DUTY_ALLOWANCE = #POSITION:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON">
+			<![CDATA[
+				P.TYPE_ALLOWANCE = #PERSON:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				P.DEPT_ID = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				P.CPNY_NAME = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		</dynamic>
+		<![CDATA[
+	 	 	ORDER BY P.CREATE_DATE DESC   
+		]]>
+	</select>
+	
+	<select id="getPersonAllowanceCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(C.ALLOWANCE_ID)
+		  FROM HR_ALLOWANCE C, HR_EMPLOYEE E,SY_GLOBAL_NAME M
+		 WHERE C.PERSON_ID = E.PERSON_ID
+		   AND E.EMP_TYPE_CODE = M.NO
+		   AND M.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="duty">
+			<![CDATA[
+				E.POSITION_NO = #duty:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="type">
+			<![CDATA[
+				E.EMP_TYPE_CODE = #type:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CORPORATION">
+			<![CDATA[
+				E.CPNY_ID = #CORPORATION:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				E.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="noName">
+			<![CDATA[
+				(E.LOCAL_NAME LIKE '%' || #noName:VARCHAR# || '%' 
+				OR E.LOCAL_NAME  LIKE '%' || #noName:VARCHAR# || '%' 
+				OR E.ENGLISH_NAME  LIKE '%' || #noName:VARCHAR# || '%' 
+				OR E.EMPID  LIKE '%' || #noName:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			    E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<select id="getAllowanceCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		SELECT COUNT(0) FROM HR_ALLOWANCE_GROUP P  
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+				P.DUTY_ALLOWANCE = #POSITION:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON">
+			<![CDATA[
+				P.TYPE_ALLOWANCE = #PERSON:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				P.DEPT_ID = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				P.CPNY_NAME = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getPaAllowanceSelf" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+	 		SELECT ALLOWANCE_ID,
+	 		   H.PERSON_ID,
+	 		   H.EMPID,
+	 		   H.LOCAL_NAME CHINESENAME,
+		       POSITION_ALLOWANCE,
+		       POSITION_ALLOWANCE_C,
+		       PERCENT_ALLOWANCE,
+		       TO_CHAR(CHANGE_DATE,'YYYY-MM-DD') CHANGE_DATE,
+		       VALID_MONTH,
+		       DEMO_ALLOWANCE,
+		       E.ACTIVITY
+		  FROM HR_ALLOWANCE E,HR_EMPLOYEE H
+		 WHERE E.PERSON_ID = H.PERSON_ID
+		   AND ALLOWANCE_ID = #ALLOWANCE_ID#
+		]]>
+	</select>
+	
+	<select id="getPaAllowance" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+	 		SELECT ALLOWANCE_ID,
+	 		   POSITION_ALLOWANCE,
+	 		   DUTY_ALLOWANCE,
+	 		   TYPE_ALLOWANCE,
+	 		   DEPT_ID
+		  FROM HR_ALLOWANCE_GROUP E
+		 WHERE ALLOWANCE_ID = #ALLOWANCE_ID#
+		]]>
+	</select>
+	
+	<update id="updatePaAllowanceSelfInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE HR_ALLOWANCE E
+			   SET UPDATE_DATE       = SYSDATE,
+			       UPDATED_BY        = #UPDATED_BY:VARCHAR#,
+			       PERCENT_ALLOWANCE = #PERCENT_ALLOWANCE#,
+			       POSITION_ALLOWANCE_C = #POSITION_ALLOWANCE_C#,
+			       VALID_MONTH       = #VALID_MONTH#,
+	    ]]>
+	    <isNotEmpty property="ACTIVITY">
+			<![CDATA[
+				ACTIVITY = #ACTIVITY:VARCHAR#,
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			       DEMO_ALLOWANCE    = #DEMO_ALLOWANCE:VARCHAR#
+			 WHERE ALLOWANCE_ID = #ALLOWANCE_ID#
+		]]>
+	</update>
+	
+	<insert id="savePaAllowanceInfo"   parameterClass="linkMap">
+		<![CDATA[
+	 		 INSERT INTO HR_ALLOWANCE_GROUP
+        		(ALLOWANCE_ID,
+        		 CREATE_DATE,
+  				 CREATED_BY,
+  				 UPDATE_DATE,
+  				 UPDATED_BY,
+				 ACTIVITY,
+  				 POSITION_ALLOWANCE,
+  				 DUTY_ALLOWANCE,
+  				 TYPE_ALLOWANCE,
+  				 CPNY_NAME,
+  				 DEPT_ID				
+				)
+ 			VALUES 
+        		(HR_ALLOWANCE_GROUP_SEQ.NEXTVAL,
+        		SYSDATE,
+        		#CREATED_BY:VARCHAR#,
+        		SYSDATE,
+        		#UPDATED_BY:VARCHAR#,
+        		1,
+        		#POSITION_ALLOWANCE#,
+        		#DUTY_ALLOWANCE#,
+        		#TYPE_ALLOWANCE#,
+        		#CPNY_NAME:VARCHAR#,
+        		#DEPT_ID:VARCHAR#
+				 ) 
+		]]>
+	</insert>
+	
+	<update id="updatePaAllowanceInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE HR_ALLOWANCE_GROUP E
+			   SET UPDATE_DATE       = SYSDATE,
+			       UPDATED_BY        = #UPDATED_BY:VARCHAR#,
+			       POSITION_ALLOWANCE = #POSITION_ALLOWANCE#,
+			       DUTY_ALLOWANCE     = #DUTY_ALLOWANCE#,
+			       TYPE_ALLOWANCE     = #TYPE_ALLOWANCE#,
+			       CPNY_NAME          = #CPNY_NAME:VARCHAR#,
+			       DEPT_ID            = #DEPT_ID:VARCHAR#
+			 WHERE ALLOWANCE_ID = #ALLOWANCE_ID#
+		]]>
+	</update>
+	
+	<delete id="deletePaAllowanceInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		DELETE FROM HR_ALLOWANCE_GROUP WHERE ALLOWANCE_ID = #ALLOWANCE_ID#
+		]]>
+	</delete>
+	
+	<select id="getEvaluationDataImportResultList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			 SELECT T.CPNY_NAME,
+			       T.DEPT_ID,
+			       T.DUTY_ALLOWANCE,
+			       T.TYPE_ALLOWANCE,
+			       T.POSITION_ALLOWANCE,
+			       T.UPLOAD_ERROR_MSG
+			  FROM HR_ALLOWANCE_GROUP_TEMP T
+			 WHERE UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY T.LINE_ID
+	</select>
+	
+	<select id="getEvaluationDataImportResultListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+			  FROM HR_ALLOWANCE_GROUP_TEMP T
+		     WHERE T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getEvaluationDataImportErrCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM HR_ALLOWANCE_GROUP_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<procedure id="importPaAllowanceExcelTempExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_ALLOWANCE_EXCEL_IMP.PR_IMPORT_ALLOWANCE_DATA(
+						 #PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<select id="getPaAccountDataImportResultList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			 SELECT T.EMPID,
+			       NVL(E.LOCAL_NAME,T.EMPID) CHINESENAME,
+			       T.CALC_FLAG,
+			       T.UPDATE_REMARK,
+			       T.UPLOAD_ERROR_MSG
+			  FROM PA_ACCOUNT_TEMP T,HR_EMPLOYEE E
+			 WHERE T.EMPID = E.EMPID(+)
+			   AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY T.LINE_ID
+	</select>
+	
+	<select id="getPaAccountDataImportResultListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+			  FROM PA_ACCOUNT_TEMP T
+		     WHERE T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getPaAccountDataImportResultListErrCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM PA_ACCOUNT_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getEvaluationDataImportResultSelfList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			 SELECT T.EMPID,
+			       NVL(E.LOCAL_NAME,T.EMPID) CHINESENAME,
+			       E.ENGLISH_NAME ENGLISTNAME,
+			       TO_CHAR(T.CHANGE_DATE,'YYYY-MM-DD') CHANGE_DATE,
+			       T.PERCENT_ALLOWANCE,
+			       T.VALID_MONTH,
+			       T.DEMO_ALLOWANCE,
+			       T.UPLOAD_ERROR_MSG
+			  FROM HR_ALLOWANCE_TEMP T,HR_EMPLOYEE E
+			 WHERE T.EMPID = E.EMPID(+)
+			   AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY T.LINE_ID
+	</select>
+	
+	<select id="getEvaluationDataImportResultListSelfCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+			  FROM HR_ALLOWANCE_TEMP T
+		     WHERE T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getEvaluationDataImportErrSelfCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM HR_ALLOWANCE_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<procedure id="importPaAllowanceExcelSelfExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_ALLOWANCE_EXCEL_IMP.PR_IMPORT_ALLOWSELF_DATA(
+						 #PERSON_ID:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+		<procedure id="importPaAccountExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_ACCOUNT_EXCEL_IMP.PR_IMPORT_ACCOUNT_DATA(
+						 #PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+    <!--SY修改试用支付比例 -->
+	<update id="updateC_PROB_PAY_RAT"   parameterClass="linkMap">
+		<![CDATA[
+	 	 UPDATE HR_EMP_PA_INFO SET
+				C_PROB_PAY_RAT = #C_PROB_PAY_RAT:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #UPDATED_BY:VARCHAR#
+		  WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+</sqlMap>

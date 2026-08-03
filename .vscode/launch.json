@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug Hanwha_HTSV (launch Tomcat, Debug Console)",
+            "request": "launch",
+            "mainClass": "org.apache.catalina.startup.Bootstrap",
+            "args": ["start"],
+            "cwd": "${workspaceFolder}/.tomcat",
+            "classPaths": [
+                "D:/Java/apache-tomcat/bin/bootstrap.jar",
+                "D:/Java/apache-tomcat/bin/tomcat-juli.jar"
+            ],
+            "vmArgs": [
+                "-Dcatalina.base=${workspaceFolder}/.tomcat",
+                "-Dcatalina.home=D:/Java/apache-tomcat",
+                "-Djava.io.tmpdir=${workspaceFolder}/.tomcat/temp",
+                "-Djava.util.logging.config.file=${workspaceFolder}/.tomcat/conf/logging.properties",
+                "-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager",
+                "-Dfile.encoding=UTF-8"
+            ],
+            "console": "internalConsole",
+            "preLaunchTask": "Build: Compile Java"
+        },
+        {
+            "type": "java",
+            "name": "Debug Hanwha_HTSV (attach to Tomcat)",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 8000,
+            "preLaunchTask": "Tomcat: Start (JPDA debug)"
+        }
+    ]
+}

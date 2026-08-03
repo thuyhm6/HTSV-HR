@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.companyCalendar">
+
+     <select id="getPersonalCalendarList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT TO_CHAR(DDATE,'YYYYMMDD') DDATE,
+               IYEAR,
+               IMONTH,
+               IDAY,
+               IWEEK,
+               #interLanguage:VARCHAR# LANGUAGE,
+               P.COURSE_NAME_CODE,
+               P.PERIOD_TIME,
+               E.COURSE_NAME_CODE COURSENAME,
+               E.PLAN_NO PLANNO,
+               f.empid
+           FROM AR_CALENDER C,EDU_TRAIN_SYLLABUS E,edu_basic_information b,edu_free_employee f,EDU_PLAN_MANAGER P
+           WHERE TO_CHAR(C.DDATE,'YYYY-MM-DD') = TO_CHAR(E.COURSE_DATE(+),'YYYY-MM-DD')
+               AND C.CPNY_ID = E.CPNY_ID(+)
+               AND C.CPNY_ID = #CPNY_ID:VARCHAR#
+               AND TO_CHAR(C.DDATE,'YYYYMM') = #AR_MONTH:VARCHAR#
+               and e.plan_no=b.plan_no(+)
+               and b.basic_no=f.basic_no(+)
+               and e.plan_no = p.plan_no(+)
+		]]>	
+		<![CDATA[
+			ORDER BY IYEAR, IMONTH, IDAY
+		]]>
+		 
+	</select>
+
+     <select id="getCalendarList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT TO_CHAR(DDATE,'YYYYMMDD') DDATE,
+	             IYEAR,
+	             IMONTH,
+	             IDAY,
+	             IWEEK,
+	             #interLanguage:VARCHAR# LANGUAGE,
+	             P.COURSE_NAME_CODE COURSENAME,
+	             P.COURSE_NAME_CODE,
+                 P.PERIOD_TIME,
+                 P.PLAN_NO PLANNO
+	         FROM AR_CALENDER C,EDU_TRAIN_SYLLABUS E,EDU_PLAN_MANAGER P
+	         WHERE TO_CHAR(C.DDATE,'YYYY-MM-DD') = TO_CHAR(E.COURSE_DATE(+),'YYYY-MM-DD')
+	             AND C.CPNY_ID = E.CPNY_ID(+)
+	             AND C.CPNY_ID = #CPNY_ID:VARCHAR#
+	             AND TO_CHAR(C.DDATE,'YYYYMM') = #AR_MONTH:VARCHAR#
+	             and e.plan_no = p.plan_no(+)
+		]]>	
+		<![CDATA[
+			ORDER BY IYEAR, IMONTH, IDAY
+		]]>
+		 
+	</select>
+	
+	
+	<select id="getCompanyCalendarList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT C.DDATE,
+			       C.IYEAR,
+			       C.IMONTH,
+			       C.IDAY,
+			       C.IWEEK,
+			       C.WORKDAYFLAG,
+			       C.TYPEID,
+			       C.REMARK,
+			       S1.CONTENT TYPENAME,
+			       C.OVERTYPEID,
+			       C.TYPEID_DEFAULT,
+			       C.SHIFT_NO,
+			       S2.CONTENT SHIFT_NAME,
+			       C.DDATE_STR,
+			       TO_CHAR(C.DDATE, 'YYYY-MM-DD') MODFIY_DATE_STR,
+			       #interLanguage:VARCHAR# LANGUAGE
+			  FROM AR_CALENDER C,
+			  	   SY_GLOBAL_NAME S1,
+			  	   SY_GLOBAL_NAME S2
+			 WHERE C.TYPEID = S1.NO(+)
+			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND C.SHIFT_NO = S2.NO(+)
+			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND C.CPNY_ID = #CPNY_ID:VARCHAR#		 
+			   AND TO_CHAR(C.DDATE,'YYYYMM') = #AR_MONTH:VARCHAR#
+		]]>	
+		
+		<!-- <isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+		 		  C.DDATE BETWEEN GET_AR_START_DATE(#AR_MONTH:VARCHAR#,#CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#)
+			   		 AND GET_AR_END_DATE(#AR_MONTH:VARCHAR#,#CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+		 		  C.DDATE BETWEEN LAST_DAY(ADD_MONTHS(TO_DATE(#AR_MONTH:VARCHAR#,'YYYY-MM'),-1))+1
+			   		 AND last_day(TO_DATE(#AR_MONTH:VARCHAR#,'YYYY-MM'))
+		    ]]>
+		</isEmpty> -->
+		
+		<![CDATA[
+			ORDER BY IYEAR, IMONTH, IDAY
+		]]>
+		 
+	</select>
+	<select id="getShiftList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.SHIFT_NO,
+				S.CONTENT SHIFT_NAME,
+				T.DATATYPE,
+				T.SHIFT_ID
+			FROM AR_SHIFT010 T,
+				SY_GLOBAL_NAME S
+			WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+				AND T.SHIFT_NO = S.NO(+)
+				AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND T.ACTIVITY = 1
+		]]>
+	</select>
+	<procedure id="addCompanyCalendarInfo" parameterClass="linkMap">
+		{call AR_ADD_CALENDER_DATE_P(to_date(#FROM_DATE:VARCHAR#,'DD-MM-YYYY'), to_date(#TO_DATE:VARCHAR#,'DD-MM-YYYY'), #WORK_SHIFT:VARCHAR#, #REST_SHIFT:VARCHAR#,#CPNY_ID:VARCHAR#)}
+	</procedure>
+	
+	<procedure id="addCompanyCalendarInfoBanCi" parameterClass="linkMap">
+		{call AR_ADD_CALENDER_DATE_BANCI_P(to_date(#FROM_DATE:VARCHAR#,'DD-MM-YYYY'), to_date(#TO_DATE:VARCHAR#,'DD-MM-YYYY'), #WORK_SHIFT:VARCHAR#, #REST_SHIFT:VARCHAR#,#CPNY_ID:VARCHAR#,#GROUP:VARCHAR#,#adminIP:VARCHAR#,#adminID:VARCHAR#)}
+	</procedure>
+
+	<update id="updateCompanyCalendarInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_CALENDER SET 
+				WORKDAYFLAG = #WORKDAYFLAG:NUMERIC#,
+				TYPEID = #TYPEID:NUMERIC#,
+				SHIFT_NO = #SHIFT_NO:VARCHAR#,
+				REMARK   = #REMARK:VARCHAR#,
+				UPDATED_IP=#adminIP:VARCHAR#,
+				UPDATED_BY=#adminID:VARCHAR#,
+				UPDATE_DATE=SYSDATE
+			WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			AND replace(ddate_str,'/','-') = #DDATE_STR:VARCHAR#
+		]]>
+	</update>
+
+	<update id="updateClassCalendarInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_CALENDER_GROUP SET 
+				WORKDAYFLAG = #WORKDAYFLAG:NUMERIC#,
+				TYPEID = #TYPEID:NUMERIC#,
+				SHIFT_NO = #SHIFT_NO:VARCHAR#,
+				UPDATED_IP=#adminIP:VARCHAR#,
+				UPDATED_BY=#adminID:VARCHAR#,
+				UPDATE_DATE=SYSDATE
+			WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			AND replace(AR_DATE_STR,'/','-') = #DDATE_STR:VARCHAR#
+		]]>
+	</update>
+
+	<update id="updateClassCalendarInfoPersonal" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_SCHEDULE_HTSV SET
+				SHIFT_NO = #SHIFT_NO:VARCHAR#
+			WHERE PERSON_ID IN (
+				SELECT PERSON_ID FROM HR_EMPLOYEE WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			)
+			AND replace(AR_DATE_STR,'/','-') = #DDATE_STR:VARCHAR#
+		]]>
+	</update>
+	<update id="addStatutoryHolidaysInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_CALENDER SET 
+				WORKDAYFLAG =  DECODE(#type:NUMERIC#,1440,1,0),
+				TYPEID = #type:NUMERIC#,
+				SHIFT_NO = #WORK_SHIFT:VARCHAR#,
+				STATUTORY_FLAG=1,
+				REMARK=#REMARK:VARCHAR#,
+				UPDATED_IP=#adminIP:VARCHAR#,
+				UPDATED_BY=#adminID:VARCHAR#,
+				UPDATE_DATE=SYSDATE
+				WHERE   CPNY_ID = #CPNY_ID:VARCHAR#
+				AND DDATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'),'-','/'),'.','/')
+		]]>
+	</update>
+	<select id="getOneStatutoryHolidayInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DDATE,
+			       IYEAR,
+			       IMONTH,
+			       IDAY,
+			       IWEEK,
+			       WORKDAYFLAG,
+			       C.TYPEID,
+			       S1.CONTENT TYPENAME,
+			       OVERTYPEID,
+			       TYPEID_DEFAULT,
+			       C.SHIFT_NO,
+			       S2.CONTENT SHIFT_NAME,
+			       DDATE_STR,
+			       TO_CHAR(DDATE, 'DD/MM/YYYY') MODFIY_DATE_STR,
+			       #interLanguage:VARCHAR# LANGUAGE,
+			       C.REMARK,
+			       C.STATUTORY_FLAG
+			  FROM AR_CALENDER C,
+			  	   SY_GLOBAL_NAME S1,
+			  	   SY_GLOBAL_NAME S2
+			 WHERE C.TYPEID = S1.NO(+)
+			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND C.SHIFT_NO = S2.NO(+)
+			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND C.CPNY_ID = #CPNY_ID:VARCHAR#		 
+			    AND C.DDATE_STR=REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY.MM.DD'),'.','/'),'-','/')
+		]]>	
+		
+		 
+	</select>
+	<update id="updateStatutoryHolidaysInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_CALENDER SET 
+				WORKDAYFLAG =  DECODE(#type:NUMERIC#,1440,1,0),
+				TYPEID = #type:NUMERIC#,
+				SHIFT_NO = #WORK_SHIFT:VARCHAR#,
+				STATUTORY_FLAG=1,
+				REMARK=#REMARK:VARCHAR#,
+				UPDATED_IP=#adminIP:VARCHAR#,
+				UPDATED_BY=#adminID:VARCHAR#,
+				UPDATE_DATE=SYSDATE
+				WHERE   CPNY_ID = #interCpnyID:VARCHAR#
+				AND DDATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY.MM.DD'),'.','/'),'-','/')
+		]]>
+	</update>
+	<update id="deleteStatutoryHolidaysInfo" parameterClass="linkMap" >
+    <![CDATA[
+      UPDATE AR_CALENDER T
+             SET WORKDAYFLAG    = DECODE(T.TYPEID_DEFAULT, 1440, 1, 0),
+                 TYPEID         = T.TYPEID_DEFAULT,
+	              SHIFT_NO =
+	              DECODE(T.TYPEID_DEFAULT,
+	                     1440,
+	                     DECODE(#interCpnyID:VARCHAR#, 'TSTO', '147745', 217883),
+	                     DECODE(#interCpnyID:VARCHAR#, 'TSTO', '147746', 217887)),
+                 STATUTORY_FLAG = 0,
+                 REMARK         = '',
+                 UPDATED_IP     = #adminIP:VARCHAR#,
+                 UPDATED_BY     = #adminID:VARCHAR#,
+                 UPDATE_DATE    = SYSDATE
+           WHERE CPNY_ID = #interCpnyID:VARCHAR#
+             AND DDATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY.MM.DD'), '.', '/'), '-', '/')
+    ]]>
+  </update>
+  <update id="updateClassStatutoryHolidaysInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_CALENDER_GROUP SET 
+				WORKDAYFLAG =  DECODE(#type:NUMERIC#,1440,1,0),
+				TYPEID = #type:NUMERIC#,
+				SHIFT_NO = #WORK_SHIFT:VARCHAR#,
+				UPDATED_IP=#adminIP:VARCHAR#,
+				UPDATED_BY=#adminID:VARCHAR#,
+				UPDATE_DATE=SYSDATE
+				WHERE   CPNY_ID = #interCpnyID:VARCHAR#
+				AND AR_DATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'),'-','/'),'.','/')
+		]]>
+	</update>
+	<delete id="deleteClassCalendarInfo" parameterClass="linkMap">
+	   <![CDATA[
+		   DELETE FROM ar_calender_group WHERE AR_DATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'), '.', '/'),'-','/')  and cpny_id=#CPNY_ID:VARCHAR# 
+	    ]]> 
+	   </delete>
+	<delete id="deleteClassCalendarHistoryInfo" parameterClass="linkMap">
+	   <![CDATA[
+		   DELETE FROM ar_calender_group_history WHERE AR_DATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'), '.', '/'),'-','/')  and cpny_id=#CPNY_ID:VARCHAR# 
+	    ]]> 
+	   </delete>
+	   <insert id="insertClassCalendarInfo" parameterClass="linkMap">
+		<![CDATA[
+			      insert into ar_calender_group
+						  (ddate,
+						   iyear,
+						   imonth,
+						   iday,
+						   iweek,
+						   workdayflag,
+						   typeid,
+						   overtypeid,
+						   typeid_default,
+						   group_id,
+						   shift_no,
+						   ar_date_str,
+						   cpny_id,
+						   CREATED_BY,
+						   CREATE_DATE,
+						   CREATED_IP)
+						select T.ddate,
+						   T.iyear,
+						   T.imonth,
+						   T.iday,
+						   T.iweek,
+						   T.workdayflag,
+						   T.typeid,
+						   T.overtypeid,
+						   T.typeid_default,
+						   T.group_id,
+						   T.shift_no,
+						   T.ar_date_str,
+						   T.cpny_id,
+						  #CREATED_BY:VARCHAR#,
+						   SYSDATE,
+						   #CREATED_IP:VARCHAR#
+						FROM AR_CALENDER_GROUP_HISTORY T
+						WHERE T.AR_DATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'), '.', '/'),'-','/')
+						AND T.CPNY_ID= #interCpnyID:VARCHAR#
+			]]> 
+	</insert>
+	 <insert id="inserteArGroupHistoryInfo" parameterClass="linkMap">
+		<![CDATA[
+			      insert into ar_calender_group_history
+						  (ddate,
+						   iyear,
+						   imonth,
+						   iday,
+						   iweek,
+						   workdayflag,
+						   typeid,
+						   overtypeid,
+						   typeid_default,
+						   group_id,
+						   shift_no,
+						   ar_date_str,
+						   cpny_id,
+						   CREATED_BY,
+						   CREATE_DATE,
+						   CREATED_IP)
+						select T.ddate,
+						   T.iyear,
+						   T.imonth,
+						   T.iday,
+						   T.iweek,
+						   T.workdayflag,
+						   T.typeid,
+						   T.overtypeid,
+						   T.typeid_default,
+						   T.group_id,
+						   T.shift_no,
+						   T.ar_date_str,
+						   T.cpny_id,
+						  #CREATED_BY:VARCHAR#,
+						   SYSDATE,
+						   #CREATED_IP:VARCHAR#
+						FROM AR_CALENDER_GROUP T
+						WHERE T.AR_DATE_STR = REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'), '.', '/'),'-','/')
+						AND T.CPNY_ID= #interCpnyID:VARCHAR#
+			]]> 
+	</insert>
+
+	
+	<!-- 年假管理 -->
+	<select id="viewVacEmpList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.VACATION_NO,
+			       A.PERSON_ID,
+			       TO_NUMBER(B.EMPID) EMPID,
+			       B.LOCAL_NAME,
+			       get_dept_name(B.DEPTNO, #interLanguage#) DEPTNAME,
+			       GET_DEPT_NAME(GET_DEPT_NO_BY_LEVEL(B.deptno, B.CPNY_ID, '2'), #interLanguage#) DEPT_TEAM,
+			       get_global_name(B.POST_GRADE_NO, #interLanguage#) POST_GRADE_NAME,
+			       GET_WORK_AREA_NAME(B.CPNY_ID, B.WORK_AREA, #interLanguage#) WORK_AREA_NAME,
+			       TO_CHAR(B.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       TO_CHAR(A.STRT_DATE, 'DD/MM/YYYY') STRT_DATE,
+			       TO_CHAR(A.END_DATE, 'DD/MM/YYYY') END_DATE,
+			       TO_CHAR(B.DATE_GROUP_ENTRY,'DD/MM/YYYY') DATE_GROUP_ENTRY,
+			       A.TOT_VAC_CNT,
+			       A.CPNY_ID,
+			       A.MENT_VAC,
+			       A.VAC_TP,
+			       A.VAC_ID,
+			       A.LAST_YEAR_VAC,
+			       A.ADD_VAC,
+			       A.USE_VAC_CNT,
+			       A.ACTIVITY,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(A.UPDATED_BY ) || ' ' || A.UPDATED_IP UPDATED_BY,
+			       TRUNC(MONTHS_BETWEEN(NVL(B.DATE_LEFT,SYSDATE),B.DATE_STARTED)/12) || '年' 
+		         || TRUNC(MOD(MONTHS_BETWEEN(NVL(B.DATE_LEFT,SYSDATE),B.DATE_STARTED),12)) || '个月'  WORK_TIME,
+			       CASE WHEN NVL(B.AFFIRM_WORK_AGE,0) <> 0 THEN
+			       TRUNC(B.AFFIRM_WORK_AGE / 12) || '年' ||
+			       TRUNC(MOD(B.AFFIRM_WORK_AGE,
+			                 12)) || '个月' 
+			                 ELSE
+			                 ' '
+			                 END AFFIRM_WORK_AGE,
+			       A.REASON_WUJIA,
+			       A.REMARK,
+			       AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/01/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/01/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	               	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/01/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/01/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_1,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/02/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/02/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/02/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/02/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_2,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/03/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/03/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/03/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/03/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_3,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/04/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/04/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/04/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/04/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_4,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/05/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/05/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/05/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/05/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_5,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/06/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/06/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/06/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/06/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_6,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/07/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/07/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/07/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/07/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_7,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/08/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/08/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/08/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/08/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_8,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/09/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/09/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/09/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/09/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_9,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/10/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/10/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/10/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/10/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_10,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/11/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/11/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/11/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/11/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_11,
+	               AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/12/01', TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/12/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+	             	+ AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/12/01',TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/12/01','YYYY/MM/DD'),+1) - 1,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')  USE_VAC_12,
+			       AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(A.END_DATE, 'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM') USE_VAC,
+			       AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'),TO_CHAR(A.END_DATE, 'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM') AFFIRM_USE_VAC
+			  FROM AR_VAC_EMP A,
+			       HR_EMPLOYEE B
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND A.ACTIVITY = 1
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="" property="YEAR">
+			<isEqual prepend="AND" property="interCpnyID" compareValue="HTSV">
+				<![CDATA[
+			 		  A.VAC_ID = #YEAR:VARCHAR#
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					B.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					B.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+		 		  B.EMP_OFFICE = #EMP_OFFICE#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  B.PERSON_ID = #PERSON_ID#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+			<![CDATA[
+		 		  B.POST_GRADE_NO = #POST_GRADE_NO#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.EMPID ASC
+		]]>
+	</select>
+	
+	<insert id="addVacEmpIntoPaParamData" parameterClass="linkMap">
+		<![CDATA[
+			  INSERT INTO PA_PARAM_DATA
+				  (PARAM_DATA_NO,
+				   PARAM_NO,
+				   PERSON_ID,
+				   RETURN_VALUE,
+				   CPNY_ID,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   Start_Month,
+				   END_MONTH,
+				   REMARK)
+				  SELECT PA_PARAM_DATA_SEQ.NEXTVAL,
+				         (SELECT P.PARAM_NO
+				            FROM PA_PARAM_ITEM_PARAM P
+				           WHERE PARAM_ITEM_NO = '540012'
+				             AND P.CPNY_ID = A.CPNY_ID),
+				         A.PERSON_ID,
+				         A.LAST_YEAR_VAC - CASE WHEN  (
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'1') +
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'8') - 
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'0') -
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'4')
+                                  ) > 0 THEN (
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'1') +
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'8') - 
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'0') -
+                                  AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'4')
+                                  ) ELSE 0 END,
+				         A.CPNY_ID,
+				         1,
+				         SYSDATE,
+				         #adminId#,
+				         #adminIP#,
+				         (SELECT TO_CHAR(SC.AR_START_DATE, 'MMYYYY')
+				            FROM PA_PAY_SCHEDULE SC
+				           WHERE SC.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#),
+				         (SELECT TO_CHAR(SC.AR_START_DATE, 'MMYYYY')
+				            FROM PA_PAY_SCHEDULE SC
+				           WHERE SC.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#),
+				         'Cleared of last year' || '''' || 's Annual leave'
+				    FROM AR_VAC_EMP A,PA_PAY_OBJECT PPO, HR_EMPLOYEE HE
+				   WHERE PPO.PERSON_ID = HE.PERSON_ID
+				     AND A.PERSON_ID = HE.PERSON_ID
+				     AND PPO.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+				     AND HE.CPNY_ID = #interCpnyID#
+				     AND A.VAC_ID = #clearYear#
+				     AND A.ACTIVITY = 1
+				     AND PPO.ACTIVITY = 1
+				     AND A.LAST_YEAR_VAC -CASE WHEN  (
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'1') +
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'8') - 
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'0') -
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'4')) > 0 THEN (
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'1') +
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'8') - 
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'0') -
+                                                      AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'4')
+                                                      ) ELSE 0 END > 0
+			]]> 
+	</insert>
+	
+	<!-- 修改清算完的年假信息 -->
+	<update id="updateVacEmpAfterClear" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_VAC_EMP A
+		       SET A.MENT_VAC = NVL((SELECT SUM(PA.RETURN_VALUE) FROM PA_PARAM_DATA PA 
+                                  WHERE PA.PARAM_NO = (SELECT P.PARAM_NO
+                                  FROM PA_PARAM_ITEM_PARAM P
+                               WHERE PARAM_ITEM_NO = '540012'
+                                    AND P.CPNY_ID = A.CPNY_ID) 
+                                    AND PA.PERSON_ID = A.PERSON_ID
+                                    AND (SELECT TO_CHAR(SC.PAY_DATE, 'YYYYMM')
+                                               FROM PA_PAY_SCHEDULE SC
+                                            WHERE SC.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#) BETWEEN TO_CHAR(TO_DATE(PA.START_MONTH,'MMYYYY'),'YYYYMM') 
+                                                                                              AND TO_CHAR(TO_DATE(PA.END_MONTH,'MMYYYY'),'YYYYMM')),0),
+                   A.LAST_YEAR_VAC = A.LAST_YEAR_VAC - NVL((SELECT SUM(PA.RETURN_VALUE) FROM PA_PARAM_DATA PA 
+                                                         WHERE PA.PARAM_NO = (SELECT P.PARAM_NO
+                                                         FROM PA_PARAM_ITEM_PARAM P
+                                                      WHERE PARAM_ITEM_NO = '540012'
+                                                           AND P.CPNY_ID = A.CPNY_ID) 
+                                                           AND PA.PERSON_ID = A.PERSON_ID
+                                                           AND (SELECT TO_CHAR(SC.PAY_DATE, 'YYYYMM')
+                                                                  FROM PA_PAY_SCHEDULE SC
+                                                                 WHERE SC.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#) BETWEEN TO_CHAR(TO_DATE(PA.START_MONTH,'MMYYYY'),'YYYYMM') 
+                                                                                                                   AND TO_CHAR(TO_DATE(PA.END_MONTH,'MMYYYY'),'YYYYMM')),0)
+		     WHERE VAC_ID = #clearYear#
+		       AND A.ACTIVITY = 1
+		       AND A.LAST_YEAR_VAC -CASE WHEN  (
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'1') +
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'8') - 
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'0') -
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'4')) > 0 THEN (
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'1') +
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'8') - 
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'0') -
+                                                AR_GET_VAC_FOR_ESS(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),A.CPNY_ID,A.PERSON_ID,'4')
+                                                ) ELSE 0 END > 0
+		       AND EXISTS (SELECT PPO.PERSON_ID
+		              FROM PA_PAY_OBJECT PPO, HR_EMPLOYEE HE
+		             WHERE PPO.PERSON_ID = HE.PERSON_ID
+		               AND A.PERSON_ID = HE.PERSON_ID
+		               AND PPO.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO#
+		               AND PPO.ACTIVITY = 1
+		               AND HE.CPNY_ID = #interCpnyID#)
+		]]>
+	</update>
+	
+	<!-- 保存年假信息 -->
+	<update id="saveEmpVacInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_VAC_EMP
+			   SET UPDATE_DATE = sysdate,
+			       UPDATED_BY  = #adminID:VARCHAR#,
+			       UPDATED_IP  = #adminIP:VARCHAR#,
+			       MENT_VAC    = #MENT_VAC:VARCHAR#,
+			       ADD_VAC     = #ADD_VAC:VARCHAR#,
+			       REMARK      = #REMARK:VARCHAR#
+			 WHERE VACATION_NO = #VACATION_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 倒休管理 -->
+	<select id="viewTxEmpList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.SEQ,
+			       B.PERSON_ID,
+			       B.LOCAL_NAME,
+			       B.EMPID,
+			       get_dept_name(B.DEPTNO, 'zh') DEPTNAME,
+			       get_global_name(B.POST_GRADE_NO, 'zh') POST_GRADE_NAME,
+			       GET_WORK_AREA_NAME(B.CPNY_ID, B.WORK_AREA, 'zh') WORK_AREA_NAME,
+			       TO_CHAR(B.DATE_STARTED, 'YYYY.MM.DD') DATE_STARTED,
+			       
+			       TO_CHAR(A.UPDATE_DATE,'YYYY.MM.DD HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP UPDATED_BY,
+			       
+			       A.REMARK,
+			       ROUND(PKG_AR_TX.AR_GET_TX(TO_CHAR(ADD_MONTHS(TO_DATE(A.AR_MONTH,'YYYYMM'),-2),'YYYYMM'), A.CPNY_ID, A.PERSON_ID, 'TOTAL'),2) TOTAL_TX_PP,
+			       ROUND(PKG_AR_TX.AR_GET_TX(TO_CHAR(ADD_MONTHS(TO_DATE(A.AR_MONTH,'YYYYMM'),-2),'YYYYMM'), A.CPNY_ID, A.PERSON_ID, 'USE'),2) USE_TX_PP,
+			       ROUND(PKG_AR_TX.AR_GET_TX(TO_CHAR(ADD_MONTHS(TO_DATE(A.AR_MONTH,'YYYYMM'),-1),'YYYYMM'), A.CPNY_ID, A.PERSON_ID, 'TOTAL'),2) TOTAL_TX_P,
+			       ROUND(PKG_AR_TX.AR_GET_TX(TO_CHAR(ADD_MONTHS(TO_DATE(A.AR_MONTH,'YYYYMM'),-1),'YYYYMM'), A.CPNY_ID, A.PERSON_ID, 'USE'),2) USE_TX_P,
+			       ROUND(PKG_AR_TX.AR_GET_TX(A.AR_MONTH, A.CPNY_ID, A.PERSON_ID, 'TOTAL'),2) TOTAL_TX,
+			       ROUND(PKG_AR_TX.AR_GET_TX(A.AR_MONTH, A.CPNY_ID, A.PERSON_ID, 'USE'),2) USE_TX,
+			       A.VALID_DATE,
+			       A.ADJUST_TX,
+			       A.ACTIVITY
+			  FROM AR_TX_EMP A, HR_EMPLOYEE B
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND B.EMP_OFFICE <> '15120'
+			   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_MONTH">
+			<![CDATA[
+		 		  A.AR_MONTH(+) = #AR_MONTH#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="AR_MONTH">
+			<![CDATA[
+		 		  A.AR_MONTH(+) = GET_AR_MONTH_HR(SYSDATE,#interCpnyID:VARCHAR#)
+		    ]]>
+		</isEmpty>
+		<isEmpty prepend="AND" property="AR_MONTH">
+			<![CDATA[
+		 		  A.AR_MONTH(+) = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					B.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					B.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+		 		  B.EMP_OFFICE = #EMP_OFFICE#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  B.PERSON_ID = #PERSON_ID#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.DEPTNO
+		]]>
+	</select>
+	<!-- 倒休管理      AR_DETAIL_TSTO_APPLY  ESS.AR_MONTH > = REPLACE(#SH_AR_MONTH#,'-','/')-->
+	<select id="viewTxEmpTSTOList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT HR.EMPID,
+			       HR.LOCAL_NAME,
+			       HR.PERSON_ID,
+			       NVL(ESS.ADJUST_TX,0) ADJUST_TX,
+			       get_dept_name(HR.DEPTNO,'zh') DEPTNAME,
+			       TRUNC(MONTHS_BETWEEN(NVL(HR.DATE_LEFT,SYSDATE),HR.DATE_STARTED)/12) || '年' 
+		         	|| TRUNC(MOD(MONTHS_BETWEEN(NVL(HR.DATE_LEFT,SYSDATE),HR.DATE_STARTED),12)) || '个月'  WORK_TIME,
+			       get_global_name(HR.POST_GRADE_NO, 'zh') POST_GRADE_NAME,
+				   TO_CHAR(HR.DATE_STARTED, 'YYYY.MM.DD') DATE_STARTED,
+			       PKG_AR_TX.AR_GET_TX_TOTAL(TO_CHAR(SYSDATE,'YYYYMM'),#interCpnyID:VARCHAR#,HR.PERSON_ID) TOTAL_TX,
+			       PKG_AR_TX.AR_GET_TX_USE(TO_CHAR(SYSDATE,'YYYYMM'),#interCpnyID:VARCHAR#,HR.PERSON_ID) USE_TX
+			FROM HR_EMPLOYEE HR,AR_TX_EMP ESS
+		   WHERE HR.PERSON_ID = ESS.PERSON_ID(+)
+			 AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HR.DEPTNO IN (
+						SELECT DEPTNO
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HR.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+		 		  HR.EMP_OFFICE = #EMP_OFFICE#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  HR.PERSON_ID = #PERSON_ID#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		    GROUP BY HR.PERSON_ID,
+			         HR.EMPID,
+			         HR.LOCAL_NAME,
+			         HR.DEPTNO,
+			         HR.POST_GRADE_NO,
+			         HR.DATE_STARTED,
+			         HR.DATE_LEFT,
+			         ESS.ADJUST_TX
+			ORDER BY HR.DEPTNO
+		]]>
+	</select>
+	
+	<!-- 保存倒休信息 -->
+	<update id="saveEmpTxInfo" parameterClass="linkMap" >
+		<![CDATA[
+			MERGE INTO AR_TX_EMP T1
+					USING (SELECT #PERSON_ID# PERSON_ID FROM DUAL) T2
+					ON (T1.PERSON_ID = T2.PERSON_ID)
+					WHEN MATCHED THEN
+					  UPDATE
+					     SET T1.ADJUST_TX		= #ADJUST_TX:VARCHAR#,
+					         UPDATE_DATE        = SYSDATE,
+					         UPDATED_BY         = #adminID:VARCHAR#,
+					         UPDATED_IP         = #adminIP:VARCHAR#
+					WHEN NOT MATCHED THEN
+					  INSERT
+					  VALUES
+					    (AR_TX_EMP_SEQ.NEXTVAL,
+						 #PERSON_ID#,
+						 #interCpnyID#,
+						 #EMPID#,
+						 #LOCAL_NAME#,
+						 '',
+						 0,
+						 0,
+						 0,
+						 0,
+						 0,
+						 #ADJUST_TX#,
+						 '',
+						 '',
+						 SYSDATE,
+						 #adminID:VARCHAR#,
+						 #adminIP:VARCHAR#,
+						 SYSDATE,
+						 #adminID:VARCHAR#,
+						 #adminIP:VARCHAR#,
+						 1)
+		]]>
+	</update>
+	
+	<!-- 保存倒休信息 -->
+	<update id="saveEmpTxInfo2" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_TX_EMP
+			   SET ADJUST_TX	= #ADJUST_TX:VARCHAR#,
+				   UPDATE_DATE  = SYSDATE,
+				   UPDATED_BY   = #adminID:VARCHAR#,
+				   UPDATED_IP   = #adminIP:VARCHAR#
+		     WHERE SEQ = #SEQ#
+		]]>
+	</update>
+</sqlMap>

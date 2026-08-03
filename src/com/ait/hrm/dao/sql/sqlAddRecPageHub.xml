@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.recPage">	
+	<insert id="insertRecPage" parameterClass="linkMap" >
+	     <![CDATA[
+		INSERT INTO REC_EMPLOYEE
+	      (REC_EMPLOYEE_NO,
+	       EMP_NAME,
+	       DEPT_NAME,
+	       CERT_TYPE_CODE,
+	       CERT_NUMBER,
+	       EMP_TELPHONE,
+	       EMP_ADDRESS,
+	       SEX_CODE,
+	       NATIONALITY_CODE,
+	       MARITAL_STATUS_CODE,
+	       EMP_BIRTHDAY,
+	       FINAL_SCHOOL,
+	       FINAL_EDU_CODE,
+	       SUBJECT,
+	       FINAL_GRAD_DATE,
+	       EMP_EMAIL,
+	       POST_TYPE_CODE,
+	       WORK_EXPERIENCE,
+	       FILE_PATH,
+	       FILE_NAME,
+	       REC_TYPE,
+	       CREATE_DATE,
+	       CREATED_BY)
+	    VALUES
+	      (REC_EMPLOYEE_NO_SEQ.Nextval,
+	       #EMP_NAME:VARCHAR#,
+	       #DEPT_NAME:VARCHAR#,
+	       #CERT_TYPE_CODE:VARCHAR#,
+	       #CERT_NUMBER:VARCHAR#,
+	       #EMP_TELPHONE:VARCHAR#,
+	       #EMP_ADDRESS:VARCHAR#,
+	       #SEX_CODE:VARCHAR#,
+	       #NATIONALITY_CODE:VARCHAR#,
+	       #MARITAL_STATUS_CODE:VARCHAR#,
+	       #EMP_BIRTHDAY:VARCHAR#,
+	       #FINAL_SCHOOL:VARCHAR#,
+	       #FINAL_EDU_CODE:VARCHAR#,
+	       #SUBJECT:VARCHAR#,
+	       #FINAL_GRAD_DATE:VARCHAR#,
+	       #EMP_EMAIL:VARCHAR#,
+	       #POST_TYPE_CODE:VARCHAR#,
+	       #WORK_EXPERIENCE:VARCHAR#,
+	       #fileUrl:VARCHAR#,
+	       #fileName:VARCHAR#,
+	       0,
+	       SYSDATE,
+	       #createBy:VARCHAR#)
+		]]>		
+	</insert>
+	<insert id="insertRecPageHAE" parameterClass="linkMap" >
+	     <![CDATA[
+		INSERT INTO REC_EMPLOYEE
+	      (REC_EMPLOYEE_NO,
+	       EMP_NAME,
+	       CERT_NUMBER,
+	       IDCARD_START_DATE,
+	       IDCARD_ADDRESS,
+	       EMP_BIRTHDAY,
+	       EMP_ADDRESS,
+	       EMP_TELPHONE,
+	       SEX_CODE,
+	       NATIONALITY_CODE,
+	       MARITAL_STATUS_CODE,
+	       FINAL_SCHOOL,
+	       FINAL_EDU_CODE,
+	       SUBJECT,
+	       FINAL_GRAD_DATE,
+	       GRADUATION_ACHIEVEMENT,
+	       AVERAGE_SCORE,
+	       LANGUAGE_ABILITY,
+	       WORK_EXPERIENCE,
+	       OLD_COMPANY,
+	       INTERVIEW_PERIOD,
+	       FILE_PATH,
+	       FILE_NAME,
+	       REC_TYPE,
+	       CREATE_DATE,
+	       CREATED_BY)
+	    VALUES
+	      (#REC_EMPLOYEE_NO:VARCHAR#,
+	       #EMP_NAME:VARCHAR#,
+	       #CERT_NUMBER:VARCHAR#,
+	       #IDCARD_START_DATE:VARCHAR#,
+	       #IDCARD_ADDRESS:VARCHAR#,
+	       #EMP_BIRTHDAY:VARCHAR#,
+	       #EMP_ADDRESS:VARCHAR#,
+	       #EMP_TELPHONE:VARCHAR#,
+	       #SEX_CODE:VARCHAR#,
+	       #NATIONALITY_CODE:VARCHAR#,
+	       #MARITAL_STATUS_CODE:VARCHAR#,
+	       #FINAL_SCHOOL:VARCHAR#,
+	       #FINAL_EDU_CODE:VARCHAR#,
+	       #SUBJECT:VARCHAR#,
+	       #FINAL_GRAD_DATE:VARCHAR#,
+	       #GRADUATION_ACHIEVEMENT:VARCHAR#,
+	       #AVERAGE_SCORE:VARCHAR#,
+	       #LANGUAGE_ABILITY:VARCHAR#,
+	       #WORK_EXPERIENCE:VARCHAR#,
+	       #OLD_COMPANY:VARCHAR#,
+	       #INTERVIEW_PERIOD:VARCHAR#,
+	       #fileUrl:VARCHAR#,
+	       #fileName:VARCHAR#,
+	       0,
+	       SYSDATE,
+	       #createBy:VARCHAR#)
+		]]>		
+	</insert>
+	
+		<insert id="insertRecWORKEXPERHAE" parameterClass="linkMap" >
+	     <![CDATA[
+		INSERT INTO REC_WORK_EXPERIENCE
+	      (REC_WORK_EXPER_NO,
+	       REC_EMPLOYEE_NO,
+	       CPNY_NAME,
+	       START_DATE,
+	       END_DATE,
+	       DUTY,
+	       MIAN_BUSINESS,
+	       GRADUATION_ACHIEVEMENT,
+	       LANGUAGE_ABILITY,
+	       ACTIVITY,
+	       CREATE_DATE,
+	       CREATED_BY)
+	    VALUES
+	      (REC_WORK_EXPER_NO.Nextval,
+	       #REC_EMPLOYEE_NO:VARCHAR#,
+	       #CPNY_NAME:VARCHAR#,
+	       TO_DATE(#START_DATE:VARCHAR#,'DD/MM/YYYY'),
+	       TO_DATE(#END_DATE:VARCHAR#,'DD/MM/YYYY'),
+	       #DUTY:VARCHAR#,
+	       #MIAN_BUSINESS:VARCHAR#,
+	       #GRADUATION_ACHIEVEMENT_WORK:VARCHAR#,
+	       #LANGUAGE_ABILITY_WORK:VARCHAR#,
+	       1,
+	       SYSDATE,
+	       #createBy:VARCHAR#)
+		]]>		
+	</insert>
+	
+	<select id="getWORKEXPERSeq" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT REC_EMPLOYEE_NO_SEQ.Nextval FROM DUAL
+		]]>
+	</select>
+	
+	<!-- 应聘者基本信息查询-->
+	<select id="getRecPageList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT RE.REC_EMPLOYEE_NO,
+		       RE.EMP_NAME,
+		       RE.DEPT_NAME,
+		       RE.CERT_TYPE_CODE,
+		       GET_GLOBAL_NAME(RE.CERT_TYPE_CODE,#interLanguage:VARCHAR#) CERT_TYPE_NAME,
+		       RE.CERT_NUMBER,
+		       RE.EMP_TELPHONE,
+		       RE.EMP_ADDRESS,
+		       RE.SEX_CODE,
+		       GET_GLOBAL_NAME(RE.SEX_CODE,#interLanguage:VARCHAR#) SEX_NAME,
+		       RE.NATIONALITY_CODE,
+		       RE.MARITAL_STATUS_CODE,
+		       GET_GLOBAL_NAME(RE.MARITAL_STATUS_CODE,#interLanguage:VARCHAR#) MARITAL_STATUS_NAME,
+		       RE.SUBJECT,
+		       GET_GLOBAL_NAME(RE.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_NAME,
+		       TO_CHAR(TO_DATE(RE.EMP_BIRTHDAY, 'YYYY/MM/DD'), 'DD/MM/YYYY') EMP_BIRTHDAY,
+		       RE.FINAL_SCHOOL,
+		       RE.FINAL_EDU_CODE,
+		       GET_GLOBAL_NAME(RE.FINAL_EDU_CODE,#interLanguage:VARCHAR#) FINAL_EDU_NAME,
+		       TO_CHAR(TO_DATE(RE.FINAL_GRAD_DATE, 'YYYY/MM/DD'), 'DD/MM/YYYY') FINAL_GRAD_DATE,
+		       RE.EMP_EMAIL,
+		       RE.POST_TYPE_CODE,
+		       GET_GLOBAL_NAME(RE.POST_TYPE_CODE,#interLanguage:VARCHAR#) POST_TYPE_NAME,
+		       RE.WORK_EXPERIENCE,
+		       RE.OLD_COMPANY,
+		       TO_CHAR(TO_DATE(RE.INTERVIEW_PERIOD, 'YYYY/MM/DD'), 'DD/MM/YYYY') INTERVIEW_PERIOD,
+		       RE.FILE_PATH,
+		       RE.FILE_NAME,
+		       RE.REC_TYPE,
+		       TO_CHAR(RE.CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+		       RE.CREATED_BY,
+		       get_local_name_by_personid(RE.CREATED_BY,#CPNY_ID:VARCHAR#) CREATED_NAME,
+		       TO_CHAR(RE.UPDATE_DATE,'DD/MM/YYYY') UPDATE_DATE,
+		       RE.UPDATED_BY,
+		       get_local_name_by_personid(RE.UPDATED_BY,#CPNY_ID:VARCHAR#) UPDATED_NAME
+		        FROM REC_EMPLOYEE RE
+		       WHERE RE.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  RE.EMP_NAME LIKE '%' || #KEY:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_TYPE_CODE">
+			<![CDATA[
+		 		  RE.POST_TYPE_CODE = #POST_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINAL_EDU_CODE">
+			<![CDATA[
+		 		  RE.FINAL_EDU_CODE = #FINAL_EDU_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="LANGUAGE_ABILITY">
+			<![CDATA[
+		 		  RE.LANGUAGE_ABILITY = #LANGUAGE_ABILITY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		  order by RE.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getRecPageListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT count(1)
+		        FROM REC_EMPLOYEE RE
+		       WHERE RE.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  RE.EMP_NAME LIKE '%' || #KEY:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_TYPE_CODE">
+			<![CDATA[
+		 		  RE.POST_TYPE_CODE = #POST_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINAL_EDU_CODE">
+			<![CDATA[
+		 		  RE.FINAL_EDU_CODE = #FINAL_EDU_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		  order by RE.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- 应聘者基本信息详细查询-->
+	<select id="getRecPageInfo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT RE.REC_EMPLOYEE_NO,
+		       RE.EMP_NAME,
+		       RE.DEPT_NAME,
+		       RE.CERT_TYPE_CODE,
+		       GET_GLOBAL_NAME(RE.CERT_TYPE_CODE,#interLanguage:VARCHAR#) CERT_TYPE_NAME,
+		       RE.CERT_NUMBER,
+		       RE.EMP_TELPHONE,
+		       RE.EMP_ADDRESS,
+		       RE.MARITAL_STATUS_CODE,
+		       GET_GLOBAL_NAME(RE.MARITAL_STATUS_CODE,#interLanguage:VARCHAR#) MARITAL_STATUS_NAME,
+		       TO_CHAR(TO_DATE(RE.IDCARD_START_DATE, 'YYYY/MM/DD'), 'DD/MM/YYYY') IDCARD_START_DATE,
+		       RE.IDCARD_ADDRESS,
+		       RE.MARITAL_STATUS_CODE,
+		       GET_GLOBAL_NAME(RE.MARITAL_STATUS_CODE,#interLanguage:VARCHAR#) MARITAL_STATUS_NAME,
+		       RE.SUBJECT,
+		       RE.GRADUATION_ACHIEVEMENT,
+		       GET_GLOBAL_NAME(RE.GRADUATION_ACHIEVEMENT,#interLanguage:VARCHAR#) GRADUATION_ACHIEVEMENT_NAME,
+		       RE.AVERAGE_SCORE,
+		       RE.LANGUAGE_ABILITY,
+		       GET_GLOBAL_NAME(RE.LANGUAGE_ABILITY,#interLanguage:VARCHAR#) LANGUAGE_ABILITY_NAME,
+		       RE.SEX_CODE,
+		       GET_GLOBAL_NAME(RE.SEX_CODE,#interLanguage:VARCHAR#) SEX_NAME,
+		       RE.NATIONALITY_CODE,
+		       GET_GLOBAL_NAME(RE.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_NAME,
+		       TO_CHAR(TO_DATE(RE.EMP_BIRTHDAY, 'YYYY/MM/DD'), 'DD/MM/YYYY') EMP_BIRTHDAY,
+		       RE.FINAL_SCHOOL,
+		       RE.FINAL_EDU_CODE,
+		       GET_GLOBAL_NAME(RE.FINAL_EDU_CODE,#interLanguage:VARCHAR#) FINAL_EDU_NAME,
+		       TO_CHAR(TO_DATE(RE.FINAL_GRAD_DATE, 'YYYY/MM/DD'), 'DD/MM/YYYY') FINAL_GRAD_DATE,
+		       RE.EMP_EMAIL,
+		       RE.POST_TYPE_CODE,
+		       GET_GLOBAL_NAME(RE.POST_TYPE_CODE,#interLanguage:VARCHAR#) POST_TYPE_NAME,
+		       RE.WORK_EXPERIENCE,
+		       RE.OLD_COMPANY,
+		       TO_CHAR(TO_DATE(RE.INTERVIEW_PERIOD, 'YYYY/MM/DD'), 'DD/MM/YYYY') INTERVIEW_PERIOD,
+		       RE.FILE_PATH,
+		       RE.FILE_NAME,
+		       RE.REC_TYPE,
+		       TO_CHAR(RE.CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+		       RE.CREATED_BY,
+		       get_local_name_by_personid(RE.CREATED_BY,#CPNY_ID:VARCHAR#) CREATED_NAME,
+		       TO_CHAR(RE.UPDATE_DATE,'DD/MM/YYYY') UPDATE_DATE,
+		       RE.UPDATED_BY,
+		       get_local_name_by_personid(RE.UPDATED_BY,#CPNY_ID:VARCHAR#) UPDATED_NAME
+		        FROM REC_EMPLOYEE RE
+		       WHERE RE.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="REC_EMPLOYEE_NO">
+			<![CDATA[
+		 		  RE.REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		  order by RE.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- 应聘者工作经历信息详细查询-->
+	<select id="getRecPageworkInfo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT REC_EMPLOYEE_NO,
+		       REC_WORK_EXPER_NO,
+		       CPNY_NAME,
+		       TO_CHAR(START_DATE,'DD/MM/YYYY') START_DATE,
+		       TO_CHAR(END_DATE,'DD/MM/YYYY') END_DATE,
+		       DUTY,
+		       MIAN_BUSINESS,
+		       GRADUATION_ACHIEVEMENT,
+		       GET_GLOBAL_NAME(GRADUATION_ACHIEVEMENT,#interLanguage:VARCHAR#) GRADUATION_ACHIEVEMENT_NAME,
+		       LANGUAGE_ABILITY,
+		       GET_GLOBAL_NAME(LANGUAGE_ABILITY,#interLanguage:VARCHAR#) LANGUAGE_ABILITY_NAME,
+		       TO_CHAR(CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+		       CREATED_BY,
+		       get_local_name_by_personid(CREATED_BY,#CPNY_ID:VARCHAR#) CREATED_NAME,
+		       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY') UPDATE_DATE,
+		       UPDATED_BY,
+		       get_local_name_by_personid(UPDATED_BY,#CPNY_ID:VARCHAR#) UPDATED_NAME
+		        FROM REC_WORK_EXPERIENCE
+		       WHERE ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="REC_EMPLOYEE_NO">
+			<![CDATA[
+		 		  REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<update id="editRecPage" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE REC_EMPLOYEE SET
+			      EMP_NAME = #EMP_NAME:VARCHAR#,
+			      DEPT_NAME = #DEPT_NAME:VARCHAR#,
+			      CERT_TYPE_CODE = #CERT_TYPE_CODE:VARCHAR#,
+			      CERT_NUMBER = #CERT_NUMBER:VARCHAR#,
+			      EMP_TELPHONE = #EMP_TELPHONE:VARCHAR#,
+			      EMP_ADDRESS = #EMP_ADDRESS:VARCHAR#,
+			      SEX_CODE = #SEX_CODE:VARCHAR#,
+			      NATIONALITY_CODE = #NATIONALITY_CODE:VARCHAR#,
+			      MARITAL_STATUS_CODE = #MARITAL_STATUS_CODE:VARCHAR#,
+			      EMP_BIRTHDAY = #EMP_BIRTHDAY:VARCHAR#,
+			      FINAL_SCHOOL = #FINAL_SCHOOL:VARCHAR#,
+			      FINAL_EDU_CODE = #FINAL_EDU_CODE:VARCHAR#,
+			      SUBJECT = #SUBJECT:VARCHAR#,
+			      FINAL_GRAD_DATE = #FINAL_GRAD_DATE:VARCHAR#,
+			      EMP_EMAIL = #EMP_EMAIL:VARCHAR#,
+			      POST_TYPE_CODE = #POST_TYPE_CODE:VARCHAR#,
+			      WORK_EXPERIENCE = #WORK_EXPERIENCE:VARCHAR#,
+			      FILE_PATH = #fileUrl:VARCHAR#,
+			      FILE_NAME = #fileName:VARCHAR#,
+			      UPDATE_DATE = SYSDATE,
+			      UPDATED_BY = #createBy:VARCHAR#
+			WHERE REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<update id="editRecPageHAE" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE REC_EMPLOYEE SET
+			      EMP_NAME = #EMP_NAME:VARCHAR#,
+			      CERT_NUMBER = #CERT_NUMBER:VARCHAR#,
+	       		  IDCARD_START_DATE = #IDCARD_START_DATE:VARCHAR#,
+	              IDCARD_ADDRESS = #IDCARD_ADDRESS:VARCHAR#,
+	       		  EMP_BIRTHDAY = #EMP_BIRTHDAY:VARCHAR#,
+	       		  EMP_ADDRESS = #EMP_ADDRESS:VARCHAR#,
+	       		  EMP_TELPHONE = #EMP_TELPHONE:VARCHAR#,
+	       		  SEX_CODE = #SEX_CODE:VARCHAR#,
+			      NATIONALITY_CODE = #NATIONALITY_CODE:VARCHAR#,
+	              MARITAL_STATUS_CODE = #MARITAL_STATUS_CODE:VARCHAR#,
+	              FINAL_SCHOOL = #FINAL_SCHOOL:VARCHAR#,
+			      FINAL_EDU_CODE = #FINAL_EDU_CODE:VARCHAR#,
+			      SUBJECT = #SUBJECT:VARCHAR#,
+			      FINAL_GRAD_DATE = #FINAL_GRAD_DATE:VARCHAR#,
+	              GRADUATION_ACHIEVEMENT = #GRADUATION_ACHIEVEMENT:VARCHAR#,
+	              AVERAGE_SCORE = #AVERAGE_SCORE:VARCHAR#,
+	              LANGUAGE_ABILITY = #LANGUAGE_ABILITY:VARCHAR#,
+			      WORK_EXPERIENCE = #WORK_EXPERIENCE:VARCHAR#,
+			      OLD_COMPANY = #OLD_COMPANY:VARCHAR#,
+			      INTERVIEW_PERIOD = #INTERVIEW_PERIOD:VARCHAR#,
+			      FILE_PATH = #fileUrl:VARCHAR#,
+			      FILE_NAME = #fileName:VARCHAR#,
+			      UPDATE_DATE = SYSDATE,
+			      UPDATED_BY = #createBy:VARCHAR#
+			WHERE REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<select id="IS_EXISTS_REC_EMPLOYEE_NO" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+		   SELECT COUNT(1) FROM (SELECT 1 FROM REC_WORK_EXPERIENCE WHERE REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR#)
+		]]>
+	</select>
+	
+	<update id="editRecPageWorkHAE" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE REC_WORK_EXPERIENCE SET
+			      CPNY_NAME = #CPNY_NAME:VARCHAR#,
+			      START_DATE = TO_DATE(#START_DATE:VARCHAR#,'DD/MM/YYYY'),
+			      END_DATE = TO_DATE(#END_DATE:VARCHAR#,'DD/MM/YYYY'),
+	       		  DUTY = #DUTY:VARCHAR#,
+	              MIAN_BUSINESS = #MIAN_BUSINESS:VARCHAR#,
+	       		  GRADUATION_ACHIEVEMENT = #GRADUATION_ACHIEVEMENT_WORK:VARCHAR#,
+	       		  LANGUAGE_ABILITY = #LANGUAGE_ABILITY_WORK:VARCHAR#,
+			      UPDATE_DATE = SYSDATE,
+			      UPDATED_BY = #createBy:VARCHAR#
+			WHERE REC_WORK_EXPER_NO = #REC_WORK_EXPER_NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<update id="deleteRecPageInfo" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE REC_EMPLOYEE SET
+			      ACTIVITY = 0
+			WHERE REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<update id="addCVRecPage" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE REC_EMPLOYEE SET
+			       FILE_PATH = #fileUrl:VARCHAR#,
+			      FILE_NAME = #fileName:VARCHAR#
+			WHERE CERT_NUMBER = #CERT_NUMBER:VARCHAR# 
+		]]>
+	</update>
+	
+	<!-- 删除空的数据  -->
+	<update id="deleteRecPageList" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM  REC_EMPLOYEE WHERE EMP_NAME IS NULL
+		]]>
+	</update>
+</sqlMap>

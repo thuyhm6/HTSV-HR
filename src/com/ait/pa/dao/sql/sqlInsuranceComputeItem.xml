@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.insuranceComputeItem">
+	
+	<sql id="getInsuranceComputeItemListCondition" >
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID LIKE '%' || #ITEM_ID:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+
+		 		  SY.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%' 		 	
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getInsuranceComputeItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.ITEM_NO, SY.CONTENT ITEM_NAME, T.DESCR, T.DATATYPE, T.ITEM_ID
+				  FROM IS_ITEM T, SY_GLOBAL_NAME SY
+				 WHERE T.ITEM_NO = SY.NO(+)
+				   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#              
+		]]>
+		
+			<include refid="getInsuranceComputeItemListCondition"/>
+		 
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.ITEM_NO
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getInsuranceComputeItemCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM IS_ITEM T,SY_GLOBAL_NAME SY
+			               WHERE T.ITEM_NO = SY.NO(+)
+			                  AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceComputeItemListCondition"/>
+		
+	</select>
+	
+	<select id="checkAddInsuranceComputeItemInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM IS_ITEM T
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+				<![CDATA[
+			 		  T.ITEM_ID = #ITEM_ID:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  T.ITEM_NO <> #NO:NUMERIC#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<insert id="addInsuranceComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_ITEM
+				(
+					ITEM_NO,
+					DESCR,
+					DATATYPE,
+					ITEM_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+			VALUES(
+					#NO:VARCHAR#,
+					#DESCR:VARCHAR#,
+					#DATATYPE:VARCHAR#,
+					#ITEM_ID:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					(SELECT NVL(MAX(ORDERNO),0)+1 FROM IS_ITEM) ,
+					1
+				)
+		]]>
+	</insert>
+	
+	<update id="updateInsuranceComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_ITEM SET
+					ITEM_ID = #ITEM_ID:VARCHAR#,
+					DESCR = #DESCR:VARCHAR#,
+					DATATYPE = #DATATYPE:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR# 
+			WHERE ITEM_NO = #NO:VARCHAR#
+					
+		]]>
+	</update>
+	<!-- 孙加是否配送财务TO_FINANCE_FLAG -->
+	<update id="updateIsItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE  IS_ITEM_PARAM T
+					SET T.MAP_CODE    = #MAP_CODE:VARCHAR#,
+					T.TO_FINANCE_FLAG = #TO_FINANCE_FLAG:VARCHAR#,
+			       UPDATE_DATE        = SYSDATE,
+			       UPDATED_BY         = #UPDATED_BY:VARCHAR#
+			 WHERE T.CPNY_ID          = #CPNY_ID:VARCHAR#
+			   AND T.ITEM_NO          = #ITEM_NO#   
+		]]>
+	</update>
+	
+	<select id="checkDeleteInsuranceComputeItemInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT (SELECT COUNT(*) FROM IS_ITEM_PARAM WHERE ITEM_NO = #NO:NUMERIC#)+
+			(SELECT COUNT(*) FROM IS_FORMULAR WHERE ITEM_NO = #NO:NUMERIC#) +
+			       (SELECT COUNT(*)
+			          FROM USER_TAB_COLS
+			         WHERE TABLE_NAME LIKE '%' || #TABLE_NAME:VARCHAR# || '%'
+			           AND COLUMN_NAME = (SELECT PA.ITEM_ID FROM IS_ITEM PA WHERE PA.ITEM_NO =  #NO:VARCHAR#)) AS A
+			  FROM DUAL
+		]]>
+	</select>
+	
+	<select id="checkDeleteInsuranceComputeItemParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT (SELECT COUNT(*) FROM IS_FORMULAR WHERE ITEM_NO = #NO:NUMERIC#) +
+			       (SELECT COUNT(*)
+			          FROM USER_TAB_COLS
+			         WHERE TABLE_NAME = #TABLE_NAME:VARCHAR#
+			           AND COLUMN_NAME = #ITEM_ID:VARCHAR#) AS A
+			  FROM DUAL
+		]]>
+	</select>
+	
+	<delete id="deleteInsuranceComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_ITEM WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+	
+	
+	<update id="updateICInfoByCalcuOrder" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_ITEM_PARAM SET
+					CALCU_ORDER = #ORDER:VARCHAR#
+			WHERE CALCU_ORDER = #CALORDER:VARCHAR#
+			  AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateICInfoByParamNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_ITEM_PARAM SET
+					CALCU_ORDER = #CALORDER:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+
+
+
+	<sql id="getInsuranceComputeItemParamCondition" >
+		
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO LIKE '%' || #ITEM_NO:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( SY1.CONTENT LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		
+	</sql>
+
+	<select id="getInsuranceComputeItemParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT       T.PARAM_NO,
+			       		 T.ITEM_NO,
+			             T.CPNY_ID,
+			             SY0.CONTENT CPNY_NAME,
+			             SY1.CONTENT ALIAS_NAME,
+			             T.PA_RELEVANCE_FLAG,
+			             T.CALCU_ORDER,
+			             T.PRICISION,
+			             T.CARRY_BIT,
+			             II.ITEM_ID,
+			              GET_ITEM_GLAG( II.ITEM_ID,T.CPNY_ID) ITEM_FLAG,
+           			GET_ITEM_NUMBER( II.ITEM_ID,T.CPNY_ID) ITEM_NUMBER
+			FROM 
+					IS_ITEM_PARAM T ,
+					IS_ITEM II , 
+					HR_COMPANY HR,
+					SY_GLOBAL_NAME SY0,
+					SY_GLOBAL_NAME SY1
+			        WHERE T.CPNY_ID=HR.CPNY_ID
+			        AND   HR.CPNY_NO = SY0.NO(+)
+			        AND   SY0.LANGUAGE = #interLanguage:VARCHAR#
+			        AND   T.ITEM_NO = II.ITEM_NO
+			        AND   T.ITEM_NO = SY1.NO(+)
+			        AND   SY1.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		
+		
+		<include refid="getInsuranceComputeItemParamCondition"/>
+		 
+		 
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY CALCU_ORDER
+			]]>
+		</isEmpty>
+		 
+	</select>
+	<!--  
+	<select id="getInsuranceComputeItemParamCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM IS_ITEM_PARAM T ,HR_COMPANY HR,SY_GLOBAL_NAME SY0,SY_GLOBAL_NAME SY1
+			        WHERE T.CPNY_ID=HR.CPNY_ID
+			        AND   HR.CPNY_NO = SY0.NO(+)
+			        AND   SY0.LANGUAGE = #interLanguage:VARCHAR#
+			        AND   T.ITEM_NO = SY1.NO(+)
+			        AND   SY1.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceComputeItemParamCondition"/>
+		
+	</select>
+	-->
+	<select id="checkAddInsuranceComputeItemParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+               SELECT COUNT(T.PARAM_NO)
+				  FROM IS_ITEM_PARAM T
+				 WHERE T.ITEM_NO = #ITEM_NO:NUMERIC#
+				   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+
+		]]>
+	</select>
+	
+	<insert id="addInsuranceComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_ITEM_PARAM
+				(
+					PARAM_NO,
+					ITEM_NO,
+					CPNY_ID,
+					PA_RELEVANCE_FLAG,
+					CALCU_ORDER,
+					PRICISION,
+					CARRY_BIT,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+			VALUES(
+					IS_ITEM_PARAM_SEQ.NEXTVAL,
+					#ITEM_NO:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					#PA_RELEVANCE_FLAG:VARCHAR#,
+					(SELECT NVL(MAX(T.CALCU_ORDER),0) + 1 FROM IS_ITEM_PARAM T WHERE T.CPNY_ID=#CPNY_ID:VARCHAR#),
+					#PRICISION:VARCHAR#,
+					#CARRY_BIT:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					(SELECT NVL(MAX(T.ORDERNO),0) + 1 FROM IS_ITEM_PARAM T),
+					1
+				)
+		]]>
+	</insert>
+	
+	
+	
+	<update id="updateInsuranceComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_ITEM_PARAM SET
+					ITEM_NO = #ITEM_NO:NUMERIC#,
+					CPNY_ID = #CPNY_ID:VARCHAR#,
+					PA_RELEVANCE_FLAG = #PA_RELEVANCE_FLAG:NUMERIC#,
+					PRICISION = #PRICISION:NUMERIC#,
+					CARRY_BIT = #CARRY_BIT:NUMERIC#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+					
+		]]>
+	</update>
+	
+	
+	<delete id="deleteInsuranceComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_ITEM_PARAM WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</delete>
+
+</sqlMap>

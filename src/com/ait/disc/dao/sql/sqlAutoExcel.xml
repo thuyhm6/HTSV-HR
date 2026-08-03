@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="disc.autoexcel">
+	
+
+
+   <statement   id="queryForSql"   parameterClass="linkMap" resultClass="linkMap" remapResults="true">  
+   			$querySql$   
+  	</statement>    
+  	
+	<select id="RetrieveSqlDetailList"   parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[
+		SELECT A.*
+          FROM SYS_SQL_MASTER A
+		 WHERE A.SQL_SEQ = #SQL_SEQ#
+ 	]]>
+ 	
+	</select>
+	
+	<!--获得参数列表 -->
+	<select id="RetrieveSqlParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[
+		SELECT A.*
+          FROM SYS_PARAM_BY_SQL A
+		 WHERE A.SQL_SEQ = #SQL_SEQ# 
+		   AND A.USE_YN  = 'Y'
+		  ORDER BY A.SORT_CD
+ 	]]>
+	</select>
+	
+	<!--获得单个参数信息 -->
+	<select id="RetrieveSqlParamDetail" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[
+		SELECT *
+          FROM SYS_PARAM_BY_SQL
+		 WHERE SQL_SEQ = #SQL_SEQ# 
+		   AND PARAM   = #PARAM#
+ 	]]>
+	</select>
+	
+	<!--临时更新参数不可用 -->
+	<update id="UpdateSqlParamUseN" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE SYS_PARAM_BY_SQL
+			 SET USE_YN = 'N'
+		   WHERE SQL_SEQ = #SQL_SEQ# 
+		]]>		
+	</update>	 
+	
+	<!--插入新的参数-->
+	<insert id="CreateSqlParam" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO SYS_PARAM_BY_SQL
+		  (      SQL_SEQ,
+				 SQL_PARAM_NO,
+				 PARAM,
+				 EN_SQL_PARAM_DESC,
+				 CN_SQL_PARAM_DESC,
+				 SQL_PARAM_TP,
+				 SQL_PARAM_TP_DESC,
+				 SORT_CD,
+				 RGST_DTIME,  
+				 USE_YN
+		  ) 
+		   SELECT #SQL_SEQ:VARCHAR# ,
+				  NVL((
+					 	SELECT MAX(TO_NUMBER(SQL_PARAM_NO)) + 1
+					      FROM SYS_PARAM_BY_SQL
+		   			     WHERE SQL_SEQ = #SQL_SEQ:VARCHAR#
+						),0) SQL_PARAM_NO,
+				 #PARAM:VARCHAR#,
+				 #EN_SQL_PARAM_DESC:VARCHAR#,
+				 #CN_SQL_PARAM_DESC:VARCHAR#,
+				 #SQL_PARAM_TP:VARCHAR#,
+				 #SQL_PARAM_TP_DESC:VARCHAR#,
+				 #SORT_CD:VARCHAR#,	
+				 SYSDATE,
+				 'Y'
+			FROM DUAL   
+		]]>		
+	</insert>
+	
+	<!--如果参数在sql里存在,重新置之可用-->
+	<update id="UpdateSqlParamDetailUseY" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE SYS_PARAM_BY_SQL
+			 SET USE_YN = 'Y'
+		   WHERE SQL_SEQ = #SQL_SEQ# 
+		     AND PARAM   = #PARAM#
+		]]>		
+	</update>	 
+	<!--更新参数设置-->
+	<update id="UpdateSqlParam" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE SYS_PARAM_BY_SQL
+			 SET USE_YN = 'Y',
+				 EN_SQL_PARAM_DESC = #EN_SQL_PARAM_DESC:VARCHAR#,
+				 CN_SQL_PARAM_DESC = #CN_SQL_PARAM_DESC:VARCHAR#,
+				 SQL_PARAM_TP = #SQL_PARAM_TP:VARCHAR#,
+				 SQL_PARAM_TP_DESC = #SQL_PARAM_TP_DESC:VARCHAR#,
+				 SORT_CD = #SORT_CD:VARCHAR#,
+				 UPDT_DTIME = SYSDATE,
+				 UPDT_USER = #UPDT_USER:VARCHAR#
+		   WHERE SQL_SEQ = #SQL_SEQ:VARCHAR# 
+		     AND PARAM   = #PARAM:VARCHAR#
+		]]>		
+	</update>	
+	<!-- 查询单个法人的参数输入列表 -->
+<select id="RetrieveSqlMasterListLGE" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+SELECT * FROM(
+select T.CPNY_ID                          CPNY_ID,
+       NVL(T.PGM_NM,'PAY')                 PGM_NM,
+       NVL(T.SQL_NM,'SUPPER SQL')          SQL_NM,
+       TO_NUMBER(T.SQL_SEQ)                SQL_SEQ,
+       NVL(T.SQL_FROM_STMT,'SHOU DONG')    SQL_FROM_STMT,
+       NVL(T.SQL_ORDER_BY_ID,'000000')     SQL_ORDER_BY_ID,
+       NVL(T.SQL_STAT,'N')                 SQL_STAT,
+       NVL(T.SQL_DESC,'NO DESC')           SQL_DESC
+        
+from  sys_sql_master T
+WHERE 1       =   1
+	]]>	
+    <isNotEmpty prepend="and" property="CPNY_ID">
+		T.CPNY_ID        = #CPNY_ID# 
+	</isNotEmpty>	
+    <isNotEmpty prepend="and" property="PGM_NM">
+		T.PGM_NM          = #PGM_NM# 
+	</isNotEmpty>	
+	)
+  ORDER BY SQL_SEQ
+</select>	
+<!-- 查询已输入参数列表-->
+	<select id="RetrieveSqlMasterList" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+		SELECT * FROM(
+		select #interCpnyID#                          CPNY_ID,
+		       NVL(T.PGM_NM,'PAY')                 PGM_NM,
+		       NVL(T.SQL_NM,'SUPPER SQL')          SQL_NM,
+		       TO_NUMBER(T.SQL_SEQ)                SQL_SEQ,
+		       NVL(T.SQL_FROM_STMT,'SHOU DONG')    SQL_FROM_STMT,
+		       NVL(T.SQL_ORDER_BY_ID,'000000')     SQL_ORDER_BY_ID,
+		       NVL(T.SQL_STAT,'N')                 SQL_STAT,
+		       NVL(T.SQL_DESC,'NO DESC')           SQL_DESC
+		from  sys_sql_master T
+		WHERE T.CPNY_ID  LIKE '%' || #interCpnyID# || '%'
+	]]>	
+    <isNotEmpty prepend="and" property="PGM_NM">
+		T.PGM_NM          = #PGM_NM# 
+	</isNotEmpty>	
+	<isNotEmpty prepend="and" property="SQL_SEQ">
+		T.SQL_SEQ          = #SQL_SEQ# 
+	</isNotEmpty>
+    <isNotEmpty prepend="and" property="SQL_NMLIKE">
+		T.SQL_NM    LIKE '%$SQL_NMLIKE$%' 
+	</isNotEmpty>
+	<![CDATA[
+		UNION
+		
+		select T.CPNY_ID                          CPNY_ID,
+		       NVL(T.PGM_NM,'PAY')                 PGM_NM,
+		       NVL(T.SQL_NM,'SUPPER SQL')          SQL_NM,
+		       TO_NUMBER(T.SQL_SEQ)                SQL_SEQ,
+		       NVL(T.SQL_FROM_STMT,'SHOU DONG')    SQL_FROM_STMT,
+		       NVL(T.SQL_ORDER_BY_ID,'000000')     SQL_ORDER_BY_ID,
+		       NVL(T.SQL_STAT,'N')                 SQL_STAT,
+		       NVL(T.SQL_DESC,'NO DESC')           SQL_DESC
+		        
+		from  sys_sql_master T
+		WHERE T.CPNY_ID  =   'SPC'
+	]]>	
+    <isNotEmpty prepend="and" property="PGM_NM">
+		T.PGM_NM          = #PGM_NM# 
+	</isNotEmpty>
+<isNotEmpty prepend="and" property="SQL_SEQ">
+		T.SQL_SEQ          = #SQL_SEQ# 
+	</isNotEmpty>	
+	 <isNotEmpty prepend="and" property="SQL_NMLIKE">
+		T.SQL_NM    LIKE '%$SQL_NMLIKE$%' 
+	</isNotEmpty>
+	<![CDATA[
+)
+  ORDER BY SQL_SEQ
+	]]>				
+</select>
+
+<!-- 查出是不是HZ法人的HLDS部门的人登陆系统 add guwq 2010.9.18-->	
+
+
+<select id="RetrieveSqlMasterCntHLDS" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+  select COUNT(*) CNT 
+  FROM
+  (
+   SELECT T.SQL_SEQ      
+   from  sys_sql_master T
+  WHERE  1       =   1
+	]]>	
+    <isNotEmpty prepend="and" property="CPNY_ID">
+		T.CPNY_ID        = #CPNY_ID# 
+	</isNotEmpty>
+	    <isNotEmpty prepend="and" property="PGM_NM">
+	    
+		T.PGM_NM          = #PGM_NM# 
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="SQL_SEQ">
+		T.SQL_SEQ          = #SQL_SEQ# 
+	</isNotEmpty>	
+	<isNotEmpty prepend="and" property="SQL_NMLIKE">
+		T.SQL_NM    LIKE '%$SQL_NMLIKE$%' 
+	</isNotEmpty>
+ )
+</select>
+	<!--
+	comment : retrieve RetrieveSqlMasterCount
+	author  : 李艳松(liyansong@lg.langchao.com)
+    -->
+<select id="RetrieveSqlMasterCnt" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+  select COUNT(*) CNT 
+  FROM
+  (
+   SELECT T.SQL_SEQ      
+   from  sys_sql_master T
+  WHERE  1       =   1
+	and T.CPNY_ID LIKE '%' || #interCpnyID# || '%'
+	]]>	
+	    <isNotEmpty prepend="and" property="PGM_NM">
+		T.PGM_NM          = #PGM_NM# 
+	</isNotEmpty>	
+		<isNotEmpty prepend="and" property="SQL_SEQ">
+		T.SQL_SEQ          = #SQL_SEQ# 
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="SQL_NMLIKE">
+		T.SQL_NM    LIKE '%$SQL_NMLIKE$%' 
+	</isNotEmpty>	
+	<![CDATA[
+UNION
+
+select T.SQL_SEQ        
+from  sys_sql_master T
+WHERE T.CPNY_ID       =   'SPC'
+	]]>	
+    <isNotEmpty prepend="and" property="PGM_NM">
+		T.PGM_NM          = #PGM_NM# 
+	</isNotEmpty>	
+		<isNotEmpty prepend="and" property="SQL_SEQ">
+		T.SQL_SEQ          = #SQL_SEQ# 
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="SQL_NMLIKE">
+		T.SQL_NM    LIKE '%$SQL_NMLIKE$%' 
+	</isNotEmpty>	
+	<![CDATA[
+ )
+	]]>		
+</select>
+
+
+<!-- 查询主控SQL详细信息 -->
+<select id="RetrieveSqlMasterDetail" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+  SELECT * 
+  FROM   SYS_SQL_MASTER S 
+  WHERE  S.SQL_SEQ = #SQL_SEQ#
+ 	]]>
+</select>
+	
+	<!--插入新的控制SQL-->
+<insert id="CreateSqlMasterDetail" parameterClass="linkMap">
+ 		<selectKey resultClass="int" keyProperty="SQL_SEQ">  
+            SELECT case when MAX(to_number(SQL_SEQ))  is null  or MAX(to_number(SQL_SEQ))='' then 1 else  MAX(to_number(SQL_SEQ))+1 end from sys_sql_master 
+        </selectKey>  
+		<![CDATA[
+INSERT INTO SYS_SQL_MASTER
+  (SQL_SEQ, 
+   CPNY_ID,  
+   PGM_NM, 
+   SQL_NM,
+   SQL_STMT,
+   SQL_FROM_STMT,
+   SQL_ORDER_BY_ID,
+   SQL_DESC,
+   SQL_STAT,
+   RGST_DTIME,
+   UPDT_DTIME,
+   UPDT_USER,
+   USE_YN,
+   IS_SPECIAL
+   )
+  VALUES
+  ( 
+	         #SQL_SEQ#,
+	         #CPNY_ID#,
+			 #PGM_NM#,
+	         #SQL_NM#,
+	         #SQL_STMT#,
+	         #SQL_FROM_STMT#,
+			 #SQL_ORDER_BY_ID#,
+	         #SQL_DESC#,
+	         #SQL_STAT:VARCHAR#,
+	         SYSDATE,           
+	         SYSDATE,
+             #UPDT_USER#,
+             'Y',
+	         NVL(#IS_SPECIAL:VARCHAR#,'N')
+	 )
+		]]>	
+</insert>	 
+
+	<!--更新更新 主控SQL-->
+	<update id="UpdateSqlMasterDetail" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE sys_sql_master
+			 SET PGM_NM           = #PGM_NM:VARCHAR#,
+				 SQL_NM           = #SQL_NM:VARCHAR#,
+				 SQL_STMT         = #SQL_STMT#,
+				 SQL_FROM_STMT    = #SQL_FROM_STMT:VARCHAR#,
+				 SQL_ORDER_BY_ID  = #SQL_ORDER_BY_ID:VARCHAR#,
+				 SQL_DESC         = #SQL_DESC#,
+				 SQL_STAT         = #SQL_STAT:VARCHAR#,
+				 UPDT_USER        = #UPDT_USER:VARCHAR#,
+				 CPNY_ID         = #CPNY_ID:VARCHAR#,
+				 UPDT_DTIME       = SYSDATE,
+				 IS_SPECIAL	      =  NVL(#IS_SPECIAL:VARCHAR#,'N')
+		   WHERE SQL_SEQ          = #SQL_SEQ# 
+		]]>		
+	</update>
+	
+	<delete id="deleteSqlMasterSql">
+		<![CDATA[
+				DELETE FROM sys_sql_master 
+				 WHERE SQL_SEQ =#SQL_SEQ#
+		]]>
+	</delete>
+	<delete id="deleteSqlParamSql">
+		<![CDATA[
+				DELETE FROM SYS_PARAM_BY_SQL
+				 WHERE SQL_SEQ =#SQL_SEQ#
+		]]>
+	</delete>
+</sqlMap>

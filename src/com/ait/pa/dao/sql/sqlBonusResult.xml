@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusResult">
+	<!-- calculate bonus  -->
+	<procedure id="bonusBalance" parameterClass="linkMap">
+		<![CDATA[
+			{call BN_CONFIRM_P_NEW(#SUPERVISOR_ID:VARCHAR#,#CPNY_ID:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+</sqlMap>

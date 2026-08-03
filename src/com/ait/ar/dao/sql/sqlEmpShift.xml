@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.empShift">
+
+	<select id="getShift010" resultClass="linkMap">
+		SELECT SHIFT_NO, 
+			   SY_GLOBAL_NAME.CONTENT SHIFT_NAME
+		FROM AR_SHIFT010,
+			 SY_GLOBAL_NAME
+	    WHERE AR_SHIFT010.SHIFT_NO = SY_GLOBAL_NAME.NO(+)
+	      AND SY_GLOBAL_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+	      AND AR_SHIFT010.CPNY_ID = #interCpnyID:VARCHAR#
+		ORDER BY SHIFT_NO, SY_GLOBAL_NAME.CONTENT
+	</select>
+	
+	<select id="getShift010List" resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[
+			SELECT SHIFT_NO, 
+				   SY_GLOBAL_NAME.CONTENT SHIFT_NAME
+			FROM AR_SHIFT010,
+				 SY_GLOBAL_NAME
+		    WHERE AR_SHIFT010.SHIFT_NO = SY_GLOBAL_NAME.NO(+)
+		      AND SY_GLOBAL_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		      AND AR_SHIFT010.CPNY_ID = #interCpnyID:VARCHAR#
+		      AND AR_SHIFT010.ACTIVITY = 1
+		      
+		]]>
+		
+		<![CDATA[
+			ORDER BY SHIFT_NO, SY_GLOBAL_NAME.CONTENT
+		]]>
+	</select>
+
+	<procedure id="CalladdEmpShift" parameterClass="linkMap">
+		<![CDATA[
+			{call AR_ADD_SCHEDULE_P(#TYPE:VARCHAR#,#SHIFTID:VARCHAR#,TO_CHAR(TO_DATE(#FROMDATE:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'),TO_CHAR(TO_DATE(#TODATE:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'),#SHIFT:VARCHAR#,#ADMINID:VARCHAR#,#CPNY_ID:VARCHAR#,#CREATED_IP:VARCHAR# ) }
+          ]]>
+	</procedure>
+	<select id="getEmpIdListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1) 
+			  FROM HR_EMPLOYEE T 
+			 WHERE 1 = 1
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND ( T.DATE_LEFT IS NULL or   T.DATE_LEFT >= TO_DATE( #FROMDATE:VARCHAR#,'DD/MM/YYYY')  )  
+        ]]>
+        <isEqual prepend="" property="TYPE" compareValue="DEPARTMENTES">
+          <isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					T.DEPTNO IN(SELECT DEPTNO
+							    FROM HR_DEPARTMENT
+							   START WITH DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>
+        </isEqual>
+		<isEqual prepend="" property="TYPE" compareValue="DEPARTMENT">
+          	<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					T.DEPTNO = #DEPTNO:VARCHAR#
+				]]>
+			</isNotEmpty>
+        </isEqual>
+	</select>
+	
+	<select id="getPersonCountByDYNAMICCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+  				FROM AR_EMP_GROUP S, AR_DYNAMIC_GROUP M
+ 				WHERE S.GROUP_NO = #SHIFTID:VARCHAR#
+   				AND S.GROUP_NO = M.GROUP_NO(+)
+   				AND M.CPNY_ID = #CPNY_ID:VARCHAR#
+          ]]>
+	</select>
+	<procedure id="CalladdClassShift" parameterClass="linkMap">
+		<![CDATA[
+			{call AR_ADD_SCHEDULE_P(#TYPE:VARCHAR#,#SHIFTID:VARCHAR#,TO_CHAR(TO_DATE(#FROMDATE:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'),TO_CHAR(TO_DATE(#TODATE:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'),#SHIFT:VARCHAR#,#ADMINID:VARCHAR#,#CPNY_ID:VARCHAR#,#CREATED_IP:VARCHAR# ) }
+          ]]>
+	</procedure>
+</sqlMap>

@@ -1,0 +1,762 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.loginUser">
+
+	<!--用于管理登陆者管理其下人员类型的员工 -->
+	<sql id="guanLianPeopleType">
+
+		<isNotEmpty prepend="AND" property="EMPID">
+
+			HR_EMPLOYEE.EMP_TYPE_CODE IN
+			(SELECT JOBTYPE_NO
+			FROM HR_JOB_TYPE_SETUP
+			P
+			WHERE P.JOBTYPE_GROUP_NO IN
+			(SELECT EMP_TYPE_CODE
+			FROM
+			SY_SUPERVISOR_EMPTYPE_INFO
+			WHERE PERSON_ID =
+			#supervisorPersonId:VARCHAR#)
+			AND CPNY_ID = #interCpnyID :VARCHAR#)
+			 
+	  </isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+
+			HR_EMPLOYEE.EMP_TYPE_CODE IN
+			(SELECT JOBTYPE_NO
+			FROM HR_JOB_TYPE_SETUP
+			P
+			WHERE P.JOBTYPE_GROUP_NO IN
+			(SELECT EMP_TYPE_CODE
+			FROM
+			SY_SUPERVISOR_EMPTYPE_INFO
+			WHERE PERSON_ID =
+			#supervisorPersonId:VARCHAR#)
+			AND CPNY_ID = #interCpnyID :VARCHAR#)
+			 
+	  </isNotEmpty>
+
+
+
+	</sql>
+	<select id="getLoginUserRolesGroupList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+				SELECT T.ROLE_GROUP_NO,
+				       T.ROLE_GROUP_ID,
+				       T.CPNY_ID,
+				       (CASE
+				         WHEN T.ROLE_GROUP_NO = C.ROLE_GROUP_NO THEN
+				          1
+				         ELSE
+				          0
+				       END) AS CHECKED,
+				       SG.CONTENT AS groupName
+				  FROM SY_ROLE_GROUP T,
+				       (SELECT S.ROLE_GROUP_NO
+				          FROM SY_USER_RELATION S
+				         WHERE S.USER_NO = #USERNO:VARCHAR#) C,
+				       SY_GLOBAL_NAME SG
+				 WHERE SG.NO(+) = T.ROLE_GROUP_NO
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR# 
+				   and t.role_group_no = c.role_group_no(+)  
+				   AND T.CPNY_ID=#interCpnyID:VARCHAR#  
+				 ORDER BY TO_NUMBER(T.ROLE_GROUP_NO)			 
+		]]>
+	</select>
+	<!-- 员工类别 -->
+	<select id="getEmpTypeCodeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SP.CODE_NO EMP_TYPE_CODE,
+	             SY.CONTENT EMP_TYPE_NAME
+	        FROM SY_CODE        T,
+	             SY_CODE_PARAM  SP,
+	             SY_GLOBAL_NAME SY
+	       WHERE T.CODE_NO = SP.CODE_NO
+	        
+	         AND SP.CPNY_ID = #interCpnyID:VARCHAR#
+	         AND T.CODE_NO = SY.NO(+)
+	         AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+	         and SP.CODE_NO in (select distinct(jobtype_group_no) from hr_job_type_setup p where CPNY_ID=  #interCpnyID:VARCHAR#)
+	         AND T.ACTIVITY = 1
+	         AND SP.ACTIVITY = 1
+	       
+	         ORDER BY T.ORDERNO
+         ]]>
+	</select>
+
+	<select id="getloginUserInfoRolesGSODList" parameterClass="linkMap"
+		resultClass="linkMap">
+	
+	<![CDATA[
+				SELECT E.EMPID,E.PERSON_ID,GSO.ROLE_GSOD_NAME
+			  FROM HR_EMPLOYEE        E,
+			       SY_USER            U,
+			       SY_USER_RELATION   UR,
+			     SY_ROLE_GROUP_GSOD GSO
+			 WHERE UR.ROLE_GROUP_NO = GSO.SY_ROLE_GROUP_NO
+			   AND E.PERSON_ID = U.PERSON_ID
+			   AND U.USER_NO = UR.USER_NO(+)
+			and  U.USER_NO = #USERNO:VARCHAR#
+			   AND GSO.CPNY_ID=#interCpnyID:VARCHAR#
+		
+	]]>
+
+	</select>
+
+	<!-- 员工类别 -->
+	<select id="getSySupervisorEmpTypeCodeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EMP_TYPE_CODE
+	         		FROM SY_SUPERVISOR_EMPTYPE_INFO 
+	         		WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+         ]]>
+	</select>
+
+	<select id="getLoginUserList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT SU.USER_NO,
+                 SU.PERSON_ID,
+                 SU.SPECIAL_PARAM,
+                 HR.EMPID,
+                 HR.LOCAL_NAME,
+                 HD.org_name_local AS DEPT_NAME_ZH,
+                 SU.USER_NAME,
+                 SU.PASSWORD,
+                 HD.DEPTNO
+            FROM SY_USER SU, HR_EMPLOYEE HR,  HR_DEPARTMENT HD
+           WHERE SU.PERSON_ID = HR.PERSON_ID
+             AND HR.DEPTNO = HD.DEPTNO
+           
+             AND SU.CPNY_ID =  #interCpnyID:VARCHAR#
+             AND (SU.SPECIAL_PARAM='general' or SU.SPECIAL_PARAM='manager' OR SU.SPECIAL_PARAM='special' )
+             AND SU.PERSON_ID IS NOT NULL
+		]]>
+		<isNotEmpty prepend="" property="COL_NAME">
+			<isNotEmpty prepend="" property="COL_VAL">
+				<isEqual prepend="AND" property="COL_NAME" compareValue="SCREEN_NAME">
+					<![CDATA[
+						(select count(*) from sy_user_relation re,sy_global_name sgn where re.user_no=SU.USER_NO and 
+						sgn.no(+)=re.role_group_no and 
+						sgn.language(+)=#interLanguage:VARCHAR# AND sgn.CONTENT  like　'%'|| #COL_VAL:VARCHAR# || '%') >0
+					]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="EMPID">
+						<![CDATA[
+							( 
+								HR.EMPID like '%'|| #COL_VAL:VARCHAR# || '%'  OR 
+								HR.LOCAL_NAME like '%'|| #COL_VAL:VARCHAR# ||'%' OR 
+								SU.USER_NAME like '%'|| #COL_VAL:VARCHAR# ||'%'
+							)
+						]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="LOCAL_NAME">
+						<![CDATA[
+							( 
+								HR.EMPID like '%'|| #COL_VAL:VARCHAR# || '%'  OR 
+								HR.LOCAL_NAME like '%'|| #COL_VAL:VARCHAR# ||'%' OR 
+								SU.USER_NAME like '%'|| #COL_VAL:VARCHAR# ||'%'
+							)
+						]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="USER_NAME">
+						<![CDATA[
+							( 
+								HR.EMPID like '%'|| #COL_VAL:VARCHAR# || '%'  OR 
+								HR.LOCAL_NAME like '%'|| #COL_VAL:VARCHAR# ||'%' OR 
+								SU.USER_NAME like '%'|| #COL_VAL:VARCHAR# ||'%'
+							)
+						]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		   HR.EMPID = #EMPID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USERNO">
+			<![CDATA[
+		 		  SU.USER_NO = #USERNO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		 		 union
+					 SELECT SU.USER_NO,
+		                 SU.PERSON_ID,
+		                 SU.SPECIAL_PARAM,
+		                 '' EMPID,
+		                 '' LOCAL_NAME ,
+		                 ''  DEPT_NAME_ZH,
+		                 SU.USER_NAME,
+		                 SU.PASSWORD,
+		                 '' DEPTNO
+		            FROM   SY_USER SU 
+		            where SU.CPNY_ID =  #interCpnyID:VARCHAR#
+		            and SU.SPECIAL_PARAM='special'
+		            and SU.PERSON_ID IS NULL
+		]]>
+		<isNotEmpty prepend="" property="COL_NAME">
+			<isNotEmpty prepend="" property="COL_VAL">
+				<isEqual prepend="AND" property="COL_NAME" compareValue="SCREEN_NAME">
+					<![CDATA[
+						(select count(*) from sy_user_relation re,sy_global_name sgn where re.user_no=SU.USER_NO and 
+						sgn.no(+)=re.role_group_no and 
+						sgn.language(+)=#interLanguage:VARCHAR# AND sgn.CONTENT  like　'%'|| #COL_VAL:VARCHAR# || '%') >0
+					]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="EMPID">
+					<![CDATA[
+						  SU.SPECIAL_PARAM <> 'special'
+					]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="USER_NAME">
+						<![CDATA[
+							$COL_NAME$ LIKE '%'|| #COL_VAL:VARCHAR# || '%'
+						]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="LOCAL_NAME">
+						<![CDATA[
+							 SU.SPECIAL_PARAM <> 'special'
+						]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  SU.SPECIAL_PARAM<>'special'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USERNO">
+			<![CDATA[
+		 		  SU.USER_NO = #USERNO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IT_YN">
+			<isEqual property="IT_YN" compareValue="IT_NOT">
+				<![CDATA[
+					SU.USER_NAME <> 'admin'
+				]]>
+			</isEqual>
+		</isNotEmpty>
+	</select>
+
+	<select id="getLoginUserCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			 SELECT COUNT(*) FROM ( SELECT SU.USER_NO,
+                 SU.PERSON_ID,
+                 SU.SPECIAL_PARAM,
+                 HR.EMPID,
+                 HR.LOCAL_NAME ,
+                 HD.org_name_local AS DEPT_NAME_ZH,
+                 SU.USER_NAME,
+                 SU.PASSWORD,
+                 HD.DEPTNO
+            FROM   SY_USER SU, HR_EMPLOYEE HR, HR_DEPARTMENT HD
+           WHERE SU.PERSON_ID = HR.PERSON_ID
+             AND HR.DEPTNO = HD.DEPTNO
+             
+             AND SU.CPNY_ID =  #interCpnyID:VARCHAR#
+             AND (SU.SPECIAL_PARAM='general' or SU.SPECIAL_PARAM='manager' OR SU.SPECIAL_PARAM='special' )
+             AND SU.PERSON_ID IS NOT NULL
+		]]>
+		<isNotEmpty prepend="" property="COL_NAME">
+			<isNotEmpty prepend="" property="COL_VAL">
+				<isEqual prepend="AND" property="COL_NAME" compareValue="SCREEN_NAME">
+					<![CDATA[
+						(select count(*) from sy_user_relation re,sy_global_name sgn where re.user_no=SU.USER_NO and 
+						sgn.no(+)=re.role_group_no and 
+						sgn.language(+)=#interLanguage:VARCHAR# AND sgn.CONTENT  like　'%'|| #COL_VAL:VARCHAR# || '%') >0
+					]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="EMPID">
+						<![CDATA[
+							( 
+								HR.EMPID like '%'|| #COL_VAL:VARCHAR# || '%'  OR 
+								HR.LOCAL_NAME like '%'|| #COL_VAL:VARCHAR# ||'%' OR 
+								SU.USER_NAME like '%'|| #COL_VAL:VARCHAR# ||'%'
+							)
+						]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="LOCAL_NAME">
+						<![CDATA[
+							( 
+								HR.EMPID like '%'|| #COL_VAL:VARCHAR# || '%'  OR 
+								HR.LOCAL_NAME like '%'|| #COL_VAL:VARCHAR# ||'%' OR 
+								SU.USER_NAME like '%'|| #COL_VAL:VARCHAR# ||'%'
+							)
+						]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="USER_NAME">
+						<![CDATA[
+							( 
+								HR.EMPID like '%'|| #COL_VAL:VARCHAR# || '%'  OR 
+								HR.LOCAL_NAME like '%'|| #COL_VAL:VARCHAR# ||'%' OR 
+								SU.USER_NAME like '%'|| #COL_VAL:VARCHAR# ||'%'
+							)
+						]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		   HR.EMPID = #EMPID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USERNO">
+			<![CDATA[
+		 		  SU.USER_NO = #USERNO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IT_YN">
+			<isEqual property="IT_YN" compareValue="IT_NOT">
+				<![CDATA[
+					SU.USER_NAME <> 'admin'
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[
+		 		 union
+				 SELECT SU.USER_NO,
+	                 SU.PERSON_ID,
+	                 SU.SPECIAL_PARAM,
+	                 '' EMPID,
+	                 '' LOCAL_NAME ,
+	                 ''  DEPT_NAME_ZH,
+	                 SU.USER_NAME,
+	                 SU.PASSWORD,
+	                 '' DEPTNO
+	            FROM   SY_USER SU 
+	            where SU.CPNY_ID =  #interCpnyID:VARCHAR#
+	            and SU.SPECIAL_PARAM='special'
+	            and SU.PERSON_ID IS NULL
+		]]>
+		<isNotEmpty prepend="" property="COL_NAME">
+			<isNotEmpty prepend="" property="COL_VAL">
+				<isEqual prepend="AND" property="COL_NAME" compareValue="SCREEN_NAME">
+					<![CDATA[
+						(select count(*) from sy_user_relation re,sy_global_name sgn where re.user_no=SU.USER_NO and 
+						sgn.no(+)=re.role_group_no and 
+						sgn.language(+)=#interLanguage:VARCHAR# AND sgn.CONTENT  like　'%'|| #COL_VAL:VARCHAR# || '%') >0
+					]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="EMPID">
+					<![CDATA[
+						  SU.SPECIAL_PARAM <> 'special'
+					]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="USER_NAME">
+						<![CDATA[
+							$COL_NAME$ LIKE '%'|| #COL_VAL:VARCHAR# || '%'
+						]]>
+				</isEqual>
+				<isEqual prepend="AND" property="COL_NAME" compareValue="LOCAL_NAME">
+						<![CDATA[
+							 SU.SPECIAL_PARAM <> 'special'
+						]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  SU.SPECIAL_PARAM<>'special'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USERNO">
+			<![CDATA[
+		 		  SU.USER_NO = #USERNO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IT_YN">
+			<isEqual property="IT_YN" compareValue="IT_NOT">
+				<![CDATA[
+					SU.USER_NAME <> 'admin'
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[
+			)
+		]]>
+	</select>
+
+	<select id="getLoginUserMaxDeptList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			SELECT HD.DEPTNO,
+			       HDN.CONTENT,
+			       HD.PARENT_DEPT_NO,
+			       '1' AS ISCHECKED
+			  FROM HR_DEPARTMENT HD,HR_DEPARTMENT_NAME HDN
+			 WHERE HD.DEPTNO = 'LOTTE00110000' AND HDN.LANGUAGE(+)=#interLanguage:VARCHAR# AND HD.DEPTNO=HDN.DEPTNO(+)
+		]]>
+	</select>
+
+
+	<select id="checkLoginUserDeptList" parameterClass="linkMap"
+		resultClass="linkMap"> 
+		<![CDATA[
+		SELECT * FROM SY_USER_DEPT SD WHERE SD.USER_NO =  #USERNO:NUMERIC#
+   AND SD.DEPTNO=  #DEPTNO:VARCHAR#
+		]]>
+	</select>
+	<select id="getLoginUserDeptList" parameterClass="linkMap"
+		resultClass="linkMap"> 
+		<![CDATA[
+			SELECT HD.DEPTNO,
+             HDN.CONTENT,
+             HD.PARENT_DEPT_NO,
+             HD.DEPT_LEVEL,
+             (CASE
+               WHEN SD.DEPTNO IS NOT NULL THEN
+                1
+               ELSE
+                0
+             END) AS ISCHECKED,
+             (CASE
+               WHEN HD.DEPT_LEVEL > 2 THEN
+                'false'
+               ELSE
+                'true'
+             END) AS ISEXPAND,
+             RN
+        FROM (SELECT T.*, ROWNUM RN
+                FROM HR_DEPARTMENT T
+              /* WHERE T.DEPT_LEVEL < 4 */
+               START WITH T.PARENT_DEPT_NO = '0'
+              CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+               ORDER SIBLINGS BY T.ORDERNO, T.DEPT_LEVEL DESC, T.DEPTID) HD,
+             SY_USER_DEPT SD,
+             HR_DEPARTMENT_NAME HDN
+       WHERE HD.DEPTNO = SD.DEPTNO(+)
+         AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HD.DEPTNO = HDN.DEPTNO(+)
+         AND HD.CPNY_ID=#interCpnyID:VARCHAR#
+         AND (HD.DATE_CREATED < SYSDATE AND
+						 HD.DATE_ENDED > SYSDATE OR
+						 HD.DATE_ENDED IS NULL)
+		]]>
+		<isNotEmpty prepend="AND" property="ADMINNO">
+			<![CDATA[
+		 		  SD.ADMIN_NO(+) = #ADMINNO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USERNO">
+			<![CDATA[
+		 		  SD.USER_NO(+) = #USERNO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  SD.DEPTNO(+) = #DEPTNO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  SD.ADMIN_NO(+) = (SELECT ADMINNO FROM SY_ADMIN SA WHERE SA.ADMINID = #EMPID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	    <![CDATA[
+	    	ORDER BY RN
+	    ]]>
+	</select>
+
+	<delete id="deleteLoginUserDeptInfo" parameterClass="linkMap">
+		<![CDATA[
+	    	DELETE SY_USER_DEPT WHERE USER_NO=#USER_NO:VARCHAR#
+	    ]]>
+	</delete>
+
+	<update id="updateLoginUserInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_USER
+			   SET PERSON_ID=#PERSON_ID:VARCHAR#,
+			   	   SPECIAL_PARAM = #SPECIAL_PARAM:VARCHAR#,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+			       UPDATE_DATE = SYSDATE
+			 WHERE USER_NO = #USER_NO:VARCHAR#		
+		]]>
+	</update>
+	<select id="checkLoginUserRelationInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM SY_USER_RELATION T
+				 WHERE T.USER_NO = #USERNO:VARCHAR#
+				   AND T.ROLE_GROUP_NO = #GROUPNO:VARCHAR#			 
+		]]>
+	</select>
+	<delete id="deleteLoginUserRelationInfo" parameterClass="linkMap">
+		<![CDATA[
+	    	DELETE SY_USER_RELATION WHERE USER_NO=#USER_NO:VARCHAR#
+	    ]]>
+	</delete>
+	<delete id="deleteLoginUserInfo" parameterClass="linkMap">
+		<![CDATA[
+	    	DELETE SY_USER WHERE USER_NO=#USER_NO:VARCHAR#
+	    ]]>
+	</delete>
+
+	<insert id="InsertLoginUserRelationInfo" parameterClass="linkMap">
+		<![CDATA[
+			  INSERT INTO SY_USER_RELATION
+			    (USER_NO,
+			     ROLE_GROUP_NO,
+			     CREATE_DATE,
+			     CREATED_BY,
+			     UPDATE_DATE,
+			     UPDATED_BY,
+			     ORDERNO,
+			     ACTIVITY)
+			  VALUES
+			    (#USER_NO:VARCHAR#,
+			     #GROUPNO:VARCHAR#,
+			     sysdate,
+			     #CREATED_BY:VARCHAR#,
+			     sysdate,
+			     #UPDATED_BY:VARCHAR#,
+			     1,
+			     1)
+		]]>
+	</insert>
+	<delete id="deleteSySupervisorEmpTypeCodeInfo" parameterClass="linkMap">
+	<![CDATA[
+
+	 DELETE SY_SUPERVISOR_EMPTYPE_INFO WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+	]]>
+
+	</delete>
+	<insert id="addSySupervisorEmpTypeCodeInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_SUPERVISOR_EMPTYPE_INFO (
+					AR_SUPERVISOR_NO,
+					PERSON_ID,
+					EMP_TYPE_CODE,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+				VALUES(
+					SY_SUPERVISOR_NO_SEQ.NEXTVAL,
+					#PERSON_ID:VARCHAR#,
+					#emptypecode:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					NULL,
+					1
+				)
+		]]>
+	</insert>
+
+	<insert id="insertLoginUserDeptList" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_USER_DEPT
+			  (USER_NO,
+			   DEPTNO,
+			   CPNY_ID,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   UPDATE_DATE,
+			   UPDATED_BY,
+			   ORDERNO,
+			   ACTIVITY)
+			VALUES
+			  (#USERNO:VARCHAR#,
+			   #DEPTNO:VARCHAR#,
+			   #interCpnyID:VARCHAR#,
+			   sysdate,
+			   #CREATED_BY:VARCHAR#,
+			   sysdate,
+			   #CREATED_BY:VARCHAR#,
+			   1,
+			   1)		 
+		]]>
+	</insert>
+	<select id="getDeptInfoTree" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT * FROM (SELECT 
+				   distinct
+				   D.DEPTID,
+			       D.DEPTNO,
+			       D.PARENT_DEPT_NO,
+			       TO_CHAR(D.DATE_CREATED, 'yyyy-MM-dd') AS DATE_CREATED,
+			       (SELECT D2.org_name_local
+			          FROM HR_DEPARTMENT D2
+			         WHERE D2.DEPTNO = D.PARENT_DEPT_NO
+			           AND D2.CPNY_ID=#interCpnyID:VARCHAR#) AS PARENT_DEPT_NAME,
+			       D.org_name_local AS DEPTNAME,
+			       (CASE
+			         WHEN (SELECT COUNT(*)
+			                 FROM SY_USER_DEPT U
+			                WHERE U.USER_NO =#userNo:VARCHAR#
+			                  AND U.DEPTNO = D.DEPTNO) > 0 THEN
+			          'true'
+			         ELSE
+			          'false'
+			       END) CHECKED,
+                D.DEPT_LEVEL,
+                D.ORDERNO
+			  FROM HR_DEPARTMENT D
+			 WHERE (D.DATE_CREATED < SYSDATE AND D.DATE_ENDED > SYSDATE OR
+			       D.DATE_ENDED IS NULL)
+			   AND D.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND D.USE_YN='Y'
+			 START WITH D.PARENT_DEPT_NO = '0' AND D.CPNY_ID=#interCpnyID:VARCHAR#
+		        CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)A
+		        ORDER BY A.DEPT_LEVEL,A.ORDERNO,A.DEPTNO
+		          
+		]]>
+		<!--
+			ORDER SIBLINGS BY D.DEPTNO DESC, D.DEPTNO ORDER SIBLINGS BY
+			D.ORDERNO, D.DEPT_LEVEL DESC, D.DEPTNO
+		-->
+	</select>
+
+	<select id="getUserNo" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT  sy_user_seq.NEXTVAL FROM DUAL
+		]]>
+	</select>
+	<insert id="insertLoginUserInfo" parameterClass="linkMap">
+		<![CDATA[
+				INSERT INTO SY_USER (
+				    USER_NO,
+				    PERSON_ID,
+				    CPNY_ID,
+				    USER_NAME,
+				    PASSWORD,
+				    SPECIAL_PARAM,
+				    CREATE_DATE,
+				    CREATED_BY,
+				    ACTIVITY
+				)VALUES(
+				    #USER_NO:VARCHAR#,
+				    #PERSON_ID:VARCHAR#,
+				    #interCpnyID:VARCHAR#,
+				    #USER_NAME:VARCHAR#,
+				    #PASSWORD:VARCHAR#,
+				    #SPECIAL_PARAM:VARCHAR#,
+				    SYSDATE,
+				    #CREATED_BY:VARCHAR#,
+				    1
+				)
+		]]>
+	</insert>
+
+	<select id="validatePersonIdExist" resultClass="int"
+		remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_USER T
+			 WHERE 
+			   T.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			T.PERSON_ID =
+			#PERSON_ID:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USER_NAME">
+			T.USER_NAME
+			=#USER_NAME:VARCHAR#
+		</isNotEmpty>
+	</select>
+
+
+	<update id="changePassword" parameterClass="linkMap">
+		<![CDATA[
+			   
+			   UPDATE SY_USER SY  SET SY.PASSWORD=#NEW_PS#,
+			   SY.UPDATE_DATE = SYSDATE,
+			   SY.UPDATED_BY = #adminID#
+			    WHERE SY.PERSON_ID=#PERSON_ID_ID#
+			   AND #PERSON_ID_ID# IS NOT NULL
+			   
+			  ]]>
+	</update>
+
+
+
+
+
+
+	<select id="viewFileInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT SHI.IP_ADDRESS,
+       SHI.CPNY_ID,
+       SHI.CREATE_DATE,
+       SHI.CREATED_BY,
+       SHI.CREATED_IP,
+       SHI.ACTIVITY,
+       SHI.SY_HUB_IP_NO
+  FROM SY_HUB_IP SHI
+  WHERE SHI.CPNY_ID=#interCpnyID :VARCHAR#
+  AND SHI.ACTIVITY=1
+   
+		]]>
+
+	</select>
+
+
+
+	<select id="getLoginUserIPList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT HF.HR_FILE_NO, 
+        HF.CREATED_BY,
+        HE.LOCAL_NAME,
+        TO_CHAR(HF.CREATE_DATE,'YYYY.MM.DD') CREATE_DATE,
+        HF.CREATED_IP,
+        HF.VIEW_NUMBER, 
+        HF.REMARK,
+        HF.THEME_NAME 
+   FROM HR_FILE HF,HR_EMPLOYEE HE
+   WHERE HE.PERSON_ID=HF.CREATED_BY  
+   AND HF.ACTIVITY =1
+   AND HF.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="FILE_FLAG_CODE">
+			HF.PERSON_ID =
+			#FILE_FLAG_CODE:VARCHAR#
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="LOCAL_NAME">
+			<![CDATA[
+		 		(E.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' OR E.EMPID LIKE '%' || #EMPID:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+
+	<select id="viewFileUrlInfo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT HFU.HR_FILE_URL_NO,HFU.HR_FILE_NAME,HFU.HR_FILE_ADDRESS FROM HR_FILE_URL HFU
+
+WHERE HFU.HR_FILE_NO=#HR_FILE_NO#
+AND HFU.ACTIVITY=1
+		]]>
+
+	</select>
+
+
+	<select id="viewFileInfo" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+	    SELECT TO_CHAR(HF.CREATE_DATE,'YYYY.MM.DD') CREATE_DATE,HF.REMARK,HF.THEME_NAME,HE.LOCAL_NAME FROM HR_FILE HF
+,HR_EMPLOYEE HE
+WHERE HE.PERSON_ID=HF.CREATED_BY
+AND HF.HR_FILE_NO=#HR_FILE_NO#
+		]]>
+
+	</select>
+
+
+</sqlMap>

@@ -1,0 +1,1760 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.attendanceView">
+	<select id="getMonthWorkSchedule" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT 
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       get_dept_name(HE.DEPTNO,'zh') DEPT_NAME,
+			       get_global_name(HE.POSITION_NO, 'zh') POSITION_NAME,
+			       get_global_name(HE.POST_GRADE_NO, 'zh') POST_GRADE_NAME,
+			       get_global_name(HE.DUTY_NO, 'zh') DUTY_NAME
+			       
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		 
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				EXISTS (SELECT *
+                          FROM AR_STATISTIC_EMPTYPE
+                         WHERE AR_STATISTIC_EMPTYPE.EMP_TYPE_CODE = HE.EMP_TYPE_CODE
+                         AND AR_STATISTIC_EMPTYPE.CPNY_ID = HE.CPNY_ID
+                         AND AR_STATISTIC_EMPTYPE.STAT_NO = #STAT_NO:VARCHAR#)
+          ]]></isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+			
+			 HE.DEPTNO in (
+          SELECT deptno
+          FROM HR_DEPARTMENT
+         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		 		  
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+	    	ORDER BY HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getMonthWorkScheduleCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[	
+			SELECT  COUNT(*) FROM ( SELECT HE.EMPID 
+			  FROM HR_EMPLOYEE HE, HR_COMPANY HC
+			 WHERE HE.CPNY_ID = HC.CPNY_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				EXISTS (SELECT *
+                          FROM AR_STATISTIC_EMPTYPE
+                         WHERE AR_STATISTIC_EMPTYPE.EMP_TYPE_CODE = HE.EMP_TYPE_CODE
+                         AND AR_STATISTIC_EMPTYPE.CPNY_ID = HE.CPNY_ID
+                         AND AR_STATISTIC_EMPTYPE.STAT_NO = #STAT_NO:VARCHAR#)
+          ]]></isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  HE.DEPTNO in (
+          SELECT deptno
+          FROM HR_DEPARTMENT
+         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+	    	) TT
+		]]>
+	</select>
+	
+	<select id="getMonthDay" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+		 	 SELECT
+				 (CASE
+				   WHEN get_global_name(T_SCHEDULE.SCHEDULE_SHIFT_NO, 'zh') IS NOT NULL THEN
+				    get_global_name(T_SCHEDULE.SCHEDULE_SHIFT_NO, 'zh')
+				   ELSE
+				    SY2.CONTENT
+				 END) AS BANCI
+				
+				  FROM AR_CALENDER,
+				       (SELECT T1.SHIFT_NO SCHEDULE_SHIFT_NO, T1.AR_DATE_STR, T2.DATATYPE
+				          FROM AR_SCHEDULE_HTSV T1, AR_SHIFT010 T2
+				         WHERE T1.SHIFT_NO = T2.SHIFT_NO
+				           AND T1.PERSON_ID = #PERSON_ID:VARCHAR#) T_SCHEDULE,
+				       SY_GLOBAL_NAME SY1,
+				       SY_GLOBAL_NAME SY2,
+				       SY_GLOBAL_NAME SY3
+				 WHERE AR_CALENDER.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND AR_CALENDER.DDATE = to_date(T_SCHEDULE.AR_DATE_STR(+), 'yyyy-mm-dd')
+				   AND AR_CALENDER.DDATE BETWEEN
+				       GET_AR_START_DATE_1(#paYear:VARCHAR#||#paMonth:VARCHAR#, #CPNY_ID:VARCHAR#, #STAT_NO:VARCHAR#) AND
+				       GET_AR_END_DATE_1(#paYear:VARCHAR#||#paMonth:VARCHAR#, #CPNY_ID:VARCHAR#, #STAT_NO:VARCHAR#)
+				   AND AR_CALENDER.TYPEID = SY1.NO(+)
+				   AND SY1.LANGUAGE(+) = 'zh'
+				   AND AR_CALENDER.SHIFT_NO = SY2.NO(+)
+				   AND SY2.LANGUAGE(+) = 'zh'
+				   AND T_SCHEDULE.DATATYPE = SY3.NO(+)
+				   AND SY3.LANGUAGE(+) = 'zh'
+				 ORDER BY AR_CALENDER.DDATE	  				   
+    	]]>	
+	</select>
+	<select id="noSwipingCardList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			select a.ar_date_str arDateStr, 
+					e.empid||'/'||e.local_name as empIdAndName, 
+					d.org_name_local deptName,   
+					get_global_name(a.shift_no,#interLanguage#) shiftName,  
+					a.from_time fromTime, 
+					a.to_time toTime, 
+					a.quantity lengthq,
+					get_global_name(a.item_no,#interLanguage#) itemName
+				  from $AR_DETAIL_TAB$ a, hr_employee e, hr_department d
+				 where d.deptno = e.deptno
+				   and a.person_id = e.person_id 
+				   and a.item_no in (141443, 141442, 141441) 
+				   and  (EXISTS(
+			 		  	SELECT 1
+						  FROM AR_SUPERVISOR_INFO
+						 WHERE AR_SUPERVISOR_INFO.DEPTNO = e.DEPTNO
+						   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#)
+			 		  OR e.PERSON_ID = #supervisorPersonId:VARCHAR# )
+			 		  AND  ( EXISTS(
+			 		  	SELECT 1
+						  FROM AR_SUPERVISOR_EMPTYPE_INFO
+						 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = e.EMP_TYPE_CODE
+						   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#  )
+	                   OR  e.PERSON_ID = #supervisorPersonId:VARCHAR# )
+		]]>
+		<isEmpty prepend="" property="beginTime">
+			<isEmpty prepend="AND" property="endTime">
+				<![CDATA[
+					a.ar_date_str =  to_char(sysdate, 'yyyy/mm/dd')
+				]]>
+			</isEmpty>
+		</isEmpty>
+		<!-- 20150204 zyh start -->
+		<isNotEmpty prepend="AND" property="beginTime">
+			<![CDATA[
+				a.ar_date_str >=  TO_CHAR(TO_DATE(#beginTime#,'YYYY/MM/DD'),'YYYY/MM/DD') 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			<![CDATA[
+				a.ar_date_str <= TO_CHAR(TO_DATE(#endTime#,'YYYY/MM/DD'),'YYYY/MM/DD') 
+			]]>
+		</isNotEmpty>
+		<!-- 20150204 zyh end -->
+		<isNotEmpty prepend="AND" property="empIdAndName">
+			<![CDATA[
+				( e.empid like upper('%' ||  #empIdAndName# || '%')
+					 or e.local_name  like upper('%' ||  #empIdAndName# || '%' )
+					 or e.chinese_pinyin  like upper('%' ||  #empIdAndName# || '%')
+					 )
+			]]>
+		</isNotEmpty>
+		   
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (
+						  SELECT 1
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=e.deptno
+	                 	START WITH B1.DEPTNO = #DEPTNO#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+			]]>
+		</isNotEmpty>
+		  
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			    e.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     e.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				e.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[	 
+			order by e.empid
+		]]>
+	</select>
+	<select id="getMonthWorkList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			SELECT 
+		<isEmpty property="isCount">
+			<![CDATA[
+		     AR_MONTH,EMPID,LOCAL_NAME,
+              ( ZS_CHIDAO_YIXIA + SY_CHIDAO_YIXIA ) CHIDAO,
+               ( ZS_ZAOTUI_YIXIA + SY_ZAOTUI_YIXIA ) ZAOTUI,
+               (KUANGGONG_ZS + KUANGGONG_SY +  ZS_ZDZT_ZHUAN + SY_ZDZT_ZHUAN ) KUANGGONG,
+               (SHIJIA_ZS + SHIJIA_SY) SHIJIA,
+               (TIAOXIU_HOURS ) YIYONGTIAOXIU,
+                SHIYONG_NIANJIA_DAY  SHIYONG_NIANJIA_DAY,
+                SHIYONG_FULI_DAY  SHIYONG_FULI_DAY,
+                CHUCHAI_DAY CHUCHAI_DAY,
+                (BINGJIA_ZS + BINGJIA_SY) BINGJIA,
+                HUNJIA_DAY  HUNJIA_DAY,
+                (CHANJIA_DAY + LIUCHANJIA_DAY) CHANJIA,
+                SANGJIA_DAY  SANGJIA_DAY,
+                ( PAY_PINGSHI_OT_ZONGJI + PAY_PINGSHI_OT_SY_ZJ) PINGRIJIABAN,
+                (PAY_ZM_OT_ZS_ZJ + PAY_ZM_OT_SY_ZJ   ) ZHOUMO,
+                 ( PAY_FADING_OT_ZS_ZJ + PAY_FADING_OT_SY_ZJ )FADING ,
+                 ZHOUMO_OT_TX_ZJ  TIAOXIU
+                 
+		    ]]>
+		</isEmpty>
+		<isNotEmpty property="isCount">
+			<![CDATA[
+				COUNT(*)
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		          FROM AR_SUMMARY_HTSV
+				   WHERE AR_MONTH = '$paMonth$'
+		        
+		]]>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			     (    EMPID LIKE '%$condition$%'
+			          OR  LOCAL_NAME LIKE '%$condition$%'
+			     )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				GET_AR_STATNO( PERSON_ID,  CPNY_ID) = #STAT_NO:VARCHAR#
+          ]]>
+          </isNotEmpty>
+	</select>
+	
+   <select id="getMonthWorkLGETAList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			SELECT 
+		<isEmpty property="isCount">
+			<![CDATA[
+		     AR_MONTH,EMPID,LOCAL_NAME,
+              (ZS_CHIDAO_ONE + SY_CHIDAO_ONE + ZS_CHIDAO_TWO +
+                   SY_CHIDAO_TWO + ZS_CHIDAO_THREE + SY_CHIDAO_THREE) CHIDAO,
+               (ZS_ZAOTUI_TEN + SY_ZAOTUI_TEN + ZS_ZAOTUI_ELE +
+                   SY_ZAOTUI_ELE) ZAOTUI,
+               (KUANGGONG_ZS + KUANGGONG_SY + ZS_CHIDAO_ZHUAN +
+                   SY_CHIDAO_ZHUAN + ZS_ZAOTUI_ZHUAN + SY_ZAOTUI_ZHUAN) KUANGGONG,
+               (SHIJIA_ZS + SHIJIA_SY) SHIJIA,
+               (TIAOXIU_HOURS ) YIYONGTIAOXIU,
+                SHIYONG_NIANJIA_DAY  SHIYONG_NIANJIA_DAY,
+                SHIYONG_FULI_DAY  SHIYONG_FULI_DAY,
+                CHUCHAI_DAY CHUCHAI_DAY,
+                (BINGJIA_ZS + BINGJIA_SY) BINGJIA,
+                HUNJIA_DAY  HUNJIA_DAY,
+                (CHANJIA_DAY + LIUCHANJIA_DAY) CHANJIA,
+                SANGJIA_DAY  SANGJIA_DAY,
+                ( PAY_PINGSHI_OT_ZONGJI + PAY_PINGSHI_OT_SY_ZJ) PINGRIJIABAN,
+                (PAY_ZM_OT_ZS_ZJ + PAY_ZM_OT_SY_ZJ   ) ZHOUMO,
+                 ( PAY_FADING_OT_ZS_ZJ + PAY_FADING_OT_SY_ZJ )FADING ,
+                 ZHOUMO_OT_TX_ZJ  TIAOXIU
+                 
+		    ]]>
+		</isEmpty>
+		<isNotEmpty property="isCount">
+			<![CDATA[
+				COUNT(*)
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		          FROM AR_SUMMARY_HTSV
+				   WHERE AR_MONTH = '$paMonth$'
+		        
+		]]>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			     (    EMPID LIKE '%$condition$%'
+			          OR  LOCAL_NAME LIKE '%$condition$%'
+			     )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				GET_AR_STATNO( PERSON_ID,  CPNY_ID) = #STAT_NO:VARCHAR#
+          ]]></isNotEmpty>
+	 
+	</select>
+	<select id="getKaoQinList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+            SELECT 
+                          AR_DETAIL.AR_DATE_STR,
+                         get_global_name(HR_EMPLOYEE.Stat_No, #interLanguage:VARCHAR#) STAT_NAME,
+                         get_global_name(AR_DETAIL.SHIFT_NO, #interLanguage:VARCHAR#) SHIFT_NAME,
+                         NVL(TO_CHAR(get_earliest_timeforar(AR_DETAIL.Shift_No), 'HH24:MI'),'') AR_FROM_TIME, 
+                         NVL(TO_CHAR(get_last_Timeforar(AR_DETAIL.Shift_No), 'HH24:MI'),'') AR_TO_TIME,
+                         NVL(TO_CHAR(AR_DETAIL.FROM_TIME, 'HH24:MI'),'') FROMTIME,
+                         NVL(TO_CHAR(AR_DETAIL.TO_TIME, 'HH24:MI'),'') TOTIME,
+                         AR_DETAIL.QUANTITY,
+    		             (select NVL(SUM(AR_DETAIL2.QUANTITY),0) 
+                             from AR_DETAIL_C02 AR_DETAIL2 
+                           where AR_DETAIL.AR_DATE_STR = AR_DETAIL2.AR_DATE_STR 
+                              and AR_DETAIL2.ITEM_NO = 16407
+                              and AR_DETAIL2.PERSON_ID = #PERSON_ID:VARCHAR#) QTY1,
+                          (select NVL(SUM(AR_DETAIL2.QUANTITY),0)
+                             from AR_DETAIL_C02 AR_DETAIL2 
+                           where AR_DETAIL.AR_DATE_STR = AR_DETAIL2.AR_DATE_STR 
+                              and AR_DETAIL2.ITEM_NO = 16408
+                              and AR_DETAIL2.PERSON_ID = #PERSON_ID:VARCHAR#) QTY2,
+                          (select NVL(SUM(AR_DETAIL2.QUANTITY),0)
+                             from AR_DETAIL_C02 AR_DETAIL2 
+                           where AR_DETAIL.AR_DATE_STR = AR_DETAIL2.AR_DATE_STR 
+                              and AR_DETAIL2.ITEM_NO = 16409
+                              and AR_DETAIL2.PERSON_ID = #PERSON_ID:VARCHAR#) QTY3,
+                          (select GET_GLOBAL_NAME(AR_DETAIL2.ITEM_NO,#interLanguage:VARCHAR#) 
+                              from AR_DETAIL_C02 AR_DETAIL2 , AR_ITEM AR_ITEM
+                            where AR_DETAIL.AR_DATE_STR = AR_DETAIL2.AR_DATE_STR 
+                               and AR_DETAIL2.PERSON_ID = #PERSON_ID:VARCHAR#
+                               and AR_DETAIL2.ITEM_NO not in (16407,16408,16409)
+                               and AR_ITEM.ITEM_GROUP_CODE in ('1431','1435','1434')
+                               and AR_DETAIL2.ITEM_NO = AR_ITEM.ITEM_NO 
+                               and rownum =1) REMARK
+               FROM AR_DETAIL_HTSV AR_DETAIL,
+		                 HR_EMPLOYEE,
+		                 HR_DEPARTMENT_NAME,
+		                 SY_GLOBAL_NAME B,
+		                 SY_GLOBAL_NAME C
+             WHERE AR_DETAIL.ITEM_NO in ('16381','16382','16385')
+                   AND AR_DETAIL.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+		           AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+		           AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		           AND AR_DETAIL.SHIFT_NO = B.NO(+)
+		           AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+		           AND AR_DETAIL.ITEM_NO = C.NO(+)
+		           AND C.LANGUAGE(+) = #interLanguage:VARCHAR#
+		           AND HR_EMPLOYEE.PERSON_ID = #PERSON_ID:VARCHAR# 
+		           AND GET_AR_STATNO(HR_EMPLOYEE.PERSON_ID, HR_EMPLOYEE.CPNY_ID) = #STAT_NO:VARCHAR#
+		           AND TO_DATE(AR_DETAIL.AR_DATE_STR,'YYYY/MM/DD') BETWEEN  GET_AR_START_DATE_1(#paMonth:VARCHAR#, #CPNY_ID:VARCHAR#, #STAT_NO:VARCHAR#) AND
+		       GET_AR_END_DATE_1(#paMonth:VARCHAR#, #CPNY_ID:VARCHAR#, #STAT_NO:VARCHAR#)
+		]]>
+		
+		<![CDATA[
+	    	ORDER BY AR_DETAIL.AR_DATE_STR
+		]]>
+	</select>
+	
+	<select id="noSwipingCardListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[	
+			select count(*) cnt
+				  from $AR_DETAIL_TAB$ a, hr_employee e
+				 where a.person_id = e.person_id 
+				   and a.item_no in (141443, 141442, 141441) 
+				   and  (EXISTS(
+			 		  	SELECT 1
+						  FROM AR_SUPERVISOR_INFO
+						 WHERE AR_SUPERVISOR_INFO.DEPTNO = e.DEPTNO
+						   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#)
+			 		  OR e.PERSON_ID = #supervisorPersonId:VARCHAR# )
+			 		  AND  ( EXISTS(
+			 		  	SELECT 1
+						  FROM AR_SUPERVISOR_EMPTYPE_INFO
+						 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = e.EMP_TYPE_CODE
+						   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#  )
+	                   OR  e.PERSON_ID = #supervisorPersonId:VARCHAR# )
+		]]>
+		<isEmpty prepend="" property="beginTime">
+			<isEmpty prepend="AND" property="endTime">
+				<![CDATA[
+					a.ar_date_str =  to_char(sysdate, 'yyyy/mm/dd')
+				]]>
+			</isEmpty>
+		</isEmpty>
+		<!-- 20150204 zyh start -->
+		<isNotEmpty prepend="AND" property="beginTime">
+			<![CDATA[
+				a.ar_date_str >= TO_CHAR(TO_DATE( #beginTime#,'YYYY/MM/DD'),'YYYY/MM/DD') 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			<![CDATA[
+				a.ar_date_str <= TO_CHAR(TO_DATE(#endTime#,'YYYY/MM/DD'),'YYYY/MM/DD') 
+			]]>
+		</isNotEmpty>
+		<!-- 20150204 zyh end -->
+		<isNotEmpty prepend="AND" property="empIdAndName">
+			<![CDATA[
+				( e.empid like upper('%' ||  #empIdAndName# || '%')
+					 or e.local_name  like upper('%' ||  #empIdAndName# || '%' )
+					 or e.chinese_pinyin  like upper('%' ||  #empIdAndName# || '%')
+					 )
+			]]>
+		</isNotEmpty>
+		   
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (
+						  SELECT 1
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=e.deptno
+	                 	START WITH B1.DEPTNO = #DEPTNO#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+			]]>
+		</isNotEmpty>
+		  
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			    e.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     e.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				e.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<select id="getControlItemList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[	
+			SELECT 
+			  ITEM_NO,
+			  CASE WHEN ITEM_NO = 141441
+			     THEN '迟到/早退'
+			  ELSE SHORT_NAME END SHORT_NAME
+		    FROM AR_ITEM
+		   WHERE ACTIVITY = 1
+		     AND ITEM_NO != 141442
+		   ORDER BY SHORT_NAME ASC		  
+		]]>
+	</select>
+	
+	<select id="getMonthControlList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT GET_HR_EMP_NAME(PERSON_ID) PERSONNAME,
+		       GET_EMP_DEPT_NAME(PERSON_ID,'zh') DEPTNAME,
+		       ITEM_NO1,
+		       ROW_NUMBER() OVER(ORDER BY ITEM_NO1 DESC) DESC1,
+		       ITEM_NO2,
+		       ROW_NUMBER() OVER(ORDER BY ITEM_NO2 DESC) DESC2,
+		       ITEM_NO3,
+		       ROW_NUMBER() OVER(ORDER BY ITEM_NO3 DESC) DESC3,
+		       ITEM_NO4,
+		       ROW_NUMBER() OVER(ORDER BY ITEM_NO4 DESC) DESC4,
+		       ITEM_NO5,
+		       ROW_NUMBER() OVER(ORDER BY ITEM_NO5 DESC) DESC5
+		  FROM (SELECT PERSON_ID,
+	                   EMP_TYPE_CODE,
+	                   emp_office,
+		               SUM(DECODE(ITEM_NO,#ITEM1:VARCHAR#,PERSONCOUNT,0)) ITEM_NO1,
+		               SUM(DECODE(ITEM_NO,#ITEM2:VARCHAR#,PERSONCOUNT,0)) ITEM_NO2,
+		               SUM(DECODE(ITEM_NO,#ITEM3:VARCHAR#,PERSONCOUNT,0)) ITEM_NO3,
+		               SUM(DECODE(ITEM_NO,#ITEM4:VARCHAR#,PERSONCOUNT,0)) ITEM_NO4,
+		               SUM(DECODE(ITEM_NO,#ITEM5:VARCHAR#,PERSONCOUNT,0)) ITEM_NO5  
+		          FROM (SELECT COUNT(H.PERSON_ID) PERSONCOUNT,
+				          		 H.PERSON_ID,
+				          		 E.EMP_TYPE_CODE,
+				          		 E.emp_office,
+				                 CASE WHEN H.ITEM_NO ='141442' THEN '141441' ELSE H.ITEM_NO END ITEM_NO,
+				                 E.DEPTNO
+				            FROM AR_DETAIL_HTSV H, HR_EMPLOYEE E
+				           WHERE H.PERSON_ID = E.PERSON_ID
+				             AND E.LOCAL_NAME <> 'admin' 
+		 ]]>
+		 <isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+			     to_date(H.AR_DATE_STR, 'yyyy/mm/dd') 
+						 	>=  to_date(#START_DATE:VARCHAR#, 'yyyy/mm/dd')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				to_date(H.AR_DATE_STR, 'yyyy/mm/dd') 
+						 	<=  to_date(#END_DATE:VARCHAR#, 'yyyy/mm/dd')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+			     E.DEPTNO = #DEPT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[   
+				  AND H.ITEM_NO IN (#ITEM1:VARCHAR#, #ITEM2:VARCHAR#, #ITEM3:VARCHAR#, #ITEM4:VARCHAR#, #ITEM5:VARCHAR#,#ITEM6:VARCHAR#)
+		                 GROUP BY H.PERSON_ID, H.ITEM_NO, E.DEPTNO,E.EMP_TYPE_CODE,E.emp_office) A
+		         GROUP BY A.PERSON_ID,A.EMP_TYPE_CODE,A.emp_office) 
+		 GROUP BY PERSON_ID, ITEM_NO1, ITEM_NO2, ITEM_NO3, ITEM_NO4, ITEM_NO5
+		]]>
+	
+	</select>
+	
+	<select id="getMonthControlListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM (SELECT COUNT(*) COUNT
+			          FROM (SELECT COUNT(H.PERSON_ID) COUNT,
+			                       H.PERSON_ID,
+				          		   E.EMP_TYPE_CODE,
+				          		   E.emp_office,
+			                       H.ITEM_NO,
+			                       E.DEPTNO
+			                  FROM AR_DETAIL_HTSV H, HR_EMPLOYEE E
+			                 WHERE H.PERSON_ID = E.PERSON_ID
+				             AND E.LOCAL_NAME <> 'admin' 
+		]]>
+		 <isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+			     H.AR_DATE_STR >= #START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DAT">
+			<![CDATA[
+			     H.AR_DATE_STR <= #END_DAT:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+			     E.DEPTNO = #DEPT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+				<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			   E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[   
+			                 GROUP BY H.PERSON_ID, H.ITEM_NO, E.DEPTNO,E.EMP_TYPE_CODE,E.emp_office) A
+			         WHERE A.ITEM_NO IN (#ITEM1:VARCHAR#, #ITEM2:VARCHAR#, #ITEM3:VARCHAR#, #ITEM4:VARCHAR#, #ITEM5:VARCHAR#,#ITEM6:VARCHAR#)
+			         GROUP BY A.PERSON_ID) 
+		]]>
+
+	</select>
+	
+	<select id="getAnnualUsageBak" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT *
+			  FROM (SELECT EMPID,
+			               PERSON_ID,
+			               LOCAL_NAME,
+			               POSITION,
+			               POST,
+			               DEPARTMENT,
+			               DISTINGUISH_NAME,
+			               VAC_ID,
+			               STRT_DATE,
+			               END_DATE,
+			               TOT_VAC_CNT,
+			               AR_MONTH,
+			               AR_YEAR,
+			               ANNUAL_VACATION,
+			               (CASE
+			                 WHEN TOT_VAC_CNT <= 0 THEN
+			                  0
+			                 WHEN ANNUAL_VACATION >= TOT_VAC_CNT THEN
+			                  100
+			                 ELSE
+			                  ROUND(ANNUAL_VACATION / TOT_VAC_CNT * 100)
+			               END) ANNUAL_MONTH_PER,
+			               UNIT,
+			               nvl(OUTER_WORK_YEAR,0) OUTER_WORK_YEAR,
+               			   nvl(INER_WORK_YEAR,0) INER_WORK_YEAR,
+			               (nvl(OUTER_WORK_YEAR,0) + nvl(INER_WORK_YEAR,0)) WORK_YEAR,
+			               ANNUAL_VACATION_SUM,
+			               (CASE
+			                 WHEN TOT_VAC_CNT <= 0 THEN
+			                  0
+			                 WHEN ANNUAL_VACATION_SUM >= TOT_VAC_CNT THEN
+			                  100
+			                 ELSE
+			                  ROUND(ANNUAL_VACATION_SUM / TOT_VAC_CNT * 100)
+			               END) ANNUAL_YEAR_PER,
+			               AR_YEAR_SUM,
+			               (CASE
+			                 WHEN TOT_VAC_CNT - ANNUAL_VACATION_SUM <= 0 THEN
+			                  0
+			                 ELSE
+			                  TOT_VAC_CNT - ANNUAL_VACATION_SUM
+			               END) ANNUAL_VACATION_REMAIN,
+			               'PER' ANNUAL_TYPE
+			          FROM AR_VAC_EMP_USED_VIEW VA
+			         WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_YEAR">
+			<![CDATA[
+				AR_YEAR = #AR_YEAR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_MONTH">
+			<![CDATA[
+				AR_MONTH = #AR_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				DEPTNO IN
+	               (SELECT DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 START WITH DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[   
+			UNION ALL
+			        
+			        SELECT MAX(EMPID) EMPID,
+			               MAX(PERSON_ID) PERSON_ID,
+			               MAX(LOCAL_NAME) LOCAL_NAME,
+			               MAX(POSITION) POSITION,
+			               MAX(POST) POST,
+			               MAX(DEPARTMENT) DEPARTMENT,
+			               MAX(DISTINGUISH_NAME) DISTINGUISH_NAME,
+			               MAX(VAC_ID) VAC_ID,
+			               MAX(STRT_DATE) STRT_DATE,
+			               MAX(END_DATE) END_DATE,
+			               SUM(TOT_VAC_CNT) TOT_VAC_CNT,
+			               MAX(AR_MONTH) AR_MONTH,
+			               MAX(AR_YEAR) AR_YEAR,
+			               SUM(ANNUAL_VACATION) ANNUAL_VACATION,
+			               (CASE
+			                 WHEN SUM(TOT_VAC_CNT) <= 0 THEN
+			                  0
+			                 WHEN SUM(ANNUAL_VACATION) >= SUM(TOT_VAC_CNT) THEN
+			                  100
+			                 ELSE
+			                  ROUND(SUM(ANNUAL_VACATION) / SUM(TOT_VAC_CNT) * 100)
+			               END) ANNUAL_MONTH_PER,
+			               MAX(UNIT) UNIT,
+			               SUM(OUTER_WORK_YEAR) OUTER_WORK_YEAR,
+			               SUM(INER_WORK_YEAR) INER_WORK_YEAR,
+			               (nvl(SUM(OUTER_WORK_YEAR),0) + nvl(SUM(INER_WORK_YEAR),0)) WORK_YEAR,
+			               SUM(ANNUAL_VACATION_SUM) ANNUAL_VACATION_SUM,
+			               (CASE
+			                 WHEN SUM(TOT_VAC_CNT) <= 0 THEN
+			                  0
+			                 WHEN SUM(ANNUAL_VACATION_SUM) >= SUM(TOT_VAC_CNT) THEN
+			                  100
+			                 ELSE
+			                  ROUND(SUM(ANNUAL_VACATION_SUM) / SUM(TOT_VAC_CNT) * 100)
+			               END) ANNUAL_YEAR_PER,
+			               MAX(AR_YEAR_SUM),
+			               (CASE
+			                 WHEN (SUM(TOT_VAC_CNT) - SUM(ANNUAL_VACATION_SUM) <= 0) THEN
+			                  0
+			                 ELSE
+			                  SUM(TOT_VAC_CNT) - SUM(ANNUAL_VACATION_SUM)
+			               END) ANNUAL_VACATION_REMAIN,
+			               'TOL' ANNUAL_TYPE
+			          FROM (SELECT EMPID,
+			                       PERSON_ID,
+			                       LOCAL_NAME,
+			                       CPNY_ID,
+			                       POSITION,
+			                       POST,
+			                       DEPARTMENT,
+			                       DISTINGUISH_NAME,
+			                       VAC_ID,
+			                       STRT_DATE,
+			                       END_DATE,
+			                       TOT_VAC_CNT,
+			                       AR_MONTH,
+			                       AR_YEAR,
+			                       ANNUAL_VACATION,
+			                       UNIT,
+			                       nvl(OUTER_WORK_YEAR,0) OUTER_WORK_YEAR,
+               					   nvl(INER_WORK_YEAR,0) INER_WORK_YEAR,
+			                       ANNUAL_VACATION_SUM,
+			                       AR_YEAR_SUM
+			                  FROM AR_VAC_EMP_USED_VIEW VA
+			                 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_YEAR">
+			<![CDATA[
+				AR_YEAR = #AR_YEAR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_MONTH">
+			<![CDATA[
+				AR_MONTH = #AR_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				DEPTNO IN
+	               (SELECT DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 START WITH DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[   
+						)
+			        GROUP BY CPNY_ID) TT
+			 ORDER BY ANNUAL_TYPE, AR_YEAR, AR_MONTH, EMPID
+		]]>
+	</select>
+	
+	<select id="getAnnualUsageCnt"   parameterClass="linkMap" resultClass="int" >
+	  <![CDATA[	
+			SELECT  COUNT(*)
+	        FROM  (SELECT PERSON_ID,
+	                 EMPID,
+	                 EMP_TYPE_CODE,
+	                 emp_office,
+	                 LOCAL_NAME 
+	          FROM (SELECT A.PERSON_ID,
+	                 B.EMPID,
+	                 B.LOCAL_NAME,
+	                 B.EMP_TYPE_CODE,
+	                 B.emp_office 
+	          FROM AR_VAC_EMP A,HR_EMPLOYEE B
+	          WHERE   VAC_ID = #AR_YEAR:VARCHAR#
+	          AND A.PERSON_ID = B.PERSON_ID
+	       ]]>
+	       
+	        <isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		    </isNotEmpty>
+		    
+		    <isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				B.DEPTNO IN
+	               (SELECT DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 START WITH DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+		    ]]>
+		    </isNotEmpty>
+		    <isNotEmpty prepend="AND" property="supervisorPersonId">
+			<![CDATA[
+		     (EXISTS(
+	 		  	SELECT *
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = B.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#
+	 		  )
+	 		  OR B.PERSON_ID = #supervisorPersonId:VARCHAR#)
+	 		 AND  (EXISTS(
+	 		  	SELECT *
+				  FROM AR_SUPERVISOR_EMPTYPE_INFO
+				 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+				   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#
+	 		  )
+	 		  OR B.PERSON_ID = #supervisorPersonId:VARCHAR#)
+		    ]]>
+		    </isNotEmpty>
+		          <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     B.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     B.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				B.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		    	
+	        <![CDATA[  
+	          )
+	          GROUP BY PERSON_ID,EMPID,LOCAL_NAME ,emp_office,EMP_TYPE_CODE) A
+				   			   
+		    ]]>	
+		
+	
+	</select>
+	
+	<select id="getAnnualUsage" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT A.* , TOT_VAC_CNT1 + LAST_YEAR_VAC1 + TOT_VAC_CNT2 + ADD_VAC TOTAL_VAC,
+				CASE WHEN TOT_VAC_CNT1 + LAST_YEAR_VAC1  - USE_VAC > 0 THEN
+					USE_VAC 
+				ELSE
+					TOT_VAC_CNT1 + LAST_YEAR_VAC1
+				END USE_FD_VAC,
+				CASE WHEN TOT_VAC_CNT1 + LAST_YEAR_VAC1 - USE_VAC >= 0 THEN
+					0
+				ELSE
+					USE_VAC - TOT_VAC_CNT1 - LAST_YEAR_VAC1
+				END USE_FL_VAC
+	        FROM  (SELECT PERSON_ID,
+	        		 VAC_ID,
+	                 EMPID,
+	                 LOCAL_NAME,
+	                 EMP_TYPE_CODE,
+	                 emp_office,
+	                 MAX(TOT_VAC_CNT1) TOT_VAC_CNT1,
+	                 MAX(LAST_YEAR_VAC1) LAST_YEAR_VAC1,
+	                 MAX(DEL_VAC1) DEL_VAC1,
+	                 MAX(TOT_VAC_CNT2) TOT_VAC_CNT2,
+	                 MAX(ADD_VAC) ADD_VAC,
+	                 MAX(DEL_VAC2) DEL_VAC2,
+	                 MAX(USE_VAC) USE_VAC
+	          FROM (SELECT A.PERSON_ID,
+	          		 A.VAC_ID,
+	                 B.EMPID,
+	                 B.EMP_TYPE_CODE,
+	                 B.emp_office,
+	                 B.LOCAL_NAME,
+	                 DECODE(VAC_TP,2637,A.TOT_VAC_CNT,0) TOT_VAC_CNT1,
+	                 DECODE(VAC_TP,2637,A.LAST_YEAR_VAC,0) LAST_YEAR_VAC1,
+	                 DECODE(VAC_TP,2637,A.DEL_VAC,0) DEL_VAC1,
+	                 DECODE(VAC_TP,2648,A.DEL_VAC,0) DEL_VAC2,
+	                 DECODE(VAC_TP,2648,A.TOT_VAC_CNT,0) TOT_VAC_CNT2,
+	                 DECODE(VAC_TP,2648,A.ADD_VAC,0) ADD_VAC,
+	                 AR_USE_VACATION_NEW(#AR_YEAR:VARCHAR#,B.PERSON_ID,B.CPNY_ID,'')/8 USE_VAC
+	          FROM AR_VAC_EMP A,HR_EMPLOYEE B
+	          WHERE   VAC_ID = #AR_YEAR:VARCHAR#
+	          AND A.PERSON_ID = B.PERSON_ID
+	          AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+	       ]]>
+	       
+	        <isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		    </isNotEmpty>
+		    
+		    <isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				B.DEPTNO IN
+	               (SELECT DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 START WITH DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+		    ]]>
+		    </isNotEmpty>
+		    <isNotEmpty prepend="AND" property="supervisorPersonId">
+			<![CDATA[
+		     (EXISTS(
+	 		  	SELECT *
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = B.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#
+	 		  )
+	 		  OR B.PERSON_ID = #supervisorPersonId:VARCHAR#)
+	 		 AND  (EXISTS(
+	 		  	SELECT *
+				  FROM AR_SUPERVISOR_EMPTYPE_INFO
+				 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+				   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisorPersonId:VARCHAR#
+	 		  )
+	 		  OR B.PERSON_ID = #supervisorPersonId:VARCHAR#)
+		    ]]>
+		    </isNotEmpty>
+		      <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     B.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     B.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				B.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		    	
+	        <![CDATA[  
+	          )
+	          GROUP BY PERSON_ID,VAC_ID,EMPID,LOCAL_NAME,EMP_TYPE_CODE, emp_office ) A
+				   			   
+		    ]]>
+		   
+	</select>
+	<select id="getMonthWorkNewOne" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			SELECT 
+		<isEmpty property="isCount">
+			<![CDATA[
+		     AR_MONTH,EMPID,LOCAL_NAME,
+              ( ZS_CHIDAO_YIXIA + SY_CHIDAO_YIXIA ) CHIDAO,
+               ( ZS_ZAOTUI_YIXIA + SY_ZAOTUI_YIXIA ) ZAOTUI,
+               (KUANGGONG_ZS + KUANGGONG_SY +  ZS_ZDZT_ZHUAN + SY_ZDZT_ZHUAN ) KUANGGONG,
+               (SHIJIA_ZS + SHIJIA_SY) SHIJIA,
+               (TIAOXIU_HOURS ) YIYONGTIAOXIU,
+                SHIYONG_NIANJIA_DAY  SHIYONG_NIANJIA_DAY,
+                SHIYONG_FULI_DAY  SHIYONG_FULI_DAY,
+                CHUCHAI_DAY CHUCHAI_DAY,
+                (BINGJIA_ZS + BINGJIA_SY) BINGJIA,
+                HUNJIA_DAY  HUNJIA_DAY,
+                (CHANJIA_DAY + LIUCHANJIA_DAY) CHANJIA,
+                SANGJIA_DAY  SANGJIA_DAY,
+                ( PAY_PINGSHI_OT_ZONGJI + PAY_PINGSHI_OT_SY_ZJ) PINGRIJIABAN,
+                (PAY_ZM_OT_ZS_ZJ + PAY_ZM_OT_SY_ZJ   ) ZHOUMO,
+                 ( PAY_FADING_OT_ZS_ZJ + PAY_FADING_OT_SY_ZJ )FADING ,
+                 ZHOUMO_OT_TX_ZJ  TIAOXIU
+                 
+		    ]]>
+		</isEmpty>
+		<isNotEmpty property="isCount">
+			<![CDATA[
+				COUNT(*)
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		          FROM AR_SUMMARY_HTSV
+				   WHERE AR_MONTH = '$paMonth$'
+		        
+		]]>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			     (    EMPID LIKE '%$condition$%'
+			          OR  LOCAL_NAME LIKE '%$condition$%'
+			     )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSONID">
+			<![CDATA[
+			     PERSON_ID = '$PERSONID$'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				GET_AR_STATNO( PERSON_ID,  CPNY_ID) = #STAT_NO:VARCHAR#
+          ]]></isNotEmpty>
+	</select>
+	
+   <select id="getMonthWorkLGETANewOne" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			SELECT 
+		<isEmpty property="isCount">
+			<![CDATA[
+		     AR_MONTH,EMPID,LOCAL_NAME,
+              (ZS_CHIDAO_ONE + SY_CHIDAO_ONE + ZS_CHIDAO_TWO +
+                   SY_CHIDAO_TWO + ZS_CHIDAO_THREE + SY_CHIDAO_THREE) CHIDAO,
+               (ZS_ZAOTUI_TEN + SY_ZAOTUI_TEN + ZS_ZAOTUI_ELE +
+                   SY_ZAOTUI_ELE) ZAOTUI,
+               (KUANGGONG_ZS + KUANGGONG_SY + ZS_CHIDAO_ZHUAN +
+                   SY_CHIDAO_ZHUAN + ZS_ZAOTUI_ZHUAN + SY_ZAOTUI_ZHUAN) KUANGGONG,
+               (SHIJIA_ZS + SHIJIA_SY) SHIJIA,
+               (TIAOXIU_HOURS ) YIYONGTIAOXIU,
+                SHIYONG_NIANJIA_DAY  SHIYONG_NIANJIA_DAY,
+                SHIYONG_FULI_DAY  SHIYONG_FULI_DAY,
+                CHUCHAI_DAY CHUCHAI_DAY,
+                (BINGJIA_ZS + BINGJIA_SY) BINGJIA,
+                HUNJIA_DAY  HUNJIA_DAY,
+                (CHANJIA_DAY + LIUCHANJIA_DAY) CHANJIA,
+                SANGJIA_DAY  SANGJIA_DAY,
+                ( PAY_PINGSHI_OT_ZONGJI + PAY_PINGSHI_OT_SY_ZJ) PINGRIJIABAN,
+                (PAY_ZM_OT_ZS_ZJ + PAY_ZM_OT_SY_ZJ   ) ZHOUMO,
+                 ( PAY_FADING_OT_ZS_ZJ + PAY_FADING_OT_SY_ZJ )FADING ,
+                 ZHOUMO_OT_TX_ZJ  TIAOXIU
+                 
+		    ]]>
+		</isEmpty>
+		<isNotEmpty property="isCount">
+			<![CDATA[
+				COUNT(*)
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		          FROM AR_SUMMARY_HTSV
+				   WHERE AR_MONTH = '$paMonth$'
+		        
+		]]>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			     (    EMPID LIKE '%$condition$%'
+			          OR  LOCAL_NAME LIKE '%$condition$%'
+			     )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PERSONID">
+			<![CDATA[
+			     PERSON_ID = '$PERSONID$'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				GET_AR_STATNO( PERSON_ID,  CPNY_ID) = #STAT_NO:VARCHAR#
+          ]]></isNotEmpty>
+	 
+	</select>
+	
+	<select id="getAnnualUsageFactList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+SELECT HR.LOCAL_NAME,
+       TO_CHAR(E.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS') FROM_TIME,
+       TO_CHAR(E.TO_TIME, 'YYYY-MM-DD HH24:MI:SS') TO_TIME,
+       E.QUANTITY
+  FROM AR_DETAIL_LGECH E, HR_EMPLOYEE HR
+ WHERE E.ITEM_NO = '141456'
+   AND E.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND SUBSTR(E.AR_DATE_STR, 1, 4) = #AR_YEAR:VARCHAR#
+UNION ALL  
+SELECT HR.LOCAL_NAME,
+       TO_CHAR(EE.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS') FROM_TIME,
+       TO_CHAR(EE.TO_TIME, 'YYYY-MM-DD HH24:MI:SS') TO_TIME,
+       EE.QUANTITY
+  FROM AR_DETAIL_LASTMONTH_LGECH EE, HR_EMPLOYEE HR
+ WHERE EE.ITEM_NO = '141456'
+   AND EE.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND SUBSTR(EE.AR_DATE_STR, 1, 4) = #AR_YEAR:VARCHAR# 
+UNION ALL
+SELECT HR.LOCAL_NAME,
+       TO_CHAR(T.Leave_From_Time, 'YYYY-MM-DD HH24:MI:SS') FROM_TIME,
+       TO_CHAR(T.Leave_To_Time, 'YYYY-MM-DD HH24:MI:SS') TO_TIME,
+       t.apply_length QUANTITY
+  FROM ESS_LEAVE_APPLY_TB T, HR_EMPLOYEE HR
+ WHERE T.LEAVE_TYPE_CODE = '26'
+   AND T.AFFIRM_FLAG IN (-1, 0, 4)
+   AND T.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND SUBSTR(TO_CHAR(T.LEAVE_FROM_TIME, 'YYYY-MM-DD HH:MI:SS'), 1, 4) =#AR_YEAR:VARCHAR#
+UNION ALL
+SELECT HR.LOCAL_NAME,
+       TO_CHAR(T.Leave_From_Time, 'YYYY-MM-DD HH24:MI:SS') FROM_TIME,
+       TO_CHAR(T.Leave_To_Time, 'YYYY-MM-DD HH24:MI:SS') TO_TIME,
+       t.apply_length QUANTITY
+  FROM ESS_LEAVE_APPLY_TB T, ESS_LEAVE_APPLY_TB_BATCH TB, HR_EMPLOYEE HR
+ WHERE T.LEAVE_TYPE_CODE = '26'
+   AND T.AFFIRM_FLAG IN (-1, 0, 4)
+   AND T.APPLY_NO = TB.APPLY_NO
+   AND T.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID :VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND SUBSTR(TO_CHAR(T.LEAVE_FROM_TIME, 'YYYY-MM-DD HH:MI:SS'), 1, 4) =#AR_YEAR:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getAnnualUsageLGEList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	 SELECT HR.LOCAL_NAME,E.AR_DATE_STR, TO_CHAR(E.FROM_TIME,'YYYY-MM-DD HH24:MI:SS') FROM_TIME, TO_CHAR(E.TO_TIME,'YYYY-MM-DD HH24:MI:SS') TO_TIME, E.QUANTITY
+  FROM AR_DETAIL_HTSV E, HR_EMPLOYEE HR
+ WHERE E.ITEM_NO = '141456'
+   AND E.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND TO_DATE(E.AR_DATE_STR,'YYYY/MM/DD') between get_ar_start_date(#AR_YEAR:VARCHAR#||'01',
+                                           	#CPNY_ID:VARCHAR#,
+                                            GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#))
+                      and
+                      get_ar_end_date(#AR_YEAR:VARCHAR#||'12',
+                                           	#CPNY_ID:VARCHAR#,
+                                            GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#))
+UNION ALL
+SELECT HR.LOCAL_NAME,'NO_APPROVAL', TO_CHAR(T.Leave_From_Time,'YYYY-MM-DD HH24:MI:SS') FROM_TIME, TO_CHAR(T.Leave_To_Time,'YYYY-MM-DD HH24:MI:SS') TO_TIME, t.apply_length QUANTITY
+  FROM ESS_LEAVE_APPLY_TB T, HR_EMPLOYEE HR
+ WHERE T.LEAVE_TYPE_CODE = '26'
+   AND T.AFFIRM_FLAG IN (0, 4)
+   AND T.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND T.LEAVE_FROM_TIME between get_ar_start_date(#AR_YEAR:VARCHAR#||'01',
+                                           	#CPNY_ID:VARCHAR#,
+                                            GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#))
+                      and
+                      get_ar_end_date(#AR_YEAR:VARCHAR#||'12',
+                                           	#CPNY_ID:VARCHAR#,
+                                            GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#))
+UNION ALL
+SELECT HR.LOCAL_NAME,'NO_APPROVAL', TO_CHAR(T.Leave_From_Time,'YYYY-MM-DD HH24:MI:SS') FROM_TIME, TO_CHAR(T.Leave_To_Time,'YYYY-MM-DD HH24:MI:SS') TO_TIME, t.apply_length QUANTITY
+  FROM ESS_LEAVE_APPLY_TB T,
+       ESS_LEAVE_APPLY_TB_BATCH TB,
+       HR_EMPLOYEE HR
+ WHERE T.LEAVE_TYPE_CODE = '26'
+   AND T.AFFIRM_FLAG IN (0, 4)
+   AND T.APPLY_NO = TB.APPLY_NO
+   AND T.PERSON_ID = HR.PERSON_ID
+   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+   AND TB.LEAVE_FROM_TIME between get_ar_start_date(#AR_YEAR:VARCHAR#||'01',
+                                           	#CPNY_ID:VARCHAR#,
+                                            GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#))
+                      and
+                      get_ar_end_date(#AR_YEAR:VARCHAR#||'12',
+                                           	#CPNY_ID:VARCHAR#,
+                                            GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#))    
+		]]>
+	</select>
+		<select id="getDetailControlList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT GET_HR_EMP_NAME(PERSON_ID) PERSONNAME,
+		       GET_EMP_DEPT_NAME(PERSON_ID,'zh') DEPTNAME,
+		       EMPID,
+		       AR_DATE_STR,
+		       FROM_TIME,
+		       TO_TIME,
+		       QUANTITY,
+		       ITEM_NO,
+		       ITEM_NAME
+		  FROM (SELECT PERSON_ID,
+	                   EMP_TYPE_CODE,
+	                   emp_office,
+	                   AR_DATE_STR,
+	                   FROM_TIME,
+	                   TO_TIME,
+	                   QUANTITY,
+	                   EMPID,
+					   ITEM_NO,
+					   ITEM_NAME
+		          FROM (SELECT /*COUNT(H.PERSON_ID) PERSONCOUNT,*/
+				          		 H.PERSON_ID,
+				          		 H.AR_DATE_STR,
+				          		 TO_CHAR(H.FROM_TIME,'YYYY/MM/DD HH24:mi:ss')FROM_TIME,
+				          		 TO_CHAR(H.TO_TIME,'YYYY/MM/DD HH24:mi:ss') TO_TIME,
+				          		 H.QUANTITY,
+				          		 E.EMPID,
+				          		 E.EMP_TYPE_CODE,
+				          		 E.emp_office,
+				                 H.ITEM_NO,
+				                 AI.SHORT_NAME ITEM_NAME,
+				                 E.DEPTNO
+				            FROM AR_DETAIL_HTSV H, HR_EMPLOYEE E ,AR_ITEM AI
+				           WHERE H.PERSON_ID = E.PERSON_ID
+				             AND E.LOCAL_NAME <> 'admin' 
+				             AND H.ITEM_NO = AI.ITEM_NO
+		 ]]>
+		 <isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+			     to_date(H.AR_DATE_STR, 'yyyy/mm/dd') 
+						 	>=  to_date(#START_DATE:VARCHAR#, 'yyyy/mm/dd')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				to_date(H.AR_DATE_STR, 'yyyy/mm/dd') 
+						 	<=  to_date(#END_DATE:VARCHAR#, 'yyyy/mm/dd')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+			     E.DEPTNO = #DEPT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[   
+				  AND H.ITEM_NO IN (#ITEM1:VARCHAR#, #ITEM2:VARCHAR#, #ITEM3:VARCHAR#, #ITEM4:VARCHAR#, #ITEM5:VARCHAR#,#ITEM6:VARCHAR#)
+		                /* GROUP BY H.PERSON_ID, H.ITEM_NO, E.DEPTNO,E.EMP_TYPE_CODE,E.emp_office,H.AR_DATE_STR*/) A
+		         /*GROUP BY A.PERSON_ID,A.EMP_TYPE_CODE,A.emp_office,A.AR_DATE_STR*/) 
+		 /*GROUP BY PERSON_ID, AR_DATE_STR*/
+		]]>
+	
+	</select>
+	
+	<select id="getDetailControlListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[	
+			SELECT COUNT
+		  FROM (SELECT COUNT
+		          FROM (SELECT COUNT(*) COUNT
+				          		
+				            FROM AR_DETAIL_HTSV H, HR_EMPLOYEE E ,AR_ITEM AI
+				           WHERE H.PERSON_ID = E.PERSON_ID
+				             AND E.LOCAL_NAME <> 'admin' 
+				             AND H.ITEM_NO = AI.ITEM_NO
+		 ]]>
+		 <isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+			     to_date(H.AR_DATE_STR, 'yyyy/mm/dd') 
+						 	>=  to_date(#START_DATE:VARCHAR#, 'yyyy/mm/dd')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				to_date(H.AR_DATE_STR, 'yyyy/mm/dd') 
+						 	<=  to_date(#END_DATE:VARCHAR#, 'yyyy/mm/dd')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+			     E.DEPTNO = #DEPT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[   
+				  AND H.ITEM_NO IN (#ITEM1:VARCHAR#, #ITEM2:VARCHAR#, #ITEM3:VARCHAR#, #ITEM4:VARCHAR#, #ITEM5:VARCHAR#,#ITEM6:VARCHAR#)
+		                /* GROUP BY H.PERSON_ID, H.ITEM_NO, E.DEPTNO,E.EMP_TYPE_CODE,E.emp_office,H.AR_DATE_STR*/) A
+		         /*GROUP BY A.PERSON_ID,A.EMP_TYPE_CODE,A.emp_office,A.AR_DATE_STR*/) 
+		 /*GROUP BY PERSON_ID, AR_DATE_STR*/
+		]]>
+
+	</select>
+	
+	
+	
+	<select id="getAllApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  SELECT EMPID,
+		             LOCAL_NAME,
+		             DEPT_NAME,
+		             PERSON_ID,
+		             APPLY_TIME,
+		             FROM_TIME,
+		             TO_TIME,
+		             APPLY_TYPE,
+		             TYPE_CODE_NAME,
+		             AR_GET_DAY_HOURS(PERSON_ID,ORDER_TIME) DAY_HOURS,
+		             APPLY_LENGTH,
+		             REMARK,
+		             AFFIRM_FLAG,
+		             AFFIRM_FLAG_NAME,
+		             CONFIRM_FLAG,
+		             DECODE(CONFIRM_FLAG,'0','unConfirmed','1','Confirmed','Veto') CONFIRM_FLAG_NAME
+			  FROM (
+			   SELECT HR.EMPID,
+	                  HR.LOCAL_NAME,
+	                  HR.EMP_TYPE_CODE,
+                      HR.EMP_OFFICE,
+	                  HR.DEPTNO,
+	                  GET_DEPT_NAME(HR.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+	                  EL.PERSON_ID,
+	                  TO_CHAR(EL.APPLY_TIME,'YYYY/MM/DD') ORDER_TIME,
+	                  TO_CHAR(EL.APPLY_TIME,'DD/MM/YYYY HH24:MI') APPLY_TIME,
+	                  TO_CHAR(EL.LEAVE_FROM_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+	                  TO_CHAR(EL.LEAVE_TO_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+	                  TO_CHAR(EL.LEAVE_FROM_TIME,'YYYY/MM/DD') ORDER_FROM_TIME,
+                      TO_CHAR(EL.LEAVE_TO_TIME,'YYYY/MM/DD') ORDER_TO_TIME,
+	                  EL.LEAVE_TYPE_NO APPLY_TYPE,
+	                  EL.LEAVE_TYPE_CODE TYPE_CODE,
+	                  GET_GLOBAL_NAME(EL.LEAVE_TYPE_CODE,#interLanguage:VARCHAR#) TYPE_CODE_NAME,
+	                  EL.APPLY_LENGTH,
+	                  EL.LEAVE_REASON REMARK,
+	                  EL.AFFIRM_FLAG,
+	                  GET_GLOBAL_NAME(EL.AFFIRM_FLAG,#interLanguage:VARCHAR#) AFFIRM_FLAG_NAME,
+	                  EL.CONFIRM_FLAG
+	       FROM ESS_LEAVE_APPLY_TB EL,HR_EMPLOYEE HR
+	     WHERE EL.PERSON_ID = HR.PERSON_ID 
+	          AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+	          AND EL.ACTIVITY = 1
+			UNION ALL 
+			     SELECT HR.EMPID,
+	                  HR.LOCAL_NAME,
+	                  HR.EMP_TYPE_CODE,
+                      HR.EMP_OFFICE,
+	                  HR.DEPTNO,
+	                  GET_DEPT_NAME(HR.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+	                  OT.PERSON_ID,
+	                  TO_CHAR(OT.APPLY_TIME,'YYYY/MM/DD') ORDER_TIME,
+	                  TO_CHAR(OT.APPLY_TIME,'DD/MM/YYYY HH24:MI') APPLY_TIME,
+	                  TO_CHAR(OT.OT_FROM_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+	                  TO_CHAR(OT.OT_TO_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+	                  TO_CHAR(OT.OT_FROM_TIME,'YYYY/MM/DD') ORDER_FROM_TIME,
+                      TO_CHAR(OT.OT_TO_TIME,'YYYY/MM/DD') ORDER_TO_TIME,
+	                  OT.OT_TYPE_NO APPLY_TYPE,
+	                  OT.OT_TYPE_CODE TYPE_CODE,	                  
+	                  GET_GLOBAL_NAME(OT.OT_TYPE_CODE,#interLanguage:VARCHAR#) TYPE_CODE_NAME,
+	                  OT.OT_APPLY_HOUR APPLY_LENGTH,
+	                  OT.APPLY_OT_REMARK REMARK,
+	                  OT.AFFIRM_FLAG,
+	                  GET_GLOBAL_NAME(OT.AFFIRM_FLAG,#interLanguage:VARCHAR#) AFFIRM_FLAG_NAME,
+	                  OT.CONFIRM_FLAG
+	       FROM ESS_APPLY_OT OT,HR_EMPLOYEE HR
+	     WHERE OT.PERSON_ID = HR.PERSON_ID
+	          AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+	          AND OT.ACTIVITY = 1
+			UNION ALL
+			     SELECT HR.EMPID,
+	                  HR.LOCAL_NAME,
+	                  HR.EMP_TYPE_CODE,
+                      HR.EMP_OFFICE,
+	                  HR.DEPTNO,
+	                  GET_DEPT_NAME(HR.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+	                  CARD.PERSON_ID,
+	                  TO_CHAR(CARD.APPLY_TIME,'YYYY/MM/DD') ORDER_TIME,
+	                  TO_CHAR(CARD.APPLY_TIME,'DD/MM/YYYY HH24:MI') APPLY_TIME,
+	                  TO_CHAR(CARD.IN_TIME,'DD/MM/YYYY HH24:MI') FROM_TIME,
+	                  TO_CHAR(CARD.OUT_TIME,'DD/MM/YYYY HH24:MI') TO_TIME,
+	                  TO_CHAR(CARD.IN_TIME,'YYYY/MM/DD') ORDER_FROM_TIME,
+                      TO_CHAR(CARD.OUT_TIME,'YYYY/MM/DD') ORDER_TO_TIME,
+	                  '218197' APPLY_TYPE,
+	                  CARD.ITEM_NO TYPE_CODE,
+	                  GET_GLOBAL_NAME(CARD.ITEM_NO,#interLanguage:VARCHAR#) TYPE_CODE_NAME,
+	                  TO_NUMBER(CARD.WORK_HOUR) APPLY_LENGTH,
+	                  CARD.APPLY_REASON REMARK,
+	                  TO_NUMBER(CARD.AFFIRM_FLAG) AFFIRM_FLAG,
+	                  GET_GLOBAL_NAME(CARD.AFFIRM_FLAG,#interLanguage:VARCHAR#) AFFIRM_FLAG_NAME,
+	                  TO_NUMBER(CARD.CONFIRM_FLAG) CONFIRM_FLAG
+	        FROM ESS_CARD_APPLY_TB CARD,HR_EMPLOYEE HR
+	      WHERE CARD.PERSON_ID = HR.PERSON_ID
+	           AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+	           AND CARD.ACTIVITY = 1
+		      ) A 
+		    WHERE 1 = 1
+		 ]]>
+		 <isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+			     A.ORDER_FROM_TIME >= TO_CHAR(TO_DATE(#START_DATE#,'DD/MM/YYYY'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 A.ORDER_TO_TIME <= TO_CHAR(TO_DATE(#END_DATE#,'DD/MM/YYYY'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+			     
+			     A.Deptno in (SELECT DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE CPNY_ID = #interCpnyID:VARCHAR#
+                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+                         START WITH DEPTNO =#DEPT_NO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+			   A.AFFIRM_FLAG =#AFFIRM_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONFIRM_FLAG">
+			<![CDATA[
+			   A.CONFIRM_FLAG =#CONFIRM_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			<![CDATA[
+			   A.APPLY_TYPE =#APPLY_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPE_CODE">
+			<![CDATA[
+			   A.TYPE_CODE =#TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+			     A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+			     A.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[   
+				  ORDER BY A.ORDER_TIME,A.EMPID
+		]]>
+	
+	</select>
+	
+	<select id="getAllApplyListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[	
+			SELECT count(*)
+FROM (  
+ SELECT ALHR.DEPTNO ,
+       get_dept_name(ALHR.DEPTNO,'zh') 部门名称,
+       ALHR.LOCAL_NAME 姓名,
+                     ALHR.EMP_TYPE_CODE,
+       ALHR.emp_office,
+       ALHR.EMPID 社号,
+       'JIAQI' TB_TYPE,
+       AL.LEAVE_TYPE_CODE TYPE_CODE,
+       GET_CODE_NAME(AL.LEAVE_TYPE_CODE,'zh') 申请类型,
+       DECODE(AL.AFFIRM_FLAG ,1,TO_CHAR(AL.UPDATE_DATE,'YYYY/MM/DD'),NULL) 批准日期,
+       TO_CHAR(AL.CREATE_DATE,'YYYY/MM/DD') 申请日期,
+       AL.LEAVE_FROM_TIME 申请开始日期,
+       AL.LEAVE_TO_TIME 申请截止日期,
+       AL.APPLY_LENGTH 申请时长,
+        AL.LEAVE_FROM_TIME R_TIME,
+       AL.REMARK 原因,
+       AL.AFFIRM_FLAG,
+       get_emp_local_name(get_empid(AL.CURRENT_AFFIRM_ID), #interCpnyID:VARCHAR#) 当前审批人,
+       DECODE(AL.AFFIRM_FLAG,1,'通过',
+                             2,'否决',
+                             -1,'暂存',
+                             4,'审批中',
+                             3,'已取消','') 审批状态
+  FROM ESS_LEAVE_APPLY_TB AL,
+       HR_EMPLOYEE ALHR
+WHERE AL.PERSON_ID = ALHR.PERSON_ID
+  AND AL.APPLY_TYPE = 'PERSON'
+  AND ALHR.CPNY_ID = #interCpnyID:VARCHAR#
+UNION ALL
+  SELECT ALHR.DEPTNO ,
+       get_dept_name(ALHR.DEPTNO,'zh') 部门名称,
+       ALHR.LOCAL_NAME 姓名,
+              ALHR.EMP_TYPE_CODE,
+       ALHR.emp_office,
+       ALHR.EMPID 社号,
+        'JIAQI' TB_TYPE,
+       AL.LEAVE_TYPE_CODE TYPE_CODE,
+       GET_CODE_NAME(ALB.LEAVE_TYPE_CODE,'zh') 申请类型,
+       DECODE(AL.AFFIRM_FLAG ,1,TO_CHAR(AL.UPDATE_DATE,'YYYY/MM/DD'),NULL) 批准日期,
+       TO_CHAR(ALB.CREATE_DATE,'YYYY/MM/DD') 申请日期,
+       ALB.LEAVE_FROM_TIME 申请开始日期,
+       ALB.LEAVE_TO_TIME 申请截止日期,
+       ALB.APPLY_LENGTH 申请时长,
+        ALB.LEAVE_FROM_TIME R_TIME,
+       ALB.LEAVE_REASON 原因,
+       AL.AFFIRM_FLAG,
+       get_emp_local_name(get_empid(AL.CURRENT_AFFIRM_ID), #interCpnyID:VARCHAR#) 当前审批人,
+       DECODE(AL.AFFIRM_FLAG,1,'通过',
+                             2,'否决',
+                             -1,'暂存',
+                             4,'审批中',
+                             3,'已取消','') 审批状态
+  FROM ESS_LEAVE_APPLY_TB AL,
+       ESS_LEAVE_APPLY_TB_BATCH ALB,
+       HR_EMPLOYEE ALHR
+WHERE AL.APPLY_NO = ALB.APPLY_NO
+  AND ALB.PERSON_ID = ALHR.PERSON_ID
+  AND AL.APPLY_TYPE = 'BATCH'
+ AND ALHR.CPNY_ID = #interCpnyID:VARCHAR#
+UNION ALL
+SELECT OTHR.DEPTNO ,
+       get_dept_name(OTHR.DEPTNO,'zh') 部门名称,
+       OTHR.LOCAL_NAME 姓名,
+              OTHR.EMP_TYPE_CODE,
+       OTHR.emp_office,
+       OTHR.EMPID 社号,
+        'JIABAN' TB_TYPE,
+       OT.OT_TYPE_CODE TYPE_CODE,
+       GET_CODE_NAME(OT.OT_TYPE_CODE,'zh') 申请类型,
+       DECODE(OT.AFFIRM_FLAG ,1,TO_CHAR(OT.UPDATE_DATE,'YYYY/MM/DD'),NULL) 批准日期,
+       TO_CHAR(OT.CREATE_DATE,'YYYY/MM/DD') 申请日期,
+       OT.OT_FROM_TIME 申请开始日期,
+       OT.OT_TO_TIME 申请截止日期,
+       OT.OT_APPLY_HOUR 申请时长,
+       OT.APPLY_OT_DATE R_TIME,
+       OT.APPLY_OT_REMARK 原因,
+       OT.AFFIRM_FLAG,
+       get_emp_local_name(get_empid(OT.CURRENT_AFFIRM_ID), #interCpnyID:VARCHAR#) 当前审批人,
+       DECODE(OT.AFFIRM_FLAG,1,'通过',
+                             2,'否决',
+                             -1,'暂存',
+                             4,'审批中',
+                             3,'已取消','') 审批状态
+  FROM ESS_APPLY_OT OT,
+       HR_EMPLOYEE OTHR
+WHERE OT.PERSON_ID = OTHR.PERSON_ID
+  AND OT.APPLY_TYPE = 'PERSON'
+  AND OTHR.CPNY_ID = #interCpnyID:VARCHAR#
+UNION ALL
+SELECT OTHR.DEPTNO ,
+       get_dept_name(OTHR.DEPTNO, 'zh') 部门名称,
+       OTHR.LOCAL_NAME 姓名,
+              OTHR.EMP_TYPE_CODE,
+       OTHR.emp_office,
+       OTHR.EMPID 社号,
+        'JIABAN' TB_TYPE,
+       OTB.OT_TYPE_CODE TYPE_CODE,
+       GET_CODE_NAME(OTB.OT_TYPE_CODE, 'zh') 申请类型,
+       DECODE(OT.AFFIRM_FLAG, 1, TO_CHAR(OT.UPDATE_DATE,'YYYY/MM/DD'), NULL) 批准日期,
+       TO_CHAR(OTB.CREATE_DATE,'YYYY/MM/DD') 申请日期,
+       OTB.OT_FROM_TIME 申请开始日期,
+       OTB.OT_TO_TIME 申请截止日期,
+       OTB.OT_APPLY_HOUR 申请时长,
+       OT.APPLY_OT_DATE R_TIME,
+       OTB.APPLY_OT_REMARK 原因,
+       
+       OT.AFFIRM_FLAG,
+       get_emp_local_name(get_empid(OT.CURRENT_AFFIRM_ID),#interCpnyID:VARCHAR#) 当前审批人,
+       DECODE(OT.AFFIRM_FLAG,
+              1,
+              '通过',
+              2,
+              '否决',
+              -1,
+              '暂存',
+              4,
+              '审批中',
+              3,
+              '已取消',
+              '') 审批状态
+  FROM ESS_APPLY_OT OT, 
+       ESS_APPLY_OT_BATCH OTB,
+       HR_EMPLOYEE OTHR
+ WHERE OT.APPLY_NO = OTB.APPLY_NO
+   AND OTB.PERSON_ID = OTHR.PERSON_ID
+   AND OT.APPLY_TYPE = 'BATCH'
+    AND OTHR.CPNY_ID = #interCpnyID:VARCHAR#
+  UNION ALL
+SELECT OTHR.DEPTNO ,
+       get_dept_name(OTHR.DEPTNO,'zh') 部门名称,
+       OTHR.LOCAL_NAME 姓名,
+              OTHR.EMP_TYPE_CODE,
+       OTHR.emp_office,
+       OTHR.EMPID 社号,
+        'KAOQIN' TB_TYPE,
+       OT.DOOR_TYPE TYPE_CODE,
+       DECODE(OT.DOOR_TYPE,'IN','进门','OUT','出门') 申请类型,
+       DECODE(OT.AFFIRM_FLAG ,1,TO_CHAR(OT.UPDATE_DATE,'YYYY/MM/DD'),NULL) 批准日期,
+       TO_CHAR(OT.CREATE_DATE,'YYYY/MM/DD') 申请日期,
+       DECODE(OT.DOOR_TYPE,'IN',OT.R_TIME,'') 申请开始日期,
+       DECODE(OT.DOOR_TYPE,'OUT',OT.R_TIME,'') 申请截止日期,
+       0 申请时长,
+        OT.R_TIME R_TIME, 
+       OT.REMARK 原因,
+       OT.AFFIRM_FLAG,
+       get_emp_local_name(get_empid(OT.CURRENT_AFFIRM_ID), #interCpnyID:VARCHAR#) 当前审批人,
+       DECODE(OT.AFFIRM_FLAG,1,'通过',
+                             2,'否决',
+                             -1,'暂存',
+                             4,'审批中',
+                             3,'已取消','') 审批状态
+  FROM AR_MAC_RECORDS_APPLY OT,
+       HR_EMPLOYEE OTHR
+WHERE OT.PERSON_ID = OTHR.PERSON_ID
+  AND OTHR.CPNY_ID = #interCpnyID:VARCHAR#
+
+UNION ALL
+SELECT OTHR.DEPTNO ,
+       get_dept_name(OTHR.DEPTNO, 'zh') 部门名称,
+       OTHR.LOCAL_NAME 姓名,
+       OTHR.EMP_TYPE_CODE,
+       OTHR.emp_office,
+       OTHR.EMPID 社号,
+        'KAOQIN' TB_TYPE,
+       OT.DOOR_TYPE TYPE_CODE,
+       DECODE(OT.DOOR_TYPE,'IN','进门','OUT','出门') 申请类型,
+       DECODE(OT.AFFIRM_FLAG ,1,TO_CHAR(OT.UPDATE_DATE,'YYYY/MM/DD'),NULL) 批准日期,
+       TO_CHAR(OT.CREATE_DATE,'YYYY/MM/DD') 申请日期,
+       DECODE(OT.DOOR_TYPE,'IN',OT.R_TIME,'') 申请开始日期,
+       DECODE(OT.DOOR_TYPE,'OUT',OT.R_TIME,'') 申请截止日期,
+       0 申请时长,
+         OT.R_TIME R_TIME, 
+       OTB.REMARK 原因,
+       OT.AFFIRM_FLAG,
+       get_emp_local_name(get_empid(OT.CURRENT_AFFIRM_ID), #interCpnyID:VARCHAR#) 当前审批人,
+       DECODE(OT.AFFIRM_FLAG,
+              1,
+              '通过',
+              2,
+              '否决',
+              -1,
+              '暂存',
+              4,
+              '审批中',
+              3,
+              '已取消',
+              '') 审批状态
+  FROM AR_MAC_RECORDS_APPLY OT, 
+       AR_MAC_RECORDS_APPLY_BATCH OTB,
+       HR_EMPLOYEE OTHR
+ WHERE OT.RECORD_NO = OTB.RECORD_NO
+   AND OTB.PERSON_ID = OTHR.PERSON_ID
+    AND OTHR.CPNY_ID = #interCpnyID:VARCHAR#
+   ) AAA
+   WHERE 1=1
+		 ]]>
+		 <isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+			     AAA.R_TIME >=TO_DATE(#START_DATE#||'000000','YYYY-MM-DD HH24:MI:SS')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 AAA.R_TIME <=TO_DATE(#END_DATE#||'235959','YYYY-MM-DD HH24:MI:SS')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+			     
+			     AAA.Deptno in (SELECT DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE CPNY_ID = #interCpnyID:VARCHAR#
+                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+                         START WITH DEPTNO =#DEPT_NO:VARCHAR#
+                          AND DEPTNO IN (SELECT DEPTNO FROM AR_SUPERVISOR_INFO WHERE PERSON_ID = #PERSON_ID:VARCHAR#)
+                         )
+		    ]]>
+		    
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+			AAA.AFFIRM_FLAG =#AFFIRM_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="TB_TYPE">
+			<![CDATA[
+			AAA.TB_TYPE =#TB_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPE_CODE">
+			<![CDATA[
+			AAA.TYPE_CODE =#TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     AAA.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     AAA.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				AAA.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<select id="getItemForApplyList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[	
+			SELECT SP.CODE_NO  ITEM_NO,
+			       NVL(T.DESCRIPTION,'')	DESCRIPTION,
+			       T.DEPTH,
+			       NVL(T.ORDERNO,'')	ORDERNO,
+			       T.PARENT_CODE_NO,
+			       S1.CONTENT SHORT_NAME
+			  FROM SY_CODE        T,
+			       SY_CODE_PARAM  SP,
+			       SY_GLOBAL_NAME S1
+			 WHERE T.PARENT_CODE_NO = #PARENT_CODE_NO:VARCHAR#
+			   AND T.CODE_NO = SP.CODE_NO
+			   AND SP.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND T.CODE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND T.ACTIVITY = 1
+		    
+		]]>		
+				<![CDATA[	
+		   ORDER BY S1.CONTENT ASC		  
+		]]>
+	</select>
+	
+		<select id="getItemForKaoQinList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[	
+			 SELECT 
+		       T.ITEM_NO,
+		       T.ITEM_GROUP_CODE,
+		       T.SHORT_NAME
+		       FROM AR_ITEM T
+		       WHERE T.ITEM_GROUP_CODE= #PARENT_CODE_NO:VARCHAR#
+		    
+		]]>		
+				
+	</select>
+</sqlMap>

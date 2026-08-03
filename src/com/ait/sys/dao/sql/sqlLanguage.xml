@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.language">
+	
+	<select id="getSyLanguageListByActivity" resultClass="linkMap">
+		<![CDATA[
+			SELECT LANGUAGE,
+				   DESCRIPTION,
+				   '' CONTENT
+			FROM SY_LANGUAGE			
+			WHERE ACTIVITY = 1
+		]]>
+	</select>
+	
+	<select id="getSyLanguageNameListByActivity" resultClass="linkMap">
+		<![CDATA[
+			SELECT SY_LANGUAGE.LANGUAGE,
+				   SY_LANGUAGE.DESCRIPTION,
+				   SY_GLOBAL_NAME.SEQ,
+				   SY_GLOBAL_NAME.NO,
+				   SY_GLOBAL_NAME.CONTENT
+			FROM SY_LANGUAGE,
+			     SY_GLOBAL_NAME
+			WHERE SY_LANGUAGE.LANGUAGE = SY_GLOBAL_NAME.LANGUAGE(+)
+				AND SY_LANGUAGE.ACTIVITY = 1
+			     
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  SY_GLOBAL_NAME.NO(+) = #NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY SY_GLOBAL_NAME.NO
+		]]>	  
+	</select>
+	
+	<select id="getSyGlobalNameNo" resultClass="int">
+		<![CDATA[
+			SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+		]]>	  
+	</select>
+	
+	<insert id="insertSyGlobalName" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_GLOBAL_NAME
+			(SEQ,
+			 NO,
+			 LANGUAGE,
+			 CONTENT,
+			 CREATED_BY,
+			 CREATE_DATE
+			 )
+			 VALUES
+			 (SY_GLOBAL_SEQ.NEXTVAL,
+			  #NO:VARCHAR#,
+			  #LANGUAGE:VARCHAR#,
+			  #CONTENT:VARCHAR#,
+			  #CREATED_BY:VARCHAR#,
+			  SYSDATE
+			 )
+		]]>	  
+	</insert>
+	
+	<delete id="deleteSyGlobalName" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM SY_GLOBAL_NAME WHERE NO = #NO:VARCHAR#
+		]]>	  
+	</delete>
+	
+</sqlMap>

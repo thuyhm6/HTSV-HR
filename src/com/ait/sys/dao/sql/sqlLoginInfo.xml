@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.loginInfo">
+	
+	<select id="getLoginInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID,
+			       HR.LOCAL_NAME AS EMP_NAME,
+			       HDN.CONTENT AS DEPT_NAME,
+			       SY.CONTENT CPNYNAME,
+			       LI.IP,
+			       TO_CHAR(LI.LOGIN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS LOGIN_DATE
+			  FROM HR_EMPLOYEE        HR,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_LOGIN_INFO      LI,
+			       HR_COMPANY         HC,
+			       SY_GLOBAL_NAME     SY
+			 WHERE HR.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#  
+			   AND HR.PERSON_ID = LI.PERSON_ID
+			   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND HR.CPNY_ID = HC.CPNY_ID(+)
+			   AND HC.CPNY_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#  
+		]]>	 
+		<isNotEmpty prepend="AND" property="EMP_INFO">
+			<![CDATA[
+		   		(HR.LOCAL_NAME like  '%'||#EMP_INFO:VARCHAR#||'%' OR HR.EMPID LIKE  '%'||#EMP_INFO:VARCHAR#||'%')
+		   ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+	   			TO_CHAR(LI.LOGIN_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+	   		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+	   			TO_CHAR(LI.LOGIN_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+	   		]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY LI.LOGIN_DATE DESC,HR.EMPID
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getLoginInfoCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM SY_LOGIN_INFO LI, HR_EMPLOYEE HR
+			 WHERE HR.PERSON_ID = LI.PERSON_ID
+			   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>	  
+		<isNotEmpty prepend="AND" property="EMP_INFO">
+		   (HR.LOCAL_NAME like  '%'||#EMP_INFO#||'%' OR HR.EMPID LIKE  '%'||#EMP_INFO#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+	   			TO_CHAR(LI.LOGIN_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+	   		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+	   			TO_CHAR(LI.LOGIN_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+	   		]]>
+		</isNotEmpty>
+	</select>
+	
+</sqlMap>

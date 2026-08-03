@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.recordTestList">
+<!-- 打卡记录查看 -->
+	<select id="getRecordTestList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT H.EMPID,
+		             H.LOCAL_NAME,
+		             H.CHINESE_PINYIN,
+		             H.ENGLISH_NAME,
+		             H.KOREAN_NAME,
+		             H.STATUS_CODE,
+		             H.DATE_STARTED,
+	                 H.JOIN_COMPANY_DATE,
+	                 H.WORK_AREA,
+	                 H.POSITION_NO,
+	                 POSITION.CONTENT POSITION_NAME,
+	                 H.POST_NO,
+	                 POST.CONTENT POST_NAME,
+	                 H.DEPTNO,
+	                 HDN.CONTENT DEPT_NAME,
+	                 EC.RECORD_TEST_NO,
+	                 EC.RECORD_TEST_ADD,
+	                 CASE WHEN EC.RECORD_TEST_DATE IS NOT NULL THEN
+	                   TO_CHAR(EC.RECORD_TEST_DATE,'YYYY-MM-DD HH24:MI:SS')
+	                 ELSE 
+	                   '未打卡'
+	                 END RECORD_TEST_DATE,
+	                 EC.RECORD_TEST_REMARK
+	            FROM (select * from ESS_RECORD_TEST  where #RECORD_TEST_DATE:VARCHAR# = TO_CHAR(RECORD_TEST_DATE,'yyyy-mm-dd') ) EC,
+	                 HR_EMPLOYEE          H,
+	                 SY_GLOBAL_NAME       POST,
+	                 SY_GLOBAL_NAME       POSITION, 
+	                 HR_DEPARTMENT_NAME   HDN
+	           WHERE H.PERSON_ID = EC.PERSON_ID(+)
+	             and H.DEPTNO = HDN.DEPTNO(+)
+	             AND H.POST_NO = POST.NO(+)
+	             AND H.POSITION_NO = POSITION.NO(+) 
+	             AND H.Cpny_Id = #Cpny_Id:VARCHAR#
+	             AND ( H.Date_Left is null 
+                 OR H.Date_Left > sysdate)
+	             AND HDN.LANGUAGE (+) = 'zh'
+	             AND POST.LANGUAGE(+) = 'zh'
+	             AND POSITION.LANGUAGE (+) = 'zh' 
+   		]]>
+   		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				H.DEPTNO = #DEPT_NO:NUMBER#
+		    ]]>
+		</isNotEmpty>
+   		<isNotEmpty prepend="AND" property="KEYTAPE1">
+			<![CDATA[
+				EC.RECORD_TEST_DATE is null
+		    ]]>
+		</isNotEmpty>
+   		<isNotEmpty prepend="AND" property="KEYTAPE2">
+			<![CDATA[
+				EC.RECORD_TEST_DATE is not null
+		    ]]>
+		</isNotEmpty>
+		
+   		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+   		<![CDATA[
+				ORDER BY RECORD_TEST_DATE 
+			]]>
+	</select>
+	
+	<select id="getRecordTestCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0)
+			   FROM (select * from ESS_RECORD_TEST  where #RECORD_TEST_DATE:VARCHAR# = TO_CHAR(RECORD_TEST_DATE,'yyyy-mm-dd') ) EC,
+	                 HR_EMPLOYEE          H,
+	                 SY_GLOBAL_NAME       POST,
+	                 SY_GLOBAL_NAME       POSITION, 
+	                 HR_DEPARTMENT_NAME   HDN
+	           WHERE H.PERSON_ID = EC.PERSON_ID(+)
+	             and H.DEPTNO = HDN.DEPTNO(+)
+	             AND H.POST_NO = POST.NO(+)
+	             AND H.POSITION_NO = POSITION.NO(+)
+	             AND H.Cpny_Id = #Cpny_Id:VARCHAR#
+	             AND ( H.Date_Left is null 
+                 OR H.Date_Left > sysdate)
+	             AND HDN.LANGUAGE (+) = 'zh'
+	             AND POST.LANGUAGE(+) = 'zh'
+	             AND POSITION.LANGUAGE (+) = 'zh' 
+			]]>
+   		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				H.DEPTNO = #DEPT_NO:NUMBER#
+		    ]]>
+		</isNotEmpty>
+   		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		    </isNotEmpty>
+		
+	</select>
+</sqlMap>

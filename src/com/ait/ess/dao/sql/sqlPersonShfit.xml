@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.personShift">
+	<!--获取个人班次信息 -->
+	<select id="getPersonShift" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		      SELECT TO_CHAR(TO_DATE(DDATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') DDATE_STR,
+		      	   GET_GLOBAL_NAME(get_ar_shiftno(#PERSON_ID#,to_char(AC.DDATE, 'yyyy/mm/dd'),AC.CPNY_ID),#interLanguage#) OVERTYPEID_NAME,
+			       GET_GLOBAL_NAME(SHIFT.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME,
+			       GET_AR_ALL_DATETYPE(#supervisorPersonId:VARCHAR#,DDATE_STR,AC.CPNY_ID) DATE_TYPE,
+			       GET_GLOBAL_NAME(GET_AR_ALL_DATETYPE(#supervisorPersonId:VARCHAR#,DDATE_STR,AC.CPNY_ID),#interLanguage:VARCHAR#) DATE_NAME,
+			       TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#supervisorPersonId:VARCHAR#,DDATE_STR,AC.CPNY_ID),'YYYY-MM-DD HH24:MI'),'DD/MM/YYYY HH24:MI') SHIFT_START_TIME,
+			       TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#supervisorPersonId:VARCHAR#,DDATE_STR,AC.CPNY_ID),'YYYY-MM-DD HH24:MI'),'DD/MM/YYYY HH24:MI') SHIFT_END_TIME
+			  FROM AR_CALENDER AC,AR_SHIFT020 SHIFT
+			 WHERE GET_AR_SHIFTNO(#supervisorPersonId:VARCHAR#,DDATE_STR,CPNY_ID) = SHIFT.SHIFT_NO
+			   AND AC.CPNY_ID = #interCpnyID:VARCHAR#
+			   ]]>
+        <isNotEmpty prepend="AND" property="sDate">
+			<![CDATA[
+				DDATE_STR >=  TO_CHAR(TO_DATE(#sDate:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+			]]>
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="eDate">
+			<![CDATA[
+				DDATE_STR <=  TO_CHAR(TO_DATE(#eDate:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			   GROUP BY DDATE_STR,SHIFT.SHIFT_NO,AC.CPNY_ID,AC.OVERTYPEID,AC.DDATE
+			   ORDER BY DDATE_STR
+		]]>
+	</select>
+	<!--个人班组经历变更查询 -->
+	<select id="viewArShiftGroupList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		       SELECT  HRE.LOCAL_NAME,
+               HRE.EMPID,
+               get_dept_name(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+               get_global_name(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POST_GRADE,
+               ARSM.PERSON_ID,
+               ARSM.SHIFT_NO,
+               get_global_name(ARSM.BEFOR_SHIFT_NO,#interLanguage:VARCHAR#)BEFOR_SHIFT_NO,
+               get_global_name(ARSM.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME ,
+               TO_CHAR(ARSM.START_DATE,'DD/MM/YYYY')START_DATE,
+               ARSM.REMARK,
+                  HRE.DEPTNO,
+                  ARSM.AR_SHIFTGROUP_MANAGE_NO,
+                  get_emp_local_name(ARSM.CREATED_BY,#interCpnyID:VARCHAR#) || ' '||ARSM.CREATED_IP CREATED_BY,
+                  TO_CHAR(ARSM.CREATE_DATE,'DD/MM/YYYY HH24:MI')CREATE_DATE
+        FROM AR_SHIFTGROUP_MANAGEMENT ARSM,HR_EMPLOYEE HRE
+				WHERE ARSM.PERSON_ID = HRE.PERSON_ID AND ARSM.ACTIVITY = 1
+				  AND ARSM.PERSON_ID =#PERSON_ID:VARCHAR#
+				  AND HRE.CPNY_ID=#interCpnyID:VARCHAR#
+			   ]]>
+        <isNotEmpty property="sDate">
+				<isEmpty prepend="AND" property="eDate">
+						ARSM.START_DATE >=  to_date(#sDate:VARCHAR#,'DD/MM/YYYY')
+				</isEmpty> 
+		</isNotEmpty>
+        <isNotEmpty property="eDate">
+				<isEmpty prepend="AND" property="sDate">
+						to_date(#eDate:VARCHAR#,'DD/MM/YYYY') >= ARSM.START_DATE
+				</isEmpty> 
+		</isNotEmpty>
+        <isNotEmpty property="sDate">
+				<isNotEmpty prepend="AND" property="eDate">
+						ARSM.START_DATE between  to_date(#sDate:VARCHAR#,'DD/MM/YYYY')  and  to_date(#eDate:VARCHAR#,'DD/MM/YYYY')
+				</isNotEmpty> 
+		</isNotEmpty>
+        <isNotEmpty prepend="AND"    property="GROUOP_ID">
+				ARSM.SHIFT_NO = #GROUOP_ID:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+		  ORDER BY ARSM.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<select id="getPersonShiftCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			      SELECT COUNT(*)
+             FROM AR_CALENDER,
+		           (SELECT T1.SHIFT_NO SCHEDULE_SHIFT_NO,
+		                   T1.AR_DATE_STR,
+		                   T2.DATATYPE
+		              FROM AR_SCHEDULE_HTSV T1,
+		                   AR_SHIFT010 T2
+		             WHERE T1.SHIFT_NO = T2.SHIFT_NO
+		               AND T1.PERSON_ID = #PERSON_ID:VARCHAR#) T_SCHEDULE,
+		           SY_GLOBAL_NAME SY1,
+		           SY_GLOBAL_NAME SY2,
+		           SY_GLOBAL_NAME SY3
+		     WHERE AR_CALENDER.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND AR_CALENDER.DDATE = to_date(T_SCHEDULE.AR_DATE_STR(+),'yyyy-mm-dd')
+		       AND AR_CALENDER.TYPEID = SY1.NO(+)
+		       AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		       AND AR_CALENDER.SHIFT_NO = SY2.NO(+)
+		       AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		       AND T_SCHEDULE.DATATYPE = SY3.NO(+)
+		       AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		 <isNotEmpty property="sDate">
+				<isNotEmpty prepend="AND" property="eDate">
+						 AR_CALENDER.DDATE between  to_date(#sDate#,'YYYY/MM/DD')  and  to_date(#eDate#,'YYYY/MM/DD')
+				</isNotEmpty> 
+		</isNotEmpty>
+		<![CDATA[
+		  ORDER BY AR_CALENDER.DDATE 
+		]]>
+	</select>
+	
+</sqlMap>

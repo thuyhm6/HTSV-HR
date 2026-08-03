@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.hrmAffirm">
+	<select id="getHrmAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TRANS_PARAM_NO,
+			             APPLY_TYPE,
+			             ESS.ACTIVITY,
+			             SG.CONTENT AS APPLY_NAME,
+			             TO_CHAR(ESS.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+			             ESS.CREATED_BY,
+			             TO_CHAR(ESS.UPDATE_DATE, 'YYYY-MM-DD') AS UPDATE_DATE,
+			             ESS.UPDATED_BY,
+			             ESS.DUTY_NO,
+			             SG2.CONTENT DUTY_NAME
+			        FROM HR_TRANS_PARAM ESS, SY_CODE SY, SY_GLOBAL_NAME SG, SY_GLOBAL_NAME SG2
+			       WHERE ESS.APPLY_TYPE = SY.CODE_NO(+)
+			         AND ESS.CPNY_ID=#interCpnyID:VARCHAR#
+			         AND SG.LANGUAGE(+) =#interLanguage:VARCHAR#  
+			         AND SG2.LANGUAGE(+) =#interLanguage:VARCHAR#   
+			         AND SG.NO(+) = SY.CODE_NO
+			         AND SG2.NO(+)=ESS.DUTY_NO
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_PARAM_NO">
+			TRANS_PARAM_NO = #TRANS_PARAM_NO:NUMERIC#
+		</isNotEmpty>
+		<![CDATA[ ORDER BY APPLY_TYPE	]]>
+	</select>
+	<select id="getHrmAffirmListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_TRANS_PARAM ESS, SY_CODE SY, SY_GLOBAL_NAME SG
+			 WHERE SG.NO(+) = SY.CODE_NO
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#  
+			   AND ESS.APPLY_TYPE = SY.CODE_NO(+)
+			   AND ESS.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_PARAM_NO">
+			TRANS_PARAM_NO = #TRANS_PARAM_NO:NUMERIC#
+		</isNotEmpty>
+		<![CDATA[ ORDER BY APPLY_TYPE	]]>
+	</select>
+	<select id="getApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.CODE_NO AS CODE_NO,
+			        S.CONTENT AS CODENAME
+			  FROM SY_CODE A, 
+			       SY_CODE_PARAM SC, 
+			       SY_GLOBAL_NAME S
+			 WHERE EXISTS (SELECT C.CODE_NO
+			          FROM SY_CODE C, SY_CODE_PARAM P
+			         WHERE C.PARENT_CODE_NO = 1358
+			           AND C.CODE_NO = P.CODE_NO
+			           AND P.CPNY_ID = #interCpnyID:VARCHAR#
+			           AND C.ACTIVITY=1
+			           AND C.CODE_NO = A.PARENT_CODE_NO)
+			   AND A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.ACTIVITY=1
+			   ORDER BY  A.PARENT_CODE_NO,A.ORDERNO
+
+		]]>
+	</select>
+	
+	
+	<select id="getApplyListNew" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.CODE_NO AS CODE_NO,
+			        S.CONTENT AS CODENAME
+			  FROM SY_CODE A, 
+			       SY_CODE_PARAM SC, 
+			       SY_GLOBAL_NAME S
+			 WHERE A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.CODE_NO NOT IN (31,21,218107)
+			   AND A.PARENT_CODE_NO = 16413
+			   AND A.ACTIVITY=1
+			   ORDER BY  A.PARENT_CODE_NO,A.ORDERNO
+
+		]]>
+	</select>
+	<select id="getDutyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT T.DUTY_NO,SG.CONTENT DUTYNAME
+				  FROM HR_DUTY T, 
+				  SY_GLOBAL_NAME SG
+				WHERE T.DUTY_NO = SG.NO(+)
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND CPNY_ID =#interCpnyID:VARCHAR#
+				   AND T.ACTIVITY=1
+		]]>
+	</select>
+	<select id="getPostList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT distinct (S.DUTY_NO) DUTY_NO, SG.CONTENT AS POSTNAME, S.Orderno
+			     FROM SY_AFFIRMOR_LIST S, 
+			          SY_GLOBAL_NAME SG,
+			          HR_DEPARTMENT_NAME HD
+			    WHERE S.DUTY_NO = SG.NO(+)
+			      AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			      AND S.DEPT_NO = HD.DEPTNO(+)
+			      AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			      AND S.CPNY_ID = #interCpnyID:VARCHAR#
+			    ORDER BY S.Orderno
+		]]>
+	</select>
+	<select id="getEssLeaveApplyParamNo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT HR_TRANS_PARAM_SEQ.NEXTVAL FROM DUAL		
+		]]>
+	</select>
+	<insert id="saveHrmAffirmInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  HR_TRANS_PARAM ( 
+				   TRANS_PARAM_NO,
+			       APPLY_TYPE,
+			       ACTIVITY,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       DEPTNO,
+			       CPNY_ID,
+			       DUTY_NO
+			 ) VALUES
+			 (
+			 	   #TRANS_PARAM_NO:NUMERIC#,
+			       #APPLY_TYPE:VARCHAR#,
+			       1,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #serchDept:VARCHAR#,
+			       #interCpnyID:VARCHAR#,
+			       #DUTY_NO:VARCHAR#
+			 )   
+    	]]>
+	</insert>
+	 <insert id="saveHrmAffirmParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  HR_TRANS_AFFIRM_PARAM (
+					TRANS_AFFIRM_PARAM_NO,
+					TRANS_PARAM_NO,
+					AFFIRM_LEVEL,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					CPNY_ID,
+					DUTY_NO
+			 ) VALUES
+			 (
+			 	   HR_TRANS_AFFIRM_PARAM_SEQ.NEXTVAL,
+				   #TRANS_PARAM_NO:NUMERIC#,
+			       #AFFIRM_LEVEL:VARCHAR#,
+			       1,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #interCpnyID:VARCHAR#,
+			       #DUTY_NO:VARCHAR#
+			 )    
+    	]]>
+	</insert>
+	<update id="updateHrmAffirmInfo" parameterClass="linkMap">
+	     UPDATE HR_TRANS_PARAM 
+	           SET APPLY_TYPE=#APPLY_TYPE:VARCHAR#,
+			       UPDATE_DATE=SYSDATE,
+			       UPDATED_BY=#UPDATED_BY:VARCHAR#
+		WHERE TRANS_PARAM_NO=#TRANS_PARAM_NO:VARCHAR#
+	</update>
+	
+	<select id="getDetailParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT A.TRANS_PARAM_NO,
+				       B.DUTY_NO,
+				       S.CONTENT DUTY_NAME,
+				       B.TRANS_AFFIRM_PARAM_NO,
+				       B.AFFIRM_LEVEL,
+				       B.CPNY_ID
+				  FROM HR_TRANS_PARAM A, 
+				       HR_TRANS_AFFIRM_PARAM B, 
+				       SY_GLOBAL_NAME S
+				 WHERE A.TRANS_PARAM_NO = B.TRANS_PARAM_NO
+				   AND B.DUTY_NO = S.NO(+)
+				   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND B.CPNY_ID=#interCpnyID:VARCHAR#
+				 
+		]]>
+		<isNotEmpty prepend="and" property="TRANS_PARAM_NO">
+			A.TRANS_PARAM_NO = #TRANS_PARAM_NO:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DUTY_NO_C">
+			A.DUTY_NO = #DUTY_NO_C:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="APPLY_TYPE_C">
+			A.APPLY_TYPE = #APPLY_TYPE_C:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.AFFIRM_LEVEL
+		]]>
+	</select>  
+	<delete id="deleteHrmApplyInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_TRANS_PARAM WHERE TRANS_PARAM_NO=#TRANS_PARAM_NO:NUBRIC#         
+		]]>
+	</delete> 
+	<delete id="deleteHrmApplyAffirmParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_TRANS_AFFIRM_PARAM WHERE TRANS_PARAM_NO=#TRANS_PARAM_NO:NUBRIC#         
+		]]>
+	</delete> 
+	<select id="validateExistsDutyApplyTypeCpnyId" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_LEAVE_APPLY_PARAM ESS 
+			 WHERE ESS.APPLY_TYPE =#APPLY_TYPE:VARCHAR#
+			  	   AND ESS.CPNY_ID=#interCpnyID:VARCHAR#
+			  	   AND ESS.EMP_TYPE = #EMP_TYPE:VARCHAR#
+			  	   AND ESS.DUTY_NO = #DUTY_NO:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_PARAM_NO">
+			<![CDATA[
+			   ESS.APPLY_PARAM_NO<> #APPLY_PARAM_NO:NUMERIC#
+			]]>
+		</isNotEmpty>
+	</select>
+	 
+</sqlMap>

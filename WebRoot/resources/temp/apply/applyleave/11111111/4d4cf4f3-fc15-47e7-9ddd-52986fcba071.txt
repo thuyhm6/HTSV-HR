@@ -1,0 +1,10 @@
+update hr_employee h
+   set (h.deptno,h.emp_type_code,h.main_business,h.post_family,
+   h.post_grade_no, h.cost_center) = (select h.deptno,h.emp_type_code,h.main_business,h.post_family,
+                                             h.post_grade_no, h.cost_center
+                                             from hr_experience_inside hei
+                                            where h.person_id = hei.person_id
+                                              and hei.activity = '1'
+                                              and hei.start_date <= sysdate
+                                              and hei.start_date >sysdate - 1)                                                  
+ where h.person_id in (select person_id from hr_experience_inside)

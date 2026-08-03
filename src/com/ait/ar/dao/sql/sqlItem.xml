@@ -1,0 +1,829 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.item">
+
+	<select id="getItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_ID,
+				   T.ITEM_NO,
+			       S1.CONTENT ITEM_NAME,
+			       T.SHORT_NAME,
+			       T.ITEM_GROUP_CODE,
+			       S2.CONTENT AS ITEM_GROUP,
+			      
+			       T.DESCRIPTION,
+			       T.ACTIVITY
+			  FROM AR_ITEM T,
+			  	   SY_GLOBAL_NAME S1,
+			  	   SY_GLOBAL_NAME S2
+			 WHERE T.ITEM_NO = S1.NO(+)
+   			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.ITEM_GROUP_CODE = S2.NO(+)
+   			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 
+		]]>	
+		<isNotEmpty prepend="AND" property="NO">
+			<isEmpty prepend="" property="PRO_NO">
+				<![CDATA[
+			 		  T.ITEM_NO = #NO:VARCHAR#
+			    ]]>
+			</isEmpty>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID = #ITEM_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+		   <![CDATA[
+			 		S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		   ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+				ORDER BY T.ITEM_GROUP_CODE DESC, T.ITEM_ID
+		]]>
+	</select>
+	
+	
+	<select id="getItemListSelect" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_ID,
+				   T.ITEM_NO,
+			       S1.CONTENT ITEM_NAME
+			  FROM AR_ITEM T,
+			  	   SY_GLOBAL_NAME S1
+			 WHERE T.ITEM_NO = S1.NO(+)
+   			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.ITEM_NO NOT IN (SELECT P.ITEM_NO FROM AR_ITEM_PARAM P WHERE P.CPNY_ID = #CPNY_ID:VARCHAR# )
+   			   AND T.ACTIVITY = 1
+		]]>	
+	</select>
+	
+	<select id="getItemCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+				COUNT(*)
+   			FROM AR_ITEM T,
+			  	 SY_GLOBAL_NAME S1,
+			  	 SY_GLOBAL_NAME S2
+			WHERE T.ITEM_NO = S1.NO(+)
+   			   AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.ITEM_GROUP_CODE = S2.NO(+)
+   			   AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>	
+		  
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+			 	T.ITEM_ID = #ITEM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+				S1.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="addItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_ITEM (
+					ITEM_NO,
+					SHORT_NAME,
+					DESCRIPTION,
+					 
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					ITEM_GROUP_CODE,
+					ITEM_ID
+				)
+				VALUES(
+					#NO:VARCHAR#,
+					#SHORT_NAME:VARCAHR#,
+					#DESCRIPTION:VARCHAR#,
+					 
+					#ACTIVITY:NUMERIC#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					#ITEM_GROUP_CODE:VARCHAR#,
+					#ITEM_ID:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<insert id="addItemInfoAffirm" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_ITEM (
+					ITEM_NO,
+					SHORT_NAME,
+					DESCRIPTION,
+					HR_POLICY,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					ITEM_GROUP_CODE,
+					ITEM_ID
+				)
+				VALUES(
+					#ITEM_NO:VARCHAR#,
+					#SHORT_NAME:VARCAHR#,
+					#DESCRIPTION:VARCHAR#,
+					#HR_POLICY:VARCHAR#,
+					#ACTIVITY:NUMERIC#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					#ITEM_GROUP_CODE:VARCHAR#,
+					#ITEM_ID:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<update id="updateItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_ITEM SET
+					ITEM_ID = #ITEM_ID:VARCHAR#,
+					SHORT_NAME = #SHORT_NAME:VARCAHR#,
+					DESCRIPTION = #DESCRIPTION:VARCHAR#,
+					
+					ACTIVITY = #ACTIVITY:NUMERIC#,
+					ITEM_ID_MAPPING = #ITEM_ID_MAPPING:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					ITEM_GROUP_CODE = #ITEM_GROUP_CODE:VARCHAR#
+			        WHERE ITEM_NO = #NO:VARCHAR# 
+		]]>
+	</update>
+	
+	<update id="updateParamItemInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_ITEM_PARAM SET
+					
+					DETAIL_CONTENT = #DETAIL_CONTENT:VARCHAR#,
+					
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+					
+			        WHERE AR_PARAM_NO = #NO:VARCHAR# 
+		]]>
+	</update>
+	<select id="checkForItemDelete" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM AR_ITEM_PARAM WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</select>
+	
+	<delete id="deleteItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_ITEM WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="getItemParameterList"  parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.AR_PARAM_NO,
+			        T.ITEM_NO,
+			        T.AR_PARAM_NO,
+			        T.GROUP_NO,
+			        NVL(S2.CONTENT, '默认组') AS AR_GROUP_NAME,
+			        T.UNIT_VALUE,
+			        T.MIN_VALUE,
+			        T.MAX_VALUE,
+			        T.DEPEND_ITEM,
+			        T.REPLACE_ITEM,
+			        T.CARD_FLAG,
+			        T.CARD_FROM_FLAG,
+			        T.CARD_FROM_OFFSET,
+			        T.CARD_FROM_RELATION,
+			        T.CARD_TO_FLAG,
+			        T.CARD_TO_OFFSET,
+			        T.CARD_TO_RELATION,
+			        T.APPLY_FLAG,
+			        T.APPLY_TYPE,
+			        T.APPLY_FULLDAY_VALUE,
+			        T.APPLY_CARD_PRIORITY,
+			        T.DATE_TYPE,
+			        T.ACTIVITY,
+			        T.CPNY_ID, 
+			        S3.CONTENT ITEM_NAME,
+			        AI.ITEM_ID,
+			        S4.CONTENT CPNY_NAME,
+			        T.UNIT
+			FROM AR_ITEM_PARAM T, 
+		         AR_DYNAMIC_GROUP AR_GROUP, 
+		         AR_ITEM AI,
+		         HR_COMPANY CPNY,
+		         SY_GLOBAL_NAME S2,
+		         SY_GLOBAL_NAME S3,
+		         SY_GLOBAL_NAME S4
+			WHERE T.GROUP_NO = AR_GROUP.GROUP_NO(+)
+				AND T.ITEM_NO = AI.ITEM_NO
+				AND T.CPNY_ID = CPNY.CPNY_ID
+				AND AR_GROUP.GROUP_NO = S2.NO(+)
+				AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND AI.ITEM_NO = S3.NO(+)
+				AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND CPNY.CPNY_NO = S4.NO(+)
+        		AND S4.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<isEmpty prepend="" property="PRO_NO">
+				<![CDATA[
+			 		  T.AR_PARAM_NO = #NO:VARCHAR#
+			    ]]>
+			</isEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_PARAM_NO">
+			<![CDATA[
+		 		  T.AR_PARAM_NO = #AR_PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+		    <![CDATA[
+		        T.APPLY_TYPE = #APPLY_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_LEAVE_FLAG">
+		    <![CDATA[
+		        T.APPLY_FLAG = #APPLY_LEAVE_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getItemParamList"  parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.AR_PARAM_NO,
+			        T.ITEM_NO,
+			        T.GROUP_NO,
+			        NVL(S2.CONTENT, '默认组') AS AR_GROUP_NAME,
+			        T.UNIT_VALUE,
+			        T.MIN_VALUE,
+			        T.MAX_VALUE,
+			        T.DEPEND_ITEM,
+			        T.REPLACE_ITEM,
+			        T.CARD_FLAG,
+			        T.CARD_FROM_FLAG,
+			        T.CARD_FROM_OFFSET,
+			        T.CARD_FROM_RELATION,
+			        T.CARD_TO_FLAG,
+			        T.CARD_TO_OFFSET,
+			        T.CARD_TO_RELATION,
+			        T.APPLY_FLAG,
+			        T.APPLY_TYPE,
+			        T.APPLY_FULLDAY_VALUE,
+			        T.APPLY_CARD_PRIORITY,
+			        T.DATE_TYPE,
+			        T.DETAIL_CONTENT,
+			        T.ACTIVITY,
+			        T.CPNY_ID, 
+			        S3.CONTENT ITEM_NAME,
+			        AI.ITEM_ID,
+			        S4.CONTENT CPNY_NAME,
+			        T.UNIT
+			FROM AR_ITEM_PARAM T, 
+		         AR_DYNAMIC_GROUP AR_GROUP, 
+		         AR_ITEM AI,
+		         HR_COMPANY CPNY,
+		         SY_GLOBAL_NAME S2,
+		         SY_GLOBAL_NAME S3,
+		         SY_GLOBAL_NAME S4
+			WHERE T.GROUP_NO = AR_GROUP.GROUP_NO(+)
+				AND T.ITEM_NO = AI.ITEM_NO
+				AND T.CPNY_ID = CPNY.CPNY_ID
+				AND AR_GROUP.GROUP_NO = S2.NO(+)
+				AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND T.ITEM_NO = S3.NO(+)
+				AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND CPNY.CPNY_NO = S4.NO(+)
+        		AND S4.LANGUAGE(+) = #interLanguage:VARCHAR#
+        		AND T.GROUP_NO = 'constant'
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<isEmpty prepend="" property="PRO_NO">
+				<![CDATA[
+			 		  T.AR_PARAM_NO = #NO:VARCHAR#
+			    ]]>
+			</isEmpty>
+		</isNotEmpty>
+		<!--
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		-->
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+		 		  S3.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_PARAM_NO">
+			<![CDATA[
+		 		  T.AR_PARAM_NO = #AR_PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+         <![CDATA[
+         		ORDER BY T.AR_PARAM_NO
+    	]]>
+	</select>
+	
+	
+	<select id="getItemParamList2"  parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.AR_PARAM_NO,
+			        T.ITEM_NO,
+			        T.GROUP_NO,
+			        S2.CONTENT AR_GROUP_NAME,
+			        T.UNIT_VALUE,
+			        T.MIN_VALUE,
+			        T.MAX_VALUE,
+			        T.DEPEND_ITEM,
+			        T.REPLACE_ITEM,
+			        T.CARD_FLAG,
+			        T.CARD_FROM_FLAG,
+			        T.CARD_FROM_OFFSET,
+			        T.CARD_FROM_RELATION,
+			        T.CARD_TO_FLAG,
+			        T.CARD_TO_OFFSET,
+			        T.CARD_TO_RELATION,
+			        T.APPLY_FLAG,
+			        T.APPLY_TYPE,
+			        T.APPLY_FULLDAY_VALUE,
+			        T.APPLY_CARD_PRIORITY,
+			        T.DATE_TYPE,
+			        T.DETAIL_CONTENT,
+			        T.ACTIVITY,
+			        T.CPNY_ID, 
+			        S3.CONTENT ITEM_NAME,
+			        AI.ITEM_ID,
+			        S4.CONTENT CPNY_NAME,
+			        T.UNIT
+			FROM AR_ITEM_PARAM T, 
+		         AR_DYNAMIC_GROUP AR_GROUP, 
+		         AR_ITEM AI,
+		         HR_COMPANY CPNY,
+		         SY_GLOBAL_NAME S2,
+		         SY_GLOBAL_NAME S3,
+		         SY_GLOBAL_NAME S4
+			WHERE T.GROUP_NO = AR_GROUP.GROUP_NO(+)
+				AND T.ITEM_NO = AI.ITEM_NO
+				AND T.CPNY_ID = CPNY.CPNY_ID
+				AND AR_GROUP.GROUP_NO = S2.NO(+)
+				AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND T.ITEM_NO = S3.NO(+)
+				AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND CPNY.CPNY_NO = S4.NO(+)
+        		AND S4.LANGUAGE(+) = #interLanguage:VARCHAR#
+        		AND T.GROUP_NO = 'constant'
+        		AND T.ITEM_NO NOT IN ('90000295','90000296','90000297','90000298','90000299','90000300','90000301')
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<isEmpty prepend="" property="PRO_NO">
+				<![CDATA[
+			 		  T.AR_PARAM_NO = #NO:VARCHAR#
+			    ]]>
+			</isEmpty>
+		</isNotEmpty>
+		<!--
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		-->
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+		 		  S3.CONTENT LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_PARAM_NO">
+			<![CDATA[
+		 		  T.AR_PARAM_NO = #AR_PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+         	<![CDATA[
+         		ORDER BY T.AR_PARAM_NO
+    	]]>
+		
+	</select>
+	
+	
+	<select id="getItemParamListForKaoqin"  parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.AR_PARAM_NO,
+			        T.ITEM_NO,
+			        T.GROUP_NO,
+			        NVL(S2.CONTENT, '默认组') AS AR_GROUP_NAME,
+			        T.UNIT_VALUE,
+			        T.MIN_VALUE,
+			        T.MAX_VALUE,
+			        T.DEPEND_ITEM,
+			        T.REPLACE_ITEM,
+			        T.CARD_FLAG,
+			        T.CARD_FROM_FLAG,
+			        T.CARD_FROM_OFFSET,
+			        T.CARD_FROM_RELATION,
+			        T.CARD_TO_FLAG,
+			        T.CARD_TO_OFFSET,
+			        T.CARD_TO_RELATION,
+			        T.APPLY_FLAG,
+			        T.APPLY_TYPE,
+			        T.APPLY_FULLDAY_VALUE,
+			        T.APPLY_CARD_PRIORITY,
+			        T.DATE_TYPE,
+			        T.DETAIL_CONTENT,
+			        T.ACTIVITY,
+			        T.CPNY_ID, 
+			        S3.CONTENT ITEM_NAME,
+			        AI.ITEM_ID,
+			        S4.CONTENT CPNY_NAME,
+			        T.UNIT
+			FROM AR_ITEM_PARAM T, 
+		         AR_DYNAMIC_GROUP AR_GROUP, 
+		         AR_ITEM AI,
+		         HR_COMPANY CPNY,
+		         SY_GLOBAL_NAME S2,
+		         SY_GLOBAL_NAME S3,
+		         SY_GLOBAL_NAME S4
+			WHERE T.GROUP_NO = AR_GROUP.GROUP_NO(+)
+				AND T.ITEM_NO = AI.ITEM_NO
+				AND T.CPNY_ID = CPNY.CPNY_ID
+				AND AR_GROUP.GROUP_NO = S2.NO(+)
+				AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND T.ITEM_NO = S3.NO(+)
+				AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND CPNY.CPNY_NO = S4.NO(+)
+        		AND S4.LANGUAGE(+) = #interLanguage:VARCHAR#
+        		AND T.CPNY_ID=#interCpnyID:VARCHAR#
+                AND T.ACTIVITY=1
+        		AND T.GROUP_NO = 'constant'
+        		AND T.ITEM_NO NOT IN ('141444','141445','141446','141452') 
+        		AND AI.ORDERNO IS NOT NULL 
+         		ORDER BY AI.ORDERNO
+		]]>
+		
+         	
+	</select>
+	
+	<select id="getItemParamCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		SELECT COUNT(*) FROM(
+			SELECT T.AR_PARAM_NO,
+			        T.ITEM_NO,
+			        T.GROUP_NO,
+			        NVL(S2.CONTENT, '默认组') AS AR_GROUP_NAME,
+			        T.UNIT_VALUE,
+			        T.MIN_VALUE,
+			        T.MAX_VALUE,
+			        T.DEPEND_ITEM,
+			        T.REPLACE_ITEM,
+			        T.CARD_FLAG,
+			        T.CARD_FROM_FLAG,
+			        T.CARD_FROM_OFFSET,
+			        T.CARD_FROM_RELATION,
+			        T.CARD_TO_FLAG,
+			        T.CARD_TO_OFFSET,
+			        T.CARD_TO_RELATION,
+			        T.APPLY_FLAG,
+			        T.APPLY_TYPE,
+			        T.APPLY_FULLDAY_VALUE,
+			        T.APPLY_CARD_PRIORITY,
+			        T.DATE_TYPE,
+			        T.ACTIVITY,
+			        T.CPNY_ID, 
+			        S3.CONTENT ITEM_NAME,
+			        AI.ITEM_ID,
+			        S4.CONTENT CPNY_NAME,
+			        T.UNIT
+			FROM AR_ITEM_PARAM T, 
+		         AR_DYNAMIC_GROUP AR_GROUP, 
+		         AR_ITEM AI,
+		         HR_COMPANY CPNY,
+		         SY_GLOBAL_NAME S2,
+		         SY_GLOBAL_NAME S3,
+		         SY_GLOBAL_NAME S4
+			WHERE T.GROUP_NO = AR_GROUP.GROUP_NO(+)
+				AND T.ITEM_NO = AI.ITEM_NO
+				AND T.CPNY_ID = CPNY.CPNY_ID
+				AND AR_GROUP.GROUP_NO = S2.NO(+)
+				AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND AI.ITEM_NO = S3.NO(+)
+				AND S3.LANGUAGE(+) = #interLanguage:VARCHAR#
+				AND CPNY.CPNY_NO = S4.NO(+)
+        		AND S4.LANGUAGE(+) = #interLanguage:VARCHAR#
+        		AND T.GROUP_NO = 'constant' )
+		]]>	
+		<dynamic prepend="where">  
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+			 	ITEM_ID = #ITEM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ITEM_NAME">
+			<![CDATA[
+				ITEM_NAME LIKE '%' || #ITEM_NAME:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		 ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		 CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_PARAM_NO">
+			<![CDATA[
+		 		  AR_PARAM_NO = #AR_PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<insert id="addItemParameterInfo" parameterClass="linkMap" >
+		<![CDATA[
+			INSERT INTO AR_ITEM_PARAM (
+					AR_PARAM_NO,
+					ITEM_NO,
+					GROUP_NO,
+					UNIT_VALUE,
+					MIN_VALUE,
+					MAX_VALUE,
+					DEPEND_ITEM,
+					REPLACE_ITEM,
+					CARD_FLAG,
+					CARD_FROM_FLAG,
+					CARD_FROM_OFFSET,
+					CARD_FROM_RELATION,
+					CARD_TO_FLAG,
+					CARD_TO_OFFSET,
+					CARD_TO_RELATION,
+					APPLY_FLAG,
+					APPLY_TYPE,
+					APPLY_FULLDAY_VALUE,
+					APPLY_CARD_PRIORITY,
+					DATE_TYPE,
+					DETAIL_CONTENT,
+					ACTIVITY,
+					CPNY_ID,
+					UNIT,
+					CREATE_DATE,
+					CREATED_BY
+				)
+				VALUES(
+					AR_ITEM_PARAM_SEQ.NEXTVAL,
+					#AR_ITEM_NO:VARCHAR#,
+					NVL(#AR_GROUP_NO:VARCHAR#,'constant'),
+					#UNIT_VALUE:NUMERIC#,
+					#MIN_VALUE:NUMERIC#,
+					#MAX_VALUE:NUMERIC#,
+					#DEPEND_ITEM:VARCHAR#,
+					#REPLACE_ITEM:VARCHAR#,
+					#CARD_FLAG:NUMERIC#,
+					#CARD_FROM_FLAG:NUMERIC#,
+					#CARD_FROM_OFFSET:NUMERIC#,
+					#CARD_FROM_RELATION:VARCHAR#,
+					#CARD_TO_FLAG:NUMERIC#,
+					#CARD_TO_OFFSET:NUMERIC#,
+					#CARD_TO_RELATION:VARCHAR#,
+					#APPLY_FLAG:NUMERIC#,
+					#APPLY_TYPE:VARCHAR#,
+					#APPLY_FULLDAY_VALUE:NUMERIC#,
+					#APPLY_CARD_PRIORITY:NUMERIC#,
+					#DATE_TYPE:VARCHAR#,
+					#DETAIL_CONTENT:VARCHAR#,
+					#ACTIVITY:NUMERIC#,
+					#CPNY_ID:VARCHAR#,
+					#UNIT:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#
+					 
+				)
+		]]>
+	</insert>
+	
+	<update id="updateItemParameterInfo" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_ITEM_PARAM SET 
+					GROUP_NO = NVL(#AR_GROUP_NO:VARCHAR#,'constant'),
+					UNIT_VALUE = #UNIT_VALUE:NUMERIC#,
+					MIN_VALUE = #MIN_VALUE:NUMERIC#,
+					MAX_VALUE = #MAX_VALUE:NUMERIC#,
+					DEPEND_ITEM = #DEPEND_ITEM:VARCHAR#,
+					REPLACE_ITEM = #REPLACE_ITEM:VARCHAR#,
+					CARD_FLAG = #CARD_FLAG:NUMERIC#,
+					CARD_FROM_FLAG = #CARD_FROM_FLAG:NUMERIC#,
+					CARD_FROM_OFFSET = #CARD_FROM_OFFSET:NUMERIC#,
+					CARD_FROM_RELATION = #CARD_FROM_RELATION:VARCHAR#,
+					CARD_TO_FLAG = #CARD_TO_FLAG:NUMERIC#,
+					CARD_TO_OFFSET = #CARD_TO_OFFSET:NUMERIC#,
+					CARD_TO_RELATION = #CARD_TO_RELATION:VARCHAR#,
+					APPLY_FLAG = #APPLY_FLAG:NUMERIC#,
+					APPLY_TYPE = #APPLY_TYPE:VARCHAR#,
+					APPLY_FULLDAY_VALUE = #APPLY_FULLDAY_VALUE:NUMERIC#,
+					APPLY_CARD_PRIORITY = #APPLY_CARD_PRIORITY:NUMERIC#,
+					DATE_TYPE = #DATE_TYPE:VARCHAR#,
+					ACTIVITY = #ACTIVITY:NUMERIC#,
+					CPNY_ID = #CPNY_ID:VARCHAR#,
+					UNIT = #UNIT:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					DETAIL_CONTENT = #DETAIL_CONTENT:VARCHAR#
+					
+				WHERE AR_PARAM_NO = #NO:VARCHAR#
+		]]>
+	</update>
+	<select id="checkForItemParamUnique" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(AR_PARAM_NO) 
+			FROM AR_ITEM_PARAM
+			WHERE ITEM_NO = #AR_ITEM_NO:VARCHAR# 
+				AND CPNY_ID = #CPNY_ID:VARCHAR# 
+				AND GROUP_NO = #AR_GROUP_NO:VARCHAR#	
+		]]>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+				AR_PARAM_NO <> #NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="checkForItemParam" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(AR_PARAM_NO) 
+			FROM AR_ITEM_PARAM
+			WHERE ITEM_NO = #ITEM_NO:VARCHAR# 
+				AND CPNY_ID = #CPNY_ID:VARCHAR# 
+				AND GROUP_NO = #GROUP_NO:VARCHAR#	
+		]]>
+		 
+	</select>
+	<select id="checkForItemParamDelete" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(TABLE_NAME)
+			FROM USER_TAB_COLUMNS 
+			WHERE TABLE_NAME = 'AR_SUMMARY_' || #CPNY_ID:VARCHAR#
+			      AND COLUMN_NAME = #ITEM_ID:VARCHAR#
+		]]>
+	</select>
+	<delete id="deleteItemParameterInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_ITEM_PARAM WHERE AR_PARAM_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE AR_ITEM_PARAM WHERE AR_PARAM_NO = #NO:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="checkItemInfoUnique" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+				COUNT(T.ITEM_ID)
+			FROM AR_ITEM T
+			WHERE 1 = 1
+		]]>	
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+				T.ITEM_ID = #ITEM_ID:VARCHAR#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="OLD_ITEM_ID">
+			<![CDATA[
+				T.ITEM_ID <> #OLD_ITEM_ID:VARCHAR#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<select id="checkParamItemInfoUnique" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+				COUNT(T.AR_PARAM_NO)
+			FROM AR_ITEM_PARAM T
+			WHERE 1 = 1
+		]]>	
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+				T.AR_PARAM_NO = #AR_PARAM_NO:VARCHAR#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="OLD_ITEM_ID">
+			<![CDATA[
+				T.AR_PARAM_NO <> #OLD_AR_PARAM_NO:VARCHAR#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDataTypeList"  parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.AR_PARAM_NO,
+					T.ITEM_NO,
+			        T.DATE_TYPE,
+			        S1.CONTENT DATE_TYPE_NAME      
+			FROM AR_ITEM_PARAM T, 
+		         SY_GLOBAL_NAME S1
+			WHERE T.DATE_TYPE = S1.NO(+)
+				AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="AR_ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #AR_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+		 		  T.CPNY_ID = #interCpnyID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.CODE_NO AS CODE_NO, 
+			        S.CONTENT AS CODENAME
+			  FROM SY_CODE A, 
+			       SY_CODE_PARAM SC, 
+			       SY_GLOBAL_NAME S
+			 WHERE (EXISTS (SELECT C.CODE_NO
+			          FROM SY_CODE C, SY_CODE_PARAM P
+			         WHERE C.PARENT_CODE_NO = '16413'
+			           AND C.CODE_NO = P.CODE_NO
+			           AND P.CPNY_ID = #interCpnyID:VARCHAR#
+			           AND C.ACTIVITY=1
+			           AND C.CODE_NO = A.PARENT_CODE_NO)
+			           OR A.PARENT_CODE_NO = '20534')
+			   AND A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.ACTIVITY=1
+			   ORDER BY  A.PARENT_CODE_NO,A.ORDERNO
+		]]>
+	</select>
+	
+	<update id="updateItemParamInfoAll" parameterClass="String">
+		<![CDATA[
+			UPDATE AR_ITEM_PARAM T SET T.ACTIVITY = 0 WHERE T.ITEM_NO = #item_no:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateItemParameter" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_ITEM_PARAM T SET T.ACTIVITY = 1 WHERE T.ITEM_NO = #ITEM_NO:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateParamItemInfoCalOrder" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE AR_ITEM_PARAM SET
+					CAL_ORDER = #CAL_ORDER:NUMERIC#
+			 WHERE AR_PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+</sqlMap>

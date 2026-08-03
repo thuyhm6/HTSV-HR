@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusType">
+
+	<sql id="getBonusTypeListCondition" >
+		<isNotEmpty prepend="AND" property="TYPE_ID">
+			<![CDATA[
+		 		  TYPE_ID like '%' || #TYPE_ID:VARCHAR#  || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="TYPE_NO">
+			<![CDATA[
+		 		  TYPE_NO = #TYPE_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+	    <isNotEmpty prepend="AND" property="TYPE_NAME">
+			<![CDATA[
+		 		 ( SY.CONTENT LIKE '%' || #TYPE_NAME:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getBonusTypeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TYPE_NO,
+			       SY.CONTENT TYPE_NAME,
+			       TYPE_ID,
+			       DESCR,
+			       T.CREATE_DATE,
+			       T.CREATED_BY,
+			       T.UPDATE_DATE,
+			       T.UPDATED_BY,
+			       T.ORDERNO,
+			       T.ACTIVITY
+			  FROM BN_TYPE        T,
+			       SY_GLOBAL_NAME SY
+			 WHERE T.TYPE_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+				]]>
+		
+		<include refid="getBonusTypeListCondition"/>
+		
+
+	
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY TYPE_ID
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getBonusTypeCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			        FROM BN_TYPE T, 
+			             SY_GLOBAL_NAME SY
+			         WHERE T.TYPE_NO = SY.NO(+)
+			           AND SY.LANGUAGE = #interLanguage:VARCHAR# 
+		]]>
+		
+		<include refid="getBonusTypeListCondition"/>
+				
+	</select>
+	
+	<insert id="addBonusTypeInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_TYPE
+				(
+					TYPE_NO,
+					TYPE_ID,
+					DESCR,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO,
+					ACTIVITY
+				)
+			VALUES(
+					#NO:VARCHAR# ,
+					#TYPE_ID:VARCHAR#,
+					#DESCR:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					(SELECT NVL(MAX(T.ORDERNO),0)+1 FROM BN_TYPE T),
+					1
+				)
+		]]>
+	</insert>
+	
+	<insert id="updateBonusTypeInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_TYPE SET
+					TYPE_ID = #TYPE_ID:VARCHAR#,
+					DESCR = #DESCR:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE TYPE_NO = #NO:NUMERIC#
+		]]>
+	</insert>
+	
+    <select id="checkAddBonusTypeByTypeId" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM BN_TYPE WHERE TYPE_ID = #TYPE_ID:NUMERIC#
+		]]>
+	</select>
+	
+	<select id="checkDeleteBonusTypeInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[		                  
+		   SELECT COUNT(*) FROM  BN_TYPE_PARAM  WHERE TYPE_NO = #NO:VARCHAR# 
+		]]>
+	</select>
+	
+	<delete id="deleteBonusTypeInfo" parameterClass="linkMap">
+		<![CDATA[                                     
+			 DELETE BN_TYPE WHERE TYPE_NO = #NO:NUMERIC#
+		]]>
+	</delete>
+	
+	<sql id="getBonusTypeParamListCondition" >
+		<isNotEmpty prepend="AND" property="TYPE_ID">
+			<![CDATA[
+		 		  T.TYPE_ID like '%' || #TYPE_ID:VARCHAR#  || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="TYPE_NO">
+			<![CDATA[
+		 		  P.TYPE_NO = #TYPE_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  P.PARAM_NO = #PARAM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+		
+	    <isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  P.CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+	    <isNotEmpty prepend="AND" property="ALIAS_NAME">
+			<![CDATA[
+		 		 SY.CONTENT LIKE '%' || #ALIAS_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getBonusTypeParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT T.TYPE_ID,
+			         P.PARAM_NO,
+			         P.TYPE_NO,
+			         P.PA_RELEVANCE_FLAG,
+			         P.ACTIVITY,
+			         P.CPNY_ID,
+			         SY.CONTENT ALIAS_NAME,
+			         SY0.CONTENT CPNY_NAME
+			    FROM BN_TYPE        T,
+			         BN_TYPE_PARAM  P,
+			         HR_COMPANY     HR,
+			         SY_GLOBAL_NAME SY,
+			         SY_GLOBAL_NAME SY0
+			   WHERE P.TYPE_NO = T.TYPE_NO
+			     AND P.TYPE_NO = SY.NO(+)
+			     AND SY.LANGUAGE(+) = 'zh'
+			     AND P.CPNY_ID = HR.CPNY_ID
+			     AND HR.CPNY_NO = SY0.NO(+)
+			     AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+
+		<include refid="getBonusTypeParamListCondition"/>
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY TYPE_ID
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getBonusTypeParamCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			  SELECT COUNT(P.PARAM_NO)
+				   FROM BN_TYPE  T,
+			       BN_TYPE_PARAM P,
+			       SY_GLOBAL_NAME SY
+		      WHERE P.TYPE_NO = T.TYPE_NO
+		        AND P.TYPE_NO = SY.NO(+)
+		        AND SY.LANGUAGE(+) = #interLanguage:VARCHAR# 
+		]]>
+		
+		<include refid="getBonusTypeParamListCondition"/>
+				
+	</select>
+	
+	<insert id="addBonusTypeParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_TYPE_PARAM
+			  (PARAM_NO,
+			   TYPE_NO,
+			   PA_RELEVANCE_FLAG,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY,
+			   CPNY_ID)
+			VALUES
+			  (
+			   BN_TYPE_PARAM_SEQ.NEXTVAL,
+			   #TYPE_NO:NUMERIC#,	
+			   #PA_RELEVANCE_FLAG:VARCHAR#,	
+			   SYSDATE,				   
+			   #CREATED_BY:VARCHAR#,			   
+			   1,
+			   #CPNY_ID:VARCHAR#
+			   )
+		]]>
+	</insert>
+	
+	<insert id="updateBonusTypeParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_TYPE_PARAM
+			   SET PA_RELEVANCE_FLAG = #PA_RELEVANCE_FLAG:VARCHAR#,
+			       UPDATE_DATE       = SYSDATE,
+			       UPDATED_BY        = #UPDATED_BY:VARCHAR#,
+			       CPNY_ID           = #CPNY_ID:VARCHAR#
+			 WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+		]]>
+	</insert>
+
+	<select id="checkAddBonusTypeParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			   FROM BN_TYPE_PARAM
+			  WHERE TYPE_NO = #TYPE_NO:NUMERIC#
+			    AND CPNY_ID = #CPNY_ID:VARCHAR#			 
+		]]>
+	</select>
+
+	
+	<delete id="deleteBonusTypeParamInfo" parameterClass="linkMap">
+		<![CDATA[                                     
+			  DELETE BN_TYPE_PARAM WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</delete>
+</sqlMap>

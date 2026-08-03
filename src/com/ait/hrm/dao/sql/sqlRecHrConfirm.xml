@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.recruit">	
+	<select id="getReadyToHrConfirmInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT RI.REC_INTERVIEW_NO,
+			           RE.EMP_NAME,
+			           RE.REC_EMPLOYEE_NO,
+			           RE.FINAL_SCHOOL,
+			           GET_GLOBAL_NAME(RE.FINAL_EDU_CODE,#interLanguage:VARCHAR#)FINAL_EDU,
+			           GET_GLOBAL_NAME(RE.POST_TYPE_CODE,#interLanguage:VARCHAR#)POST_TYPE,
+			           GET_GLOBAL_NAME(RE.SEX_CODE,#interLanguage:VARCHAR#)SEX,
+			           FLOOR(MONTHS_BETWEEN(SYSDATE, TO_DATE(RE.EMP_BIRTHDAY,'YYYY/MM/DD'))/ 12)AGE,
+			           GET_GLOBAL_NAME(RE.NATIONALITY_CODE,#interLanguage:VARCHAR#)NATIONALITY_CODE,
+			           RE.EMP_TELPHONE,
+			           RI.FINAL_CONFIRM,
+                       RI.FINAL_REMARK,
+                       AVG.SCORE
+			FROM REC_INTERVIEW RI,REC_EMPLOYEE RE,REC_AFFIRM RA, (SELECT RA.REC_INTERVIEW_NO, AVG(RA.Score) as SCORE FROM REC_AFFIRM RA group by RA.REC_INTERVIEW_NO) AVG
+			WHERE RI.REC_EMPLOYEE_NO = RE.REC_EMPLOYEE_NO
+			AND RA.REC_INTERVIEW_NO = RI.REC_INTERVIEW_NO
+			AND AVG.REC_INTERVIEW_NO = RA.REC_INTERVIEW_NO
+			AND RA.AFFIRM_LEVEL = 1
+			AND RI.FINAL_CONFIRM = #FINAL_CONFIRM:NUMRIC#
+		]]>
+		<isNotEmpty prepend="AND" property="EMP_NAME">
+	      <![CDATA[
+			UPPER(RE.EMP_NAME) LIKE UPPER('%'||#EMP_NAME:VARCHAR#||'%')
+	      ]]>
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_TYPE_CODE">
+	      <![CDATA[
+				RE.POST_TYPE_CODE = #POST_TYPE_CODE:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINAL_EDU">
+			<![CDATA[
+			     RE.FINAL_EDU_CODE = #FINAL_EDU:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY RI.REC_INTERVIEW_NO desc
+		]]>
+	</select>
+	
+	<update id="updateFinalConfirmStatus" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE REC_INTERVIEW
+	          SET FINAL_CONFIRM = #affirmFlag:VARCHAR#,
+	              FINAL_REMARK  = #FINAL_REMARK:VARCHAR#,
+	              UPDATE_DATE   = SYSDATE,
+	              UPDATED_BY    = #createBy:VARCHAR#
+	        WHERE REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getPersonIDSeq" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT HR_PERSON_ID_SEQ.NEXTVAL FROM DUAL
+		]]>
+	</select>
+	<insert id="addEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_EMPLOYEE_RECRUIT
+				  (PERSON_ID,
+				   CPNY_ID,
+				   EMPID,
+				   ACTIVITY,
+				   DATA_SOURCES,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP
+				   )
+				VALUES 
+				  (#PERSON_ID:VARCHAR#,
+				   #interCpnyID:VARCHAR#,
+				   #EMPID:VARCHAR#,
+				   0,
+				   0,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   #CREATED_IP:VARCHAR#,
+				   SYSDATE,
+				   #UPDATED_BY:VARCHAR#,
+				   #UPDATED_IP:VARCHAR#
+				   )
+		]]>
+	</insert>	
+	<update id="updateEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EMPLOYEE_RECRUIT
+				SET (LOCAL_NAME,
+				   JOIN_TYPE,
+				   IDCARD_NO,
+				   SEXCODE,
+				   NATIONALITY_CODE,
+				   DOB,
+				   COMPANY_PHONE,
+				   ADDRESS_CONTENT,
+				   EMAIL,
+				   IDCARD_START_DATE,
+				   ISSUING_AUTHORITY,
+				   MARITAL_STATUS_CODE,
+				   GRADUATION_ACHIEVEMENT,
+				   AVERAGE_SCORE,
+				   LANGUAGE_ABILITY
+				   ) = 
+				(SELECT RE.EMP_NAME,
+				   '400429',
+				   PKG_DECRYPT.ENCRYPT_DES(RE.CERT_NUMBER),
+				   RE.SEX_CODE,
+				   RE.NATIONALITY_CODE,
+				   RE.EMP_BIRTHDAY,
+				   PKG_DECRYPT.ENCRYPT_DES(RE.EMP_TELPHONE),
+				   RE.EMP_ADDRESS,
+				   RE.EMP_EMAIL,
+				   RE.IDCARD_START_DATE,
+				   RE.IDCARD_ADDRESS,
+				   RE.MARITAL_STATUS_CODE,
+				   RE.GRADUATION_ACHIEVEMENT,
+				   RE.AVERAGE_SCORE,
+				   RE.LANGUAGE_ABILITY
+				FROM REC_INTERVIEW RI,REC_EMPLOYEE RE
+				WHERE RI.REC_EMPLOYEE_NO = RE.REC_EMPLOYEE_NO
+					AND RI.FINAL_CONFIRM = '1'
+				    AND REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#) WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<insert id="addEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_EDUCATION_RECRUIT
+				  (SEQ,
+				   PERSON_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP)
+				VALUES
+				  (HR_EDU_SEQ.NEXTVAL,
+				   #PERSON_ID:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   #CREATED_IP:VARCHAR#,
+				   SYSDATE,
+				   #UPDATED_BY:VARCHAR#,
+				   #UPDATED_IP:VARCHAR#)
+	]]>
+	</insert>
+	
+	<update id="updateEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EDUCATION_RECRUIT
+			SET	  (FINAL_DEGREE_WHETHER,
+				   INSTITUTION_NAME,
+				   DEGREE_CODE,
+				   END_DATE,
+				   SUBJECT)
+				=
+				  (SELECT 'Y',
+				  		RE.FINAL_SCHOOL,
+				  		RE.FINAL_EDU_CODE,
+				  		TO_CHAR(TO_DATE(RE.FINAL_GRAD_DATE,'DD/MM/YYYY'),'MM/YYYY'),
+				  		SUBJECT
+				   FROM REC_INTERVIEW RI,REC_EMPLOYEE RE
+				WHERE RI.REC_EMPLOYEE_NO = RE.REC_EMPLOYEE_NO
+					AND RI.FINAL_CONFIRM = '1'
+				    AND REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#) WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+	]]>
+	</update>
+	
+</sqlMap>

@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sys.menu">
+
+	<select id="getMenuList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			 select T.MENU_CODE,
+			       T.MENU_NO,
+			       L.CONTENT AS MENU_NAME_ZH,
+			       (select SG.CONTENT
+			          from sy_menu,SY_GLOBAL_NAME SG
+			         where T.MENU_PARENT_NO = MENU_NO AND MENU_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR# ) PNAME,
+			       T.MENU_URL,
+			       (select LOCAL_NAME from hr_employee where PERSON_ID = T.CREATED_BY) CNAME,
+			       T.CREATE_DATE,
+			       CASE
+			         WHEN T.ACTIVITY = '1' THEN
+			          '启用'
+			         WHEN T.ACTIVITY = '0' THEN
+			          '关闭'
+			       END ACTIVITY,
+			       T.DEPTH,
+			       T.ORDERNO
+			  from (SELECT ROWNUM RN,S.*
+					  FROM SY_MENU S
+					 START WITH S.DEPTH = 0
+					CONNECT BY PRIOR S.MENU_NO = S.MENU_PARENT_NO
+					ORDER SIBLINGS BY S.ORDERNO) T ,SY_GLOBAL_NAME L 
+			 WHERE T.MENU_NO=L.NO(+)  AND L.LANGUAGE(+)=#interLanguage:VARCHAR#
+					  
+		]]>
+		 
+		<isNotEmpty prepend="AND" property="MENU_NAME"> 
+			<![CDATA[
+				 (L.CONTENT like '%'||#MENU_NAME#||'%' )
+			]]>	
+		</isNotEmpty>
+		 
+		<isNotEmpty prepend="AND" property="ParentMENU_NAME"> 
+			<![CDATA[
+				 ((SELECT SG.CONTENT
+          FROM SY_MENU, SY_GLOBAL_NAME SG
+         WHERE T.MENU_PARENT_NO = MENU_NO
+           AND MENU_NO = SG.NO(+)
+           AND SG.LANGUAGE(+) = 'zh') like '%'||#ParentMENU_NAME#||'%' )
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTH"> 
+			<![CDATA[
+				 (T.DEPTH like '%'||#DEPTH#||'%' )
+			]]>	
+		</isNotEmpty>
+				 
+		<![CDATA[
+				  ORDER BY T.RN,T.DEPTH 
+		]]>	
+		
+	</select>
+	
+	<select id="getMenuListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			select count(1)
+			  from (SELECT ROWNUM RN,S.*
+					  FROM SY_MENU S   
+					 START WITH S.DEPTH = 0
+					CONNECT BY PRIOR S.MENU_NO = S.MENU_PARENT_NO
+					ORDER SIBLINGS BY S.ORDERNO) T ,SY_GLOBAL_NAME L  
+			WHERE T.MENU_NO=L.NO(+) AND L.LANGUAGE(+)=#interLanguage:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="MENU_NAME"> 
+			<![CDATA[
+				  (L.CONTENT like '%'||#MENU_NAME#||'%' )
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ParentMENU_NAME"> 
+			<![CDATA[
+				 ((SELECT SG.CONTENT
+          FROM SY_MENU, SY_GLOBAL_NAME SG
+         WHERE T.MENU_PARENT_NO = MENU_NO
+           AND MENU_NO = SG.NO(+)
+           AND SG.LANGUAGE(+) = 'zh') like '%'||#ParentMENU_NAME#||'%' )
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTH"> 
+			<![CDATA[
+				 (T.DEPTH like '%'||#DEPTH#||'%' )
+			]]>	
+		</isNotEmpty>
+		 
+	</select>
+	<update id="updateMenuActivity" parameterClass="linkMap" >
+		<![CDATA[
+			update SY_MENU
+				   set ACTIVITY = CASE
+				                    WHEN ACTIVITY = '1' THEN
+				                     0
+				                    WHEN ACTIVITY = '0' THEN
+				                     1
+				                  END
+				 WHERE MENU_NO = #MenuId#
+		]]>
+	</update>
+	<select id="getMenuByID" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select T.ACTIVITY
+			  from sy_menu T 
+			 where T.MENU_NO=#MenuId#
+		]]>
+	</select>
+	<select id="getMenuByNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT T.*, 
+			          S.CONTENT PNAME
+			     FROM SY_MENU T, 
+			          SY_GLOBAL_NAME S
+			    WHERE T.MENU_PARENT_NO = S.NO(+)
+			          AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			          AND T.MENU_NO = #NO:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="MenuId"> 
+			<![CDATA[
+				 T.MENU_NO=#MenuId#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_PARENT_CODE_NO"> 
+			<![CDATA[
+				 T.MENU_NO=#seach_PARENT_CODE_NO#
+			]]>	
+		</isNotEmpty>
+	</select>
+	<select id="getMenuTree" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   select 
+			          T.MENU_NO,
+			   		  T.MENU_CODE, 
+					  get_global_name(T.MENU_NO,#interLanguage:VARCHAR#) AS MENU_NAME, 
+					  T.Menu_Parent_No, 
+					  T.Depth + 1 DEPTH,
+					  T.ORDERNO
+			   from sy_menu T 
+			  where   T.ACTIVITY=1
+		]]>
+		
+				<isNotEmpty prepend="AND" property="withEss"> 
+			
+			<![CDATA[
+				 T.MENU_CODE LIKE 'ess%'
+			]]>	
+		</isNotEmpty>		
+		
+		<isNotEmpty prepend="AND" property="notWithEss"> 
+			
+			<![CDATA[
+				 T.MENU_CODE not LIKE 'ess%'
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID"> 
+			<![CDATA[
+				 T.MENU_NO IN (SELECT MENU_NO FROM SY_MENU_PARAM WHERE CPNY_ID=#interCpnyID#)
+			]]>	
+		</isNotEmpty>		
+		
+		<![CDATA[
+				  START WITH T.DEPTH = 0
+				  CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO  and T.ACTIVITY = 1 and depth < 2
+				  ORDER SIBLINGS BY T.ORDERNO
+			]]>	
+		 
+	</select>
+	<!-- 屏幕管理 菜单添加 -->
+	<insert id="saveMenu" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MENU
+				(
+					MENU_CODE,
+					MENU_NO,
+					 
+					MENU_PARENT_NO,
+					DEPTH,
+					MENU_URL,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO
+				)
+			VALUES
+				( 
+					#MENU_CODE:VARCHAR#,
+					#NO:VARCHAR#,
+					 
+					#MENU_PARENT_NO:NUMERIC#,
+					#DEPTH:NUMERIC#,
+					#MENU_URL:VARCHAR#,
+					#ACTIVITY:NUMERIC#,
+					SYSDATE,
+					#CREATED_BY#,
+					#ORDERNO#
+				)
+		]]>
+	</insert>
+	<!-- 屏幕关联 修改 -->
+	<update id="updateMenu" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE SY_MENU T
+			     SET T.MENU_CODE=#MENU_CODE:VARCHAR#,
+					T.MENU_PARENT_NO=#MENU_PARENT_NO:NUMERIC#,
+					T.DEPTH=#DEPTH:NUMERIC#,
+					T.MENU_URL=#MENU_URL:VARCHAR#,
+					T.ACTIVITY=#ACTIVITY:NUMERIC#,
+					T.UPDATE_DATE=SYSDATE,
+					T.UPDATED_BY=#UPDATED_BY#,
+					T.ORDERNO=#ORDERNO#
+			   WHERE T.MENU_NO = #NO# 
+		]]>
+	</update>
+	<!-- 屏幕参数列表 -->
+	<select id="getMenuParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       T.CPNY_ID,
+			       (SELECT SG.CONTENT AS CPNY_NAME_ZH FROM HR_COMPANY,SY_GLOBAL_NAME SG WHERE CPNY_NO=HC.CPNY_NO AND CPNY_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR# ) CPNY_NAME_ZH,
+			       T.MENU_NO,
+			       (SELECT SG.CONTENT   FROM SY_MENU S,SY_GLOBAL_NAME SG WHERE S.MENU_NO=T.MENU_NO AND S.MENU_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR# ) MENU_NAME_ZH,
+			       (SELECT SG.CONTENT  FROM SY_MENU_PARAM,SY_GLOBAL_NAME SG WHERE PARAM_NO=SG.NO(+) AND T.PARAM_NO=PARAM_NO AND SG.LANGUAGE(+)=#interLanguage:VARCHAR#) ALIAS_ZH,
+			       T.CREATE_DATE,
+			       T.CREATED_BY,
+			       (SELECT LOCAL_NAME FROM HR_EMPLOYEE WHERE EMPID=T.CREATED_BY) CHINESE_NAME,
+			       CASE WHEN T.ACTIVITY=1 THEN '启用'
+			            WHEN T.ACTIVITY=0 THEN '未启用'
+			       END ACTIVATE
+			FROM   SY_MENU_PARAM T,SY_MENU M,HR_COMPANY HC 
+			WHERE  T.MENU_NO=M.MENU_NO
+				   AND T.CPNY_ID=HC.CPNY_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_NAME"> 
+			<![CDATA[
+				
+				(SELECT SG.CONTENT AS CPNY_NAME_ZH FROM HR_COMPANY,SY_GLOBAL_NAME SG WHERE CPNY_NO=HC.CPNY_NO AND CPNY_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR#)
+				like 
+				'%'||#CPNY_NAME#||'%'
+				
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MENU_NAME"> 
+			<![CDATA[
+				 (SELECT SG.CONTENT   FROM SY_MENU S,SY_GLOBAL_NAME SG WHERE S.MENU_NO=T.MENU_NO AND S.MENU_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR#)
+				 like  '%'||#MENU_NAME#||'%'
+			]]>	
+		</isNotEmpty>
+	</select>
+	<select id="getMenuParamListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			select count(*)
+			  
+			FROM SY_MENU_PARAM T,SY_MENU M,HR_COMPANY HC
+			WHERE T.MENU_NO=M.MENU_NO
+			AND T.CPNY_ID=HC.CPNY_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_NAME"> 
+			<![CDATA[
+				(SELECT SG.CONTENT AS CPNY_NAME_ZH FROM HR_COMPANY,SY_GLOBAL_NAME SG WHERE CPNY_NO=HC.CPNY_NO AND CPNY_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR#)
+				like 
+				'%'||#CPNY_NAME#||'%'
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MENU_NAME"> 
+			<![CDATA[
+				 (SELECT SG.CONTENT   FROM SY_MENU S,SY_GLOBAL_NAME SG WHERE S.MENU_NO=T.MENU_NO AND S.MENU_NO=SG.NO(+) AND SG.LANGUAGE(+)=#interLanguage:VARCHAR#)
+				 like  '%'||#MENU_NAME#||'%'
+			]]>	
+		</isNotEmpty>
+	</select>
+	<select id="getMenuParamByNo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			 select T.*	
+			  from SY_MENU_PARAM T,SY_MENU M
+			 where T.MENU_NO=M.MENU_NO(+)
+			 AND T.CPNY_ID=#CPNY_ID#
+		]]>
+		 
+		 <isNotEmpty prepend="AND" property="MENU_NO"> 
+			<![CDATA[
+				 T.MENU_NO=#MENU_NO#
+			]]>	
+		</isNotEmpty>
+		 
+		<isNotEmpty prepend="and" property="mpid"> 
+			<![CDATA[
+				 T.PARAM_NO=#mpid#
+			]]>	
+		</isNotEmpty>
+		
+		
+	</select>
+		<select id="getMenuTreeForAll" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			select  distinct
+					T.ORDERNO,
+					T.MENU_NO, 
+					T.Depth, 
+					(
+						CASE WHEN SG.CONTENT IS NULL THEN ' '
+						ELSE SG.CONTENT 
+						END
+					)CONTENT,
+					T.Menu_Parent_No
+					
+			  from sy_menu T, SY_GLOBAL_NAME SG
+			where t.depth <= 2
+			   and SG.NO(+) = T.MENU_NO
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ACTIVITY=1
+		]]>
+	 
+		<isNotEmpty prepend="AND" property="CPNY_ID_T"> 
+			<![CDATA[
+				  p.cpny_id = #CPNY_ID#
+			]]>	
+		</isNotEmpty>
+ 
+		<![CDATA[
+				START WITH T.Depth =0
+				CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO
+				 ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	<insert id="saveMenuParam" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_MENU_PARAM
+				(
+					PARAM_NO,
+					CPNY_ID,
+					MENU_NO,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					UPDATE_DATE,
+					UPDATED_BY
+				)
+			VALUES
+				( 
+					SY_MENU_PARAM_SEQ.NEXTVAL,
+					#CPNY_ID:NUMERIC#,
+					#MENU_NO:NUMERIC#,
+					1,
+					SYSDATE,
+					#adminID:VARCHAR#,
+					SYSDATE,
+					#adminID:VARCHAR#
+				)
+		]]>
+	</insert>
+	<update id="updateMenuParam" parameterClass="linkMap"  >
+		<![CDATA[
+			 UPDATE SY_MENU_PARAM T
+			     SET T.CPNY_ID=#CPNY_ID:VARCHAR#,
+					T.MENU_NO=#MENU_NO:VARCHAR#,
+					T.ACTIVITY=1,
+					T.UPDATE_DATE=SYSDATE,
+					T.UPDATED_BY=#UPDATED_BY#
+			   WHERE T.PARAM_NO = #PARAM_NO# 
+		]]>
+	</update>
+	<!-- 验证是否菜单已存在 -->
+	<select id="checkMenuParma" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			select COUNT(*)
+			  from SY_MENU_PARAM T 
+			 where T.MENU_NO=#MENU_NO:VARCHAR#
+			 AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	<!--查询法人已经关联菜单-->
+	<select id="getMenuParamByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select T.*	
+			  from SY_MENU_PARAM T,SY_MENU M
+			 where T.MENU_NO=M.MENU_NO(+)
+			 AND T.CPNY_ID=#CPNY_ID#
+		]]>
+	</select>
+	<!--查询菜单参数-->
+	<select id="getMenuParamByCpnyIdAndMenuNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select T.*	
+			 from SY_MENU_PARAM T 
+			 where T.MENU_NO=#MENU_NO#
+			 AND T.CPNY_ID=#CPNY_ID#
+		]]>
+	</select>
+	<!-- 查询菜单为权限设置 -->
+	<select id="getMenuForRolesGroup" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.*,N.*
+			 		FROM  SY_MENU T,SY_GLOBAL_NAME N
+			 	WHERE T.MENU_NO=N.NO(+) AND N.LANGUAGE(+)=#interLanguage:VARCHAR#
+			 		AND T.ACTIVITY=1
+				 START WITH T.MENU_PARENT_NO = #PARENT_CODE_NO#
+				CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO
+				 ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	<!-- 查询菜单为权限设置数量 -->
+	<select id="getMenuForRolesGroupCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+				SELECT COUNT(*)
+			 	FROM  SY_MENU T
+				 START WITH T.MENU_PARENT_NO = #PARENT_CODE_NO#
+				CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO
+				 ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	 
+	<!-- 查询子菜单 -->
+	<select id="getMenuTreeByParentMenu" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select 
+					distinct
+					T.ORDERNO,
+					T.MENU_NO,
+			       T.Depth,
+			       nvl(SG.CONTENT,' ') CONTENT,
+			       T.Menu_Parent_No,
+			       'true' OPEN,
+			       (CASE
+				         WHEN (SELECT COUNT(*)
+				                 FROM SY_MENU_PARAM
+				                WHERE MENU_NO = T.MENU_NO
+				                  AND CPNY_ID = #CPNY_ID:VARCHAR#) > 0 THEN
+				          'true'
+				         ELSE
+				          'false'
+				       END) CHECKED
+			  from sy_menu T,sy_global_name SG
+			 where SG.no(+)=T.menu_no 
+			 	   and T.ACTIVITY=1
+			 	   and SG.language(+)=#interLanguage:VARCHAR#
+			 	   AND (T.MENU_PARENT_NO=#MENU_NO:VARCHAR# OR T.MENU_NO=#MENU_NO:VARCHAR#)
+			 START WITH T.Menu_No = #MENU_NO:VARCHAR#
+			CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO
+			 ORDER SIBLINGS BY T.ORDERNO				
+		]]>
+	</select>
+	<select id="getMenuTreeByParentMenuSelect" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select T.MENU_NO,
+			       T.Depth,
+			       SG.CONTENT CONTENT,
+			       T.Menu_Parent_No,
+			       (CASE
+				         WHEN (SELECT COUNT(*)
+				                 FROM SY_MENU_PARAM
+				                WHERE MENU_NO = T.MENU_NO
+				                  AND CPNY_ID = #CPNY_ID:VARCHAR#) > 0 THEN
+				          'true'
+				         ELSE
+				          'false'
+				       END) CHECKED
+			  from sy_menu T,sy_global_name SG
+			 where SG.no(+)=T.menu_no 
+			 	   and SG.language(+)=#interLanguage:VARCHAR#
+			 	   AND (T.MENU_PARENT_NO=#MENU_NO:VARCHAR# OR T.MENU_NO=#MENU_NO:VARCHAR#)
+			 	   AND ()
+			 START WITH T.Menu_No = #MENU_NO:VARCHAR#
+			CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO
+			 ORDER SIBLINGS BY T.ORDERNO		
+		]]>
+	</select>
+	<delete id="deleteMenuByParentNo" parameterClass="linkMap">
+			DELETE FROM SY_MENU_PARAM
+		 WHERE (MENU_NO IN
+		       (SELECT MENU_NO FROM SY_MENU WHERE MENU_PARENT_NO = #PARENT_MENU_NO:VARCHAR#) OR MENU_NO=#PARENT_MENU_NO:VARCHAR#)
+		   AND CPNY_ID = #CPNY_ID:VARCHAR#
+	</delete>
+	<select id="validateMenuIdExist" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 select * from sy_menu where menu_code=#MENU_CODE:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

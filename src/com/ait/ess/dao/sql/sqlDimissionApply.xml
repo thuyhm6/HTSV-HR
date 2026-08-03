@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.dimissionApply">
+	<!-- 离职申请序列查询 -->
+	<select id="getDimissionInfoSeq" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT ESS_APPLY_DINMISSION_SEQ.NEXTVAL FROM DUAL
+		]]>
+	</select>
+	
+	<select id="checkAddDimissionInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_APPLY_DIMISSION T
+			 WHERE T.PERSON_ID = #PERSON_ID:VARCHAR#
+			  AND  (AFFIRM_FLAG = 0 OR AFFIRM_FLAG = 1)
+		]]>
+	</select>
+	
+
+	<!-- 离职申请 -->
+	<insert id="addDimissionInfoApply" parameterClass="linkMap">
+	<![CDATA[
+		INSERT INTO ESS_APPLY_DIMISSION
+		       (APPLY_NO,
+		        PERSON_ID,
+		        APPLY_REASON,
+		        APPLY_TIME,
+		        APPLY_LEAVE_TIME,
+		        ACTIVITY,
+		        CURRENT_AFFIRM_ID,
+		        AFFIRM_FLAG,
+		        AFFIRM_FG,
+		        ORDERNO,
+		        CREATE_DATE, 
+				CREATED_BY
+		        )
+		      VALUES
+		       (
+		        #APPLY_NO:VARCHAR#,
+		        #PERSON_ID:VARCHAR#,
+		        #APPLY_REASON:VARCHAR#,
+		        SYSDATE,
+		        TO_DATE(#APPLY_LEAVE_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+		        #ACTIVITY:VARCHAR#,
+		        #CURRENT_AFFIRM_ID:VARCHAR#,
+		        '-1',
+		        '0',
+		        (SELECT NVL(MAX(ORDERNO),0) + 1 FROM ESS_APPLY_DIMISSION),
+		        SYSDATE,
+		        #CREATED_BY:VARCHAR#
+		      )
+		]]>
+	</insert>
+
+	<!-- 申请加决裁者 -->
+	<insert id="addDimissionApplyReviewer" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				 APPLY_NO, 
+				 AFFIRM_FLAG, 
+				 AFFIRM_LEVEL,
+				 APPLY_TYPE, 
+				 AFFIRMOR_ID, 
+				 CREATE_DATE, 
+				 CREATED_BY, 
+				 ACTIVITY
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #APPLY_NO:VARCHAR#,
+				0, 
+				#AffirmLevel#,
+				'218296',
+				#AffirmorId#, 
+				SYSDATE, 
+				#CREATED_BY#, 
+				0
+				)
+	    ]]>
+	</insert>
+	
+	
+	<select id="selectApplyNoByPersonId" parameterClass="String"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT D.APPLY_NO
+			  FROM ESS_APPLY_DIMISSION D
+			      WHERE D.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+      <!-- 删除没有审批的离职信息  先删除本条记录的审批信息-->
+     <delete id="delDimissionAffirmByApplyNo" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM ESS_AFFIRM EOT WHERE EOT.APPLY_NO = #APPLY_NO:VARCHAR# AND EOT.APPLY_TYPE = '218296'
+		]]>
+	</delete>
+	<!-- 删除没有审批的离职信息-->
+	<delete id="delDimissionApplyByApplyNo" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM ESS_APPLY_DIMISSION EDL WHERE EDL.APPLY_NO = #APPLY_NO:VARCHAR#
+		]]>
+	</delete>
+	
+		
+	<select id="getDimissionEditionList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT DISTINCT T.EDITION_NO,
+			       T.REMARK,
+			       T.ACTIVITY
+		      FROM ESS_DIMISSION_GL T,SY_GLOBAL_NAME SY
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EMP_TYPE_CODE = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="EDITION_NO">
+			<![CDATA[
+		 	     T.EDITION_NO LIKE '%' || #EDITION_NO:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_NO1">
+			<![CDATA[
+		 	     T.EDITION_NO = #EDITION_NO1:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_NAME">
+			<![CDATA[
+		 	     SY.CONTENT LIKE '%' || #EMP_TYPE_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 	     T.ACTIVITY = #ACTIVITY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDimissionEditionListUpdate" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT T.EDITION_NO,
+			       T.EMP_TYPE_CODE,
+			       SY.CONTENT EMP_TYPE_NAME,
+			       T.REMARK,
+			       T.ACTIVITY
+		      FROM ESS_DIMISSION_GL T,SY_GLOBAL_NAME SY
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EMP_TYPE_CODE = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+		]]>
+	</select>
+
+	<select id="getDimissionEditionCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(DISTINCT T.EDITION_NO)
+			  FROM ESS_DIMISSION_GL T,SY_GLOBAL_NAME SY
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EMP_TYPE_CODE = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+			]]>
+		<isNotEmpty prepend="AND" property="EDITION_NO">
+			<![CDATA[
+		 	     T.EDITION_NO LIKE '%' || #EDITION_NO:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_NO1">
+			<![CDATA[
+		 	     T.EDITION_NO = #EDITION_NO1:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_NAME">
+			<![CDATA[
+		 	     SY.CONTENT LIKE '%' || #EMP_TYPE_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+    <!-- 添加模版 -->
+	<insert id="addDimissionEditionInfo" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO ESS_DIMISSION_GL 
+				(EDITION_NO, 
+				 CPNY_ID, 
+				 EMP_TYPE_CODE, 
+				 REMARK,
+				 CREATE_DATE, 
+				 CREATED_BY, 
+				 ACTIVITY
+                ) 
+		VALUES (
+    		    #EDITION_NO:VARCHAR#,
+				#CPNY_ID:VARCHAR#, 
+				#EMP_TYPE_CODE:VARCHAR#, 
+				#REMARK:VARCHAR#,
+				SYSDATE, 
+				#CREATED_BY:VARCHAR#,
+				#ACTIVITY:VARCHAR# 
+				)
+	    ]]>
+	</insert>
+	
+	 <!--修改模版 -->
+	<update id="updateDimissionEditionInfo" parameterClass="linkMap">
+	    <![CDATA[
+		 UPDATE ESS_DIMISSION_GL T 
+			SET T.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#,
+			    T.REMARK        = #REMARK:VARCHAR#,
+			    T.ACTIVITY      = #ACTIVITY:VARCHAR#,
+			    T.UPDATE_DATE   = SYSDATE,
+			    T.UPDATED_BY    = #UPDATED_BY:VARCHAR#
+		  WHERE T.EDITION_NO    = #EDITION_NO:VARCHAR#
+            AND T.CPNY_ID       = #CPNY_ID:VARCHAR#				                          
+	    ]]>
+	</update>
+	
+	<!--删除模版 -->
+     <delete id="deleteDimissionEditionInfo">
+		<![CDATA[
+			DELETE FROM ESS_DIMISSION_GL WHERE EDITION_NO = #EDITION_NO:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#
+    	]]>
+	</delete>
+	
+	<!--删除模版 -->
+     <delete id="deleteDimissionEditionInfoAll">
+		<![CDATA[
+			DELETE FROM ESS_DIMISSION_GL WHERE EDITION_NO = #EDITION_NO:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#
+    	]]>
+	</delete>
+	
+	<!--根据edition_no查找人员类型 -->
+	<select id="getEmpTypeByeditionNo" parameterClass="linkMap"
+		resultClass="linkMap">
+	    <![CDATA[
+		 SELECT T.EMP_TYPE_CODE,
+		        T.EDITION_NO,
+		        SY.CONTENT EMP_TYPE_NAME
+		   FROM ESS_DIMISSION_GL T,SY_GLOBAL_NAME SY   
+		   WHERE T.EDITION_NO = #EDITION_NO:VARCHAR#
+		   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+		     AND T.EMP_TYPE_CODE = SY.NO(+)
+		     AND SY.LANGUAGE = #interLanguage:VARCHAR# 
+		     
+		    ]]>
+	</select>
+	
+	<!--查找人员类型 -->
+	<select id="getEmpTypeNameListUpdate" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+		 SELECT C.CODE_NO, 
+   			      SY.CONTENT EMP_TYPE_NAME
+             FROM SY_CODE C, SY_GLOBAL_NAME SY
+            WHERE C.PARENT_CODE_NO = '1368' 
+              AND C.CODE_NO = SY.NO(+)
+   			  AND SY.LANGUAGE(+) =#interLanguage:VARCHAR# 
+              AND C.CODE_NO NOT IN (SELECT EL.EMP_TYPE_CODE
+                           FROM ESS_DIMISSION_GL EL
+                          WHERE EL.CPNY_ID = #CPNY_ID:VARCHAR#
+		                  AND EL.EDITION_NO <> #EDITION_NO:VARCHAR#
+		 	    )
+		    ]]>
+		
+	</select>
+	
+	<!--查找人员类型 -->
+	<select id="getEmpTypeNameListAdd" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+		 SELECT C.CODE_NO, 
+   			      SY.CONTENT EMP_TYPE_NAME
+             FROM SY_CODE C, SY_GLOBAL_NAME SY
+            WHERE C.PARENT_CODE_NO = '1368' 
+              AND C.CODE_NO = SY.NO(+)
+   			  AND SY.LANGUAGE(+) =#interLanguage:VARCHAR# 
+              AND C.CODE_NO NOT IN (SELECT EL.EMP_TYPE_CODE
+                           FROM ESS_DIMISSION_GL EL
+                          WHERE EL.CPNY_ID = #CPNY_ID:VARCHAR#
+		 	    )
+		    ]]>
+		
+	</select>
+
+	<select id="getEditionItemTypeParamList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT T.EDITION_ITEM_NO,
+			       T.EDITION_ITEM_TYPE,
+			       T.EDITION_NO,
+			       T.CPNY_ID,
+			       SY.CONTENT EDITION_PARAM_NAME,
+			       T.PERSON_ID,
+			       T.REMARK,
+			       T.ORDERNO,
+			       E.LOCAL_NAME
+		      FROM SYS_EDITION_ITEM_PARAM T,SY_GLOBAL_NAME SY,HR_EMPLOYEE E
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EDITION_NO = #EDITION_NO:VARCHAR#
+		       AND T.PERSON_ID = E.PERSON_ID(+)
+		       AND T.EDITION_ITEM_TYPE = #EDITION_ITEM_TYPE:VARCHAR#
+		       AND T.EDITION_ITEM_NO = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+		       ]]>
+		       <isNotEmpty prepend="AND" property="EDITION_ITEM_NO">
+			<![CDATA[
+		 	     T.EDITION_ITEM_NO = #EDITION_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		    <![CDATA[
+		 	     ORDER BY T.ORDERNO
+		    ]]>
+	</select>
+
+	<select id="getEditionItemTypeParamCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			   SELECT count(*)
+			  FROM SYS_EDITION_ITEM_PARAM T,SY_GLOBAL_NAME SY
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EDITION_NO = #EDITION_NO:VARCHAR#
+		       AND T.EDITION_ITEM_TYPE = #EDITION_ITEM_TYPE:VARCHAR#
+		       AND T.EDITION_ITEM_NO = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+			]]>
+			 <isNotEmpty prepend="AND" property="EDITION_ITEM_NO">
+			<![CDATA[
+		 	     T.EDITION_ITEM_NO = #EDITION_ITEM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		 <![CDATA[
+		 	     ORDER BY T.ORDERNO
+		    ]]>
+	</select>
+	
+<!-- 	查找离职交接类型表的List -->
+	<select id="getEditionItemTypeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT T.EDITION_NO,
+			       T.EDITION_ITEM_TYPE,
+			       SY.CONTENT EDITION_ITEM_NAME,
+			       T.REMARK,
+			       T.ACTIVITY,
+			       T.ORDERNO
+		      FROM SYS_EDITION_ITEM T,SY_GLOBAL_NAME SY
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EDITION_ITEM_TYPE = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="EDITION_NO">
+			<![CDATA[
+		 	     T.EDITION_NO LIKE '%' || #EDITION_NO:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_ITEM_NAME">
+			<![CDATA[
+		 	     SY.CONTENT LIKE '%' || #EDITION_ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_ITEM_TYPE">
+			<![CDATA[
+		 	     T.EDITION_ITEM_TYPE = #EDITION_ITEM_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY T.ORDERNO
+		]]>
+	</select>
+
+<!-- 	查找离职交接类型表的数量 -->
+	<select id="getEditionItemTypeCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			  FROM SYS_EDITION_ITEM T,SY_GLOBAL_NAME SY
+		     WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+		       AND T.EDITION_ITEM_TYPE = SY.NO(+)
+		       AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+			]]>
+		<isNotEmpty prepend="AND" property="EDITION_NO">
+			<![CDATA[
+		 	     T.EDITION_NO LIKE '%' || #EDITION_NO:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EDITION_ITEM_NAME">
+			<![CDATA[
+		 	     SY.CONTENT LIKE '%' || #EDITION_ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_ITEM_TYPE">
+			<![CDATA[
+		 	     T.EDITION_ITEM_TYPE = #EDITION_ITEM_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+    <!-- 	添加离职交接类型 -->
+	<insert id="addEditionItemTypeInfo" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO SYS_EDITION_ITEM 
+				(EDITION_NO, 
+				 CPNY_ID, 
+				 EDITION_ITEM_TYPE, 
+				 REMARK,
+				 CREATE_DATE, 
+				 CREATED_BY, 
+				 ORDERNO,
+				 ACTIVITY
+                ) 
+		VALUES (
+    		    #EDITION_NO:VARCHAR#,
+				#CPNY_ID:VARCHAR#, 
+				#NO:VARCHAR#, 
+				#REMARK:VARCHAR#,
+				SYSDATE, 
+				#CREATED_BY:VARCHAR#,
+				(SELECT NVL(MAX(ORDERNO),0)+1 FROM SYS_EDITION_ITEM) ,
+				#ACTIVITY:VARCHAR# 
+				)
+	    ]]>
+	</insert>
+	
+	 <!--修改交接类型 -->
+	<update id="updateEditionItemTypeInfo" parameterClass="linkMap">
+	    <![CDATA[
+		 UPDATE SYS_EDITION_ITEM T 
+			SET T.REMARK        = #REMARK:VARCHAR#,
+			    T.UPDATE_DATE   = SYSDATE,
+			    T.UPDATED_BY    = #UPDATED_BY:VARCHAR#,
+			    T.ORDERNO       = #ORDERNO:NUMERIC#
+		  WHERE T.EDITION_NO    = #EDITION_NO:VARCHAR#
+		    AND T.EDITION_ITEM_TYPE = #EDITION_ITEM_TYPE:VARCHAR#
+            AND T.CPNY_ID       = #CPNY_ID:VARCHAR#				                          
+	    ]]>
+	</update>
+	
+	<!--删除交接类型 -->
+     <delete id="deleteEditionItemTypeInfo">
+		<![CDATA[
+			DELETE FROM SYS_EDITION_ITEM WHERE EDITION_ITEM_TYPE = #EDITION_ITEM_TYPE:VARCHAR#
+    	]]>
+	</delete>
+	
+	 <!-- 	添加离职交接类型的具体项目-->
+	<insert id="addEditionItemTypeParamInfo" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO SYS_EDITION_ITEM_PARAM
+				(EDITION_NO, 
+				 CPNY_ID, 
+				 EDITION_ITEM_TYPE, 
+				 EDITION_ITEM_NO, 
+				 REMARK,
+				 CREATE_DATE, 
+				 CREATED_BY,
+				 ORDERNO
+                ) 
+		VALUES (
+    		    #EDITION_NO:VARCHAR#,
+				#CPNY_ID:VARCHAR#,
+				#EDITION_ITEM_TYPE:VARCHAR#, 
+				#NO:VARCHAR#, 
+				#REMARK:VARCHAR#,
+				SYSDATE, 
+				#CREATED_BY:VARCHAR#,
+				(SELECT NVL(MAX(ORDERNO),0) + 1 FROM SYS_EDITION_ITEM_PARAM T WHERE T.EDITION_ITEM_TYPE=#EDITION_ITEM_TYPE:VARCHAR#)
+				)
+	    ]]>
+	</insert>
+	
+	<!--删除交接类型的具体项目 -->
+     <delete id="deleteEditionItemTypeParamInfo">
+		<![CDATA[
+			DELETE FROM SYS_EDITION_ITEM_PARAM WHERE EDITION_ITEM_NO = #EDITION_ITEM_NO:VARCHAR# 
+    	]]>
+	</delete>
+	
+	
+	<!-- 	查找离职交接进度表的List -->
+	<select id="getEditionCheckList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			 SELECT E.EMP_TYPE_CODE,
+                    E.EMPID,
+                    SY.CONTENT EMP_TYPE_NAME,
+                    E.LOCAL_NAME,
+                    TO_CHAR(T.APPLY_TIME, 'yyyy-MM-dd') APPLY_TIME,
+                    TO_CHAR(T.APPLY_LEAVE_TIME, 'yyyy-MM-dd') APPLY_LEAVE_TIME,
+                    TO_CHAR(T.LEAVE_TIME, 'yyyy-MM-dd') LEAVE_TIME,
+                    T.LEAVE_TYPE,
+                    T.APPLY_NO,
+                    T.APPLY_REASON, 
+                    T.PERSON_ID,
+                    T.AFFIRM_FG,
+                    T.AFFIRM_FLAG
+              FROM HR_EMPLOYEE E,ESS_APPLY_DIMISSION T,SY_GLOBAL_NAME SY,ESS_DIMISSION_GL N
+             WHERE E.PERSON_ID = T.PERSON_ID
+               AND E.EMP_TYPE_CODE = SY.NO(+)
+               AND SY.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+               AND E.EMP_TYPE_CODE = N.EMP_TYPE_CODE
+               AND T.AFFIRM_FLAG = 1
+               
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+		 	     T.APPLY_TIME = #APPLY_TIME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_ITEM_NAME">
+			<![CDATA[
+		 	     SY.CONTENT LIKE '%' || #EDITION_ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 	     E.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID_MYSELF">
+			<![CDATA[
+		 	     T.PERSON_ID = #PERSON_ID_MYSELF:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_ID">
+			<![CDATA[
+		 	     #AFFIRM_ID:VARCHAR# IN (SELECT MT.AFFIRM_PERSON_ID FROM SYS_EDITION_PERSON MT WHERE MT.APPLY_PERSON_ID = T.PERSON_ID)
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+<!-- 	查找离职交接进度表的数量 -->
+	<select id="getEditionCheckCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			   FROM HR_EMPLOYEE E,ESS_APPLY_DIMISSION T,SY_GLOBAL_NAME SY,ESS_DIMISSION_GL N
+             WHERE E.PERSON_ID = T.PERSON_ID
+               AND E.EMP_TYPE_CODE = SY.NO(+)
+               AND SY.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+               AND E.EMP_TYPE_CODE = N.EMP_TYPE_CODE
+               AND T.AFFIRM_FLAG = 1
+			]]>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+		 	     T.APPLY_TIME = #APPLY_TIME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDITION_ITEM_NAME">
+			<![CDATA[
+		 	     SY.CONTENT LIKE '%' || #EDITION_ITEM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+		 	     E.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID_MYSELF">
+			<![CDATA[
+		 	     T.PERSON_ID = #PERSON_ID_MYSELF:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_ID">
+			<![CDATA[
+		 	     #AFFIRM_ID:VARCHAR# IN (SELECT MT.AFFIRM_PERSON_ID FROM SYS_EDITION_PERSON MT WHERE MT.APPLY_PERSON_ID = T.PERSON_ID)
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	 <!--修改交接项目 -->
+	<update id="updateEditionItemParamInfo" parameterClass="linkMap">
+	    <![CDATA[
+		 UPDATE SYS_EDITION_ITEM_PARAM T 
+			SET T.PERSON_ID     = #PERSON_ID:VARCHAR#,
+			    T.UPDATE_DATE   = SYSDATE
+		  WHERE T.CPNY_ID       = #CPNY_ID:VARCHAR#		
+            AND T.EDITION_ITEM_NO = #EDITION_ITEM_NO:VARCHAR#		                          
+	    ]]>
+	</update>
+	
+	<!--修改交接项目 -->
+	<update id="updateEditionParamInfo" parameterClass="linkMap">
+	    <![CDATA[
+		 UPDATE SYS_EDITION_ITEM_PARAM T 
+			SET 
+			    T.UPDATE_DATE   = SYSDATE,
+			    T.ORDERNO       = #ORDERNO:VARCHAR#,
+			    T.REMARK        = #REMARK:VARCHAR#
+		  WHERE T.CPNY_ID       = #CPNY_ID:VARCHAR#		
+            AND T.EDITION_ITEM_NO = #EDITION_ITEM_NO:VARCHAR#		                          
+	    ]]>
+	</update>
+	
+	 <!--修改交接项目 -->
+	<update id="updateEditionItemParamInfotype" parameterClass="linkMap">
+	    <![CDATA[
+		 UPDATE ESS_APPLY_DIMISSION T 
+			SET T.LEAVE_TIME    = TO_DATE(#LEAVE_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+			    T.LEAVE_TYPE    = #LEAVE_TYPE:VARCHAR#
+			    
+		  WHERE T.PERSON_ID     = #PERSON_ID:VARCHAR#	
+            AND T.APPLY_NO      = #APPLY_NO:VARCHAR#	                          
+	    ]]>
+	</update>
+	
+	
+	<!-- 离职信息List -->
+	<select id="getDimissionList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			 SELECT E.EMP_TYPE_CODE,
+                    E.EMPID,
+                    SY.CONTENT EMP_TYPE_NAME,
+                    E.LOCAL_NAME,
+                    TO_CHAR(T.APPLY_TIME, 'yyyy-MM-dd') APPLY_TIME,
+                    TO_CHAR(T.APPLY_LEAVE_TIME, 'yyyy-MM-dd') APPLY_LEAVE_TIME,
+                    TO_CHAR(T.LEAVE_TIME, 'yyyy-MM-dd') LEAVE_TIME,
+                    T.LEAVE_TYPE,
+                    T.APPLY_NO,
+                    T.APPLY_REASON, 
+                    T.PERSON_ID,
+                    T.ACTIVITY,
+                    T.AFFIRM_FLAG
+              FROM HR_EMPLOYEE E,ESS_APPLY_DIMISSION T,SY_GLOBAL_NAME SY
+             WHERE E.PERSON_ID = T.PERSON_ID
+               AND E.EMP_TYPE_CODE = SY.NO(+)
+               AND SY.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+               AND (T.PERSON_ID = #PERSON_ID:VARCHAR# OR T.CREATED_BY = #PERSON_ID:VARCHAR#)
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			   ( E.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR E.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	   ]]>
+	</isNotEmpty>
+	   <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		 <isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+			     T.APPLY_NO = #APPLY_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY E.EMPID 
+		]]>
+	</select>
+
+<!-- 	数量 -->
+	<select id="getDimissionCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(1)
+			   FROM HR_EMPLOYEE E,ESS_APPLY_DIMISSION T,SY_GLOBAL_NAME SY
+             WHERE E.PERSON_ID = T.PERSON_ID
+               AND E.EMP_TYPE_CODE = SY.NO(+)
+               AND SY.LANGUAGE = #interLanguage:VARCHAR#
+               AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+              AND (T.PERSON_ID = #PERSON_ID:VARCHAR# OR T.CREATED_BY = #PERSON_ID:VARCHAR#)
+			]]>
+		<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			  ( E.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR E.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	   ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	<update id="updatepersonEditionParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE SYS_EDITION_PERSON T SET
+			 		T.AFFIRM_FLAG = #AFFIRM_FLAG:NUMERIC#,
+			 		T.OBJECTION = #OBJECTION:VARCHAR#,
+					T.AFFIRM_DATE = SYSDATE
+			WHERE T.EDITION_PERSON_NO = #EDITION_PERSON_NO:VARCHAR#
+		]]>
+	</update>
+</sqlMap>

@@ -1,0 +1,3060 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.pac04">
+
+	<select id="getPaJobOfferList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT '20251' || b.empid empid,
+		       case length(b.local_name)
+		         when 2 then
+		          b.local_name || '    '
+		         when 3 then
+		          b.local_name || '  '
+		       end name,
+		       nvl(A.card_no, '') card,
+		       replace(replace(to_char(round(b.total_month_wage, 2), '0000000.00'),
+		                       '.',
+		                       ''),
+		               ' ',
+		               '') gongzi,
+		       to_char(SYSDATE, 'yymmdd') dates
+		  FROM hr_emp_pa_info A, PA_SUMMARY_C04 b
+		 WHERE b.cpny_id = 'C04'
+		   AND A.person_id = b.person_id
+		   AND b.emp_type_code = #PAY_STEP:VARCHAR#
+		   AND b.pa_month = #pamonth:VARCHAR#
+		]]>
+	</select>
+
+	<select id="getEmpType" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[		
+		SELECT S.CONTENT
+  FROM HR_EMPLOYEE H, SY_GLOBAL_NAME S
+ WHERE H.EMP_TYPE_CODE = S.NO
+   AND S.NO = '1369'	
+					]]>
+	</select>
+
+
+	<select id="getPaOfficialPayOffList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.EMPID,
+					A.LOCAL_NAME,
+					A.DESERVE_BASIC_WAGE,
+					A.HOUSE_SUBSIDIES,
+					A.TRANSPORT_FEE,
+					A.RANK_ALLOWANCE,
+					A.JOB_ALLOWANCE_STANDARD,
+					A.TOTAL_OT_FEE,
+					A.NIGHT_SHIFT_FEE,
+					A.WELFARE,
+					A.FULL_ATTENDANCE_ALLOWANCE,
+					A.REPLENISHMENT,
+					A.TOTAL_MONTH_WAGE,
+					A.SICK_CHARGE_BACK,
+					A.LEAVE_CHARGE_BACK,
+					
+					A.DAOXIU_CHARGE_BACK,
+					A.ABSENTEEISM_DEDUCTIONS,
+					A.TARDINESS_EARLYDAY_C_BACK,
+					A.OTHERS_LEAVE_C_BACK,
+					
+					A.BEFORE_TAXABLE_DEDUCT,
+					A.MEDICAL_PERSONAL,
+					A.ENDOWMENT_PERSONAL,
+					A.UNEMPLOYMENT_PERSONAL,
+					A.HOUSE_FUNDING_PERSONAL,
+					A.PERSONAL_INCOME_TAX,
+					A.NET_PAY_WAGE,
+					B.IDCARD_NO,
+					A.DEPTNO,
+					
+					A.TOTAL_WAGE,
+			        A.MEDICAL_COMPANY,
+			        A.ENDOWMENT_COMPANY,
+			        A.UNEMPLOYMENT_COMPANY,
+			        A.INDUCTRIAL_COMPANY,
+			        A.BIRTH_COMPANY,
+			        A.HOUSE_FUNDING_COMPANY,
+					A.PEOPLEWARE_FEE
+			FROM	PA_SUMMARY_C04 A,
+            		HR_PERSONAL_INFO B
+			WHERE	A.PERSON_ID = B.PERSON_ID
+			AND		A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			AND		A.PA_MONTH = #PA_MONTH:VARCHAR#
+		ORDER BY    A.DESERVE_BASIC_WAGE DESC
+		]]>
+	</select>
+	
+	<select id="getPaStatusByMonthPayOffList" parameterClass="linkMap"
+		resultClass="HashMap" remapResults="true">
+		<![CDATA[
+			SELECT ROUND(TAB.DESERVE_BASIC_WAGE1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  DESERVE_BASIC_WAGE1_G, 
+                   ROUND(TAB.TOTAL_OT_FEE1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  TOTAL_OT_FEE1_G,
+                   ROUND(TAB.NIGHT_SHIFT_FEE1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  NIGHT_SHIFT_FEE1_G,
+                   ROUND(TAB.QITA1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  QITA1_G,
+                   ROUND((TAB.TOTAL_WAGE1+TAB.TOTAL_OT_FEE1+TAB.NIGHT_SHIFT_FEE1+TAB.QITA1)*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  YINGDE1_G,
+                   ROUND(TAB.KOUKUAN1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  KOUKUAN1_G,
+                   ROUND((TAB.TOTAL_WAGE1+TAB.TOTAL_OT_FEE1+TAB.NIGHT_SHIFT_FEE1+TAB.QITA1-TAB.KOUKUAN1)*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  GONGZIZONGE1_G,
+                   ROUND(TAB.SOCIAL_INSURANCE_COMPANY1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  SOCIAL_INSURANCE_COMPANY1_G,
+                   ROUND(TAB.HOUSE_FUNDING_COMPANY1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  HOUSE_FUNDING_COMPANY1_G,
+                   ROUND((TAB.HOUSE_FUNDING_COMPANY1+TAB.SOCIAL_INSURANCE_COMPANY1+TAB.TOTAL_WAGE1+TAB.TOTAL_OT_FEE1+TAB.NIGHT_SHIFT_FEE1+TAB.QITA1-TAB.KOUKUAN1)*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  HEJI1_G,
+                   ROUND(TAB.ZHONGFANGHEJI1*100/(TAB.ZHONGFANGHEJI1+TAB.TOTAL_WAGE1),2)  ZHONGFANGHEJI1_G,
+                   
+                   ROUND(TAB.DESERVE_BASIC_WAGE2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  DESERVE_BASIC_WAGE2_G, 
+                   ROUND(TAB.TOTAL_OT_FEE2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  TOTAL_OT_FEE2_G,
+                   ROUND(TAB.NIGHT_SHIFT_FEE2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  NIGHT_SHIFT_FEE2_G,
+                   ROUND(TAB.QITA2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  QITA2_G,
+                   ROUND((TAB.TOTAL_WAGE2+TAB.TOTAL_OT_FEE2+TAB.NIGHT_SHIFT_FEE2+TAB.QITA2)*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  YINGDE2_G,
+                   ROUND(TAB.KOUKUAN2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  KOUKUAN2_G,
+                   ROUND((TAB.TOTAL_WAGE2+TAB.TOTAL_OT_FEE2+TAB.NIGHT_SHIFT_FEE2+TAB.QITA2-TAB.KOUKUAN2)*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  GONGZIZONGE2_G,
+                   ROUND(TAB.SOCIAL_INSURANCE_COMPANY2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  SOCIAL_INSURANCE_COMPANY2_G,
+                   ROUND(TAB.HOUSE_FUNDING_COMPANY2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  HOUSE_FUNDING_COMPANY2_G,
+                   ROUND((TAB.HOUSE_FUNDING_COMPANY2+TAB.SOCIAL_INSURANCE_COMPANY2+TAB.TOTAL_WAGE2+TAB.TOTAL_OT_FEE2+TAB.NIGHT_SHIFT_FEE2+TAB.QITA2-TAB.KOUKUAN2)*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  HEJI2_G,
+                   ROUND(TAB.ZHONGFANGHEJI2*100/(TAB.ZHONGFANGHEJI2+TAB.TOTAL_WAGE2),2)  ZHONGFANGHEJI2_G,
+                   
+                   ROUND(TAB.DESERVE_BASIC_WAGE3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  DESERVE_BASIC_WAGE3_G, 
+                   ROUND(TAB.TOTAL_OT_FEE3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  TOTAL_OT_FEE3_G,
+                   ROUND(TAB.NIGHT_SHIFT_FEE3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  NIGHT_SHIFT_FEE3_G,
+                   ROUND(TAB.QITA3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  QITA3_G,
+                   ROUND((TAB.TOTAL_WAGE3+TAB.TOTAL_OT_FEE3+TAB.NIGHT_SHIFT_FEE3+TAB.QITA3)*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  YINGDE3_G,
+                   ROUND(TAB.KOUKUAN3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  KOUKUAN3_G,
+                   ROUND((TAB.TOTAL_WAGE3+TAB.TOTAL_OT_FEE3+TAB.NIGHT_SHIFT_FEE3+TAB.QITA3-TAB.KOUKUAN3)*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  GONGZIZONGE3_G,
+                   ROUND(TAB.SOCIAL_INSURANCE_COMPANY3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  SOCIAL_INSURANCE_COMPANY3_G,
+                   ROUND(TAB.HOUSE_FUNDING_COMPANY3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  HOUSE_FUNDING_COMPANY3_G,
+                   ROUND((TAB.HOUSE_FUNDING_COMPANY3+TAB.SOCIAL_INSURANCE_COMPANY3+TAB.TOTAL_WAGE3+TAB.TOTAL_OT_FEE3+TAB.NIGHT_SHIFT_FEE3+TAB.QITA3-TAB.KOUKUAN3)*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  HEJI3_G,
+                   ROUND(TAB.ZHONGFANGHEJI3*100/(TAB.ZHONGFANGHEJI3+TAB.TOTAL_WAGE3),2)  ZHONGFANGHEJI3_G,
+                   
+                   TAB.*
+            FROM
+              (
+				SELECT 
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR# AND A.EMP_TYPE_CODE = '3693' THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE1,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE1,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE1,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE1,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY1,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY1,
+                       
+              (SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.TRANSPORT_FEE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.WELFARE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.REPLENISHMENT ELSE 0 END)) QITA1,
+              (SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#   THEN A.PERSONAL_INCOME_TAX ELSE 0 END)) KOUKUAN1,
+              (SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+                           NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+                           NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+                           NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+                           NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+                           NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+                           NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+                           NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+                           NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+                           NVL(A.PERSONAL_INCOME_TAX, 0) +
+                           NVL(A.SOCIAL_INSURANCE_COMPANY, 0) +
+                           NVL(A.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+                      FROM PA_SUMMARY_C04 A
+                     WHERE A.EMP_TYPE_CODE = '1369' OR A.EMP_TYPE_CODE = '14890'
+                       AND A.PA_MONTH = #PA_MONTH:VARCHAR#
+                       AND A.CPNY_ID = #CPNY_ID:VARCHAR#)ZHONGFANGHEJI1,
+               
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1 AND A.EMP_TYPE_CODE = '3693' THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE2,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE2,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE2,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE2,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY2,
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY2,
+                       
+              (SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.TRANSPORT_FEE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.RANK_ALLOWANCE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.WELFARE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.REPLENISHMENT ELSE 0 END)) QITA2,
+              (SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+               SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-1    THEN A.PERSONAL_INCOME_TAX ELSE 0 END)) KOUKUAN2,
+                
+               (SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+                           NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+                           NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+                           NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+                           NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+                           NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+                           NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+                           NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+                           NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+                           NVL(A.PERSONAL_INCOME_TAX, 0) +
+                           NVL(A.SOCIAL_INSURANCE_COMPANY, 0) +
+                           NVL(A.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+                      FROM PA_SUMMARY_C04 A
+                     WHERE A.EMP_TYPE_CODE = '1369' OR A.EMP_TYPE_CODE = '14890'
+                       AND A.PA_MONTH = #PA_MONTH:VARCHAR#-1
+                       AND A.CPNY_ID = #CPNY_ID:VARCHAR#)ZHONGFANGHEJI2,
+               
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2 AND A.EMP_TYPE_CODE = '3693' THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE3,
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE3,
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE3,
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE3,
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY3,
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY3,
+                       
+                (SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.TRANSPORT_FEE ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.WELFARE ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.REPLENISHMENT ELSE 0 END)) QITA3,
+                (SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+                 SUM(CASE WHEN A.PA_MONTH = #PA_MONTH:VARCHAR#-2   THEN A.PERSONAL_INCOME_TAX ELSE 0 END)) KOUKUAN3,
+                (SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+                             NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+                             NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+                             NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+                             NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+                             NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+                             NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+                             NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+                             NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+                             NVL(A.PERSONAL_INCOME_TAX, 0) +
+                             NVL(A.SOCIAL_INSURANCE_COMPANY, 0) +
+                             NVL(A.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+                        FROM PA_SUMMARY_C04 A
+                       WHERE A.EMP_TYPE_CODE = '1369' OR A.EMP_TYPE_CODE = '14890'
+                         AND A.PA_MONTH = #PA_MONTH:VARCHAR#-2
+                         AND A.CPNY_ID = #CPNY_ID:VARCHAR#)ZHONGFANGHEJI3,
+               
+		               A.EMP_TYPE_CODE
+		        FROM   PA_SUMMARY_C04 A
+		        WHERE  A.EMP_TYPE_CODE IS NOT NULL
+		        AND    A.CPNY_ID = #CPNY_ID:VARCHAR#
+		      GROUP BY A.EMP_TYPE_CODE) TAB
+		]]>
+	</select>
+
+	
+	<select id="getPaSalaryZhuZaiYuanZongHeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUM(CASE WHEN TO_DATE(A.PA_MONTH,'yyyyMM') BETWEEN TO_DATE(#START_MONTH:VARCHAR#,'yyyyMM') AND TO_DATE(#END_MONTH:VARCHAR#,'yyyyMM') THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE1,
+			       SUM(CASE WHEN TO_DATE(A.PA_MONTH,'yyyyMM') BETWEEN TO_DATE(#START_MONTH:VARCHAR#-100,'yyyyMM') AND TO_DATE(#END_MONTH:VARCHAR#-100,'yyyyMM') THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE2,
+			       SUM(CASE WHEN TO_DATE(A.PA_MONTH,'yyyyMM') BETWEEN TO_DATE(#START_MONTH:VARCHAR#,'yyyyMM') AND TO_DATE(#END_MONTH:VARCHAR#,'yyyyMM') THEN A.TOTAL_WAGE ELSE 0 END) -
+			       SUM(CASE WHEN TO_DATE(A.PA_MONTH,'yyyyMM') BETWEEN TO_DATE(#START_MONTH:VARCHAR#-100,'yyyyMM') AND TO_DATE(#END_MONTH:VARCHAR#-100,'yyyyMM') THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE_COMPARE 
+			  FROM PA_SUMMARY_C04 A
+			 WHERE A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<!-- C04 乐天食品专用 -->
+	<!-- 单月 -->
+	<sql id="getPaAmountList">
+		SELECT nvl((CASE
+		             WHEN PA.START_MONTH =
+		                  TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12),'YYYYMM') AND
+		                  PA.END_MONTH =
+		                  TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12),'YYYYMM') THEN
+		              NVL(PA.RETURN_VALUE, 0)
+		           END),
+		           1) LAST_YEAR_AMOUNT,
+		       TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') LAST_YEAR,
+       		   TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'MM') LAST_YEAR_MONTH,
+		       nvl((CASE
+		             WHEN PA.START_MONTH =
+		                  TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1),'YYYYMM') AND
+		                  PA.END_MONTH =
+		                  TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1),'YYYYMM') THEN
+		              NVL(PA.RETURN_VALUE, 0)
+		           END),
+		           1) LAST_MONTH_AMOUNT,
+		       TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYY') LAST_MONTH_YEAR,
+               TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'MM') LAST_MONTH,
+		       nvl((CASE
+		             WHEN PA.START_MONTH = #PA_MONTH:VARCHAR# AND PA.END_MONTH = #PA_MONTH:VARCHAR# THEN
+		              NVL(PA.RETURN_VALUE, 0)
+		           END),
+		           1) CURRENT_AMOUNT,
+               TO_CHAR(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), 'YYYY') CURRENT_YEAR,
+               TO_CHAR(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), 'MM') CURRENT_MONTH
+		  FROM PA_PARAM_DATA_OTHER PA
+		 WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		   AND PA.PARAM_NO = #PARAM_NO:VARCHAR#
+	</sql>
+
+	<select id="getPaSalaryAmountList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<include refid="getPaAmountList"/>
+	</select>
+	
+	<select id="getPaProductionAmountList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<include refid="getPaAmountList"/>
+	</select>
+	
+	<select id="getPaItemSumByEmpType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') LAST_YEAR_MONTH,
+			       TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') LAST_MONTH,
+			       #PA_MONTH:VARCHAR# CURRENT_MONTH,
+		]]>			
+		<isNotEmpty prepend="" property="PA_ITEM">
+			<!-- (实发工资)驻在员用项1目  -->
+			<isEqual property="PA_ITEM" compareValue="NET_PAY_WAGE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.NET_PAY_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.NET_PAY_WAGE, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.NET_PAY_WAGE, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (应得基本工资)项2目 -->
+			<isEqual property="PA_ITEM" compareValue="BASE_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.DESERVE_BASIC_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.DESERVE_BASIC_WAGE, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.DESERVE_BASIC_WAGE, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (加班费合计)项3目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_OT_FEE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.TOTAL_OT_FEE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.TOTAL_OT_FEE, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.TOTAL_OT_FEE, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (夜班费)项4目 -->
+			<isEqual property="PA_ITEM" compareValue="NIGHT_SHIFT_FEE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.NIGHT_SHIFT_FEE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.NIGHT_SHIFT_FEE, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.NIGHT_SHIFT_FEE, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (其它(应得合计-应得基本工资-加班费合计-夜班费))项5目 -->
+			<isEqual property="PA_ITEM" compareValue="OTHER_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_MONTH_WAGE, 0) - NVL(PA.DESERVE_BASIC_WAGE, 0) - NVL(PA.TOTAL_OT_FEE, 0) - NVL(PA.NIGHT_SHIFT_FEE, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (应得合计)项6目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_MONTH_WAGE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.TOTAL_MONTH_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.TOTAL_MONTH_WAGE, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.TOTAL_MONTH_WAGE, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (扣款合计(缺勤扣款合计 + 税前减项))项7目 -->
+			<isEqual property="PA_ITEM" compareValue="DEDUCT_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (工资总额)项8目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_WAGE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.TOTAL_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.TOTAL_WAGE, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.TOTAL_WAGE, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (公司缴纳社保总额(社会保险(公司)))项9目 -->
+			<isEqual property="PA_ITEM" compareValue="SOCIAL_INSURANCE_COMPANY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (公司缴纳公积金(公积金(公司)))项10目 -->
+			<isEqual property="PA_ITEM" compareValue="HOUSE_FUNDING_COMPANY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  NVL(PA.HOUSE_FUNDING_COMPANY, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  NVL(PA.HOUSE_FUNDING_COMPANY, 0)
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.HOUSE_FUNDING_COMPANY, 0)
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (XXX员工薪资合计(工资总额+社会保险(公司)+公积金(公司)))项11目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+			<!-- (公司合计(工资总额+社会保险(公司)+公积金(公司)))项12目 -->
+			<isEqual property="PA_ITEM" compareValue="COMPANY_TOTAL">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH =
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1), 'YYYYMM') THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) LAST_MONTH_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN PA.PA_MONTH = #PA_MONTH:VARCHAR# THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) CURRENT_SALARY,
+				]]>
+			</isEqual>
+		</isNotEmpty>  
+		<![CDATA[  
+			     'PA_MONTH' PA_MONTH
+			FROM PA_SUMMARY_C04 PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="EMP_TYPE">
+			<isEqual property="EMP_TYPE" compareValue="CHINA">
+				<![CDATA[  
+					PA.EMP_TYPE_CODE in('1369','14890')
+				]]>
+			</isEqual>
+			<isEqual property="EMP_TYPE" compareValue="ALL">
+				<![CDATA[  
+					PA.EMP_TYPE_CODE in('3943','1369','14890')
+				]]>
+			</isEqual>
+			<isEqual property="EMP_TYPE" compareValue="TYPE">
+				<isNotEmpty prepend="" property="EMP_TYPE_CODE">
+					<![CDATA[  
+						PA.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+					]]>
+				</isNotEmpty>
+			</isEqual>		
+		</isNotEmpty>
+	</select>
+	
+	<!-- 累计 -->
+	<sql id="getPaAmountSumList">
+		<![CDATA[
+			SELECT nvl(SUM((CASE
+			                 WHEN PA.START_MONTH >=
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      PA.END_MONTH <=
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      substr(#PA_MONTH:VARCHAR#, 5, 2) THEN
+			                  NVL(PA.RETURN_VALUE, 0)
+			               END)),
+			           1) LAST_YEAR_AMOUNT,
+			       TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') LAST_YEAR,
+			       nvl(SUM((CASE
+			                 WHEN PA.START_MONTH >= substr(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND
+			                      PA.END_MONTH <= #PA_MONTH:VARCHAR# THEN
+			                  NVL(PA.RETURN_VALUE, 0)
+			               END)),
+			           1) CURRENT_YEAR_AMOUNT,
+			       TO_CHAR(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), 'YYYY') CURRENT_YEAR,
+			       TO_CHAR(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), 'MM')   PA_MONTH
+			  FROM PA_PARAM_DATA_OTHER PA
+			 WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND PA.PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>		
+	</sql>
+	
+	<select id="getPaSalaryAmountSumList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<include refid="getPaAmountSumList"/>
+	</select>
+	
+	<select id="getPaProductionAmountSumList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<include refid="getPaAmountSumList"/>
+	</select>
+	
+	<select id="getPaItemSumByEmpTypeByYear" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') LAST_YEAR,
+			       substr(#PA_MONTH:VARCHAR#, 1, 4) CURRENT_YEAR,
+		]]>			
+		<isNotEmpty prepend="" property="PA_ITEM">
+			<!-- (实发工资)驻在员用项1目  -->
+			<isEqual property="PA_ITEM" compareValue="NET_PAY_WAGE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.NET_PAY_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.NET_PAY_WAGE, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (应得基本工资)项2目 -->
+			<isEqual property="PA_ITEM" compareValue="BASE_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.DESERVE_BASIC_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.DESERVE_BASIC_WAGE, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (加班费合计)项3目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_OT_FEE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.TOTAL_OT_FEE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.TOTAL_OT_FEE, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (夜班费)项4目 -->
+			<isEqual property="PA_ITEM" compareValue="NIGHT_SHIFT_FEE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.NIGHT_SHIFT_FEE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.NIGHT_SHIFT_FEE, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (其它(应得合计-应得基本工资-加班费合计-夜班费))项5目 -->
+			<isEqual property="PA_ITEM" compareValue="OTHER_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  (NVL(PA.TOTAL_MONTH_WAGE, 0) - NVL(PA.DESERVE_BASIC_WAGE, 0) - NVL(PA.TOTAL_OT_FEE, 0) - NVL(PA.NIGHT_SHIFT_FEE, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (应得合计)项6目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_MONTH_WAGE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.TOTAL_MONTH_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.TOTAL_MONTH_WAGE, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (扣款合计(缺勤扣款合计 + 税前减项))项7目 -->
+			<isEqual property="PA_ITEM" compareValue="DEDUCT_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  (NVL(PA.TOTAL_ABSENCE_C_BACK, 0)+NVL(PA.BEFORE_TAXABLE_DEDUCT, 0))
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (工资总额)项8目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_WAGE">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.TOTAL_WAGE, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.TOTAL_WAGE, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (公司缴纳社保总额(社会保险(公司)))项9目 -->
+			<isEqual property="PA_ITEM" compareValue="SOCIAL_INSURANCE_COMPANY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (公司缴纳公积金(公积金(公司)))项10目 -->
+			<isEqual property="PA_ITEM" compareValue="HOUSE_FUNDING_COMPANY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  NVL(PA.HOUSE_FUNDING_COMPANY, 0)
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  NVL(PA.HOUSE_FUNDING_COMPANY, 0)
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (XXX员工薪资合计(工资总额+社会保险(公司)+公积金(公司)))项11目 -->
+			<isEqual property="PA_ITEM" compareValue="TOTAL_SALARY">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+			<!-- (公司合计(工资总额+社会保险(公司)+公积金(公司)))项12目 -->
+			<isEqual property="PA_ITEM" compareValue="COMPANY_TOTAL">
+				<![CDATA[     
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') || '01' AND
+			                      TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -12), 'YYYY') ||
+			                      SUBSTR(#PA_MONTH:VARCHAR#, 5, 2)) THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) LAST_YEAR_SALARY,
+			       nvl(SUM((CASE
+			                 WHEN (PA.PA_MONTH between SUBSTR(#PA_MONTH:VARCHAR#, 1, 4) || '01' AND #PA_MONTH:VARCHAR#) THEN
+			                  (NVL(PA.TOTAL_WAGE, 0)+NVL(PA.SOCIAL_INSURANCE_COMPANY, 0)+NVL(PA.HOUSE_FUNDING_COMPANY, 0))
+			               END)),
+			           0) CURRENT_YEAR_SALARY,
+				]]>
+			</isEqual>
+		</isNotEmpty>  
+		<![CDATA[  
+			     'PA_MONTH' PA_MONTH
+			FROM PA_SUMMARY_C04 PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="EMP_TYPE">
+			<isEqual property="EMP_TYPE" compareValue="CHINA">
+				<![CDATA[  
+					PA.EMP_TYPE_CODE in('1369','14890')
+				]]>
+			</isEqual>
+			<isEqual property="EMP_TYPE" compareValue="ALL">
+				<![CDATA[  
+					PA.EMP_TYPE_CODE in('3943','1369','14890')
+				]]>
+			</isEqual>
+			<isEqual property="EMP_TYPE" compareValue="TYPE">
+				<isNotEmpty prepend="" property="EMP_TYPE_CODE">
+					<![CDATA[  
+						PA.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+					]]>
+				</isNotEmpty>
+			</isEqual>		
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaSumProductionAmountList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUM(TAB.RETURN_VALUE1)+SUM(TAB.RETURN_VALUE3) RETURN_VALUE1,
+			       SUM(TAB.RETURN_VALUE2)+SUM(TAB.RETURN_VALUE4) RETURN_VALUE2
+			  FROM (SELECT CASE WHEN PA.START_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR# AND PA.END_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR# THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE1,
+			               CASE WHEN PA.START_MONTH BETWEEN #START_MONTH:VARCHAR# - 100 AND #END_MONTH:VARCHAR# - 100 AND PA.END_MONTH BETWEEN #START_MONTH:VARCHAR# - 100 AND #END_MONTH:VARCHAR# - 100 THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE2,
+			               CASE WHEN PA.START_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR# AND PA.END_MONTH IS NULL THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE3,
+			               CASE WHEN PA.START_MONTH BETWEEN #START_MONTH:VARCHAR# - 100 AND #END_MONTH:VARCHAR# - 100 AND PA.END_MONTH IS NULL THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE4
+			          FROM PA_PARAM_DATA_OTHER PA
+			         WHERE PA.PARAM_NO = #PARAM_NO:VARCHAR#
+			           AND PA.CPNY_ID = #CPNY_ID:VARCHAR#) TAB
+        ]]>
+	</select>
+	
+	<select id="getPaSumSalaryAmountList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUM(TAB.RETURN_VALUE2)RETURN_VALUE2, SUM(TAB.RETURN_VALUE1)RETURN_VALUE1
+			  FROM (SELECT (CASE
+			                 WHEN PA.START_MONTH >= TO_CHAR(#START_MONTH:VARCHAR# - 2) AND
+			                      PA.END_MONTH <= TO_CHAR(#END_MONTH:VARCHAR# - 2) THEN
+			                  NVL(PA.RETURN_VALUE, 0)
+			               END) RETURN_VALUE2,
+			               (CASE
+			                 WHEN PA.START_MONTH >= #START_MONTH:VARCHAR# AND 
+			                      PA.END_MONTH <= #END_MONTH:VARCHAR# THEN
+			                  NVL(PA.RETURN_VALUE, 0)
+			               END) RETURN_VALUE1
+			          FROM PA_PARAM_DATA_OTHER PA
+			         WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			           AND PA.PARAM_NO = #PARAM_NO:VARCHAR#) TAB
+        ]]>
+	</select>
+
+	<select id="getPaPayOffStatusAddupPayOffList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	        SELECT ROUND(TAB.TOTAL_WAGE1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) TOTAL_WAGE1_G,
+	        	   ROUND(TAB.DESERVE_BASIC_WAGE1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) DESERVE_BASIC_WAGE1_G,
+			       ROUND(TAB.TOTAL_OT_FEE1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) TOTAL_OT_FEE1_G,
+			       ROUND(TAB.NIGHT_SHIFT_FEE1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) NIGHT_SHIFT_FEE1_G,
+			       ROUND(TAB.QITA1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) QITA1_G,
+			       ROUND((TAB.DESERVE_BASIC_WAGE1+TAB.TOTAL_OT_FEE1+TAB.NIGHT_SHIFT_FEE1+TAB.QITA1)*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) YINGDE1_G,
+			       ROUND(TAB.KOUKUAN1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) KOUKUAN1_G,
+			       ROUND((TAB.DESERVE_BASIC_WAGE1+TAB.TOTAL_OT_FEE1+TAB.NIGHT_SHIFT_FEE1+TAB.QITA1-TAB.KOUKUAN1)*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) GONGZIZONGE1_G,
+			       ROUND(TAB.SOCIAL_INSURANCE_COMPANY1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) SOCIAL_INSURANCE_COMPANY1_G,
+			       ROUND(TAB.HOUSE_FUNDING_COMPANY1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) HOUSE_FUNDING_COMPANY1_G,
+			       ROUND((TAB.DESERVE_BASIC_WAGE1+TAB.TOTAL_OT_FEE1+TAB.NIGHT_SHIFT_FEE1+TAB.QITA1-TAB.KOUKUAN1+TAB.SOCIAL_INSURANCE_COMPANY1+TAB.HOUSE_FUNDING_COMPANY1)*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) HEJI1_G,
+			       ROUND(TAB.ZHONGFANGHEJI1*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) ZHONGFANGHEJI1_G,
+			       ROUND((TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1)*100/(TAB.TOTAL_WAGE1+TAB.ZHONGFANGHEJI1),2) GONGSIZONGJI1_G,
+			       
+			       ROUND(TAB.TOTAL_WAGE2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) TOTAL_WAGE2_G,
+			       ROUND(TAB.DESERVE_BASIC_WAGE2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) DESERVE_BASIC_WAGE2_G,
+			       ROUND(TAB.TOTAL_OT_FEE2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) TOTAL_OT_FEE2_G,
+			       ROUND(TAB.NIGHT_SHIFT_FEE2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) NIGHT_SHIFT_FEE2_G,
+			       ROUND(TAB.QITA2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) QITA2_G,
+			       ROUND((TAB.DESERVE_BASIC_WAGE2+TAB.TOTAL_OT_FEE2+TAB.NIGHT_SHIFT_FEE2+TAB.QITA2)*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) YINGDE2_G,
+			       ROUND(TAB.KOUKUAN2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) KOUKUAN2_G,
+			       ROUND((TAB.DESERVE_BASIC_WAGE2+TAB.TOTAL_OT_FEE2+TAB.NIGHT_SHIFT_FEE2+TAB.QITA2-TAB.KOUKUAN2)*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) GONGZIZONGE2_G,
+			       ROUND(TAB.SOCIAL_INSURANCE_COMPANY2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) SOCIAL_INSURANCE_COMPANY2_G,
+			       ROUND((TAB.DESERVE_BASIC_WAGE2+TAB.TOTAL_OT_FEE2+TAB.NIGHT_SHIFT_FEE2+TAB.QITA2-TAB.KOUKUAN2+TAB.SOCIAL_INSURANCE_COMPANY2)*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) HEJI2_G,
+			       ROUND(TAB.ZHONGFANGHEJI2*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) ZHONGFANGHEJI2_G,
+			       ROUND((TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2)*100/(TAB.TOTAL_WAGE2+TAB.ZHONGFANGHEJI2),2) GONGSIZONGJI2_G,
+			       TAB.* 
+			FROM (
+			    SELECT SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR# AND A.EMP_TYPE_CODE = '3693' THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE1,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE1,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE1,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE1,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN B.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY1,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN B.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY1,
+			                         
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.TRANSPORT_FEE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.WELFARE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.REPLENISHMENT ELSE 0 END) QITA1,
+			                 
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#   THEN A.PERSONAL_INCOME_TAX ELSE 0 END) KOUKUAN1,
+			           (SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+			                       NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+			                       NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+			                       NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+			                       NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+			                       NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+			                       NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+			                       NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+			                       NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+			                       NVL(A.PERSONAL_INCOME_TAX, 0) +
+			                       NVL(B.SOCIAL_INSURANCE_COMPANY, 0) +
+			                       NVL(B.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+			                     FROM PA_SUMMARY_C04 A, IS_SUMMARY_C04 B
+			             WHERE A.PERSON_ID = B.PERSON_ID
+			               AND A.EMP_TYPE_CODE IS NOT NULL
+			               AND A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND  #END_MONTH:VARCHAR#
+			               AND A.CPNY_ID = #CPNY_ID:VARCHAR#)ZHONGFANGHEJI1,  
+			                    
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1 AND A.EMP_TYPE_CODE = '3693' THEN A.TOTAL_WAGE ELSE 0 END) TOTAL_WAGE2,            
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE2,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE2,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE2,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN B.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY2,
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN B.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY2,
+			                             
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.TRANSPORT_FEE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.WELFARE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.REPLENISHMENT ELSE 0 END) QITA2,
+			                 
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+			           SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1   THEN A.PERSONAL_INCOME_TAX ELSE 0 END) KOUKUAN2,
+			          (SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+			                      NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+			                      NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+			                      NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+			                      NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+			                      NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+			                      NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+			                      NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+			                      NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+			                      NVL(A.PERSONAL_INCOME_TAX, 0) +
+			                      NVL(B.SOCIAL_INSURANCE_COMPANY, 0) +
+			                      NVL(B.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI                 
+			                  FROM PA_SUMMARY_C04 A, IS_SUMMARY_C04 B
+			                 WHERE A.PERSON_ID = B.PERSON_ID
+			                   AND A.EMP_TYPE_CODE IS NOT NULL
+			                   AND A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-1 AND  #END_MONTH:VARCHAR#-1
+			                   AND A.CPNY_ID = #CPNY_ID:VARCHAR#)ZHONGFANGHEJI2,
+				                 
+			             A.EMP_TYPE_CODE
+			        FROM   PA_SUMMARY_C04 A,
+			               IS_SUMMARY_C04 B
+			        WHERE  A.PERSON_ID = B.PERSON_ID 
+			        AND    A.EMP_TYPE_CODE IS NOT NULL
+			        AND    A.CPNY_ID = #CPNY_ID:VARCHAR#
+			        GROUP BY A.EMP_TYPE_CODE
+			) TAB
+        ]]>
+	</select>
+	
+	<select id="getPaPayOffStatusAddupPayOffResourceListGt" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT       
+			   TAB.EMP_TYPE_CODE,
+              (CASE WHEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2)>0 THEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2) 
+                    WHEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2)<0 THEN -1
+                    WHEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2)=0 THEN 0
+                    END)DESERVE_BASIC_WAGE,
+              (CASE WHEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2)>0 THEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2) 
+                    WHEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2)<0 THEN -1
+                    WHEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2)=0 THEN 0
+                    END)TOTAL_OT_FEE,
+              (CASE WHEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2)>0 THEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2) 
+                    WHEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2)<0 THEN -1
+                    WHEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2)=0 THEN 0
+                    END)NIGHT_SHIFT_FEE,
+              
+              (CASE WHEN (TAB.QITA1 - TAB.QITA2)>0 THEN (TAB.QITA1 - TAB.QITA2)
+                    WHEN (TAB.QITA1 - TAB.QITA2)<0 THEN -1
+                    WHEN (TAB.QITA1 - TAB.QITA2)=0 THEN 0
+                    END) QITA,   
+              
+              (CASE WHEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)>0 THEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)
+                    WHEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)<0 THEN -1
+                    WHEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)=0 THEN 0
+                    END)KOUKUAN,  
+              
+              (CASE WHEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2)>0 THEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2) 
+                    WHEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2)<0 THEN -1
+                    WHEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2)=0 THEN 0
+                    END)SOCIAL_INSURANCE_COMPANY, 
+              (CASE WHEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2)>0 THEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2) 
+                    WHEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2)<0 THEN -1
+                    WHEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2)=0 THEN 0
+                    END)HOUSE_FUNDING_COMPANY
+           FROM
+            (SELECT  SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY1,
+                             
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.HOUSE_SUBSIDIES ELSE 0 END) HOUSE_SUBSIDIES1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.TRANSPORT_FEE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.WELFARE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.REPLENISHMENT ELSE 0 END) QITA1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+                             
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.PERSONAL_INCOME_TAX ELSE 0 END) KOUKUAN1,
+                               
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY2,
+                             
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.TRANSPORT_FEE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.WELFARE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.REPLENISHMENT ELSE 0 END) QITA2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+                             
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.PERSONAL_INCOME_TAX ELSE 0 END) KOUKUAN2,
+                       
+                  	 A.EMP_TYPE_CODE
+              FROM   PA_SUMMARY_C04 A
+              WHERE  A.EMP_TYPE_CODE IS NOT NULL
+              AND    A.CPNY_ID = #CPNY_ID:VARCHAR#
+            GROUP BY A.EMP_TYPE_CODE)TAB
+        ]]>
+	</select>
+		
+
+	<select id="getPaPayOffStatusAddupPayOffResourceListLt" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT       
+               TAB.EMP_TYPE_CODE,
+              (CASE WHEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2)<0 THEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2) 
+                    WHEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2)>0 THEN 1
+                    WHEN (TAB.DESERVE_BASIC_WAGE1 - TAB.DESERVE_BASIC_WAGE2)=0 THEN 0
+                    END)DESERVE_BASIC_WAGE,
+              (CASE WHEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2)<0 THEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2) 
+                    WHEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2)>0 THEN 1
+                    WHEN (TAB.TOTAL_OT_FEE1 - TAB.TOTAL_OT_FEE2)=0 THEN 0
+                    END)TOTAL_OT_FEE,
+              (CASE WHEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2)<0 THEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2) 
+                    WHEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2)>0 THEN 1
+                    WHEN (TAB.NIGHT_SHIFT_FEE1 - TAB.NIGHT_SHIFT_FEE2)=0 THEN 0
+                    END)NIGHT_SHIFT_FEE,
+              
+              (CASE WHEN (TAB.QITA1 - TAB.QITA2)<0 THEN (TAB.QITA1 - TAB.QITA2)
+                    WHEN (TAB.QITA1 - TAB.QITA2)>0 THEN 1
+                    WHEN (TAB.QITA1 - TAB.QITA2)=0 THEN 0
+                    END)QITA,   
+              
+              (CASE WHEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)<0 THEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)
+                    WHEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)>0 THEN 1
+                    WHEN (TAB.KOUKUAN1 - TAB.KOUKUAN2)=0 THEN 0
+                    END)PERSONAL_INCOME_TAX,  
+              
+              (CASE WHEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2)<0 THEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2) 
+                    WHEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2)>0 THEN 1
+                    WHEN (TAB.SOCIAL_INSURANCE_COMPANY1 - TAB.SOCIAL_INSURANCE_COMPANY2)=0 THEN 0
+                    END)SOCIAL_INSURANCE_COMPANY, 
+              (CASE WHEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2)<0 THEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2) 
+                    WHEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2)>0 THEN 1
+                    WHEN (TAB.HOUSE_FUNDING_COMPANY1 - TAB.HOUSE_FUNDING_COMPANY2)=0 THEN 0
+                    END)HOUSE_FUNDING_COMPANY
+           FROM
+            (SELECT  SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN B.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY1,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN B.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY1,
+                             
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.TRANSPORT_FEE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.WELFARE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.REPLENISHMENT ELSE 0 END) QITA1,
+                       
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR# AND #END_MONTH:VARCHAR#   THEN A.PERSONAL_INCOME_TAX ELSE 0 END) KOUKUAN1,
+                   
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.DESERVE_BASIC_WAGE ELSE 0 END) DESERVE_BASIC_WAGE2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.TOTAL_OT_FEE  ELSE 0 END) TOTAL_OT_FEE2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.NIGHT_SHIFT_FEE ELSE 0 END) NIGHT_SHIFT_FEE2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN B.SOCIAL_INSURANCE_COMPANY ELSE 0 END) SOCIAL_INSURANCE_COMPANY2,
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN B.HOUSE_FUNDING_COMPANY ELSE 0 END) HOUSE_FUNDING_COMPANY2,
+                             
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.HOUSE_SUBSIDIES ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.TRANSPORT_FEE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.RANK_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.JOB_ALLOWANCE_STANDARD ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.WELFARE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.FULL_ATTENDANCE_ALLOWANCE ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.REPLENISHMENT ELSE 0 END) QITA2,
+                       
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.SICK_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.LEAVE_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.DAOXIU_CHARGE_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.ABSENTEEISM_DEDUCTIONS ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.TARDINESS_EARLYDAY_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.OTHERS_LEAVE_C_BACK ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.BEFORE_TAXABLE_DEDUCT ELSE 0 END) +
+                     SUM(CASE WHEN A.PA_MONTH BETWEEN #START_MONTH:VARCHAR#-100 AND #END_MONTH:VARCHAR#-100   THEN A.PERSONAL_INCOME_TAX ELSE 0 END) KOUKUAN2,
+                       
+                     A.EMP_TYPE_CODE
+              FROM   PA_SUMMARY_C04 A,
+                     IS_SUMMARY_C04 B
+              WHERE  A.PERSON_ID = B.PERSON_ID 
+              AND    A.EMP_TYPE_CODE IS NOT NULL
+              AND    A.CPNY_ID = #CPNY_ID:VARCHAR#
+            GROUP BY A.EMP_TYPE_CODE)TAB
+		]]>
+	</select>
+	<select id="getPaChinaSalarySumList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+			           NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+			           NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+			           NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+			           NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+			           NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+			           NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+			           NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+			           NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+			           NVL(A.PERSONAL_INCOME_TAX, 0) +
+			           NVL(B.SOCIAL_INSURANCE_COMPANY, 0) +
+			           NVL(B.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+			  FROM PA_SUMMARY_C04 A, IS_SUMMARY_C04 B
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND A.EMP_TYPE_CODE IS NOT NULL
+			   AND A.PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+			UNION ALL
+			
+			SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+			           NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+			           NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+			           NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+			           NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+			           NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+			           NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+			           NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+			           NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+			           NVL(A.PERSONAL_INCOME_TAX, 0) +
+			           NVL(B.SOCIAL_INSURANCE_COMPANY, 0) +
+			           NVL(B.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+			  FROM PA_SUMMARY_C04 A, IS_SUMMARY_C04 B
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND A.EMP_TYPE_CODE IS NOT NULL
+			   AND A.PA_MONTH = #PA_MONTH:VARCHAR# - 1
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+			
+			UNION ALL
+			
+			SELECT SUM(NVL(A.DESERVE_BASIC_WAGE, 0) + NVL(A.TOTAL_OT_FEE, 0) +
+			           NVL(A.NIGHT_SHIFT_FEE, 0) + NVL(A.HOUSE_SUBSIDIES, 0) +
+			           NVL(A.TRANSPORT_FEE, 0) + NVL(A.RANK_ALLOWANCE, 0) +
+			           NVL(A.JOB_ALLOWANCE_STANDARD, 0) + NVL(A.WELFARE, 0) +
+			           NVL(A.FULL_ATTENDANCE_ALLOWANCE, 0) + NVL(A.REPLENISHMENT, 0) -
+			           NVL(A.SICK_CHARGE_BACK, 0) - NVL(A.LEAVE_CHARGE_BACK, 0) -
+			           NVL(A.DAOXIU_CHARGE_BACK, 0) - NVL(A.ABSENTEEISM_DEDUCTIONS, 0) -
+			           NVL(A.TARDINESS_EARLYDAY_C_BACK, 0) -
+			           NVL(A.OTHERS_LEAVE_C_BACK, 0) - NVL(A.BEFORE_TAXABLE_DEDUCT, 0) -
+			           NVL(A.PERSONAL_INCOME_TAX, 0) +
+			           NVL(B.SOCIAL_INSURANCE_COMPANY, 0) +
+			           NVL(B.HOUSE_FUNDING_COMPANY, 0)) ZHONGFANGHEJI
+			  FROM PA_SUMMARY_C04 A, IS_SUMMARY_C04 B
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND A.EMP_TYPE_CODE IS NOT NULL
+			   AND A.PA_MONTH = #PA_MONTH:VARCHAR# - 2
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+        ]]>
+	</select>
+
+	
+
+	<select id="getPaDeptEmpIdList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+  			SELECT DEPTNO
+			  FROM HR_DEPARTMENT d
+			 WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			 START WITH D.PARENT_DEPT_NO = '0'
+			CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO
+			 ORDER SIBLINGS BY D.ORDERNO, D.DEPT_LEVEL DESC, D.DEPTNO
+        ]]>
+	</select>
+
+	<select id="getPaLabourPayOffList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  A.EMPID,
+					A.LOCAL_NAME,
+					A.DESERVE_BASIC_WAGE,
+					A.TOTAL_OT_FEE,
+					A.JOB_ALLOWANCE_STANDARD,
+					A.NIGHT_SHIFT_FEE,
+					A.FULL_ATTENDANCE_ALLOWANCE,
+					A.MANAGEMENT_FEE,
+					A.REPLENISHMENT,
+					A.TOTAL_MONTH_WAGE,
+					A.SICK_CHARGE_BACK,
+					A.LEAVE_CHARGE_BACK,
+					
+					A.DAOXIU_CHARGE_BACK,
+					A.ABSENTEEISM_DEDUCTIONS,
+					A.TARDINESS_EARLYDAY_C_BACK,
+					A.OTHERS_LEAVE_C_BACK,
+					
+					A.BEFORE_TAXABLE_DEDUCT,
+					A.PERSONAL_INCOME_TAX,
+					A.NET_PAY_WAGE,
+					A.ENDOWMENT_COMPANY,
+					A.UNEMPLOYMENT_COMPANY,
+					A.MEDICAL_COMPANY,
+					A.INDUCTRIAL_COMPANY,
+					A.BIRTH_COMPANY,
+					A.PEOPLEWARE_FEE,
+					B.IDCARD_NO,
+					A.DEPTNO,
+					A.SERVICES_BELONG,
+					get_global_name(A.SERVICES_BELONG,'zh') SERVICES_BELONG_NAME
+			FROM	PA_SUMMARY_C04 A,
+					HR_PERSONAL_INFO B
+			WHERE	A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			AND		A.PERSON_ID = B.PERSON_ID
+			AND		A.PA_MONTH = #PA_MONTH:VARCHAR#
+			AND		A.SERVICES_BELONG = #SERVICES_BELONG:VARCHAR#
+		ORDER BY    A.DESERVE_BASIC_WAGE DESC
+		]]>
+	</select>
+	
+	
+	<select id="getPacontrastList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				
+				select distinct b.deptno ,d.ORDERNO, D.DEPT_LEVEL, a.local_name mz,b.content bm,c.deserve_basic_wage deserve_basic_wage1,d.deserve_basic_wage2,(c.deserve_basic_wage-d.deserve_basic_wage2) cha
+			        from hr_employee a ,hr_department_name b,pa_summary_c04 c,
+			        (
+			            select a.local_name,c.deserve_basic_wage deserve_basic_wage2,c.person_id,b.DEPT_LEVEL,b.ORDERNO
+			            from hr_employee a ,hr_department b,pa_summary_c04 c
+			            where a.deptno = b.deptno
+			            and a.person_id = c.person_id
+			            and c.cpny_id = 'C04'
+			            and c.pa_month = #PA_MONTH:VARCHAR#-1
+			        ) d
+			        where a.deptno = b.deptno
+			        and a.person_id = c.person_id
+			        and d.person_id = a.person_id
+			        and c.cpny_id = 'C04'
+			        and a.emp_type_code = '1369'
+			        and c.pa_month =#PA_MONTH:VARCHAR#
+			        ORDER  BY d.ORDERNO, D.DEPT_LEVEL DESC
+		]]>
+	</select>
+	
+	<select id="getPacontrastListsum" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				select sum(deserve_basic_wage1) he1,sum(deserve_basic_wage2) he2,sum(cha) he3
+				from 
+				(
+					   select distinct b.deptno, a.local_name,b.content,c.deserve_basic_wage deserve_basic_wage1,d.deserve_basic_wage2,(c.deserve_basic_wage-d.deserve_basic_wage2) cha
+				        from hr_employee a ,hr_department_name b,pa_summary_c04 c,
+				        (
+				            select a.local_name,b.content,c.deserve_basic_wage deserve_basic_wage2,c.person_id
+				            from hr_employee a ,hr_department_name b,pa_summary_c04 c
+				            where a.deptno = b.deptno
+				            and a.person_id = c.person_id
+				            and c.cpny_id = 'C04'
+				            and c.pa_month = #PA_MONTH:VARCHAR#-1
+				        ) d
+				        where a.deptno = b.deptno
+				        and a.person_id = c.person_id
+				        and d.person_id = a.person_id
+				        and c.cpny_id = 'C04'
+				        and a.emp_type_code = '1369'
+				        and c.pa_month = #PA_MONTH:VARCHAR#
+				        order by b.deptno) he
+		]]>
+	</select>
+
+	<select id="getPersonaltaxList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				select b.local_name as mz,a.IDCARD_NO as sfz,p.TAXABLE_SALARY as ysgz, p.TAX_BENCHMARK as ksjz,p.PAYABLE_TAX as ynse,p.TAX_RATE as sl,
+				p.PERSONAL_INCOME_TAX grsds,p.ALGORITHM_MEDUCT as sskcs
+				from hr_personal_info a,hr_employee b ,pa_summary_c04 p 
+				where a.person_id = p.person_id
+				and a.person_id = b.person_id
+				and p.pa_month = #PA_MONTH:VARCHAR#
+				and p.cpny_id = 'C04'
+		]]>
+	</select>
+	
+	<select id="getpaWageFundList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				select emp_type_code,scqf,ejbm,sjbm,rs,ylbx,ylaobx,sybx,gsbx,syubx,gjj,xj,gzze,ghjf,rjf
+			  from (select tb1.emp_type_code,
+			               get_global_name(tb2.production_distinguish, 'zh') scqf,
+			               get_dept_name(get_deptno_by_level(tb1.deptno, 'C04', 2), 'zh') ejbm,
+			               get_dept_name(tb1.deptno, 'zh') sjbm,
+			               count(tb1.person_id) rs,
+			               sum(tb1.MEDICAL_COMPANY) ylbx,
+			               sum(tb1.ENDOWMENT_COMPANY) ylaobx,
+			               sum(tb1.UNEMPLOYMENT_COMPANY) sybx,
+			               sum(tb1.INDUCTRIAL_COMPANY) gsbx,
+			               sum(tb1.BIRTH_COMPANY) syubx,
+			               sum(tb1.HOUSE_FUNDING_COMPANY) gjj,
+			               (sum(tb1.MEDICAL_COMPANY) + sum(tb1.ENDOWMENT_COMPANY) +
+			               sum(tb1.UNEMPLOYMENT_COMPANY) + sum(tb1.INDUCTRIAL_COMPANY) +
+			               sum(tb1.BIRTH_COMPANY) + sum(tb1.HOUSE_FUNDING_COMPANY)) xj,
+			               sum(tb1.TOTAL_WAGE) gzze,
+			               ROUND(sum(tb1.TOTAL_WAGE) * 0.02, 2) ghjf,
+			               ((sum(tb1.MEDICAL_COMPANY) + sum(tb1.ENDOWMENT_COMPANY) +
+			               sum(tb1.UNEMPLOYMENT_COMPANY) + sum(tb1.INDUCTRIAL_COMPANY) +
+			               sum(tb1.BIRTH_COMPANY) + sum(tb1.HOUSE_FUNDING_COMPANY)) +
+			               sum(tb1.TOTAL_WAGE)) rjf
+			          from pa_summary_c04 tb1, hr_employee tb2
+			         where tb1.person_id = tb2.person_id
+			           and pa_month = #PA_MONTH:VARCHAR#
+			           and tb2.EMP_TYPE_CODE is not null
+			           and tb2.production_distinguish is not null
+			         group by tb1.emp_type_code, tb2.production_distinguish, tb1.deptno) datatb
+			 			order by scqf,ejbm,sjbm
+
+		]]>
+	</select>
+	
+
+	<select id="getPaAllDeptNameList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HD.DEPTNO, 
+		           GET_DEPT_NAME(HD.DEPTNO, 'zh') CONTENT
+		      FROM HR_DEPARTMENT HD
+		     WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+
+	<select id="getPaOfficialPayOffSumList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  NVL(SUM(A.DESERVE_BASIC_WAGE),0) DESERVE_BASIC_WAGE,
+					NVL(SUM(A.HOUSE_SUBSIDIES),0) HOUSE_SUBSIDIES,
+					NVL(SUM(A.TRANSPORT_FEE),0) TRANSPORT_FEE,
+					NVL(SUM(A.RANK_ALLOWANCE),0) RANK_ALLOWANCE,
+					NVL(SUM(A.JOB_ALLOWANCE_STANDARD),0) JOB_ALLOWANCE_STANDARD,
+					NVL(SUM(A.TOTAL_OT_FEE),0) TOTAL_OT_FEE,
+					NVL(SUM(A.NIGHT_SHIFT_FEE),0) NIGHT_SHIFT_FEE,
+					NVL(SUM(A.WELFARE),0) WELFARE,
+					NVL(SUM(A.FULL_ATTENDANCE_ALLOWANCE),0) FULL_ATTENDANCE_ALLOWANCE,
+					NVL(SUM(A.REPLENISHMENT),0) REPLENISHMENT,
+					NVL(SUM(A.TOTAL_MONTH_WAGE),0) TOTAL_MONTH_WAGE,
+					NVL(SUM(A.SICK_CHARGE_BACK),0) SICK_CHARGE_BACK,
+					NVL(SUM(A.LEAVE_CHARGE_BACK),0) LEAVE_CHARGE_BACK,
+					
+					NVL(SUM(A.DAOXIU_CHARGE_BACK),0) DAOXIU_CHARGE_BACK,
+					NVL(SUM(A.ABSENTEEISM_DEDUCTIONS),0) ABSENTEEISM_DEDUCTIONS,
+					NVL(SUM(A.TARDINESS_EARLYDAY_C_BACK),0) TARDINESS_EARLYDAY_C_BACK,
+					NVL(SUM(A.OTHERS_LEAVE_C_BACK),0) OTHERS_LEAVE_C_BACK,
+					
+					NVL(SUM(A.BEFORE_TAXABLE_DEDUCT),0) BEFORE_TAXABLE_DEDUCT,
+					NVL(SUM(A.MEDICAL_PERSONAL),0) MEDICAL_PERSONAL,
+					NVL(SUM(A.ENDOWMENT_PERSONAL),0) ENDOWMENT_PERSONAL,
+					NVL(SUM(A.UNEMPLOYMENT_PERSONAL),0) UNEMPLOYMENT_PERSONAL,
+					NVL(SUM(A.HOUSE_FUNDING_PERSONAL),0) HOUSE_FUNDING_PERSONAL,
+					NVL(SUM(A.PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+					NVL(SUM(A.NET_PAY_WAGE),0) NET_PAY_WAGE,
+					A.DEPTNO,
+					NVL(SUM(A.TOTAL_WAGE),0) TOTAL_WAGE,
+					NVL(SUM(A.MEDICAL_COMPANY),0) MEDICAL_COMPANY,
+					NVL(SUM(A.ENDOWMENT_COMPANY),0) ENDOWMENT_COMPANY,
+					NVL(SUM(A.UNEMPLOYMENT_COMPANY),0) UNEMPLOYMENT_COMPANY,
+					NVL(SUM(A.INDUCTRIAL_COMPANY),0) INDUCTRIAL_COMPANY,
+					NVL(SUM(A.BIRTH_COMPANY),0) BIRTH_COMPANY,
+					NVL(SUM(A.HOUSE_FUNDING_COMPANY),0) HOUSE_FUNDING_COMPANY,
+					NVL(SUM(A.PEOPLEWARE_FEE),0) PEOPLEWARE_FEE
+			FROM	PA_SUMMARY_C04 A
+			WHERE 	A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			AND		A.PA_MONTH = #PA_MONTH:VARCHAR#
+      		GROUP BY A.DEPTNO
+      	]]>
+	</select>
+	
+	<select id="getPaOfficialPayOffZongJiList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  NVL(SUM(A.DESERVE_BASIC_WAGE),0) DESERVE_BASIC_WAGE,
+					NVL(SUM(A.HOUSE_SUBSIDIES),0) HOUSE_SUBSIDIES,
+					NVL(SUM(A.TRANSPORT_FEE),0) TRANSPORT_FEE,
+					NVL(SUM(A.RANK_ALLOWANCE),0) RANK_ALLOWANCE,
+					NVL(SUM(A.JOB_ALLOWANCE_STANDARD),0) JOB_ALLOWANCE_STANDARD,
+					NVL(SUM(A.TOTAL_OT_FEE),0) TOTAL_OT_FEE,
+					NVL(SUM(A.NIGHT_SHIFT_FEE),0) NIGHT_SHIFT_FEE,
+					NVL(SUM(A.WELFARE),0) WELFARE,
+					NVL(SUM(A.FULL_ATTENDANCE_ALLOWANCE),0) FULL_ATTENDANCE_ALLOWANCE,
+					NVL(SUM(A.REPLENISHMENT),0) REPLENISHMENT,
+					NVL(SUM(A.TOTAL_MONTH_WAGE),0) TOTAL_MONTH_WAGE,
+					NVL(SUM(A.SICK_CHARGE_BACK),0) SICK_CHARGE_BACK,
+					NVL(SUM(A.LEAVE_CHARGE_BACK),0) LEAVE_CHARGE_BACK,
+					
+					NVL(SUM(A.DAOXIU_CHARGE_BACK),0) DAOXIU_CHARGE_BACK,
+					NVL(SUM(A.ABSENTEEISM_DEDUCTIONS),0) ABSENTEEISM_DEDUCTIONS,
+					NVL(SUM(A.TARDINESS_EARLYDAY_C_BACK),0) TARDINESS_EARLYDAY_C_BACK,
+					NVL(SUM(A.OTHERS_LEAVE_C_BACK),0) OTHERS_LEAVE_C_BACK,
+					
+					NVL(SUM(A.BEFORE_TAXABLE_DEDUCT),0) BEFORE_TAXABLE_DEDUCT,
+					
+					NVL(SUM(A.TOTAL_WAGE),0) TOTAL_WAGE,
+					NVL(SUM(A.MEDICAL_COMPANY),0) MEDICAL_COMPANY,
+					NVL(SUM(A.ENDOWMENT_COMPANY),0) ENDOWMENT_COMPANY,
+					NVL(SUM(A.UNEMPLOYMENT_COMPANY),0) UNEMPLOYMENT_COMPANY,
+					NVL(SUM(A.INDUCTRIAL_COMPANY),0) INDUCTRIAL_COMPANY,
+					NVL(SUM(A.BIRTH_COMPANY),0) BIRTH_COMPANY,
+					NVL(SUM(A.HOUSE_FUNDING_COMPANY),0) HOUSE_FUNDING_COMPANY,
+					NVL(SUM(A.PEOPLEWARE_FEE),0) PEOPLEWARE_FEE
+			FROM	PA_SUMMARY_C04 A
+			WHERE 	A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			AND		A.PA_MONTH = #PA_MONTH:VARCHAR#
+      	]]>
+	</select>
+
+
+	<select id="getPaLabourPayOffSumList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  NVL(SUM(A.DESERVE_BASIC_WAGE),0) DESERVE_BASIC_WAGE,
+				    NVL(SUM(A.TOTAL_OT_FEE),0) TOTAL_OT_FEE,
+				    NVL(SUM(A.JOB_ALLOWANCE_STANDARD),0) JOB_ALLOWANCE_STANDARD,
+				    NVL(SUM(A.NIGHT_SHIFT_FEE),0) NIGHT_SHIFT_FEE,
+					NVL(SUM(A.FULL_ATTENDANCE_ALLOWANCE),0) FULL_ATTENDANCE_ALLOWANCE,
+					NVL(SUM(A.MANAGEMENT_FEE),0) MANAGEMENT_FEE,
+				    NVL(SUM(A.REPLENISHMENT),0) REPLENISHMENT,
+				    NVL(SUM(A.TOTAL_MONTH_WAGE),0) TOTAL_MONTH_WAGE,
+					NVL(SUM(A.SICK_CHARGE_BACK),0) SICK_CHARGE_BACK,
+					NVL(SUM(A.LEAVE_CHARGE_BACK),0) LEAVE_CHARGE_BACK,
+					
+					NVL(SUM(A.DAOXIU_CHARGE_BACK),0) DAOXIU_CHARGE_BACK,
+					NVL(SUM(A.ABSENTEEISM_DEDUCTIONS),0) ABSENTEEISM_DEDUCTIONS,
+					NVL(SUM(A.TARDINESS_EARLYDAY_C_BACK),0) TARDINESS_EARLYDAY_C_BACK,
+					NVL(SUM(A.OTHERS_LEAVE_C_BACK),0) OTHERS_LEAVE_C_BACK,
+					
+					NVL(SUM(A.BEFORE_TAXABLE_DEDUCT),0) BEFORE_TAXABLE_DEDUCT,
+					NVL(SUM(A.PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+					NVL(SUM(A.NET_PAY_WAGE),0) NET_PAY_WAGE,
+					NVL(SUM(A.ENDOWMENT_COMPANY),0) ENDOWMENT_COMPANY,
+					NVL(SUM(A.UNEMPLOYMENT_COMPANY),0) UNEMPLOYMENT_COMPANY,
+					NVL(SUM(A.MEDICAL_COMPANY),0) MEDICAL_COMPANY,
+					NVL(SUM(A.INDUCTRIAL_COMPANY),0) INDUCTRIAL_COMPANY,
+					NVL(SUM(A.BIRTH_COMPANY),0) BIRTH_COMPANY,
+					NVL(SUM(A.PEOPLEWARE_FEE),0) PEOPLEWARE_FEE,
+					A.DEPTNO
+			FROM	PA_SUMMARY_C04 A
+			WHERE 	A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			AND		A.PA_MONTH = #PA_MONTH:VARCHAR#
+			AND     A.SERVICES_BELONG = #SERVICES_BELONG:VARCHAR#
+      		GROUP BY A.DEPTNO
+      	]]>
+	</select>
+	
+	<select id="getPaLabourPayOffZongJiList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  NVL(SUM(A.DESERVE_BASIC_WAGE),0) DESERVE_BASIC_WAGE,
+				    NVL(SUM(A.TOTAL_OT_FEE),0) TOTAL_OT_FEE,
+				    NVL(SUM(A.JOB_ALLOWANCE_STANDARD),0) JOB_ALLOWANCE_STANDARD,
+				    NVL(SUM(A.NIGHT_SHIFT_FEE),0) NIGHT_SHIFT_FEE,
+					NVL(SUM(A.FULL_ATTENDANCE_ALLOWANCE),0) FULL_ATTENDANCE_ALLOWANCE,
+					NVL(SUM(A.MANAGEMENT_FEE),0) MANAGEMENT_FEE,
+				    NVL(SUM(A.REPLENISHMENT),0) REPLENISHMENT,
+				    NVL(SUM(A.TOTAL_MONTH_WAGE),0) TOTAL_MONTH_WAGE,
+					NVL(SUM(A.SICK_CHARGE_BACK),0) SICK_CHARGE_BACK,
+					NVL(SUM(A.LEAVE_CHARGE_BACK),0) LEAVE_CHARGE_BACK,
+					
+					NVL(SUM(A.DAOXIU_CHARGE_BACK),0) DAOXIU_CHARGE_BACK,
+					NVL(SUM(A.ABSENTEEISM_DEDUCTIONS),0) ABSENTEEISM_DEDUCTIONS,
+					NVL(SUM(A.TARDINESS_EARLYDAY_C_BACK),0) TARDINESS_EARLYDAY_C_BACK,
+					NVL(SUM(A.OTHERS_LEAVE_C_BACK),0) OTHERS_LEAVE_C_BACK,
+					
+					NVL(SUM(A.BEFORE_TAXABLE_DEDUCT),0) BEFORE_TAXABLE_DEDUCT,
+					NVL(SUM(A.PERSONAL_INCOME_TAX),0) PERSONAL_INCOME_TAX,
+					NVL(SUM(A.NET_PAY_WAGE),0) NET_PAY_WAGE,
+					NVL(SUM(A.ENDOWMENT_COMPANY),0) ENDOWMENT_COMPANY,
+					NVL(SUM(A.UNEMPLOYMENT_COMPANY),0) UNEMPLOYMENT_COMPANY,
+					NVL(SUM(A.MEDICAL_COMPANY),0) MEDICAL_COMPANY,
+					NVL(SUM(A.INDUCTRIAL_COMPANY),0) INDUCTRIAL_COMPANY,
+					NVL(SUM(A.BIRTH_COMPANY),0) BIRTH_COMPANY,
+					NVL(SUM(A.PEOPLEWARE_FEE),0) PEOPLEWARE_FEE
+			FROM	PA_SUMMARY_C04 A
+			WHERE 	A.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			AND		A.PA_MONTH = #PA_MONTH:VARCHAR#
+			AND     A.SERVICES_BELONG = #SERVICES_BELONG:VARCHAR#
+      	]]>
+	</select>
+	
+	<select id="exportDateSql" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			$sqlContent$
+		]]>
+	</select>
+	
+	<select id="retrievePaJasperReportPayrollData" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			select  pa_month PA_MONTH,
+
+				local_name CHINESENAME,
+				 PA_HISTORY.dept_name DEPARTMENT,
+				DESERVE_BASIC_WAGE ,
+				
+				HOUSE_SUBSIDIES,
+				TRANSPORT_FEE,
+				WELFARE,
+				RANK_ALLOWANCE,
+				JOB_ALLOWANCE_STANDARD,
+				FULL_ATTENDANCE_ALLOWANCE,
+				REPLENISHMENT,
+				t.idcard_no IDCORDNO,
+				TOTAL_OT_FEE,
+				NIGHT_SHIFT_FEE,
+				TOTAL_MONTH_WAGE,
+				SICK_CHARGE_BACK,
+				LEAVE_CHARGE_BACK,
+				DAOXIU_CHARGE_BACK+ABSENTEEISM_DEDUCTIONS+TARDINESS_EARLYDAY_C_BACK+OTHERS_LEAVE_C_BACK  OTHER_BACK,
+				BEFORE_TAXABLE_DEDUCT,
+				MEDICAL_PERSONAL,
+				ENDOWMENT_PERSONAL,
+				UNEMPLOYMENT_PERSONAL,
+				HOUSE_FUNDING_PERSONAL,
+				TAXABLE_SALARY,
+				PERSONAL_INCOME_TAX,
+				NET_PAY_WAGE
+				FROM PA_SUMMARY_HTSV  PA_HISTORY ,  hr_personal_info t
+			 WHERE  PA_HISTORY.person_id=t.person_id
+			 and PA_HISTORY.emp_type_code <> '14890'
+				]]>		
+				<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+					PA_HISTORY.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #deptid:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				        ]]>
+				 </isNotEmpty>       
+				
+				
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				
+		(PA_HISTORY.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR PA_HISTORY.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+          PA_HISTORY.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+			  
+	           and PA_HISTORY.PA_MONTH = #pamonth#
+	</select>	
+
+	<select id="getPaSummarizeList" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT TAB2.*,
+			       (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL - TAB2.ENDOWMENT_PERSONAL -
+			       TAB2.UNEMPLOYMENT_PERSONAL - TAB2.HOUSE_FUNDING_PERSONAL -
+			       TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+			  FROM (SELECT TAB1.*,
+			               (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+			               TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+			          FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+			                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+			                       SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+			                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+			                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+			                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+			                       SUM(NVL(PA.WELFARE, 0)) WELFARE,
+			                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+			                       SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+			                       SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+			                       
+			                       SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+			                       SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+			                       
+			                       (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+			                       SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+			                       SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+			                       SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+			                       SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+			                       
+			                       SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+			                       SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+			                       SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+			                       SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+			                       SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+			                       
+			                       (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+			                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+			                       SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+			                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+			                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+			                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                       SUM(NVL(PA.WELFARE, 0)) +
+			                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+			                       SUM(NVL(PA.REPLENISHMENT, 0)) +
+			                       SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+			                       HE.DEPTNO,
+			                       HDN.CONTENT DEPT_NAME,
+			                       HD.PARENT_DEPT_NO,
+			                       COUNT(HE.PERSON_ID) RS
+			                  FROM HR_DEPARTMENT      HD,
+			                       HR_DEPARTMENT_NAME HDN,
+			                       HR_EMPLOYEE        HE,
+			                       PA_SUMMARY_C04     PA
+			                 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			                   AND HE.DEPTNO = HD.DEPTNO
+			                   AND HE.PERSON_ID = PA.PERSON_ID
+			                   AND HDN.DEPTNO = HD.DEPTNO
+			                   AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+						       AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+						       AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="PRODUCTION_DISTINGUISH">
+			<![CDATA[	
+							    HE.PRODUCTION_DISTINGUISH = #PRODUCTION_DISTINGUISH:VARCHAR#
+			]]>			
+		</isNotEmpty>	
+		
+								 AND EXISTS
+					                 (SELECT *
+					                          FROM HR_DEPARTMENT
+					                         WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+					                         START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+					                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+					                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+					                 GROUP BY HE.DEPTNO, HD.PARENT_DEPT_NO, HDN.CONTENT) TAB1) TAB2
+	</select>
+	
+	<sql id="getZhengShiGuanLi">
+		SELECT TAB2.*,
+			       (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL - TAB2.ENDOWMENT_PERSONAL -
+			       TAB2.UNEMPLOYMENT_PERSONAL - TAB2.HOUSE_FUNDING_PERSONAL -
+			       TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+			  FROM (SELECT TAB1.*,
+			               (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+			               TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+			          FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+			                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+			                       SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+			                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+			                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+			                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+			                       SUM(NVL(PA.WELFARE, 0)) WELFARE,
+			                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+			                       SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+			                       SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+			                       
+			                       SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+			                       SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+			                       
+			                       (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+			                       SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+			                       SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+			                       SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+			                       SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+			                       
+			                       SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+			                       SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+			                       SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+			                       SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+			                       SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+			                       
+			                       (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+			                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+			                       SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+			                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+			                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+			                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                       SUM(NVL(PA.WELFARE, 0)) +
+			                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+			                       SUM(NVL(PA.REPLENISHMENT, 0)) +
+			                       SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+			                       HE.DEPTNO,
+			                       HDN.CONTENT DEPT_NAME,
+			                       HD.PARENT_DEPT_NO,
+			                       COUNT(HE.PERSON_ID) RS
+			                  FROM HR_DEPARTMENT      HD,
+			                       HR_DEPARTMENT_NAME HDN,
+			                       HR_EMPLOYEE        HE,
+			                       PA_SUMMARY_C04     PA
+			                 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			                   AND HE.DEPTNO = HD.DEPTNO
+			                   AND HE.PERSON_ID = PA.PERSON_ID
+			                   AND HDN.DEPTNO = HD.DEPTNO
+			                   AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+						       AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+						       AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+							   AND HE.PRODUCTION_DISTINGUISH = #PRODUCTION_DISTINGUISH:VARCHAR#
+							   AND HE.DEPTNO IN ('C041','C048','C0415','C0414','C0413','C047','C046','C049','C0410')
+								 AND EXISTS
+					                 (SELECT *
+					                          FROM HR_DEPARTMENT
+					                         WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+					                         START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+					                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+					                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+					                 GROUP BY HE.DEPTNO, HD.PARENT_DEPT_NO, HDN.CONTENT) TAB1) TAB2
+	
+	</sql>
+	<select id="getZhengShiGuanLiList" resultClass="linkMap"  remapResults="true">
+		<include refid="getZhengShiGuanLi"/>	
+	</select>
+	
+	<select id="getZhuZaiYuanList" resultClass="linkMap"  remapResults="true">
+			<![CDATA[
+				SELECT TAB2.*,
+				       (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL - TAB2.ENDOWMENT_PERSONAL -
+				       TAB2.UNEMPLOYMENT_PERSONAL - TAB2.HOUSE_FUNDING_PERSONAL -
+				       TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+				  FROM (SELECT TAB1.*,
+				               (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+				               TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+				          FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+				                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+				                       SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+				                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+				                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+				                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+				                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+				                       SUM(NVL(PA.WELFARE, 0)) WELFARE,
+				                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+				                       SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+				                       SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+				                       
+				                       SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+				                       SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+				                       
+				                       (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+				                       SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+				                       SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+				                       SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+				                       SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+				                       
+				                       SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+				                       SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+				                       SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+				                       SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+				                       SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+				                       
+				                       (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+				                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+				                       SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+				                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+				                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+				                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+				                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+				                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+				                       SUM(NVL(PA.WELFARE, 0)) +
+				                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+				                       SUM(NVL(PA.REPLENISHMENT, 0)) +
+				                       SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+				                       COUNT(HE.PERSON_ID) RS
+				                  FROM HR_DEPARTMENT      HD,
+				                       HR_DEPARTMENT_NAME HDN,
+				                       HR_EMPLOYEE        HE,
+				                       PA_SUMMARY_C04     PA
+				                 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				                   AND HE.DEPTNO = HD.DEPTNO
+				                   AND HE.PERSON_ID = PA.PERSON_ID
+				                   AND HDN.DEPTNO = HD.DEPTNO
+				                   AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+							       AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+							       AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#) TAB1) TAB2
+			]]>		
+	</select>
+	
+	<select id="getZhengShiGuanLiXiaoJiList" resultClass="linkMap"  remapResults="true">
+			<![CDATA[
+			SELECT SUM(T.DESERVE_BASIC_WAGE) DESERVE_BASIC_WAGE_S,
+			       SUM(T.HOUSE_SUBSIDIES) HOUSE_SUBSIDIES_S,
+			       SUM(T.TRANSPORT_FEE) TRANSPORT_FEE_S,
+			       SUM(T.RANK_ALLOWANCE) RANK_ALLOWANCE_S,
+			       SUM(T.JOB_ALLOWANCE_STANDARD) JOB_ALLOWANCE_STANDARD_S,
+			       SUM(T.TOTAL_OT_FEE) TOTAL_OT_FEE_S,
+			       SUM(T.NIGHT_SHIFT_FEE) NIGHT_SHIFT_FEE_S,
+			       SUM(T.WELFARE) WELFARE_S,
+			       SUM(T.FULL_ATTENDANCE_ALLOWANCE) FULL_ATTENDANCE_ALLOWANCE_S,
+			       SUM(T.QITABUZHU) QITABUZHU_S,
+			       SUM(T.MANAGEMENT_FEE) MANAGEMENT_FEE_S,
+			       SUM(T.SICK_CHARGE_BACK) SICK_CHARGE_BACK_S,
+			       SUM(T.LEAVE_CHARGE_BACK) LEAVE_CHARGE_BACK_S,
+			       SUM(T.QITAKOU) QITAKOU_S,
+			       SUM(T.BUKOU) BUKOU_S,
+			       SUM(T.MEDICAL_PERSONAL) MEDICAL_PERSONAL_S,
+			       SUM(T.ENDOWMENT_PERSONAL) ENDOWMENT_PERSONAL_S,
+			       SUM(T.UNEMPLOYMENT_PERSONAL) UNEMPLOYMENT_PERSONAL_S,
+			       SUM(T.HOUSE_FUNDING_PERSONAL) HOUSE_FUNDING_PERSONAL_S,
+			       SUM(T.PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX_S,
+			       SUM(T.YINGDEHEJI) YINGDEHEJI_S,
+			       SUM(T.GONGZIZONGE) GONGZIZONGE_S,
+			       SUM(T.SHIFAJINE) SHIFAJINE_S,
+			       SUM(T.RS) RS
+			  FROM (
+			  ]]>		
+			  <include refid="getZhengShiGuanLi"/>
+			   ) T
+	</select>
+	
+	<select id="getdeptNoListByParentNo" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT DEPTNO,PARENT_DEPT_NO,GET_DEPT_NAME(DEPTNO,#LANGUAGE:VARCHAR#) DEPT_NAME
+			  FROM HR_DEPARTMENT
+			 START WITH HR_DEPARTMENT.PARENT_DEPT_NO IN (#PARENT1:VARCHAR#, #PARENT2:VARCHAR#)
+			CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		]]>		
+	</select>
+	
+	<sql id="getZhengShiShengChanXiaoJi">
+		SELECT SUM(TAB3.DESERVE_BASIC_WAGE) DESERVE_BASIC_WAGE_S,
+			       SUM(TAB3.HOUSE_SUBSIDIES) HOUSE_SUBSIDIES_S,
+			       SUM(TAB3.TRANSPORT_FEE) TRANSPORT_FEE_S,
+			       SUM(TAB3.RANK_ALLOWANCE) RANK_ALLOWANCE_S,
+			       SUM(TAB3.JOB_ALLOWANCE_STANDARD) JOB_ALLOWANCE_STANDARD_S,
+			       SUM(TAB3.TOTAL_OT_FEE) TOTAL_OT_FEE_S,
+			       SUM(TAB3.NIGHT_SHIFT_FEE) NIGHT_SHIFT_FEE_S,
+			       SUM(TAB3.WELFARE) WELFARE_S,
+			       SUM(TAB3.FULL_ATTENDANCE_ALLOWANCE) FULL_ATTENDANCE_ALLOWANCE_S,
+			       SUM(TAB3.QITABUZHU) QITABUZHU_S,
+			       SUM(TAB3.MANAGEMENT_FEE) MANAGEMENT_FEE_S,
+			       SUM(TAB3.SICK_CHARGE_BACK) SICK_CHARGE_BACK_S,
+			       SUM(TAB3.LEAVE_CHARGE_BACK) LEAVE_CHARGE_BACK_S,
+			       SUM(TAB3.QITAKOU) QITAKOU_S,
+			       SUM(TAB3.BUKOU) BUKOU_S,
+			       SUM(TAB3.MEDICAL_PERSONAL) MEDICAL_PERSONAL_S,
+			       SUM(TAB3.ENDOWMENT_PERSONAL) ENDOWMENT_PERSONAL_S,
+			       SUM(TAB3.UNEMPLOYMENT_PERSONAL) UNEMPLOYMENT_PERSONAL_S,
+			       SUM(TAB3.HOUSE_FUNDING_PERSONAL) HOUSE_FUNDING_PERSONAL_S,
+			       SUM(TAB3.PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX_S,
+			       SUM(TAB3.YINGDEHEJI) YINGDEHEJI_S,
+			       SUM(TAB3.GONGZIZONGE) GONGZIZONGE_S,
+			       SUM(TAB3.SHIFAJINE) SHIFAJINE_S,
+			       SUM(TAB3.RS) RS,
+			       TAB3.PRODUCTION_DISTINGUISH
+			  FROM (SELECT TAB2.*,
+			               (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL -
+			               TAB2.ENDOWMENT_PERSONAL - TAB2.UNEMPLOYMENT_PERSONAL -
+			               TAB2.HOUSE_FUNDING_PERSONAL - TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+			          FROM (SELECT TAB1.*,
+			                       (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+			                       TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+			                  FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+			                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+			                               SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+			                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+			                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+			                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+			                               SUM(NVL(PA.WELFARE, 0)) WELFARE,
+			                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+			                               SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+			                               SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+			                               
+			                               SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+			                               SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+			                               
+			                               (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+			                               SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+			                               SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+			                               SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+			                               SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+			                               
+			                               SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+			                               SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+			                               SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+			                               SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+			                               SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+			                               
+			                               (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+			                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+			                               SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+			                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+			                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+			                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                               SUM(NVL(PA.WELFARE, 0)) +
+			                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+			                               SUM(NVL(PA.REPLENISHMENT, 0)) +
+			                               SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+			                               HE.DEPTNO,
+			                               HDN.CONTENT,
+			                               HD.PARENT_DEPT_NO,
+			                               HE.PRODUCTION_DISTINGUISH,
+			                               COUNT(HE.PERSON_ID) RS
+			                          FROM HR_DEPARTMENT      HD,
+			                               HR_DEPARTMENT_NAME HDN,
+			                               HR_EMPLOYEE        HE,
+			                               PA_SUMMARY_C04     PA
+			                         WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			                           AND HE.DEPTNO = HD.DEPTNO
+			                           AND HE.PERSON_ID = PA.PERSON_ID
+			                           AND HDN.DEPTNO = HD.DEPTNO
+			                           AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+			                           AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			                           AND HE.PRODUCTION_DISTINGUISH = '3328'
+			                           AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+			                           AND HD.PARENT_DEPT_NO IN ('C0421', 'C0426')
+			                         GROUP BY HE.DEPTNO,
+			                                  HD.PARENT_DEPT_NO,
+			                                  HDN.CONTENT,
+			                                  HE.PRODUCTION_DISTINGUISH) TAB1) TAB2) TAB3
+			 GROUP BY TAB3.PRODUCTION_DISTINGUISH
+			UNION ALL
+			SELECT SUM(TAB3.DESERVE_BASIC_WAGE) DESERVE_BASIC_WAGE_S,
+			       SUM(TAB3.HOUSE_SUBSIDIES) HOUSE_SUBSIDIES_S,
+			       SUM(TAB3.TRANSPORT_FEE) TRANSPORT_FEE_S,
+			       SUM(TAB3.RANK_ALLOWANCE) RANK_ALLOWANCE_S,
+			       SUM(TAB3.JOB_ALLOWANCE_STANDARD) JOB_ALLOWANCE_STANDARD_S,
+			       SUM(TAB3.TOTAL_OT_FEE) TOTAL_OT_FEE_S,
+			       SUM(TAB3.NIGHT_SHIFT_FEE) NIGHT_SHIFT_FEE_S,
+			       SUM(TAB3.WELFARE) WELFARE_S,
+			       SUM(TAB3.FULL_ATTENDANCE_ALLOWANCE) FULL_ATTENDANCE_ALLOWANCE_S,
+			       SUM(TAB3.QITABUZHU) QITABUZHU_S,
+			       SUM(TAB3.MANAGEMENT_FEE) MANAGEMENT_FEE_S,
+			       SUM(TAB3.SICK_CHARGE_BACK) SICK_CHARGE_BACK_S,
+			       SUM(TAB3.LEAVE_CHARGE_BACK) LEAVE_CHARGE_BACK_S,
+			       SUM(TAB3.QITAKOU) QITAKOU_S,
+			       SUM(TAB3.BUKOU) BUKOU_S,
+			       SUM(TAB3.MEDICAL_PERSONAL) MEDICAL_PERSONAL_S,
+			       SUM(TAB3.ENDOWMENT_PERSONAL) ENDOWMENT_PERSONAL_S,
+			       SUM(TAB3.UNEMPLOYMENT_PERSONAL) UNEMPLOYMENT_PERSONAL_S,
+			       SUM(TAB3.HOUSE_FUNDING_PERSONAL) HOUSE_FUNDING_PERSONAL_S,
+			       SUM(TAB3.PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX_S,
+			       SUM(TAB3.YINGDEHEJI) YINGDEHEJI_S,
+			       SUM(TAB3.SHIFAJINE) SHIFAJINE_S,
+			       SUM(TAB3.GONGZIZONGE) GONGZIZONGE_S,
+			       SUM(TAB3.RS) RS,
+			       TAB3.PRODUCTION_DISTINGUISH
+			  FROM (SELECT TAB2.*,
+			               (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL -
+			               TAB2.ENDOWMENT_PERSONAL - TAB2.UNEMPLOYMENT_PERSONAL -
+			               TAB2.HOUSE_FUNDING_PERSONAL - TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+			          FROM (SELECT TAB1.*,
+			                       (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+			                       TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+			                  FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+			                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+			                               SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+			                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+			                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+			                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+			                               SUM(NVL(PA.WELFARE, 0)) WELFARE,
+			                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+			                               SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+			                               SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+			                               
+			                               SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+			                               SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+			                               
+			                               (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+			                               SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+			                               SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+			                               SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+			                               SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+			                               
+			                               SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+			                               SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+			                               SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+			                               SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+			                               SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+			                               
+			                               (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+			                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+			                               SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+			                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+			                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+			                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                               SUM(NVL(PA.WELFARE, 0)) +
+			                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+			                               SUM(NVL(PA.REPLENISHMENT, 0)) +
+			                               SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+			                               HE.DEPTNO,
+			                               HDN.CONTENT,
+			                               HD.PARENT_DEPT_NO,
+			                               HE.PRODUCTION_DISTINGUISH,
+			                               COUNT(HE.PERSON_ID) RS
+			                          FROM HR_DEPARTMENT      HD,
+			                               HR_DEPARTMENT_NAME HDN,
+			                               HR_EMPLOYEE        HE,
+			                               PA_SUMMARY_C04     PA
+			                         WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			                           AND HE.DEPTNO = HD.DEPTNO
+			                           AND HE.PERSON_ID = PA.PERSON_ID
+			                           AND HDN.DEPTNO = HD.DEPTNO
+			                           AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+			                           AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			                           AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#   
+			                           AND HD.DEPTNO IN ('C0418', 'C0419', 'C043', 'C047')
+			                         GROUP BY HE.DEPTNO,
+			                                  HD.PARENT_DEPT_NO,
+			                                  HDN.CONTENT,
+			                                  HE.PRODUCTION_DISTINGUISH) TAB1) TAB2) TAB3
+			 GROUP BY TAB3.PRODUCTION_DISTINGUISH
+	</sql>
+	
+	<select id="getZhengShiShengChanXiaoJiList" resultClass="linkMap"  remapResults="true">
+		<include refid="getZhengShiShengChanXiaoJi"/>
+		<![CDATA[
+			UNION ALL
+			SELECT SUM(T.DESERVE_BASIC_WAGE_S) DESERVE_BASIC_WAGE_Z,
+			       SUM(T.HOUSE_SUBSIDIES_S) HOUSE_SUBSIDIES_S,
+			       SUM(T.TRANSPORT_FEE_S) TRANSPORT_FEE_S,
+			       SUM(T.RANK_ALLOWANCE_S) RANK_ALLOWANCE_S,
+			       SUM(T.JOB_ALLOWANCE_STANDARD_S) JOB_ALLOWANCE_STANDARD_S,
+			       SUM(T.TOTAL_OT_FEE_S) TOTAL_OT_FEE_S,
+			       SUM(T.NIGHT_SHIFT_FEE_S) NIGHT_SHIFT_FEE_S,
+			       SUM(T.WELFARE_S) WELFARE_S,
+			       SUM(T.FULL_ATTENDANCE_ALLOWANCE_S) FULL_ATTENDANCE_ALLOWANCE_S,
+			       SUM(T.QITABUZHU_S) QITABUZHU_S,
+			       SUM(T.MANAGEMENT_FEE_S) MANAGEMENT_FEE_S,
+			       SUM(T.SICK_CHARGE_BACK_S) SICK_CHARGE_BACK_S,
+			       SUM(T.LEAVE_CHARGE_BACK_S) LEAVE_CHARGE_BACK_S,
+			       SUM(T.QITAKOU_S) QITAKOU_S,
+			       SUM(T.BUKOU_S) BUKOU_S,
+			       SUM(T.MEDICAL_PERSONAL_S) MEDICAL_PERSONAL_S,
+			       SUM(T.ENDOWMENT_PERSONAL_S) ENDOWMENT_PERSONAL_S,
+			       SUM(T.UNEMPLOYMENT_PERSONAL_S) UNEMPLOYMENT_PERSONAL_S,
+			       SUM(T.HOUSE_FUNDING_PERSONAL_S) HOUSE_FUNDING_PERSONAL_S,
+			       SUM(T.PERSONAL_INCOME_TAX_S) PERSONAL_INCOME_TAX_S,
+			       SUM(T.YINGDEHEJI_S) YINGDEHEJI_S,
+			       SUM(T.GONGZIZONGE_S) GONGZIZONGE_S,
+			       SUM(T.SHIFAJINE_S) SHIFAJINE_S,
+			       SUM(T.RS) RS,
+			       'ZONGJI'
+			  FROM (
+		]]>	
+		<include refid="getZhengShiShengChanXiaoJi"/>
+					) T
+	</select>		
+
+
+	<select id="getZhengShiShengChanZongJiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUM(T.DESERVE_BASIC_WAGE_S) DESERVE_BASIC_WAGE_Z,
+			       SUM(T.HOUSE_SUBSIDIES_S) HOUSE_SUBSIDIES_Z,
+			       SUM(T.TRANSPORT_FEE_S) TRANSPORT_FEE_Z,
+			       SUM(T.RANK_ALLOWANCE_S) RANK_ALLOWANCE_Z,
+			       SUM(T.JOB_ALLOWANCE_STANDARD_S) JOB_ALLOWANCE_STANDARD_Z,
+			       SUM(T.TOTAL_OT_FEE_S) TOTAL_OT_FEE_Z,
+			       SUM(T.NIGHT_SHIFT_FEE_S) NIGHT_SHIFT_FEE_Z,
+			       SUM(T.WELFARE_S) WELFARE_Z,
+			       SUM(T.FULL_ATTENDANCE_ALLOWANCE_S) FULL_ATTENDANCE_ALLOWANCE_Z,
+			       SUM(T.QITABUZHU_S) QITABUZHU_Z,
+			       SUM(T.MANAGEMENT_FEE_S) MANAGEMENT_FEE_Z,
+			       SUM(T.SICK_CHARGE_BACK_S) SICK_CHARGE_BACK_Z,
+			       SUM(T.LEAVE_CHARGE_BACK_S) LEAVE_CHARGE_BACK_Z,
+			       SUM(T.QITAKOU_S) QITAKOU_Z,
+			       SUM(T.BUKOU_S) BUKOU_Z,
+			       SUM(T.MEDICAL_PERSONAL_S) MEDICAL_PERSONAL_Z,
+			       SUM(T.ENDOWMENT_PERSONAL_S) ENDOWMENT_PERSONAL_Z,
+			       SUM(T.UNEMPLOYMENT_PERSONAL_S) UNEMPLOYMENT_PERSONAL_Z,
+			       SUM(T.HOUSE_FUNDING_PERSONAL_S) HOUSE_FUNDING_PERSONAL_Z,
+			       SUM(T.PERSONAL_INCOME_TAX_S) PERSONAL_INCOME_TAX_Z,
+			       SUM(T.YINGDEHEJI_S) YINGDEHEJI_Z,
+			       SUM(T.GONGZIZONGE_S) GONGZIZONGE_Z,
+			       SUM(T.SHIFAJINE_S) SHIFAJINE_Z,
+			       SUM(T.SHIFAJINE_S) SHIFAJINE_Z,
+			       SUM(T.RS) RS
+			  FROM (
+		]]>	
+		<include refid="getZhengShiShengChanXiaoJi"/>
+					) T
+	</select>
+
+	<select id="getPaSummarizeLaoWuXiaoJiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT SUM(T.DESERVE_BASIC_WAGE) DESERVE_BASIC_WAGE_S,
+		       SUM(T.HOUSE_SUBSIDIES) HOUSE_SUBSIDIES_S,
+		       SUM(T.TRANSPORT_FEE) TRANSPORT_FEE_S,
+		       SUM(T.RANK_ALLOWANCE) RANK_ALLOWANCE_S,
+		       SUM(T.JOB_ALLOWANCE_STANDARD) JOB_ALLOWANCE_STANDARD_S,
+		       SUM(T.TOTAL_OT_FEE) TOTAL_OT_FEE_S,
+		       SUM(T.NIGHT_SHIFT_FEE) NIGHT_SHIFT_FEE_S,
+		       SUM(T.WELFARE) WELFARE_S,
+		       SUM(T.FULL_ATTENDANCE_ALLOWANCE) FULL_ATTENDANCE_ALLOWANCE_S,
+		       SUM(T.QITABUZHU) QITABUZHU_S,
+		       SUM(T.MANAGEMENT_FEE) MANAGEMENT_FEE_S,
+		       SUM(T.SICK_CHARGE_BACK) SICK_CHARGE_BACK_S,
+		       SUM(T.LEAVE_CHARGE_BACK) LEAVE_CHARGE_BACK_S,
+		       SUM(T.QITAKOU) QITAKOU_S,
+		       SUM(T.BUKOU) BUKOU_S,
+		       SUM(T.MEDICAL_PERSONAL) MEDICAL_PERSONAL_S,
+		       SUM(T.ENDOWMENT_PERSONAL) ENDOWMENT_PERSONAL_S,
+		       SUM(T.UNEMPLOYMENT_PERSONAL) UNEMPLOYMENT_PERSONAL_S,
+		       SUM(T.HOUSE_FUNDING_PERSONAL) HOUSE_FUNDING_PERSONAL_S,
+		       SUM(T.PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX_S,
+		       SUM(T.YINGDEHEJI) YINGDEHEJI_S,
+		       SUM(T.GONGZIZONGE) GONGZIZONGE_S,
+		       SUM(T.SHIFAJINE) SHIFAJINE_S,
+		       SUM(T.RS) RS
+		  FROM (SELECT TAB2.*,
+		               (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL -
+		               TAB2.ENDOWMENT_PERSONAL - TAB2.UNEMPLOYMENT_PERSONAL -
+		               TAB2.HOUSE_FUNDING_PERSONAL - TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+		          FROM (SELECT TAB1.*,
+		                       (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+		                       TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+		                  FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+		                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+		                               SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+		                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+		                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+		                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+		                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+		                               SUM(NVL(PA.WELFARE, 0)) WELFARE,
+		                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+		                               SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+		                               SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+		                               
+		                               SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+		                               SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+		                               
+		                               (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+		                               SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+		                               SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+		                               SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+		                               SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+		                               
+		                               SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+		                               SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+		                               SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+		                               SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+		                               SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+		                               
+		                               (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+		                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+		                               SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+		                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+		                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+		                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+		                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+		                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+		                               SUM(NVL(PA.WELFARE, 0)) +
+		                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+		                               SUM(NVL(PA.REPLENISHMENT, 0)) +
+		                               SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+		                               HE.DEPTNO,
+		                               HDN.CONTENT DEPT_NAME,
+		                               HD.PARENT_DEPT_NO,
+		                               COUNT(HE.PERSON_ID) RS
+		                          FROM HR_DEPARTMENT      HD,
+		                               HR_DEPARTMENT_NAME HDN,
+		                               HR_EMPLOYEE        HE,
+		                               PA_SUMMARY_C04     PA
+		                         WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				                   AND HE.DEPTNO = HD.DEPTNO
+				                   AND HE.PERSON_ID = PA.PERSON_ID
+				                   AND HDN.DEPTNO = HD.DEPTNO
+				                   AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+							       AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+							       AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		                           AND HE.PRODUCTION_DISTINGUISH = #PRODUCTION_DISTINGUISH:VARCHAR#
+		                           AND HE.DEPTNO IN ('C0425','C0427','C0424','C0423','C0422','C0429','C0428','C043')
+		                           AND EXISTS
+		                         (SELECT *
+		                                  FROM HR_DEPARTMENT
+		                                 WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+		                                 START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+		                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+		                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+		                         GROUP BY HE.DEPTNO, HD.PARENT_DEPT_NO, HDN.CONTENT) TAB1) TAB2) T
+				
+	</select>
+	
+	<sql id="getLaoWuGuanLiJianJie">
+		SELECT TAB2.*,
+			       (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL - TAB2.ENDOWMENT_PERSONAL -
+			       TAB2.UNEMPLOYMENT_PERSONAL - TAB2.HOUSE_FUNDING_PERSONAL -
+			       TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+			  FROM (SELECT TAB1.*,
+			               (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+			               TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+			          FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+			                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+			                       SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+			                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+			                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+			                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+			                       SUM(NVL(PA.WELFARE, 0)) WELFARE,
+			                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+			                       SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+			                       SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+			                       
+			                       SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+			                       SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+			                       
+			                       (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+			                       SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+			                       SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+			                       SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+			                       SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+			                       
+			                       SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+			                       SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+			                       SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+			                       SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+			                       SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+			                       
+			                       (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+			                       SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+			                       SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+			                       SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+			                       SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+			                       SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                       SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                       SUM(NVL(PA.WELFARE, 0)) +
+			                       SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+			                       SUM(NVL(PA.REPLENISHMENT, 0)) +
+			                       SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+			                       HE.DEPTNO,
+			                       HDN.CONTENT DEPT_NAME,
+			                       HD.PARENT_DEPT_NO,
+			                       COUNT(HE.PERSON_ID) RS
+			                  FROM HR_DEPARTMENT      HD,
+			                       HR_DEPARTMENT_NAME HDN,
+			                       HR_EMPLOYEE        HE,
+			                       PA_SUMMARY_C04     PA
+			                 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				                   AND HE.DEPTNO = HD.DEPTNO
+				                   AND HE.PERSON_ID = PA.PERSON_ID
+				                   AND HDN.DEPTNO = HD.DEPTNO
+				                   AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+							       AND PA.PA_MONTH = #PA_MONTH:VARCHAR#
+							       AND HE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		                           AND HE.PRODUCTION_DISTINGUISH = #PRODUCTION_DISTINGUISH:VARCHAR#
+			                   AND HE.DEPTNO IN ('C0415', 'C0414', 'C046')
+			                      
+			                   AND EXISTS
+			                 (SELECT *
+			                          FROM HR_DEPARTMENT
+			                         WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+			                         START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+			                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+			                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+			                 GROUP BY HE.DEPTNO, HD.PARENT_DEPT_NO, HDN.CONTENT) TAB1) TAB2
+	</sql>
+	
+	<select id="getLaoWuGuanLiJianJieList" resultClass="linkMap"  remapResults="true">
+		<include refid="getLaoWuGuanLiJianJie"/>
+	</select>	
+	
+	<select id="getLaoWuGuanLiJianJieXiaoJiList" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT SUM(T.DESERVE_BASIC_WAGE) DESERVE_BASIC_WAGE_S,
+			       SUM(T.HOUSE_SUBSIDIES) HOUSE_SUBSIDIES_S,
+			       SUM(T.TRANSPORT_FEE) TRANSPORT_FEE_S,
+			       SUM(T.RANK_ALLOWANCE) RANK_ALLOWANCE_S,
+			       SUM(T.JOB_ALLOWANCE_STANDARD) JOB_ALLOWANCE_STANDARD_S,
+			       SUM(T.TOTAL_OT_FEE) TOTAL_OT_FEE_S,
+			       SUM(T.NIGHT_SHIFT_FEE) NIGHT_SHIFT_FEE_S,
+			       SUM(T.WELFARE) WELFARE_S,
+			       SUM(T.FULL_ATTENDANCE_ALLOWANCE) FULL_ATTENDANCE_ALLOWANCE_S,
+			       SUM(T.QITABUZHU) QITABUZHU_S,
+			       SUM(T.MANAGEMENT_FEE) MANAGEMENT_FEE_S,
+			       SUM(T.SICK_CHARGE_BACK) SICK_CHARGE_BACK_S,
+			       SUM(T.LEAVE_CHARGE_BACK) LEAVE_CHARGE_BACK_S,
+			       SUM(T.QITAKOU) QITAKOU_S,
+			       SUM(T.BUKOU) BUKOU_S,
+			       SUM(T.MEDICAL_PERSONAL) MEDICAL_PERSONAL_S,
+			       SUM(T.ENDOWMENT_PERSONAL) ENDOWMENT_PERSONAL_S,
+			       SUM(T.UNEMPLOYMENT_PERSONAL) UNEMPLOYMENT_PERSONAL_S,
+			       SUM(T.HOUSE_FUNDING_PERSONAL) HOUSE_FUNDING_PERSONAL_S,
+			       SUM(T.PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX_S,
+			       SUM(T.YINGDEHEJI) YINGDEHEJI_S,
+			       SUM(T.GONGZIZONGE) GONGZIZONGE_S,
+			       SUM(T.SHIFAJINE) SHIFAJINE_S,
+			       SUM(T.RS) RS
+			  FROM (
+		]]>	
+		<include refid="getLaoWuGuanLiJianJie"/>
+					) T
+	</select>
+
+	<select id="getQuanGongSiZhongFangList" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT SUM(T.DESERVE_BASIC_WAGE) DESERVE_BASIC_WAGE_S,
+			       SUM(T.HOUSE_SUBSIDIES) HOUSE_SUBSIDIES_S,
+			       SUM(T.TRANSPORT_FEE) TRANSPORT_FEE_S,
+			       SUM(T.RANK_ALLOWANCE) RANK_ALLOWANCE_S,
+			       SUM(T.JOB_ALLOWANCE_STANDARD) JOB_ALLOWANCE_STANDARD_S,
+			       SUM(T.TOTAL_OT_FEE) TOTAL_OT_FEE_S,
+			       SUM(T.NIGHT_SHIFT_FEE) NIGHT_SHIFT_FEE_S,
+			       SUM(T.WELFARE) WELFARE_S,
+			       SUM(T.FULL_ATTENDANCE_ALLOWANCE) FULL_ATTENDANCE_ALLOWANCE_S,
+			       SUM(T.QITABUZHU) QITABUZHU_S,
+			       SUM(T.MANAGEMENT_FEE) MANAGEMENT_FEE_S,
+			       SUM(T.SICK_CHARGE_BACK) SICK_CHARGE_BACK_S,
+			       SUM(T.LEAVE_CHARGE_BACK) LEAVE_CHARGE_BACK_S,
+			       SUM(T.QITAKOU) QITAKOU_S,
+			       SUM(T.BUKOU) BUKOU_S,
+			       SUM(T.MEDICAL_PERSONAL) MEDICAL_PERSONAL_S,
+			       SUM(T.ENDOWMENT_PERSONAL) ENDOWMENT_PERSONAL_S,
+			       SUM(T.UNEMPLOYMENT_PERSONAL) UNEMPLOYMENT_PERSONAL_S,
+			       SUM(T.HOUSE_FUNDING_PERSONAL) HOUSE_FUNDING_PERSONAL_S,
+			       SUM(T.PERSONAL_INCOME_TAX) PERSONAL_INCOME_TAX_S,
+			       SUM(T.YINGDEHEJI) YINGDEHEJI_S,
+			       SUM(T.GONGZIZONGE) GONGZIZONGE_S,
+			       SUM(T.SHIFAJINE) SHIFAJINE_S,
+			       SUM(T.RS) RS
+			  FROM (SELECT TAB2.*,
+			               (TAB2.GONGZIZONGE - TAB2.MEDICAL_PERSONAL -
+			               TAB2.ENDOWMENT_PERSONAL - TAB2.UNEMPLOYMENT_PERSONAL -
+			               TAB2.HOUSE_FUNDING_PERSONAL - TAB2.PERSONAL_INCOME_TAX) SHIFAJINE
+			          FROM (SELECT TAB1.*,
+			                       (TAB1.YINGDEHEJI - TAB1.SICK_CHARGE_BACK -
+			                       TAB1.LEAVE_CHARGE_BACK - TAB1.QITAKOU - TAB1.BUKOU) GONGZIZONGE
+			                  FROM (SELECT SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) DESERVE_BASIC_WAGE,
+			                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) HOUSE_SUBSIDIES,
+			                               SUM(NVL(PA.TRANSPORT_FEE, 0)) TRANSPORT_FEE,
+			                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) RANK_ALLOWANCE,
+			                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) JOB_ALLOWANCE_STANDARD,
+			                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) TOTAL_OT_FEE,
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) NIGHT_SHIFT_FEE,
+			                               SUM(NVL(PA.WELFARE, 0)) WELFARE,
+			                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) FULL_ATTENDANCE_ALLOWANCE,
+			                               SUM(NVL(PA.REPLENISHMENT, 0)) QITABUZHU,
+			                               SUM(NVL(PA.MANAGEMENT_FEE, 0)) MANAGEMENT_FEE,
+			                               
+			                               SUM(NVL(PA.SICK_CHARGE_BACK, 0)) SICK_CHARGE_BACK,
+			                               SUM(NVL(PA.LEAVE_CHARGE_BACK, 0)) LEAVE_CHARGE_BACK,
+			                               
+			                               (SUM(NVL(PA.DAOXIU_CHARGE_BACK, 0)) +
+			                               SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) +
+			                               SUM(NVL(PA.TARDINESS_EARLYDAY_C_BACK, 0)) +
+			                               SUM(NVL(PA.OTHERS_LEAVE_C_BACK, 0))) QITAKOU,
+			                               SUM(NVL(PA.BEFORE_TAXABLE_DEDUCT, 0)) BUKOU,
+			                               
+			                               SUM(NVL(PA.MEDICAL_PERSONAL, 0)) MEDICAL_PERSONAL,
+			                               SUM(NVL(PA.ENDOWMENT_PERSONAL, 0)) ENDOWMENT_PERSONAL,
+			                               SUM(NVL(PA.UNEMPLOYMENT_PERSONAL, 0)) UNEMPLOYMENT_PERSONAL,
+			                               SUM(NVL(PA.HOUSE_FUNDING_PERSONAL, 0)) HOUSE_FUNDING_PERSONAL,
+			                               SUM(NVL(PA.PERSONAL_INCOME_TAX, 0)) PERSONAL_INCOME_TAX,
+			                               
+			                               (SUM(NVL(PA.DESERVE_BASIC_WAGE, 0)) +
+			                               SUM(NVL(PA.HOUSE_SUBSIDIES, 0)) +
+			                               SUM(NVL(PA.TRANSPORT_FEE, 0)) +
+			                               SUM(NVL(PA.RANK_ALLOWANCE, 0)) +
+			                               SUM(NVL(PA.JOB_ALLOWANCE_STANDARD, 0)) +
+			                               SUM(NVL(PA.TOTAL_OT_FEE, 0)) +
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                               SUM(NVL(PA.NIGHT_SHIFT_FEE, 0)) +
+			                               SUM(NVL(PA.WELFARE, 0)) +
+			                               SUM(NVL(PA.FULL_ATTENDANCE_ALLOWANCE, 0)) +
+			                               SUM(NVL(PA.REPLENISHMENT, 0)) +
+			                               SUM(NVL(PA.MANAGEMENT_FEE, 0))) YINGDEHEJI,
+			                               COUNT(PA.PERSON_ID) RS
+			                          FROM PA_SUMMARY_C04 PA
+			                         WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			                           AND PA.PA_MONTH = #PA_MONTH:VARCHAR#) TAB1) TAB2) T
+		]]>	
+	</select>
+
+	<sql id="getShengChan">
+			<![CDATA[
+			SELECT TAB.*,
+			       ROUND(TAB.PEOPLEWARE_FEE1/(CASE WHEN TAB.RS1=0 THEN 1 ELSE TAB.RS1 END),2) RENJUN1,
+			       ROUND(TAB.PEOPLEWARE_FEE2/(CASE WHEN TAB.RS2=0 THEN 1 ELSE TAB.RS2 END),2) RENJUN2,
+			       ROUND(TAB.PEOPLEWARE_FEE3/(CASE WHEN TAB.RS3=0 THEN 1 ELSE TAB.RS3 END),2) RENJUN3,
+			       ROUND(TAB.PEOPLEWARE_FEE4/(CASE WHEN TAB.RS4=0 THEN 1 ELSE TAB.RS4 END),2) RENJUN4,
+			       ROUND((PEOPLEWARE_FEE1/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                  FROM PA_PARAM_DATA_OTHER PA
+			                                 WHERE PA.CPNY_ID = 'C04'
+			                                   AND PA.PARAM_NO = '47'
+			                                   AND PA.START_MONTH = #PA_MONTH:VARCHAR#-100
+			                                   AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100) T)),2) FUDANLV1,
+			       ROUND((PEOPLEWARE_FEE2/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                  FROM PA_PARAM_DATA_OTHER PA
+			                                 WHERE PA.CPNY_ID = 'C04'
+			                                   AND PA.PARAM_NO = '47'
+			                                   AND PA.START_MONTH = #PA_MONTH:VARCHAR#
+			                                   AND PA.END_MONTH = #PA_MONTH:VARCHAR#) T)),2) FUDANLV2,
+			       ROUND((PEOPLEWARE_FEE3/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                  FROM PA_PARAM_DATA_OTHER PA
+			                                 WHERE PA.CPNY_ID = 'C04'
+			                                   AND PA.PARAM_NO = '47'
+			                                   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')
+			                                   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')) T)),2) FUDANLV3,
+			        ROUND((PEOPLEWARE_FEE4/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                  FROM PA_PARAM_DATA_OTHER PA
+			                                 WHERE PA.CPNY_ID = 'C04'
+			                                   AND PA.PARAM_NO = '47'
+			                                   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')
+			                                   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) T)),2) FUDANLV4                        
+			 FROM 
+			(SELECT SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR#-100 THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE1,
+			       SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR# THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE2,
+			       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE3,
+			       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE4,
+			       
+			       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND P.PA_MONTH =#PA_MONTH:VARCHAR#-100)RS1,
+			       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND P.PA_MONTH =#PA_MONTH:VARCHAR#)RS2,
+			       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM'))RS3,
+			       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM'))RS4,
+			       
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HD.PARENT_DEPT_NO,
+			       HE.EMP_TYPE_CODE
+			  FROM PA_HISTORY_C04     PA,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE HE.CPNY_ID = 'C04'
+			   AND HE.PERSON_ID = PA.PERSON_ID
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = 'zh'
+			   AND EXISTS
+			 (SELECT *
+			          FROM HR_DEPARTMENT
+			         WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+			         START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+			        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+			 GROUP BY HE.DEPTNO, HE.EMP_TYPE_CODE, HD.PARENT_DEPT_NO, HDN.CONTENT
+			)TAB	
+			]]>	
+	</sql>
+
+	<select id="getShengChanList" resultClass="linkMap"  remapResults="true">
+		<include refid="getShengChan"/>
+		ORDER BY DEPTNO,EMP_TYPE_CODE
+	</select>
+
+	<select id="getShengChanXiaoJiList" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT SUM(T.RENJUN1) RENJUN1,
+		           SUM(T.RENJUN2) RENJUN2,
+		           SUM(T.RENJUN3) RENJUN3,
+		           SUM(T.RENJUN4) RENJUN4,
+		           SUM(T.FUDANLV1) FUDANLV1,
+		           SUM(T.FUDANLV2) FUDANLV2,
+		           SUM(T.FUDANLV3) FUDANLV3,
+		           SUM(T.FUDANLV4) FUDANLV4,
+		           SUM(T.PEOPLEWARE_FEE1) PEOPLEWARE_FEE1,
+		           SUM(T.PEOPLEWARE_FEE2) PEOPLEWARE_FEE2,
+		           SUM(T.PEOPLEWARE_FEE3) PEOPLEWARE_FEE3,
+		           SUM(T.PEOPLEWARE_FEE4) PEOPLEWARE_FEE4,
+		           SUM(T.RS1) RS1,
+		           SUM(T.RS2) RS2,
+		           SUM(T.RS3) RS3,
+		           SUM(T.RS4) RS4
+		  ]]>	
+		  <isEqual property="DEPT_NO" compareValue="1" >
+		        <![CDATA[	
+					,DEPTNO
+				]]>
+		    </isEqual>
+		  <isEqual property="PARENT_DEPT_NO" compareValue="0" >
+		        <![CDATA[	
+					,PARENT_DEPT_NO
+				]]>
+		    </isEqual>
+		  <isEqual property="PARENT_DEPT_NO" compareValue="1" >
+		        <![CDATA[	
+					,EMP_TYPE_CODE,
+					PARENT_DEPT_NO
+				]]>
+		    </isEqual>  
+		    FROM (  
+		<include refid="getShengChan"/>
+			
+			)T
+			
+		<isNotEmpty prepend="" property="DEPT_NO">
+			<isEqual property="DEPT_NO" compareValue="1" >
+		        <![CDATA[	
+					GROUP BY DEPTNO ORDER BY DEPTNO
+				]]>
+		    </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="PARENT_DEPT_NO">
+			<isEqual property="PARENT_DEPT_NO" compareValue="0" >
+		        <![CDATA[	
+					GROUP BY PARENT_DEPT_NO ORDER BY PARENT_DEPT_NO
+				]]>
+		    </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="PARENT_DEPT_NO">
+			<isEqual property="PARENT_DEPT_NO" compareValue="1" >
+		        <![CDATA[	
+					GROUP BY PARENT_DEPT_NO,EMP_TYPE_CODE ORDER BY PARENT_DEPT_NO
+				]]>
+		    </isEqual>
+		</isNotEmpty>
+		
+		
+	</select>
+	
+	<select id="getShengChanZhiJieHeJiList" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT SUM(T.RENJUN1) RENJUN1,
+		           SUM(T.RENJUN2) RENJUN2,
+		           SUM(T.RENJUN3) RENJUN3,
+		           SUM(T.RENJUN4) RENJUN4,
+		           SUM(T.FUDANLV1) FUDANLV1,
+		           SUM(T.FUDANLV2) FUDANLV2,
+		           SUM(T.FUDANLV3) FUDANLV3,
+		           SUM(T.FUDANLV4) FUDANLV4,
+		           SUM(T.PEOPLEWARE_FEE1) PEOPLEWARE_FEE1,
+		           SUM(T.PEOPLEWARE_FEE2) PEOPLEWARE_FEE2,
+		           SUM(T.PEOPLEWARE_FEE3) PEOPLEWARE_FEE3,
+		           SUM(T.PEOPLEWARE_FEE4) PEOPLEWARE_FEE4,
+		           SUM(T.RS1) RS1,
+		           SUM(T.RS2) RS2,
+		           SUM(T.RS3) RS3,
+		           SUM(T.RS4) RS4
+		  ]]>	
+		  <isEqual property="EMP_TYPE_CODE" compareValue="1" >
+		        <![CDATA[	
+					,EMP_TYPE_CODE
+				]]>
+		    </isEqual>
+		    FROM (  
+				SELECT TAB.*,
+				       ROUND(TAB.PEOPLEWARE_FEE1/(CASE WHEN TAB.RS1=0 THEN 1 ELSE TAB.RS1 END),2) RENJUN1,
+				       ROUND(TAB.PEOPLEWARE_FEE2/(CASE WHEN TAB.RS2=0 THEN 1 ELSE TAB.RS2 END),2) RENJUN2,
+				       ROUND(TAB.PEOPLEWARE_FEE3/(CASE WHEN TAB.RS3=0 THEN 1 ELSE TAB.RS3 END),2) RENJUN3,
+				       ROUND(TAB.PEOPLEWARE_FEE4/(CASE WHEN TAB.RS4=0 THEN 1 ELSE TAB.RS4 END),2) RENJUN4,
+				       ROUND((PEOPLEWARE_FEE1/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND PA.START_MONTH = #PA_MONTH:VARCHAR#-100
+				                                   AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100) T)),2) FUDANLV1,
+				       ROUND((PEOPLEWARE_FEE2/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND PA.START_MONTH = #PA_MONTH:VARCHAR#
+				                                   AND PA.END_MONTH = #PA_MONTH:VARCHAR#) T)),2) FUDANLV2,
+				       ROUND((PEOPLEWARE_FEE3/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')
+			                                   	   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')) T)),2) FUDANLV3,
+				        ROUND((PEOPLEWARE_FEE4/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')
+			                                   	   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) T)),2) FUDANLV4                       
+				 FROM 
+				(SELECT SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR#-100 THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE1,
+				       SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR# THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE2,
+				       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE3,
+				       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE4,
+				       
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND P.PA_MONTH =#PA_MONTH:VARCHAR#-100)RS1,
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND P.PA_MONTH =#PA_MONTH:VARCHAR#)RS2,
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM'))RS3,
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM'))RS4,
+				       
+				       HE.DEPTNO,
+				       HDN.CONTENT DEPT_NAME,
+				       HD.PARENT_DEPT_NO,
+				       HE.EMP_TYPE_CODE
+				  FROM PA_HISTORY_C04     PA,
+				       HR_EMPLOYEE        HE,
+				       HR_DEPARTMENT      HD,
+				       HR_DEPARTMENT_NAME HDN
+				 WHERE HE.CPNY_ID = 'C04'
+				   AND HE.PERSON_ID = PA.PERSON_ID
+				   AND HE.DEPTNO = HD.DEPTNO
+				   AND HD.DEPTNO = HDN.DEPTNO
+				   AND HDN.LANGUAGE = 'zh'
+				   AND HD.PARENT_DEPT_NO IN ('C0421','C0426')
+				   AND EXISTS
+				 (SELECT *
+				          FROM HR_DEPARTMENT
+				         WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+				         START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+				        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				 GROUP BY HE.DEPTNO, HE.EMP_TYPE_CODE, HD.PARENT_DEPT_NO, HDN.CONTENT
+				)TAB	
+			)T
+		<isNotEmpty prepend="" property="EMP_TYPE_CODE">
+			<isEqual property="EMP_TYPE_CODE" compareValue="1" >
+		        <![CDATA[	
+					GROUP BY EMP_TYPE_CODE
+				]]>
+		    </isEqual>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getShengChanZongHeList" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+		        SELECT SUM(T.RENJUN1) RENJUN1,
+		           SUM(T.RENJUN2) RENJUN2,
+		           SUM(T.RENJUN3) RENJUN3,
+		           SUM(T.RENJUN4) RENJUN4,
+		           SUM(T.FUDANLV1) FUDANLV1,
+		           SUM(T.FUDANLV2) FUDANLV2,
+		           SUM(T.FUDANLV3) FUDANLV3,
+		           SUM(T.FUDANLV4) FUDANLV4,
+		           SUM(T.PEOPLEWARE_FEE1) PEOPLEWARE_FEE1,
+		           SUM(T.PEOPLEWARE_FEE2) PEOPLEWARE_FEE2,
+		           SUM(T.PEOPLEWARE_FEE3) PEOPLEWARE_FEE3,
+		           SUM(T.PEOPLEWARE_FEE4) PEOPLEWARE_FEE4,
+		           SUM(T.RS1) RS1,
+		           SUM(T.RS2) RS2,
+		           SUM(T.RS3) RS3,
+		           SUM(T.RS4) RS4
+		  ]]>	
+		  <isEqual property="EMP_TYPE_CODE" compareValue="1" >
+		        <![CDATA[	
+					,EMP_TYPE_CODE
+				]]>
+		    </isEqual>
+		    FROM (  
+				SELECT TAB.*,
+				       ROUND(TAB.PEOPLEWARE_FEE1/(CASE WHEN TAB.RS1=0 THEN 1 ELSE TAB.RS1 END),2) RENJUN1,
+				       ROUND(TAB.PEOPLEWARE_FEE2/(CASE WHEN TAB.RS2=0 THEN 1 ELSE TAB.RS2 END),2) RENJUN2,
+				       ROUND(TAB.PEOPLEWARE_FEE3/(CASE WHEN TAB.RS3=0 THEN 1 ELSE TAB.RS3 END),2) RENJUN3,
+				       ROUND(TAB.PEOPLEWARE_FEE4/(CASE WHEN TAB.RS4=0 THEN 1 ELSE TAB.RS4 END),2) RENJUN4,
+				       ROUND((PEOPLEWARE_FEE1/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND PA.START_MONTH = #PA_MONTH:VARCHAR#-100
+				                                   AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100) T)),2) FUDANLV1,
+				       ROUND((PEOPLEWARE_FEE2/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND PA.START_MONTH = #PA_MONTH:VARCHAR#
+				                                   AND PA.END_MONTH = #PA_MONTH:VARCHAR#) T)),2) FUDANLV2,
+				       ROUND((PEOPLEWARE_FEE3/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')
+			                                   	   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')) T)),2) FUDANLV3,
+				        ROUND((PEOPLEWARE_FEE4/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+				                          FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+				                                  FROM PA_PARAM_DATA_OTHER PA
+				                                 WHERE PA.CPNY_ID = 'C04'
+				                                   AND PA.PARAM_NO = '47'
+				                                   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')
+			                                   	   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) T)),2) FUDANLV4                       
+				 FROM 
+				(SELECT SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR#-100 THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE1,
+				       SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR# THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE2,
+				       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE3,
+				       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE4,
+				       
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND P.PA_MONTH =#PA_MONTH:VARCHAR#-100)RS1,
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND P.PA_MONTH =#PA_MONTH:VARCHAR#)RS2,
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM'))RS3,
+				       (SELECT COUNT(*) FROM PA_HISTORY_C04 P WHERE P.CPNY_ID = 'C04' AND P.DEPTNO =  HE.DEPTNO AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM'))RS4,
+				       
+				       HE.DEPTNO,
+				       HDN.CONTENT DEPT_NAME,
+				       HD.PARENT_DEPT_NO,
+				       HE.EMP_TYPE_CODE
+				  FROM PA_HISTORY_C04     PA,
+				       HR_EMPLOYEE        HE,
+				       HR_DEPARTMENT      HD,
+				       HR_DEPARTMENT_NAME HDN
+				 WHERE HE.CPNY_ID = 'C04'
+				   AND HE.PERSON_ID = PA.PERSON_ID
+				   AND HE.DEPTNO = HD.DEPTNO
+				   AND HD.DEPTNO = HDN.DEPTNO
+				   AND HDN.LANGUAGE = 'zh'
+				   AND HD.DEPTNO IN (#DEPT1:VARCHAR#,#DEPT2:VARCHAR#,#DEPT3:VARCHAR#,#DEPT4:VARCHAR#,#DEPT5:VARCHAR#,#DEPT6:VARCHAR#,#DEPT7:VARCHAR#,#DEPT8:VARCHAR#,#DEPT9:VARCHAR#)
+				   AND EXISTS
+				 (SELECT *
+				          FROM HR_DEPARTMENT
+				         WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+				         START WITH HR_DEPARTMENT.DEPTNO = 'C041'
+				        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				 GROUP BY HE.DEPTNO, HE.EMP_TYPE_CODE, HD.PARENT_DEPT_NO, HDN.CONTENT
+				)TAB	
+			)T
+		<isNotEmpty prepend="" property="EMP_TYPE_CODE">
+			<isEqual property="EMP_TYPE_CODE" compareValue="1" >
+		        <![CDATA[	
+					GROUP BY EMP_TYPE_CODE 
+					ORDER BY EMP_TYPE_CODE 
+				]]>
+		    </isEqual>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getZhuZaiYuanMonthList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+	        SELECT A.*,
+			       ROUND(A.PEOPLEWARE_FEE1/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                                FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                        FROM PA_PARAM_DATA_OTHER PA
+			                                       WHERE PA.CPNY_ID = 'C04'
+			                                         AND PA.PARAM_NO = '47'
+			                                         AND PA.START_MONTH = #PA_MONTH:VARCHAR#-100
+			                                         AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100) T),2) FUDANLV1,
+			       ROUND(A.PEOPLEWARE_FEE2/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                                FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                        FROM PA_PARAM_DATA_OTHER PA
+			                                       WHERE PA.CPNY_ID = 'C04'
+			                                         AND PA.PARAM_NO = '47'
+			                                         AND PA.START_MONTH = #PA_MONTH:VARCHAR#
+			                                         AND PA.END_MONTH = #PA_MONTH:VARCHAR#) T),2) FUDANLV2,
+			       ROUND(A.PEOPLEWARE_FEE3/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                                FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                        FROM PA_PARAM_DATA_OTHER PA
+			                                       WHERE PA.CPNY_ID = 'C04'
+			                                         AND PA.PARAM_NO = '47'
+				                                     AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')
+			                                   	     AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')) T),2) FUDANLV3,
+			       ROUND(A.PEOPLEWARE_FEE4/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                                FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                        FROM PA_PARAM_DATA_OTHER PA
+			                                       WHERE PA.CPNY_ID = 'C04'
+			                                         AND PA.PARAM_NO = '47'
+				                                     AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')
+			                                   	     AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) T),2) FUDANLV4
+			
+			 FROM (
+			      SELECT SUM(TAB.RS1)RS1,
+			             SUM(TAB.RS2)RS2,
+			             SUM(TAB.RS3)RS3,
+			             SUM(TAB.RS4)RS4,
+			             ROUND(SUM(TAB.PEOPLEWARE_FEE1)/(CASE WHEN SUM(TAB.RS1)=0 THEN 1 ELSE SUM(TAB.RS1) END),2) RENJUN1,
+			             ROUND(SUM(TAB.PEOPLEWARE_FEE2)/(CASE WHEN SUM(TAB.RS2)=0 THEN 1 ELSE SUM(TAB.RS2) END),2) RENJUN2,
+			             ROUND(SUM(TAB.PEOPLEWARE_FEE3)/(CASE WHEN SUM(TAB.RS3)=0 THEN 1 ELSE SUM(TAB.RS3) END),2) RENJUN3,
+			             ROUND(SUM(TAB.PEOPLEWARE_FEE4)/(CASE WHEN SUM(TAB.RS4)=0 THEN 1 ELSE SUM(TAB.RS4) END),2) RENJUN4,
+			             SUM(PEOPLEWARE_FEE1)PEOPLEWARE_FEE1,
+			             SUM(PEOPLEWARE_FEE2)PEOPLEWARE_FEE2,
+			             SUM(PEOPLEWARE_FEE3)PEOPLEWARE_FEE3,
+			             SUM(PEOPLEWARE_FEE4)PEOPLEWARE_FEE4                         
+			       FROM (
+						  SELECT SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR#-100 THEN NVL( PA.DESERVE_BASIC_WAGE, 0) ELSE 0 END) PEOPLEWARE_FEE1,
+					             SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR# THEN NVL( PA.DESERVE_BASIC_WAGE, 0) ELSE 0 END) PEOPLEWARE_FEE2,
+					             SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE3,
+					             SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE4,
+					             
+					             (SELECT COUNT(*) FROM PA_SUMMARY_C04 P WHERE  P.PERSON_ID =  HE.PERSON_ID AND P.PA_MONTH =#PA_MONTH:VARCHAR#-100)RS1,
+					             (SELECT COUNT(*) FROM PA_SUMMARY_C04 P WHERE  P.PERSON_ID =  HE.PERSON_ID AND P.PA_MONTH =#PA_MONTH:VARCHAR#)RS2,
+					             (SELECT COUNT(*) FROM PA_SUMMARY_C04 P WHERE  P.PERSON_ID =  HE.PERSON_ID AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM'))RS3,
+					             (SELECT COUNT(*) FROM PA_SUMMARY_C04 P WHERE  P.PERSON_ID =  HE.PERSON_ID AND TO_DATE(P.PA_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM'))RS4
+					              
+					  FROM PA_SUMMARY_C04 PA, HR_EMPLOYEE HE
+					 WHERE HE.PERSON_ID = PA.PERSON_ID
+					   AND HE.EMP_TYPE_CODE = '3943'
+					GROUP BY HE.PERSON_ID)TAB
+					
+						)A
+		]]>
+	</select>
+	
+	<select id="getGongSiZongJiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+	        SELECT A.*,
+			       ROUND(A.PEOPLEWARE_FEE1/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                           AND PA.START_MONTH = #PA_MONTH:VARCHAR#-100
+			                                           AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100) T),2) FUDANLV1,
+			       ROUND(A.PEOPLEWARE_FEE2/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                           AND PA.START_MONTH = #PA_MONTH:VARCHAR#
+			                                           AND PA.END_MONTH = #PA_MONTH:VARCHAR#) T),2) FUDANLV2,
+			       ROUND(A.PEOPLEWARE_FEE3/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                   		   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')
+			                                   		   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')) T),2) FUDANLV3,
+			       ROUND(A.PEOPLEWARE_FEE4/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                   		   AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')
+			                                   		   AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) T),2) FUDANLV4
+			
+			  FROM (
+			        SELECT SUM(TAB.PEOPLEWARE_FEE1)PEOPLEWARE_FEE1,
+			               SUM(TAB.PEOPLEWARE_FEE2)PEOPLEWARE_FEE2,
+			               SUM(TAB.PEOPLEWARE_FEE3)PEOPLEWARE_FEE3,
+			               SUM(TAB.PEOPLEWARE_FEE4)PEOPLEWARE_FEE4,TAB.EMP_TYPE_CODE
+			          FROM (
+			                SELECT SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR#-100 THEN NVL( PA.DESERVE_BASIC_WAGE, 0) ELSE 0 END) PEOPLEWARE_FEE1,
+			                       SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR# THEN NVL( PA.DESERVE_BASIC_WAGE, 0) ELSE 0 END) PEOPLEWARE_FEE2,
+			                       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE3,
+			                       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE4,
+			                       EMP_TYPE_CODE
+			                  FROM PA_SUMMARY_C04 PA
+			                  WHERE EMP_TYPE_CODE IS NOT NULL
+			                  AND   EMP_TYPE_CODE <> '3943'
+			                  GROUP BY EMP_TYPE_CODE
+			                  ) TAB GROUP BY EMP_TYPE_CODE)A
+		]]>
+	</select>
+	
+	<select id="getGongSiZongJiRenShuList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+	        SELECT COUNT(*) RS, EMP_TYPE_CODE,PA_MONTH
+			  FROM PA_SUMMARY_C04 PA
+			 WHERE EMP_TYPE_CODE IS NOT NULL
+			   AND EMP_TYPE_CODE <> '3943'
+			   AND PA_MONTH = #PA_MONTH:VARCHAR#-100
+			 GROUP BY EMP_TYPE_CODE,PA_MONTH
+			UNION ALL
+			SELECT COUNT(*), EMP_TYPE_CODE,PA_MONTH
+			  FROM PA_SUMMARY_C04 PA
+			 WHERE EMP_TYPE_CODE IS NOT NULL
+			   AND EMP_TYPE_CODE <> '3943'
+			   AND PA_MONTH = #PA_MONTH:VARCHAR#
+			 GROUP BY EMP_TYPE_CODE,PA_MONTH
+			UNION ALL
+			SELECT COUNT(*), EMP_TYPE_CODE,'HEJI1'
+			  FROM PA_SUMMARY_C04 PA
+			 WHERE EMP_TYPE_CODE IS NOT NULL
+			   AND EMP_TYPE_CODE <> '3943'
+			   AND TO_DATE(PA.PA_MONTH, 'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND
+			       TO_DATE(#PA_MONTH:VARCHAR#-100, 'YYYYMM')
+			 GROUP BY EMP_TYPE_CODE
+			UNION ALL
+			SELECT COUNT(*), EMP_TYPE_CODE,'HEJI2'
+			  FROM PA_SUMMARY_C04 PA
+			 WHERE EMP_TYPE_CODE IS NOT NULL
+			   AND EMP_TYPE_CODE <> '3943'
+			   AND TO_DATE(PA.PA_MONTH, 'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND
+			       TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM')
+			 GROUP BY EMP_TYPE_CODE    
+		]]>
+	</select>
+	
+	<select id="getGongSiZongJiXiaoJiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+	        SELECT A.*,
+			       ROUND(A.PEOPLEWARE_FEE1/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                           AND PA.START_MONTH = #PA_MONTH:VARCHAR#-100
+			                                           AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100) T),2) FUDANLV1,
+			       ROUND(A.PEOPLEWARE_FEE2/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                           AND PA.START_MONTH = #PA_MONTH:VARCHAR#
+			                                           AND PA.END_MONTH = #PA_MONTH:VARCHAR#) T),2) FUDANLV2,
+			       ROUND(A.PEOPLEWARE_FEE3/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                           AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') 
+			                                           AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')) T),2) FUDANLV3,
+			       ROUND(A.PEOPLEWARE_FEE4/(SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN 1 ELSE SUM(NVL(T.RETURN_VALUE1,0)) END
+			                                  FROM (SELECT PA.RETURN_VALUE RETURN_VALUE1
+			                                          FROM PA_PARAM_DATA_OTHER PA
+			                                         WHERE PA.CPNY_ID = 'C04'
+			                                           AND PA.PARAM_NO = '47'
+			                                           AND TO_DATE(PA.START_MONTH,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') 
+			                                           AND TO_DATE(PA.END_MONTH,'YYYYMM')  BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) T),2) FUDANLV4
+			
+			  FROM (
+			        SELECT SUM(TAB.PEOPLEWARE_FEE1)PEOPLEWARE_FEE1,
+			               SUM(TAB.PEOPLEWARE_FEE2)PEOPLEWARE_FEE2,
+			               SUM(TAB.PEOPLEWARE_FEE3)PEOPLEWARE_FEE3,
+			               SUM(TAB.PEOPLEWARE_FEE4)PEOPLEWARE_FEE4
+			          FROM (
+			                SELECT SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR#-100 THEN NVL( PA.DESERVE_BASIC_WAGE, 0) ELSE 0 END) PEOPLEWARE_FEE1,
+			                       SUM(CASE WHEN PA.PA_MONTH =#PA_MONTH:VARCHAR# THEN NVL( PA.DESERVE_BASIC_WAGE, 0) ELSE 0 END) PEOPLEWARE_FEE2,
+			                       SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE3,
+				       				SUM(CASE WHEN TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN NVL(PA.PEOPLEWARE_FEE, 0) ELSE 0 END) PEOPLEWARE_FEE4,
+			                       EMP_TYPE_CODE
+			                  FROM PA_SUMMARY_C04 PA
+			                  WHERE EMP_TYPE_CODE IS NOT NULL
+			                  AND   EMP_TYPE_CODE <> '3943'
+			                  ) TAB )A  
+		]]>
+	</select>
+	
+	<select id="getXiaoShouJinEList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+	        SELECT CASE WHEN COUNT(T.RETURN_VALUE1) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END RETURN_VALUE1,
+			       CASE WHEN COUNT(T.RETURN_VALUE2) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END RETURN_VALUE2,
+			       CASE WHEN COUNT(T.RETURN_VALUE3) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END RETURN_VALUE3,
+			       CASE WHEN COUNT(T.RETURN_VALUE4) = 0 THEN '1' ELSE MAX(T.RETURN_VALUE1) END RETURN_VALUE4
+			FROM (SELECT CASE WHEN PA.START_MONTH = #PA_MONTH:VARCHAR#-100 AND PA.END_MONTH = #PA_MONTH:VARCHAR#-100 THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE1,
+			             CASE WHEN PA.START_MONTH = #PA_MONTH:VARCHAR# AND PA.END_MONTH = #PA_MONTH:VARCHAR# THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE2,
+			             CASE WHEN PA.START_MONTH BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM')  AND PA.END_MONTH BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#-100,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#-100,'YYYYMM') THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE3,
+			             CASE WHEN PA.START_MONTH BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')  AND PA.END_MONTH BETWEEN TO_DATE(SUBSTR(#PA_MONTH:VARCHAR#,0,4) || '01' ,'YYYYMM') AND TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM') THEN PA.RETURN_VALUE ELSE '0' END RETURN_VALUE4
+			        FROM PA_PARAM_DATA_OTHER PA
+			       WHERE PA.CPNY_ID = 'C04'
+			         AND PA.PARAM_NO = '47'
+			   )T
+		]]>
+	</select>
+	
+</sqlMap>
+	

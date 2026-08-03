@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.company">
+
+	<select id="getCompanyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT C.CPNY_NO,
+			       C.CPNY_ID,
+			       C.CPNY_LOCATION,
+			       C.CPNY_ADDR,
+			       C.CPNY_POSTALCODE,
+			       C.CPNY_INTRO,
+			       C.CPNY_HISTORY,
+			       C.CPNY_WEB_ADDR,
+			       C.CPNY_TEL_NO,
+			       C.CPNY_FAX_NO,
+			       C.ORDERNO,
+			       C.ACTIVITY,
+                   C.GGS_YN,
+			       TO_CHAR(C.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       C.CREATED_BY,
+			       G.CONTENT CONTENT
+			  FROM HR_COMPANY C, SY_GLOBAL_NAME G
+			 WHERE C.CPNY_NO = G.NO(+)
+			   AND G.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND C.ACTIVITY = '1'
+		]]>
+		<isNotEmpty prepend="AND" property="CONTENT">
+			<![CDATA[
+			 	G.CONTENT LIKE '%' || #CONTENT:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+			 	C.CPNY_NO = #NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		 
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY TO_NUMBER(CPNY_NO)
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getCompanyItemAllList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT C.CPNY_NO,
+			       C.CPNY_ID,
+			       C.CPNY_LOCATION,
+			       C.CPNY_ADDR,
+			       C.CPNY_POSTALCODE,
+			       C.CPNY_INTRO,
+			       C.CPNY_HISTORY,
+			       C.CPNY_WEB_ADDR,
+			       C.CPNY_TEL_NO,
+			       C.CPNY_FAX_NO,
+			       C.ORDERNO,
+			       TO_CHAR(C.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       C.CREATED_BY,
+			       C.CPNY_ID CONTENT
+			  FROM HR_COMPANY C
+			 WHERE 1=1
+		]]>	
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 		  C.ACTIVITY = #ACTIVITY:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	
+	<select id="getCompanyItemAllListHome" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT C.CPNY_NO,
+			       C.CPNY_ID,
+			       C.CPNY_LOCATION,
+			       C.CPNY_ADDR,
+			       C.CPNY_POSTALCODE,
+			       C.CPNY_INTRO,
+			       C.CPNY_HISTORY,
+			       C.CPNY_WEB_ADDR,
+			       C.CPNY_TEL_NO,
+			       C.CPNY_FAX_NO,
+			       C.ORDERNO,
+			       TO_CHAR(C.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       C.CREATED_BY,
+			       C.CPNY_ID CONTENT
+			  FROM HR_COMPANY C
+			 WHERE C.ACTIVITY = 1
+		]]>	
+	</select>
+	
+	<select id="getRoleID"    parameterClass="linkMap" resultClass="string">
+	<![CDATA[
+	
+		  select CASE
+         WHEN MAX(TO_NUMBER(ROLE_ID)) >=
+              to_number(to_char(sysdate, 'yyyymmdd') || '001') THEN
+          to_char(MAX(TO_NUMBER(ROLE_ID)) + 1)
+         else
+           to_char(sysdate, 'yyyymmdd') || '001'
+       end
+  from sy_role
+	]]>
+	</select>
+	<select id="getCompanyListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_COMPANY T,SY_GLOBAL_NAME G
+			  WHERE T.CPNY_NO=G.NO(+) 
+			 AND G.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>	  
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			 	T.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="CONTENT">
+			<![CDATA[
+			 	G.CONTENT LIKE '%' || #CONTENT:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+	</select>
+	
+    <select id="isCnpyIdExsit" parameterClass="linkMap"
+		resultClass="int">          
+		<![CDATA[  
+			  SELECT  COUNT(*) FROM HR_COMPANY WHERE CPNY_ID=#CPNY_ID:VARCHAR#                 
+			]]>
+	</select>
+	
+	<insert id="InsertCompany" parameterClass="linkMap">
+		<![CDATA[
+		 INSERT INTO HR_COMPANY(
+							   CPNY_NO,
+						       CPNY_ID,
+					           CPNY_LOCATION, 
+			     	           CPNY_ADDR,               
+					           CPNY_POSTALCODE,
+			     	           CPNY_INTRO,
+			     	           CPNY_HISTORY,
+			     	           CPNY_WEB_ADDR,
+			     	           CPNY_TEL_NO,
+			     	           CPNY_FAX_NO,
+							   CREATE_DATE,
+							   CREATED_BY ,
+							   ACTIVITY,
+			                   OPERATION_ID,
+			                   GGS_YN
+		 					) 
+							 VALUES(
+							   #NO:VARCHAR#,   
+						       #CPNY_ID:VARCHAR#,
+					           #CPNY_LOCATION#, 
+					           #CPNY_ADDR#,               
+					           #CPNY_POSTALCODE#,
+			     	           #CPNY_INTRO#,
+			     	           #CPNY_HISTORY#,
+			     	           #CPNY_WEB_ADDR#,
+			     	           #CPNY_TEL_NO#,
+			     	           #CPNY_FAX_NO#, 
+							   SYSDATE,
+							   #CREATED_BY:VARCHAR#,
+							   #ACTIVITY:NUMERIC#,
+			                   #OPERATION_ID#,
+			                   #GGS_YN#
+							 )
+	]]>
+	</insert>
+
+	<update id="UpdateCompany" parameterClass="linkMap">
+		<![CDATA[  
+			   UPDATE HR_COMPANY 
+				         SET   CPNY_ID=#CPNY_ID:VARCHAR#,
+				               CPNY_LOCATION=#CPNY_LOCATION:VARCHAR#,
+			     	           CPNY_ADDR=#CPNY_ADDR:VARCHAR#, 
+			     	           CPNY_INTRO=#CPNY_INTRO:VARCHAR#,
+			     	           CPNY_HISTORY=#CPNY_HISTORY:VARCHAR#,
+			     	           CPNY_WEB_ADDR=#CPNY_WEB_ADDR:VARCHAR#,
+			     	           CPNY_TEL_NO=#CPNY_TEL_NO:VARCHAR#,
+			     	           CPNY_FAX_NO=#CPNY_FAX_NO:VARCHAR#,
+							   UPDATE_DATE=SYSDATE,
+							   UPDATED_BY=#UPDATED_BY:VARCHAR#,
+			     	           ACTIVITY=#ACTIVITY#,
+							   OPERATION_ID=#OPERATION_ID#,
+							   GGS_YN=#GGS_YN#
+				   WHERE CPNY_NO = #CPNY_NO:VARCHAR#             
+			]]>
+	</update>  
+	
+	 
+
+	<delete id="deleteCompany" parameterClass="linkMap">
+		<![CDATA[
+			   delete from hr_company where CPNY_NO=#NO:VARCHAR#          
+			]]>
+	</delete>   
+	
+	<select id="getHrOpeationList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.OPERATION_NO,
+				       T.OPERATION_ID,
+				       n.content OPERATION_NAME,
+				       T.CURRENCY_NO,
+				       T.CURRENCY_ID,
+				       T.LANGUAGE,
+				       T.OPERATION_CODE_NO
+				  FROM HR_OPERATION T,SY_GLOBAL_NAME N
+				 WHERE T.ACTIVITY = 1
+				   AND T.OPERATION_NO = N.NO(+)
+				   AND N.LANGUAGE = #interLanguage#
+		]]>		
+	</select>
+	
+	
+	<select id="getCompanyBouns" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT g.CPNY_ID
+			  FROM pa_annual_bonus_formula G
+		]]>	
+	</select>
+	<select id="getCompanyYuti" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		select Y.CPNY_ID from hr_company  y where y.activity='1'
+		]]>	
+	</select>
+</sqlMap>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="is.insuranceNumber">
+	  <!-- 
+     获取保险基数数据
+     -->        
+	<select id="getInstanceNumList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		SELECT T.PA_BEN_BASE_SEQ,
+		GET_DEPT_NAME(D.DEPTNO,'zh') DEPTNAME,
+		E.EMPID,
+		E.LOCAL_NAME
+		CHINESENAME,
+		CHANGER_IDNO(P.IDCARD_NO) IDCARD_NO,
+		GET_GLOBAL_NAME(P.REG_TYPE_CODE,'zh') AS REG_TYPE_CODE_NAME,
+		C1.CONTENT AS POST_COEF_NAME,
+		C2.CONTENT AS STATUS_CODE_NAME,
+		TO_CHAR(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED1,
+		TO_CHAR(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED,
+		TO_CHAR(E.DATE_LEFT,'yyyy-mm-dd') AS DATE_LEFT,
+		CHANGER_IDNO(T.SOCIAL_NO) SOCIAL_NO,
+		T.PAY_SALARY,
+		T.AVG_SALARY,
+		T.IMP_TYPE,
+		T.DATE_TYPE,
+		T.ERROR_REMARK
+		FROM PA_BEN_BASE T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT D,
+		SY_GLOBAL_NAME C1,
+		SY_GLOBAL_NAME C2
+		WHERE T.EMPID = E.EMPID
+		AND E.PERSON_ID = P.PERSON_ID(+)
+		AND E.DEPTNO = D.DEPTNO(+)
+		AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		and e.cpny_id='C02'
+	</select>
+   <!-- 获取checkList -->
+    <select id="getInstanceBaseNumCheckList" parameterClass="linkMap" resultClass="linkMap">
+		SELECT T.TYPE,
+		S.CONTENT, T.VALUE
+		FROM T_PA_BENHS_CHECK T, SY_GLOBAL_NAME S
+		WHERE
+		T.TYPE = S.NO
+		ORDER BY T.TYPE
+	</select>
+	
+	<!--点击修改出现可修改文本(不修改而返回) -->
+	<update id="backInstanceBaseNumUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BEN_BASE
+			      SET ALLOW_UPDATE = ''
+			     WHERE ALLOW_UPDATE = 'Y'
+			  ]]>
+	</update>
+	<!-- 记录的删除 -->
+	<delete id="deleteDataFromInstanceBase">
+		<![CDATA[
+				DELETE FROM PA_BENHS_BASE T
+				  WHERE T.IMP_TYPE = 'N'
+		]]>
+	</delete>
+	
+	<!--
+	生成新的内容 
+	-->
+	<insert id="copyDataInstanceBase" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BEN_BASE
+			  (PA_BENHS_BASE_SEQ,
+			   EMPID,
+			   SOCIAL_NO,
+			   AVG_SALARY,
+			   PAY_SALARY,
+			   SOCIAL_STATUS,
+			   IMP_TYPE,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  (SELECT PA_BENHS_BASE_SEQ.NEXTVAL,
+			          T.EMPID,
+			          T.SOCIAL_NO,
+			          T.AVG_SALARY,
+			          T.AVG_SALARY,
+			          T.SOCIAL_STATUS,
+			          'N',
+			          SYSDATE,
+			          #adminID#,
+			          1
+			     FROM PA_BEN_MANAGE T,HR_EMPLOYEE E
+ 				WHERE TO_CHAR(T.CREATE_DATE, 'yyyymm') =  #pabDate#
+ 				  AND T.EMPID = E.EMPID
+			      AND T.EMPID NOT IN(SELECT EMPID FROM PA_BEN_BASE B)
+			    ]]>
+		<isNotEmpty prepend="AND" property="leftDate">
+				    <![CDATA[
+						(E.DATE_LEFT IS NULL
+				      OR (E.DATE_LEFT IS NOT NULL AND E.DATE_LEFT >= TO_DATE(#leftDate:DATE#,'YYYY-MM-DD')))
+				]]>
+		</isNotEmpty>
+					<![CDATA[
+			      )
+			]]>
+	</insert>
+
+   <select id="getInsuranceBaseCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		SELECT  count(*) 
+		FROM PA_BEN_BASE T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT D,
+		SY_GLOBAL_NAME C1,
+		SY_GLOBAL_NAME C2
+		WHERE T.EMPID = E.EMPID
+		AND E.PERSON_ID = P.PERSON_ID(+)
+		AND E.DEPTNO = D.DEPTNO(+)
+		AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		and e.cpny_id='C02'
+		]]>	  
+		
+	</select>
+	<delete id="deleteInstanceaseManagement" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_BASE T WHERE T.PA_BEN_BASE_SEQ=#id# 
+			  ]]>
+	</delete>
+	<!-- 
+	修改保险基数
+	 -->
+	<update id="allowInstanceBaseNumUpdate" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BEN_BASE
+			      SET ALLOW_UPDATE = 'Y'
+				WHERE PA_BEN_BASE_SEQ in ( $ids$ )
+			  ]]>
+	</update>
+	<select id="getupdateInstanceBaseManagement" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		SELECT GET_DEPT_NAME(D.DEPTNO,'zh')
+		DEPTNAME,
+		e.Person_Id,
+		e.empid EMPID,
+		E.Local_Name CHINESENAME,
+		P.IDCARD_NO,
+		GET_GLOBAL_NAME(P.REG_TYPE_CODE,'zh') AS
+		REG_TYPE_CODE_NAME,
+		C1.Content AS POST_COEF_NAME,
+		C2.Content AS
+		STATUS_CODE_NAME,
+		to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS
+		DATE_STARTED1,
+		to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED,
+		to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		T.SOCIAL_NO,
+		T.PAY_SALARY,
+		T.AVG_SALARY,
+		T.IMP_TYPE,
+		T.DATE_TYPE,
+		T.ERROR_REMARK
+		FROM
+		PA_BENHS_BASE T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT D,
+		sy_global_name C1,
+		sy_global_name C2
+		WHERE T.Person_Id = E.Person_Id
+		AND
+		E.Person_Id = P.Person_Id(+)
+		AND E.DEPTNO = D.DEPTNO
+		AND E.POST_NO =
+		C1.NO(+)
+		AND E.STATUS_CODE = C2.NO(+)
+		AND T.ALLOW_UPDATE = 'Y'
+		and
+		c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		ORDER BY E.DEPTNO, T.Person_Id ASC
+	</select>
+	<!-- 
+	
+	保存保险基数
+	 -->
+	<update id="editInstanceBaseManagement" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BEN_BASE
+			      SET AVG_SALARY = #avgSalary#,
+			      	  ALLOW_UPDATE = ''
+				WHERE PERSON_ID = #empID#
+			  ]]>
+	</update>
+</sqlMap>

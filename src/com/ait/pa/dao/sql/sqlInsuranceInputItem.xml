@@ -1,0 +1,3861 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.insuranceInputItem">
+
+	<sql id="getInsuranceInputItemParamListCondition">
+	
+		<isEmpty prepend="" property="PARAM_NO">
+			<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+				<![CDATA[
+			 		  T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="ALIAS_NAME">
+			<![CDATA[
+		 		 SY3.CONTENT LIKE '%' || #ALIAS_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_FLAG">
+			<![CDATA[
+		 		  T.APPLY_FLAG = 'Y'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[
+		 		IPI.PARAM_ID = #PARAM_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+		 		  SY3.CONTENT LIKE '%' || #PARAM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+
+	</sql>
+	
+	<select id="getInsuranceInputItemParamList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       T.PARAM_ITEM_NO,
+			       SY0.CONTENT          AS CPNY_NAME,
+			       T.DISTINCT_FIELD,
+			       T.DISTINCT_FIELD_2ND,
+			       SY1.CONTENT          DISTINCT_FIELD_NAME,
+			       SY2.CONTENT          DISTINCT_FIELD_2ND_NAME,
+			       T.DEFAULT_VAL,
+			       SY3.CONTENT          ALIAS_NAME,
+			       IPI.PARAM_ID,
+			       T.CPNY_ID,
+			       T.APPLY_FLAG,
+			       T.ACTIVITY,
+			       GET_ITEM_GLAG(IPI.PARAM_ID,T.CPNY_ID) ITEM_FLAG,
+           		   GET_ITEM_NUMBER(IPI.PARAM_ID,T.CPNY_ID) ITEM_NUMBER
+			  FROM IS_PARAM_ITEM_PARAM T,
+			  	   IS_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+
+		<include refid="getInsuranceInputItemParamListCondition" />
+
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 		  T.ACTIVITY = #ACTIVITY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.ORDERNO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputItemParamCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			     FROM IS_PARAM_ITEM_PARAM T,
+			  	   IS_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<include refid="getInsuranceInputItemParamListCondition" />
+		
+	</select>
+
+	<insert id="addInsuranceInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_ITEM_PARAM
+				(
+					PARAM_NO,
+					PARAM_ITEM_NO,
+					DISTINCT_FIELD,
+					DISTINCT_FIELD_2ND,
+					CPNY_ID,
+					DEFAULT_VAL,
+					APPLY_FLAG,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY,
+					ORDERNO
+				)
+			VALUES(
+					IS_PARAM_ITEM_PARAM_SEQ.NEXTVAL,
+					#PARAM_ITEM_NO:VARCHAR#,
+					#DISTINCT_FIELD:VARCHAR#,
+					#DISTINCT_FIELD_2ND:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					#DEFAULT_VAL:VARCHAR#,
+					#APPLY_FLAG:VARCHAR#,
+					#ACTIVITY:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					(SELECT NVL(MAX(ORDERNO),0)+1 FROM IS_PARAM_ITEM_PARAM)
+				)
+		]]>
+	</insert>
+
+	<update id="updateInsuranceInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_ITEM_PARAM SET
+					DISTINCT_FIELD = #DISTINCT_FIELD:NUMERIC#,
+					DISTINCT_FIELD_2ND = #DISTINCT_FIELD_2ND:NUMERIC#,
+					CPNY_ID = #CPNY_ID:VARCHAR#,
+					DEFAULT_VAL = #DEFAULT_VAL:VARCHAR#,
+					APPLY_FLAG = #APPLY_FLAG:VARCHAR#,
+					ACTIVITY = #ACTIVITY:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+					
+		]]>
+	</update>
+
+	<select id="checkDeleteInsuranceInputParamItemInfo"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT (SELECT COUNT(*) FROM PA_INSURANCE_PARAM_DATA WHERE PARAM_NO = #PARAM_NO:NUMERIC#) +
+			       (SELECT COUNT(*)
+			          FROM USER_TAB_COLS
+			         WHERE TABLE_NAME = 'PA_INSURANCE_HISTORY'
+			           AND COLUMN_NAME = #PARAM_ID:VARCHAR#) AS A
+			  FROM DUAL
+		]]>
+	</select>
+
+	<delete id="deleteInsuranceInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_PARAM_ITEM_PARAM WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	
+	<sql id="getInsuranceInputItemListCondition">
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_ITEM_NO = #PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+		 		  SY.CONTENT LIKE '%' || #PARAM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.PARAM_ITEM_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	
+	</sql>
+	
+	 <!--保险维护:输入项目库,输入项目参数(添加) 公用 -->
+	<select id="getInsuranceInputItemList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_ITEM_NO PARAM_NO,
+			       T.PARAM_ID,
+			       SY.CONTENT      PARAM_NAME,
+			       T.DATA_TYPE,
+			       T.DESCR
+			  FROM IS_PARAM_ITEM T, SY_GLOBAL_NAME SY
+			 WHERE T.PARAM_ITEM_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   ]]>
+			 <isNotEmpty prepend="" property="INSURANCE_INPUT_PARAM">  
+				<![CDATA[
+				 	AND T.PARAM_ITEM_NO NOT IN (SELECT PARAM_ITEM_NO  FROM IS_PARAM_ITEM_PARAM P WHERE P.CPNY_ID=#interCpnyID:VARCHAR# )
+				]]>
+			</isNotEmpty>
+	
+		<include refid="getInsuranceInputItemListCondition"/>
+		
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.PARAM_ITEM_NO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputItemCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM IS_PARAM_ITEM T, SY_GLOBAL_NAME SY
+			 WHERE T.PARAM_ITEM_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<include refid="getInsuranceInputItemListCondition"/>
+		
+	</select>
+
+	<select id="getIsParamDataList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT DISTINCT IL.FIELD_VALUE,
+			        SY.CONTENT      FIELD_NAME
+			   FROM IS_PARAM_DATA_LIST IL,
+			        SY_GLOBAL_NAME     SY
+			  WHERE IL.FIELD_VALUE = SY.NO(+)
+			    AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField1:VARCHAR# 
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getIsParamDataIsCpnyIdList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  IL.FIELD_VALUE,
+			        SY.CONTENT      FIELD_NAME
+			   FROM IS_PARAM_DATA_LIST IL,
+			 		HR_COMPANY HR,
+			        SY_GLOBAL_NAME     SY
+			  WHERE IL.FIELD_VALUE = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY.NO(+)
+			    AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField1:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getIsParamDataIsDeptNoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT DISTINCT IL.FIELD_VALUE,
+			        SY.CONTENT      FIELD_NAME
+			   FROM BN_PARAM_DATA_LIST IL,
+			        HR_DEPARTMENT_NAME     SY
+			  WHERE IL.FIELD_VALUE = SY.DEPTNO(+)
+			    AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField2:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getIsParamDataTwoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT DISTINCT IL.FIELD_VALUE,
+			        SY1.CONTENT     FIELD_NAME
+			   FROM IS_PARAM_DATA_LIST IL,
+			        SY_GLOBAL_NAME     SY1
+			  WHERE IL.FIELD_VALUE = SY1.NO(+)
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND IL.FIELD_ID = #distinctField2:VARCHAR# 	 
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  IL.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="checkAddInsuranceInputItemInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM IS_PARAM_ITEM T
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="PARAM_ID">
+				<![CDATA[
+			 		  PARAM_ID = #PARAM_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  PARAM_ITEM_NO <> #NO:NUMERIC#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+
+	<select id="checkAddInsuranceInputItemParamInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM IS_PARAM_ITEM_PARAM T
+			  WHERE T.PARAM_ITEM_NO = #PARAM_ITEM_NO:VARCHAR#
+			  AND   T.CPNY_ID = #CPNY_ID:VARCHAR# 
+		]]>
+
+	</select>
+
+	<insert id="addInsuranceInputItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_ITEM
+				(
+					PARAM_ITEM_NO,
+					DATA_TYPE,
+					DESCR,
+					ORDER_NO,
+					PARAM_ID,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY
+				)
+			VALUES(
+					#NO:VARCHAR#,
+					#DATA_TYPE:VARCHAR#,
+					#DESCR:VARCHAR#,
+					(SELECT NVL(MAX(ORDER_NO),0)+1 FROM IS_PARAM_ITEM),
+					#PARAM_ID:VARCHAR#,
+					1,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#
+					
+				)
+		]]>
+	</insert>
+
+	<update id="updateInsuranceInputItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_ITEM SET
+					DATA_TYPE = #DATA_TYPE:VARCHAR#,
+					DESCR = #DESCR:VARCHAR#,
+					PARAM_ID = #PARAM_ID:VARCHAR# 
+			WHERE PARAM_ITEM_NO = #NO:VARCHAR#
+					
+		]]>
+	</update>
+<!-- 	修改mapping关系 ，
+		孙加是否配送财务		
+-->
+	<update id="updateIsInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_ITEM_PARAM T
+			 SET T.MAP_CODE           = #MAP_CODE:VARCHAR#,
+			 	 T.TO_FINANCE_FLAG	  = #TO_FINANCE_FLAG:VARCHAR#,
+			     T.UPDATE_DATE        = SYSDATE,
+			     T.UPDATED_BY         = #UPDATED_BY:VARCHAR#
+		   WHERE T.CPNY_ID            = #CPNY_ID:VARCHAR#
+			 AND T.PARAM_ITEM_NO      = #ITEM_NO#   
+		]]>
+	</update>
+
+	<select id="checkDeleteInsuranceInputItemInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT (SELECT COUNT(*) FROM IS_PARAM_ITEM_PARAM WHERE PARAM_ITEM_NO = #NO:NUMERIC#)+
+					(SELECT COUNT(*) FROM IS_PARAM_DATA WHERE PARAM_NO = 
+					(SELECT PARAM_NO FROM IS_PARAM_ITEM_PARAM WHERE PARAM_ITEM_NO = #NO:NUMERIC#)) +
+					(SELECT COUNT(*)
+				        FROM USER_TAB_COLUMNS
+				       WHERE TABLE_NAME LIKE '%' || #TABLE_NAME:VARCHAR# || '%'
+				       AND COLUMN_NAME = (SELECT PARAM_ID FROM IS_PARAM_ITEM WHERE PARAM_ITEM_NO  = #NO:NUMERIC#) )
+			        AS A
+			  FROM DUAL
+		]]>
+	</select>
+	
+	<select id="checkDeleteInsuranceInputItemParamInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT (SELECT COUNT(*) FROM IS_PARAM_DATA WHERE PARAM_NO = #PARAM_NO:NUMERIC#) +
+					(SELECT COUNT(*) FROM IS_PARAM_DATA_OTHER WHERE PARAM_NO = #PARAM_NO:NUMERIC#)
+			        AS A
+			  FROM DUAL
+		]]>
+	</select>
+
+	<delete id="deleteInsuranceInputItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_PARAM_ITEM WHERE PARAM_ITEM_NO = #NO:NUMERIC#
+		]]>
+	</delete>
+
+	<select id="getDistinctFieldList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			SELECT  T.ID,
+					T.DISTINCT_FIELD, 
+			        SY.CONTENT FIELD_NAME, 
+			        T.TABLE_NAME
+			  FROM PA_DISTINCT_LIST T, SY_GLOBAL_NAME SY
+			 WHERE T.ID = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.TABLE_NAME = #TABLE_NAME:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			 ]]>
+
+		<isNotEmpty prepend="AND" property="PARAM_FLAG">
+			<![CDATA[
+		 		  T.PARAM_FLAG = #PARAM_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			   ORDER BY T.ORDERNO,T.ID
+		]]>
+	</select>
+
+	<sql id="getInsuranceInputItemDataListCondition">
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_DATA_NO">
+			<![CDATA[
+		 		  T.PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</sql>
+
+	<insert id="addInsuranceInputItemOtherDataInfo" parameterClass="linkMap">
+		<![CDATA[
+		
+			INSERT INTO IS_PARAM_DATA_OTHER (
+				        PARAM_DATA_NO,
+				        PARAM_NO,
+				        FIELD1_VALUE,
+				        RETURN_VALUE,
+				        FIELD2_VALUE,
+				        CPNY_ID,
+				        ACTIVITY,
+				        CREATE_DATE,
+				        CREATED_BY,
+				        Start_Month,
+				        END_MONTH,
+				        REMARK
+				      )
+				      VALUES(
+				        IS_PARAM_DATA_SEQ.NEXTVAL,
+				        #PARAM_NO:NUMERIC#,
+				        #FIELD1_VALUE:VARCHAR#,
+				        #RETURN_VALUE:VARCHAR#,
+				        #FIELD2_VALUE:VARCHAR#,
+				        #CPNY_ID:VARCHAR#,
+				        1,
+				        SYSDATE,
+				        #CREATED_BY:VARCHAR#,
+				        #START_MONTH:VARCHAR#,
+				        #END_MONTH:VARCHAR#,
+				        #REMARK:VARCHAR#
+				      )    
+		]]>
+	</insert>
+
+	<insert id="addInsuranceInputItemDataInfo" parameterClass="linkMap">
+		<![CDATA[
+		
+			INSERT INTO IS_PARAM_DATA (
+				        PARAM_DATA_NO,
+				        PARAM_NO,
+				        PERSON_ID,
+				        RETURN_VALUE,
+				        CPNY_ID,
+				        ACTIVITY,
+				        CREATE_DATE,
+				        CREATED_BY,
+				        Start_Month,
+				        END_MONTH,
+				        REMARK
+				      )
+				      VALUES(
+				        IS_PARAM_DATA_SEQ.NEXTVAL,
+				        #PARAM_NO:NUMERIC#,
+				        #PERSON_ID:VARCHAR#,
+				        #RETURN_VALUE:VARCHAR#,
+				        #CPNY_ID:VARCHAR#,
+				        1,
+				        SYSDATE,
+				        #CREATED_BY:VARCHAR#,
+				        #START_MONTH:VARCHAR#,
+				        #END_MONTH:VARCHAR#,
+				        #REMARK:VARCHAR#
+				      )    
+		]]>
+	</insert>
+
+	<select id="checkDeleteInsuranceInputItemDataInfo"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+            SELECT COUNT(T.PARAM_DATA_NO) FROM IS_PARAM_DATA T 
+            WHERE T.PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</select>
+
+	<select id="checkDeleteInsuranceInputItemDataInfoType"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+            SELECT COUNT(T.PARAM_DATA_NO) FROM IS_PARAM_DATA_OTHER T 
+            WHERE T.PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</select>
+
+	<delete id="deleteInsuranceInputItemDataInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_PARAM_DATA WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</delete>
+
+	<delete id="deleteInsuranceInputItemDataInfoType"
+		parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_PARAM_DATA_OTHER WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#
+		]]>
+	</delete>
+
+	<update id="updateInsuranceInputItemDataInfo" parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE IS_PARAM_DATA SET
+					RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+					START_MONTH = #START_MONTH:VARCHAR#,
+					END_MONTH = #END_MONTH:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					REMARK = #REMARK:VARCHAR#		 
+			WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#	
+					
+		]]>
+	</update>
+	
+	<update id="updateInsuranceInputItemDataInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE IS_PARAM_DATA SET
+					END_MONTH = CASE
+			                     WHEN END_MONTH <
+			                          TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM') THEN
+			                      END_MONTH
+			                     ELSE
+			                      TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM')
+			                   END,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+		 	 WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM IS_PARAM_DATA
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                            AND PERSON_ID = #PERSON_ID:VARCHAR#
+        ]]>
+        <isNotEmpty prepend="AND" property="NOT_PARAM_DATA_NO">
+			<![CDATA[
+		 		  PARAM_DATA_NO <> #NOT_PARAM_DATA_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+        <![CDATA[
+					)
+				WHERE RN = 1)
+		]]>
+	</update>
+	
+	<update id="updateInsuranceInputItemDataOtherInfoMonth"
+		parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE IS_PARAM_DATA_OTHER SET
+					END_MONTH = TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM'),
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			 WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM IS_PARAM_DATA_OTHER
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                            AND FIELD1_VALUE = #FIELD1_VALUE:VARCHAR#
+                            AND CPNY_ID = #CPNY_ID:VARCHAR#				
+		]]>
+		
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE = #FIELD2_VALUE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+			<![CDATA[
+				)
+                  WHERE RN = 1)				 
+			]]>
+	</update>
+
+	<update id="updateInsuranceInputItemDataInfoOther"
+		parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE IS_PARAM_DATA_OTHER SET
+					RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+					START_MONTH = #START_MONTH:VARCHAR#,
+					END_MONTH = #END_MONTH:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					REMARK = #REMARK:VARCHAR#		 
+			WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#	
+					
+		]]>
+	</update>
+
+	<procedure id="createAddInsuranceInputItemDataInfo"
+		parameterClass="linkMap">
+		{call IS_PARAM_LIST_P(#PARAM_NO:VARCHAR#)}
+	</procedure>
+
+	<procedure id="createInsuranceInputItemInfo" parameterClass="linkMap">
+		{call PR_INSURANCE_PARAM_INITIAL(#PA_MONTH:VARCHAR#)}
+	</procedure>
+	
+	<sql id="getInsuranceInputItemDataListDistinctFieldIsEmpidCondition">
+	
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				<![CDATA[
+			 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+			    ]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+				<![CDATA[
+			 		  EXISTS(
+			 		  	SELECT *
+						  FROM PA_SUPERVISOR_INFO
+						 WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+						   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+			 		  )
+			    ]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO 
+               AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#))
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IS_MONTH">
+			<![CDATA[
+				T.START_MONTH IS NOT NULL
+                AND LENGTH(TRIM(T.START_MONTH))=6
+                AND (T.END_MONTH IS NULL OR LENGTH(TRIM(T.END_MONTH)) = 6)
+                AND ADD_MONTHS(TO_DATE(#IS_MONTH:VARCHAR#, 'YYYYMM'), -0) BETWEEN
+                TO_DATE(TRIM(T.START_MONTH), 'YYYYMM') AND
+                NVL(TO_DATE(T.END_MONTH, 'YYYYMM'), TO_DATE('204912','YYYYMM'))
+			 ]]>
+		</isNotEmpty>
+	</sql>
+	<select id="getInsuranceInputItemDataListDistinctFieldIsEmpid" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			 SELECT HE.EMPID,
+			        HE.LOCAL_NAME,
+			        HD.CONTENT     DEPT_NAME,
+			        SY0.CONTENT    POST_GRADE_NAME,
+			        SY1.CONTENT    STATUS_NAME,
+			        SY2.CONTENT    CPNY_NAME,
+			        T.START_MONTH,
+			        T.END_MONTH,
+			        T.RETURN_VALUE,
+			        T.PARAM_DATA_NO,
+			        T.REMARK,
+			        GET_GLOBAL_NAME( HE.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE
+			   FROM IS_PARAM_DATA      T,
+			        HR_EMPLOYEE        HE,
+			        HR_COMPANY         HR,
+			        HR_DEPARTMENT_NAME HD,
+			        SY_GLOBAL_NAME     SY0,
+			        SY_GLOBAL_NAME     SY1,
+			        SY_GLOBAL_NAME     SY2
+			  WHERE T.PERSON_ID = HE.PERSON_ID
+			    AND HE.DEPTNO = HD.DEPTNO(+)
+			    AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.POST_GRADE_NO = SY0.NO(+)
+			    AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.STATUS_CODE = SY1.NO(+)
+			    AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.CPNY_ID = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY2.NO(+)
+			    AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsEmpidCondition"/>
+		
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by T.PERSON_ID,T.START_MONTH DESC
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getInsuranceInputItemDataListDistinctFieldIsEmpidCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 SELECT COUNT(0)
+			   FROM IS_PARAM_DATA      T,
+			        HR_EMPLOYEE        HE,
+			        HR_COMPANY         HR,
+			        HR_DEPARTMENT_NAME HD,
+			        SY_GLOBAL_NAME     SY0,
+			        SY_GLOBAL_NAME     SY1,
+			        SY_GLOBAL_NAME     SY2
+			  WHERE T.PERSON_ID = HE.PERSON_ID
+			    AND HE.DEPTNO = HD.DEPTNO(+)
+			    AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+			    AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.POST_GRADE_NO = SY0.NO(+)
+			    AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.STATUS_CODE = SY1.NO(+)
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.CPNY_ID = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY2.NO(+)
+			    AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsEmpidCondition"/>
+
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY T.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<sql id="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition">
+		<isNotEmpty prepend="AND" property="IS_MONTH">
+			<![CDATA[
+                LENGTH(A.START_MONTH)=6 
+                AND ((A.END_MONTH IS NOT NULL AND LENGTH(A.END_MONTH)=6) OR A.END_MONTH IS NULL )
+                AND TO_CHAR(ADD_MONTHS(TO_DATE(#IS_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+                    BETWEEN A.START_MONTH AND NVL(A.END_MONTH,'204912')                     
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  A.PARAM_NO = #PARAM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  A.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="C01_ADMINID">
+			<![CDATA[
+				A.FIELD1_VALUE IN
+		       (SELECT DISTINCT T.DEPT_DISTINGUISH_NO
+		          FROM HR_DEPARTMENT T
+		         WHERE T.DEPTNO IN (SELECT DEPTNO
+		                              FROM PA_SUPERVISOR_INFO T
+		                             WHERE T.PERSON_ID = #C01_ADMINID:VARCHAR#)
+		        UNION
+		        SELECT DISTINCT T.DEPT_DISTINGUISH_NO
+		          FROM PA_SUPERVISOR_DEPT_DISTINGUISH T
+		         WHERE T.PERSON_ID = #C01_ADMINID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	</sql>
+
+	<select id="getInsuranceInputItemDataListDistinctFieldIsNotEmpid"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       SY1.CONTENT     FIELD1_NAME,
+			       SY2.CONTENT     FIELD2_NAME,
+			       A.RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK
+			  FROM IS_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				     FROM  IS_PARAM_DATA_OTHER A,
+					       HR_COMPANY          HR,
+					       SY_GLOBAL_NAME      SY1,
+					       SY_GLOBAL_NAME      SY2,
+					       SY_GLOBAL_NAME      SY3
+					 WHERE A.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY3.NO(+)
+					   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND A.FIELD1_VALUE = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND A.FIELD2_VALUE = SY2.NO(+)
+					   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#		
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+
+	<select id="getInsuranceInputItemDataListDistinctFieldIsCpnyId"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       SY1.CONTENT     FIELD1_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK
+			  FROM IS_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY1,
+			       HR_COMPANY          HC,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = HC.CPNY_ID
+			   AND HC.CPNY_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputItemDataListDistinctFieldIsCpnyIdCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM IS_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY1,
+			       HR_COMPANY          HC,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = HC.CPNY_ID
+			   AND HC.CPNY_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+	
+	<select id="getInsuranceInputItemDataListDistinctFieldIsDeptNo"
+		parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       get_global_name(A.FIELD1_VALUE,#interLanguage:VARCHAR#)     FIELD1_NAME,
+			       SY2.CONTENT     FIELD2_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK
+			  FROM IS_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       hr_department_name      SY2,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.deptno(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputItemDataListDistinctFieldIsDeptNoCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM IS_PARAM_DATA_OTHER A,
+			       HR_COMPANY          HR,
+			       hr_department_name      SY2,
+			       SY_GLOBAL_NAME      SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.deptno(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>
+		
+		<include refid="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+
+
+
+	<sql id="getInsuranceInputItemDataPersonListCondition">
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		   ( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		    A.PERSON_ID =  #PERSON_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS (SELECT *
+                FROM HR_DEPARTMENT
+               WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO
+               START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+              CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.Parent_Dept_No)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+				<![CDATA[
+			 		  EXISTS(
+			 		  	SELECT *
+						  FROM PA_SUPERVISOR_INFO
+						 WHERE PA_SUPERVISOR_INFO.DEPTNO = A.DEPTNO
+						   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+			 		  )
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		 A.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</sql>
+
+	<select id="getInsuranceInputItemDataPersonList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT A.LOCAL_NAME,
+					       B.CONTENT DEPT_NAME,
+					       A.PERSON_ID,
+					       A.EMPID,
+					       B.DEPTNO,
+					       A.CPNY_ID
+					  FROM HR_EMPLOYEE        A,
+					       HR_DEPARTMENT_NAME B
+					 WHERE A.DEPTNO = B.DEPTNO(+)
+					   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+ 
+		]]>
+		<include refid="getInsuranceInputItemDataPersonListCondition" />
+
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by A.DEPTNO,
+                         A.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getInsuranceInputItemDataPersonListCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+					SELECT COUNT(0)
+					    FROM HR_EMPLOYEE        A,
+					       HR_DEPARTMENT_NAME B
+					 WHERE A.DEPTNO = B.DEPTNO(+)
+					   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<include refid="getInsuranceInputItemDataPersonListCondition" />
+	</select>
+
+	<select id="getAddInsurancePersonalInputList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+					SELECT A.PARAM_DATA_NO,
+					       BP.PARAM_NO,
+					       BP.DISTINCT_FIELD,
+					       BP.DISTINCT_FIELD_2ND,
+					       BP.PARAM_ITEM_NO,
+					       NVL(A.START_MONTH, TO_CHAR(SYSDATE, 'YYYYMM')) AS START_MONTH,
+					       NVL(A.END_MONTH, TO_CHAR(SYSDATE, 'YYYYMM')) AS END_MONTH,
+					       NVL(A.RETURN_VALUE, 0) AS RETURN_VALUE,
+					       BP.CPNY_ID,
+					       SY0.CONTENT ITEM_NAME,
+					       SY1.CONTENT CPNY_NAME,
+			       		   A.REMARK
+					  FROM IS_PARAM_ITEM_PARAM BP,
+					       IS_PARAM_DATA       A,
+					       HR_COMPANY          HR,
+					       SY_GLOBAL_NAME      SY0,
+					       SY_GLOBAL_NAME      SY1
+					 WHERE BP.PARAM_NO = A.PARAM_NO(+)
+					   AND BP.PARAM_ITEM_NO = SY0.NO(+)
+					   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.DISTINCT_FIELD = 'PERSON_ID'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  BP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  A.PERSON_ID(+) = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by A.PARAM_DATA_NO
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getAddInsurancePersonalInputListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+					SELECT COUNT(0)
+					     FROM IS_PARAM_ITEM_PARAM BP,
+					       IS_PARAM_DATA       A,
+					       HR_COMPANY          HR,
+					       SY_GLOBAL_NAME      SY0,
+					       SY_GLOBAL_NAME      SY1
+					 WHERE BP.PARAM_NO = A.PARAM_NO(+)
+					   AND BP.PARAM_ITEM_NO = SY0.NO(+)
+					   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND BP.DISTINCT_FIELD = 'PERSON_ID'
+
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  BP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 		  A.PERSON_ID(+) = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by A.PARAM_DATA_NO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="checkUpdateInsuranceInputItemDataPersonInfo"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+                 SELECT COUNT(T.PARAM_DATA_NO) FROM IS_PARAM_DATA T 
+                 WHERE T.PARAM_NO = #PARAM_NO:NUMERIC#
+                 AND   T.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+
+
+	<insert id="addInsuranceInputItemDataPersonInfo" parameterClass="linkMap">
+		<![CDATA[		
+			INSERT INTO IS_PARAM_DATA
+			(
+			   PARAM_DATA_NO,
+			   PARAM_NO,
+			   CPNY_ID,
+			   START_MONTH,
+			   END_MONTH,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY,
+			   RETURN_VALUE,
+			   PERSON_ID,
+			   REMARK
+			 )
+			VALUES(
+				IS_PARAM_DATA_SEQ.NEXTVAL,
+				#PARAM_NO:NUMERIC#,
+				#CPNY_ID:VARCHAR#,
+				#START_MONTH:VARCHAR#,
+				#END_MONTH:VARCHAR#,
+				SYSDATE,
+				#CREATED_BY:VARCHAR#,
+				1,
+				#RETURN_VALUE:VARCHAR#,
+				#PERSON_ID:VARCHAR#,
+			    #REMARK:VARCHAR#
+			)		
+		]]>
+	</insert>
+
+	<update id="updateInsuranceInputItemDataPersonInfo"
+		parameterClass="linkMap">
+		<![CDATA[		
+			UPDATE IS_PARAM_DATA SET
+					RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+					START_MONTH = #START_MONTH:VARCHAR#,
+					END_MONTH = #END_MONTH:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					REMARK = #REMARK:VARCHAR#		 
+			WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#					
+		]]>
+	</update>
+	
+	<delete id="deleteInsuranceInputItemDataPersonInfo"
+		parameterClass="linkMap" >
+		<![CDATA[
+				 DELETE FROM  IS_PARAM_DATA T 
+		                 WHERE T.PARAM_NO = #PARAM_NO:NUMERIC#
+		                 AND   T.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	
+	<!-- 2013-09-01 lufeng add -->
+	<sql id="getInsuranceInputItemDataApplyListCondition">
+		<isEmpty prepend="" property="PARAM_NO">
+			<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+				<![CDATA[
+			 		  T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="ALIAS_NAME">
+			<![CDATA[
+		 		 SY3.CONTENT LIKE '%' || #ALIAS_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[
+		 		IPI.PARAM_ID = #PARAM_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+		 		  SY3.CONTENT LIKE '%' || #PARAM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<sql id="getInsuranceInputApplyDataListDistinctFieldIsEmpidCondition">
+		<isNotEmpty prepend="AND" property="APPLY_STATUS">
+				<![CDATA[
+			 		  T.APPLY_STATUS = #APPLY_STATUS:NUMERIC#
+			    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+				<![CDATA[
+			 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+			    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_START_DATE">
+			<![CDATA[
+		 		  TO_CHAR(T.APPLY_DATE,'YYYY-MM-DD') >= #APPLY_START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_END_DATE">
+			<![CDATA[
+		 		  TO_CHAR(T.APPLY_DATE,'YYYY-MM-DD') <= #APPLY_END_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+		 		  T.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_STATUS">
+		    <isEqual property="AFFIRM_STATUS" compareValue="1">
+				<![CDATA[
+			 		T.AFFIRM_FLAG = 0
+			    ]]>
+		    </isEqual>
+		    <isEqual property="AFFIRM_STATUS" compareValue="2">
+				<![CDATA[
+					T.AFFIRM_FLAG > 0
+			    ]]>
+		    </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+				<![CDATA[
+			 		  EXISTS(
+			 		  	SELECT *
+						  FROM PA_SUPERVISOR_INFO
+						 WHERE PA_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+						   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+			 		  )
+			    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<sql id="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition">
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  A.PARAM_NO = #PARAM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_STATUS">
+			<![CDATA[
+		 		  A.APPLY_STATUS = #APPLY_STATUS:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  A.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_START_DATE">
+			<![CDATA[
+		 		  TO_CHAR(A.APPLY_DATE,'YYYY-MM-DD') >= #APPLY_START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_END_DATE">
+			<![CDATA[
+		 		  TO_CHAR(A.APPLY_DATE,'YYYY-MM-DD') <= #APPLY_END_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+		 		  A.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="C01_ADMINID">
+			<![CDATA[
+		 		  A.FIELD1_VALUE IN (
+		 		  SELECT DISTINCT T.DEPT_DISTINGUISH_NO FROM HR_DEPARTMENT T WHERE T.DEPTNO IN 
+		 		  (SELECT DEPTNO FROM PA_SUPERVISOR_INFO T WHERE T.PERSON_ID = #C01_ADMINID:VARCHAR#)
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getInsuranceInputItemDataApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       T.PARAM_ITEM_NO,
+			       SY0.CONTENT          AS CPNY_NAME,
+			       T.DISTINCT_FIELD,
+			       T.DISTINCT_FIELD_2ND,
+			       SY1.CONTENT          DISTINCT_FIELD_NAME,
+			       SY2.CONTENT          DISTINCT_FIELD_2ND_NAME,
+			       T.DEFAULT_VAL,
+			       SY3.CONTENT          ALIAS_NAME,
+			       IPI.PARAM_ID,
+			       T.CPNY_ID,
+			       GET_ITEM_ID(IPI.PARAM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)  ISCHECKED
+			  FROM IS_PARAM_ITEM_PARAM T,
+			  	   IS_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND T.APPLY_FLAG = 'Y'
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+
+		<include refid="getInsuranceInputItemDataApplyListCondition" />
+
+
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.ORDERNO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputItemDataApplyCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			     FROM IS_PARAM_ITEM_PARAM T,
+			  	   IS_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND T.APPLY_FLAG = 'Y'
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<include refid="getInsuranceInputItemDataApplyListCondition" />
+		
+	</select>
+	
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsEmpid" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			 SELECT HE.EMPID,
+			        HE.LOCAL_NAME,
+			        HD.CONTENT     DEPT_NAME,
+			        SY0.CONTENT    POST_GRADE_NAME,
+			        SY1.CONTENT    STATUS_NAME,
+			        SY2.CONTENT    CPNY_NAME,
+			        T.START_MONTH,
+			        T.END_MONTH,
+			        T.RETURN_VALUE,
+			        T.PARAM_DATA_NO,
+			        T.PARAM_NO,
+			        T.CPNY_ID,
+			        T.REMARK,
+			        to_char(T.APPLY_DATE,'YYYY-MM-DD') APPLY_DATE,
+			        T.URL_STR,
+			        T.AFFIRM_FLAG
+			   FROM IS_PARAM_DATA_APPLY      T,
+			        HR_EMPLOYEE              HE,
+			        HR_COMPANY               HR,
+			        HR_DEPARTMENT_NAME       HD,
+			        SY_GLOBAL_NAME           SY0,
+			        SY_GLOBAL_NAME           SY1,
+			        SY_GLOBAL_NAME           SY2
+			  WHERE T.PERSON_ID = HE.PERSON_ID
+			    AND HE.DEPTNO = HD.DEPTNO(+)
+			    AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.POST_GRADE_NO = SY0.NO(+)
+			    AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.STATUS_CODE = SY1.NO(+)
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.CPNY_ID = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY2.NO(+)
+			    AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsEmpidCondition"/>
+		
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				order by T.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsEmpidCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 SELECT COUNT(0)
+			   FROM IS_PARAM_DATA_APPLY      T,
+			        HR_EMPLOYEE              HE,
+			        HR_COMPANY               HR,
+			        HR_DEPARTMENT_NAME       HD,
+			        SY_GLOBAL_NAME           SY0,
+			        SY_GLOBAL_NAME           SY1,
+			        SY_GLOBAL_NAME           SY2
+			  WHERE T.PERSON_ID = HE.PERSON_ID
+			    AND HE.DEPTNO = HD.DEPTNO(+)
+			    AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.POST_GRADE_NO = SY0.NO(+)
+			    AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND HE.STATUS_CODE = SY1.NO(+)
+			    AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.CPNY_ID = HR.CPNY_ID
+			    AND HR.CPNY_NO = SY2.NO(+)
+			    AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsEmpidCondition"/>
+
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				  ORDER BY T.PERSON_ID
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsNotEmpid" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       SY1.CONTENT     FIELD1_NAME,
+			       SY2.CONTENT     FIELD2_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK,
+			       to_char(A.APPLY_DATE,'YYYY-MM-DD') APPLY_DATE,
+			       A.URL_STR,
+			       A.AFFIRM_FLAG
+			  FROM IS_PARAM_DATA_OTHER_APPLY  A,
+			       HR_COMPANY                 HR,
+			       SY_GLOBAL_NAME             SY1,
+			       SY_GLOBAL_NAME             SY2,
+			       SY_GLOBAL_NAME             SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+		
+		
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				     FROM  IS_PARAM_DATA_OTHER_APPLY  A,
+					       HR_COMPANY                 HR,
+					       SY_GLOBAL_NAME             SY1,
+					       SY_GLOBAL_NAME             SY2,
+					       SY_GLOBAL_NAME             SY3
+					 WHERE A.CPNY_ID = HR.CPNY_ID
+					   AND HR.CPNY_NO = SY3.NO(+)
+					   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND A.FIELD1_VALUE = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND A.FIELD2_VALUE = SY2.NO(+)
+					   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#		
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsCpnyId" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       SY1.CONTENT     FIELD1_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK,
+			       to_char(A.APPLY_DATE,'YYYY-MM-DD') APPLY_DATE,
+			       A.URL_STR,
+			       A.AFFIRM_FLAG
+			  FROM IS_PARAM_DATA_OTHER_APPLY   A,
+			       HR_COMPANY                  HR,
+			       SY_GLOBAL_NAME              SY1,
+			       HR_COMPANY                  HC,
+			       SY_GLOBAL_NAME              SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = HC.CPNY_ID
+			   AND HC.CPNY_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsCpnyIdCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM IS_PARAM_DATA_OTHER_APPLY   A,
+			       HR_COMPANY                      HR,
+			       SY_GLOBAL_NAME                  SY1,
+			       HR_COMPANY                      HC,
+			       SY_GLOBAL_NAME                  SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = HC.CPNY_ID
+			   AND HC.CPNY_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+	
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsDeptNo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.PARAM_DATA_NO,
+			       A.PARAM_NO,
+			       A.FIELD1_VALUE,
+			       A.FIELD2_VALUE,
+			       get_global_name(A.FIELD1_VALUE,#interLanguage:VARCHAR#)     FIELD1_NAME,
+			       SY2.CONTENT     FIELD2_NAME,
+			       RETURN_VALUE,
+			       A.START_MONTH,
+			       A.END_MONTH,
+			       A.CPNY_ID,
+			       SY3.CONTENT     CPNY_NAME,
+			       A.REMARK,
+			       to_char(A.APPLY_DATE,'YYYY-MM-DD') APPLY_DATE,
+			       A.URL_STR,
+			       A.AFFIRM_FLAG
+			  FROM IS_PARAM_DATA_OTHER_APPLY  A,
+			       HR_COMPANY                 HR,
+			       hr_department_name         SY2,
+			       SY_GLOBAL_NAME             SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.deptno(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY FIELD1_VALUE, FIELD2_VALUE
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getInsuranceInputApplyDataListDistinctFieldIsDeptNoCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				  FROM IS_PARAM_DATA_OTHER_APPLY   A,
+			       HR_COMPANY                      HR,
+			       hr_department_name              SY2,
+			       SY_GLOBAL_NAME                  SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.deptno(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#	
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+		
+	</select>
+	
+	<insert id="addInsuranceInputItemDataApply" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_DATA_APPLY (
+                PARAM_DATA_NO,
+                PARAM_NO,
+                PERSON_ID,
+                RETURN_VALUE,
+                CPNY_ID,
+                
+                START_MONTH,
+                END_MONTH,
+                ACTIVITY,
+                APPLY_DATE,
+                URL_STR,
+                FILE_NO,
+                AFFIRM_FLAG,
+                APPLY_STATUS,
+                
+                CREATE_DATE,
+                CREATED_BY,
+                REMARK
+              )
+              VALUES(
+                #PARAM_DATA_NO:NUMERIC#,
+                #PARAM_NO:NUMERIC#,
+                #PERSON_ID:VARCHAR#,
+                #RETURN_VALUE:VARCHAR#,
+                #CPNY_ID:VARCHAR#,
+                
+                #START_MONTH:VARCHAR#,
+                #END_MONTH:VARCHAR#,
+                1,
+                SYSDATE,
+                #URL_STR:VARCHAR#,
+                #FILE_NO:VARCHAR#,
+                0,
+                0,
+                
+                SYSDATE,
+                #CREATED_BY:VARCHAR#,
+                #REMARK:VARCHAR#
+              )
+		]]>
+	</insert>
+	
+	<update id="updateInsuranceInputItemDataApplyMonth" parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE IS_PARAM_DATA_APPLY SET
+					END_MONTH = TO_CHAR(to_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM'),
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+		 	 WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM IS_PARAM_DATA_APPLY
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                            AND PERSON_ID = #PERSON_ID:VARCHAR#)
+                  WHERE RN = 1)		 		
+		]]>
+	</update>
+	
+	<insert id="addInsuranceInputItemOtherDataApply" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_DATA_OTHER_APPLY (
+                PARAM_DATA_NO,
+                PARAM_NO,
+                FIELD1_VALUE,
+                FIELD2_VALUE,
+                RETURN_VALUE,
+                
+                CPNY_ID,
+                START_MONTH,
+                END_MONTH,
+               
+                URL_STR,
+                FILE_NO,
+                AFFIRM_FLAG,
+                APPLY_STATUS,
+                APPLY_DATE,
+                
+                ACTIVITY,
+                CREATE_DATE,
+                CREATED_BY,
+                REMARK
+              )
+              VALUES(
+                #PARAM_DATA_NO:NUMERIC#,
+                #PARAM_NO:NUMERIC#,
+                #FIELD1_VALUE:VARCHAR#,
+                #FIELD2_VALUE:VARCHAR#,
+                #RETURN_VALUE:VARCHAR#,
+                
+                #CPNY_ID:VARCHAR#,
+                #START_MONTH:VARCHAR#,
+                #END_MONTH:VARCHAR#,
+              
+                #URL_STR:VARCHAR#,
+                #FILE_NO:VARCHAR#,
+                0,
+                0,
+                SYSDATE,
+                
+                1,
+                SYSDATE,
+                #CREATED_BY:VARCHAR#,
+                #REMARK:VARCHAR#
+              )
+		]]>
+	</insert>
+	
+	<update id="updateInsuranceInputItemDataOtherApplyMonth" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_DATA_OTHER_APPLY SET
+					END_MONTH = TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM'),
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			 WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM IS_PARAM_DATA_OTHER_APPLY
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                            AND FIELD1_VALUE = #FIELD1_VALUE:VARCHAR#
+                            AND CPNY_ID = #CPNY_ID:VARCHAR#				
+		]]>
+		
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE = #FIELD2_VALUE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+		<![CDATA[
+			)
+                 WHERE RN = 1)				 
+		]]>
+	</update>
+	
+	<update id="updateInsApplyPersonDataFlag" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_DATA_APPLY
+			   SET AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#, AFFIRM_ID = #AFFIRM_ID:VARCHAR#, AFFIRM_DATE = SYSDATE
+			 WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateInsApplyPersonData" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_DATA
+			   SET END_MONTH   = TO_CHAR(TO_DATE((substr((SELECT MAX(START_MONTH)
+			                                               FROM IS_PARAM_DATA_APPLY
+			                                              WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#),
+			                                             1,
+			                                             4) || '-' ||
+			                                     substr((SELECT MAX(START_MONTH)
+			                                               FROM IS_PARAM_DATA_APPLY
+			                                              WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#),
+			                                             5,
+			                                             6) || '-01'),
+			                                     'YYYY-MM-DD') - 1,
+			                             'YYYYMM'),
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			 WHERE ROWID IN
+			       (SELECT ROWID
+			          FROM (SELECT ROWID, ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+			                  FROM IS_PARAM_DATA
+			                 WHERE PARAM_NO = (SELECT MAX(PARAM_NO)
+			                                     FROM IS_PARAM_DATA_APPLY
+			                                    WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#)
+			                   AND PERSON_ID = (SELECT MAX(PERSON_ID)
+			                                      FROM IS_PARAM_DATA_APPLY
+			                                     WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#))
+			         WHERE RN = 1)
+		]]>
+	</update>
+	
+	<insert id="insertInsApplyPersonData" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_DATA
+				  (PARAM_DATA_NO,
+				   PARAM_NO,
+				   PERSON_ID,
+				   RETURN_VALUE,
+				   CPNY_ID,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   START_MONTH,
+				   END_MONTH,
+				   REMARK)
+				  SELECT IS_PARAM_DATA_SEQ.NEXTVAL,
+				         PARAM_NO,
+				         PERSON_ID,
+				         RETURN_VALUE,
+				         CPNY_ID,
+				         ACTIVITY,
+				         sysdate,
+				         #CREATED_BY:VARCHAR#,
+				         START_MONTH,
+				         END_MONTH,
+				         REMARK
+				    FROM IS_PARAM_DATA_APPLY
+				   WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		]]>
+	</insert>
+	
+	<update id="updateInsApplyOtherDataFlag" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_DATA_OTHER_APPLY
+			   SET AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#, AFFIRM_ID = #AFFIRM_ID:VARCHAR#, AFFIRM_DATE = SYSDATE
+			 WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateInsApplyOtherData" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_DATA_OTHER
+			   SET END_MONTH   = TO_CHAR(TO_DATE((substr ((SELECT MAX(START_MONTH)
+			                                                FROM IS_PARAM_DATA_OTHER_APPLY
+			                                               WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#), 1, 4) || '-' ||
+			                                      substr ((SELECT MAX(START_MONTH)
+			                                                FROM IS_PARAM_DATA_OTHER_APPLY
+			                                               WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#), 5, 6) ||
+			                                      '-01'),
+			                                     'YYYY-MM-DD') - 1,
+			                             'YYYYMM'),
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			 WHERE ROWID IN
+			       (SELECT ROWID
+			          FROM (SELECT ROWID, ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+			                  FROM IS_PARAM_DATA_OTHER
+			                 WHERE PARAM_NO = (SELECT MAX(PARAM_NO)
+			                                     FROM IS_PARAM_DATA_OTHER_APPLY
+			                                    WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#)
+			                   AND FIELD1_VALUE =
+			                       (SELECT MAX(FIELD1_VALUE)
+			                          FROM IS_PARAM_DATA_OTHER_APPLY
+			                         WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#)
+			                   AND CPNY_ID = (SELECT MAX(CPNY_ID)
+			                                    FROM IS_PARAM_DATA_OTHER_APPLY
+			                                   WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#)
+			                   and FIELD2_VALUE =
+			                       (SELECT MAX(FIELD2_VALUE)
+			                          FROM IS_PARAM_DATA_OTHER_APPLY
+			                         WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#))
+			         WHERE RN = 1)
+		]]>
+	</update>
+	
+	<insert id="insertInsApplyOtherData" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_DATA_OTHER
+				  (PARAM_DATA_NO,
+				   PARAM_NO,
+				   FIELD1_VALUE,
+				   RETURN_VALUE,
+				   FIELD2_VALUE,
+				   CPNY_ID,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   Start_Month,
+				   END_MONTH,
+				   REMARK)
+				  SELECT IS_PARAM_DATA_SEQ.NEXTVAL,
+				         PARAM_NO,
+				         FIELD1_VALUE,
+				         RETURN_VALUE,
+				         FIELD2_VALUE,
+				         CPNY_ID,
+				         ACTIVITY,
+				         sysdate,
+				         #CREATED_BY:VARCHAR#,
+				         Start_Month,
+				         END_MONTH,
+				         REMARK
+				    FROM IS_PARAM_DATA_OTHER_APPLY
+				   WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		]]>
+	</insert>
+	
+	<delete id="deleteInsApplyPersonData" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM IS_PARAM_DATA_APPLY WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteInsApplyOtherData" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM IS_PARAM_DATA_OTHER_APPLY WHERE PARAM_DATA_NO = #PARAM_DATA_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 保险申请  有PERSON_ID -->
+	<update id="updateInsuranceApply" parameterClass="linkMap">
+	<![CDATA[
+	
+		UPDATE IS_PARAM_DATA_APPLY SET
+				APPLY_STATUS = 1,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY  = #UPDATED_BY:VARCHAR#
+		WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#	
+				
+	]]>
+	</update>
+	
+	<!-- 保险申请  无PERSON_ID -->
+	<update id="updateInsuranceApplyOther" parameterClass="linkMap">
+	<![CDATA[
+	
+		UPDATE IS_PARAM_DATA_OTHER_APPLY SET
+				APPLY_STATUS = 1,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY  = #UPDATED_BY:VARCHAR#
+		WHERE PARAM_DATA_NO = #PARAM_DATA_NO:NUMERIC#	
+				
+	]]>
+	</update>
+	
+	<select id="getInsuranceInputItemDataForApplyName" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       T.PARAM_ITEM_NO,
+			       SY0.CONTENT          AS CPNY_NAME,
+			       T.DISTINCT_FIELD,
+			       T.DISTINCT_FIELD_2ND,
+			       SY1.CONTENT          DISTINCT_FIELD_NAME,
+			       SY2.CONTENT          DISTINCT_FIELD_2ND_NAME,
+			       T.DEFAULT_VAL,
+			       SY3.CONTENT          ALIAS_NAME,
+			       IPI.PARAM_ID,
+			       T.CPNY_ID,
+			       T.APPLY_FLAG,
+			       GET_ITEM_ID(IPI.PARAM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)  ISCHECKED
+			  FROM IS_PARAM_ITEM_PARAM T,
+			  	   IS_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+
+		
+		
+		<isNotEmpty prepend="AND" property="ALIAS_NAME">
+			<![CDATA[
+		 		 SY3.CONTENT LIKE '%' || #ALIAS_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		
+		
+		<isNotEmpty prepend="AND" property="APPLY_FLAG">
+			<![CDATA[
+		 		  T.APPLY_FLAG = 'Y'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[
+		 		IPI.PARAM_ID = #PARAM_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+		 		  SY3.CONTENT LIKE '%' || #PARAM_NAME:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+
+
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.ORDERNO
+			]]>
+		</isEmpty>
+
+	</select>
+	
+	<!-- 根据申请项目查询出相同所在地不同法人的相同的需要申请的项目 -->
+	<select id="getUnifySuitCompanyListold" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT GET_GLOBAL_NAME(C.CPNY_NO, #interLanguage:VARCHAR#) || '-' ||
+				       GET_DEPT_NAME(H.DEPTNO, #interLanguage:VARCHAR#) COMPANY_NAME,
+				       PA.PARAM_NO,
+				       GET_GLOBAL_NAME(PA.PARAM_ITEM_NO, #interLanguage:VARCHAR#) APPLY_ITEM_NAME,
+				       GET_GLOBAL_NAME(PA1.ID, #interLanguage:VARCHAR#) DIFFERENTIATE_ITEM_ONE,
+				       GET_GLOBAL_NAME(PA2.ID, #interLanguage:VARCHAR#) DIFFERENTIATE_ITEM_TWO,
+				       PA.DEFAULT_VAL,
+               		   IPDO.START_MONTH,
+               		   IPDO.END_MONTH,
+               		   INF.APPLY_INFORM_MARK,
+               		   H.DEPTNO,
+               		   PA.CPNY_ID CPNDID
+				  FROM HR_DEPARTMENT       H,
+				       HR_COMPANY          C,
+				       IS_PARAM_ITEM_PARAM PA,
+				       IS_PARAM_ITEM       IPI,
+				       PA_DISTINCT_LIST    PA1,
+				       PA_DISTINCT_LIST    PA2,
+				       (SELECT * FROM ( SELECT 
+                 						ROW_NUMBER() OVER(PARTITION BY P.PARAM_NO ORDER BY P.START_MONTH DESC) RID,
+                						P.START_MONTH  ,P.PARAM_NO ,P.END_MONTH, P.CPNY_ID
+            							FROM IS_PARAM_DATA_OTHER P) T 
+            			WHERE RID<=1) IPDO,
+            			IS_APPLY_INFORM  INF
+				 WHERE C.CPNY_ID = H.CPNY_ID
+				 AND PA.CPNY_ID = H.CPNY_ID
+				 AND PA.APPLY_FLAG = 'Y'
+				 AND IPI.PARAM_ITEM_NO = PA.PARAM_ITEM_NO
+				 AND PA.CPNY_ID = PA1.CPNY_ID(+)
+				 AND PA.CPNY_ID = PA2.CPNY_ID(+)
+				 AND PA.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+				 AND PA.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+				 AND IPI.PARAM_ITEM_NO =
+				 (SELECT IPI.PARAM_ITEM_NO
+				    FROM IS_PARAM_ITEM IPI
+				   WHERE IPI.PARAM_ITEM_NO = (SELECT PA.PARAM_ITEM_NO
+				                                FROM IS_PARAM_ITEM_PARAM PA
+				                               WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+				                                 AND PA.APPLY_FLAG = 'Y'
+				                                 AND PA.PARAM_NO = #PARAM_NO:VARCHAR#))
+				 AND H.WORK_AREA IN (SELECT T.WORK_AREA
+				                   FROM HR_DEPARTMENT T
+				                  WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+				                  GROUP BY T.WORK_AREA)
+				 AND H.CPNY_ID <> #CPNY_ID:VARCHAR#
+				 AND IPDO.PARAM_NO=PA.PARAM_NO
+				 AND H.DEPTNO=INF.DEPTNO(+)
+				 order by H.DEPTNO
+		 ]]>
+	</select>
+	
+	
+	
+	<select id="getUnifySuitCompanyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			FROM (SELECT ROW_NUMBER() OVER(PARTITION BY IPDO.FIELD1_VALUE ORDER BY IPDO.START_MONTH DESC) RID,
+               		     GET_GLOBAL_NAME(HC.CPNY_NO, #interLanguage:VARCHAR#) || '-' ||
+			             GET_GLOBAL_NAME(IPDO.FIELD1_VALUE, #interLanguage:VARCHAR#) COMPANY_NAME,
+			             IPDO.PARAM_NO,
+			             IPDO.PARAM_DATA_NO PARAM_DATA_NO_OTHER,
+			             GET_GLOBAL_NAME(IPIP.PARAM_ITEM_NO, #interLanguage:VARCHAR#) APPLY_ITEM_NAME,
+			             GET_GLOBAL_NAME(IPDO.FIELD1_VALUE, #interLanguage:VARCHAR#) DIFFERENTIATE_ITEM_ONE,
+			             GET_GLOBAL_NAME(IPDO.FIELD2_VALUE, #interLanguage:VARCHAR#) DIFFERENTIATE_ITEM_TWO,
+			             IPDO.RETURN_VALUE DEFAULT_VAL,
+			             IPDO.START_MONTH,
+			             IPDO.END_MONTH,
+			             (SELECT MIN(DEPTNO)
+			              FROM HR_DEPARTMENT
+			              WHERE DEPT_DISTINGUISH_NO = IPDO.FIELD1_VALUE
+			              AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)) DEPTNO,
+			              HC.CPNY_ID CPNDID,
+			             (SELECT IAI.APPLY_INFORM_MARK FROM IS_APPLY_INFORM  IAI WHERE IAI.PARAM_DATA_NO_OTHER=IPDO.PARAM_DATA_NO) APPLY_INFORM_MARK
+			         FROM IS_PARAM_DATA_OTHER IPDO,
+			              HR_COMPANY          HC,
+			              IS_PARAM_ITEM_PARAM IPIP
+			        WHERE IPDO.CPNY_ID = HC.CPNY_ID
+			        AND IPDO.PARAM_NO = IPIP.PARAM_NO
+			        AND IPDO.FIELD1_VALUE IN
+			               (SELECT DISTINCT HD1.DEPT_DISTINGUISH_NO
+			                  FROM HR_DEPARTMENT HD1, HR_DEPARTMENT HD2
+			                 WHERE HD1.WORK_AREA = HD2.WORK_AREA
+			                   AND HD2.DEPT_DISTINGUISH_NO = #FIELD1_VALUE:VARCHAR#
+			                   AND HD1.DEPT_DISTINGUISH_NO <> #FIELD1_VALUE:VARCHAR#
+			                   AND (HD1.DATE_ENDED IS NULL OR HD1.DATE_ENDED > SYSDATE))
+			        AND IPDO.PARAM_NO IN
+			               (SELECT IP1.PARAM_NO
+			                  FROM IS_PARAM_ITEM_PARAM IP1, IS_PARAM_ITEM_PARAM IP2
+			                 WHERE IP1.PARAM_ITEM_NO = IP2.PARAM_ITEM_NO
+			                   AND IP2.PARAM_NO = #PARAM_NO:VARCHAR#)) T
+			WHERE RID <= 1
+			ORDER BY DIFFERENTIATE_ITEM_ONE, DIFFERENTIATE_ITEM_TWO
+		 ]]>
+	</select>
+	
+	
+	
+	<select id="getUnifySuitCompanyList2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT ROW_NUMBER() OVER(PARTITION BY IPDO.FIELD1_VALUE ORDER BY IPDO.START_MONTH DESC) RID,
+			               GET_GLOBAL_NAME(HC.CPNY_NO, #interLanguage:VARCHAR#) || '-' || IPDO.FIELD1_VALUE COMPANY_NAME,
+			               IPDO.PARAM_NO,
+			               IPDO.PARAM_DATA_NO PARAM_DATA_NO_OTHER,
+			               GET_GLOBAL_NAME(IPIP.PARAM_ITEM_NO, #interLanguage:VARCHAR#) APPLY_ITEM_NAME,
+			               IPDO.FIELD1_VALUE DIFFERENTIATE_ITEM_ONE,
+			               GET_GLOBAL_NAME(IPDO.FIELD2_VALUE, #interLanguage:VARCHAR#) DIFFERENTIATE_ITEM_TWO,
+			               IPDO.RETURN_VALUE DEFAULT_VAL,
+			               IPDO.START_MONTH,
+			               IPDO.END_MONTH,
+			               (SELECT MIN(DEPTNO)
+			                  FROM HR_DEPARTMENT
+			                 WHERE GET_GLOBAL_NAME(DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) =
+			                       IPDO.FIELD1_VALUE
+			                 AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)) DEPTNO,
+			               HC.CPNY_ID CPNDID,
+			                (SELECT IAI.APPLY_INFORM_MARK FROM IS_APPLY_INFORM  IAI WHERE IAI.PARAM_DATA_NO_OTHER=IPDO.PARAM_DATA_NO) APPLY_INFORM_MARK
+			          FROM IS_PARAM_DATA_OTHER IPDO,
+			               HR_COMPANY          HC,
+			               IS_PARAM_ITEM_PARAM IPIP
+			         WHERE IPDO.CPNY_ID = HC.CPNY_ID
+			           AND IPDO.PARAM_NO = IPIP.PARAM_NO
+			           AND IPDO.FIELD1_VALUE IN
+			               (SELECT DISTINCT GET_GLOBAL_NAME(HD1.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#)
+			                  FROM HR_DEPARTMENT HD1, HR_DEPARTMENT HD2
+			                 WHERE HD1.WORK_AREA = HD2.WORK_AREA
+			                   AND (HD1.DATE_ENDED IS NULL OR HD1.DATE_ENDED > SYSDATE)
+			                   AND GET_GLOBAL_NAME(HD2.DEPT_DISTINGUISH_NO,#interLanguage:VARCHAR#) = #FIELD1_VALUE:VARCHAR#
+			                   AND GET_GLOBAL_NAME(HD1.DEPT_DISTINGUISH_NO,#interLanguage:VARCHAR#) <> #FIELD1_VALUE:VARCHAR#)
+			           AND IPDO.PARAM_NO IN
+			               (SELECT IP1.PARAM_NO
+			                  FROM IS_PARAM_ITEM_PARAM IP1, IS_PARAM_ITEM_PARAM IP2
+			                 WHERE IP1.PARAM_ITEM_NO = IP2.PARAM_ITEM_NO
+			                   AND IP2.PARAM_NO = #PARAM_NO:VARCHAR#)) T
+			 WHERE RID <= 1
+			 ORDER BY DIFFERENTIATE_ITEM_ONE, DIFFERENTIATE_ITEM_TWO
+
+		 ]]>
+	</select>
+	
+	
+	<select id="getUnifySuitCompanyList3" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT ROW_NUMBER() OVER(PARTITION BY IPDO.FIELD2_VALUE ORDER BY IPDO.START_MONTH DESC) RID,
+			               GET_GLOBAL_NAME(HC.CPNY_NO, #INTERLANGUAGE:VARCHAR#) || '-' ||
+			               GET_GLOBAL_NAME(IPDO.FIELD2_VALUE, #INTERLANGUAGE:VARCHAR#) COMPANY_NAME,
+			               IPDO.PARAM_NO,
+			               IPDO.PARAM_DATA_NO PARAM_DATA_NO_OTHER,
+			               GET_GLOBAL_NAME(IPIP.PARAM_ITEM_NO, #INTERLANGUAGE:VARCHAR#) APPLY_ITEM_NAME,
+			               GET_GLOBAL_NAME(IPDO.FIELD1_VALUE, #INTERLANGUAGE:VARCHAR#) DIFFERENTIATE_ITEM_ONE,
+			               GET_GLOBAL_NAME(IPDO.FIELD2_VALUE, #INTERLANGUAGE:VARCHAR#) DIFFERENTIATE_ITEM_TWO,
+			               IPDO.RETURN_VALUE DEFAULT_VAL,
+			               IPDO.START_MONTH,
+			               IPDO.END_MONTH,
+			               (SELECT MIN(DEPTNO)
+			                  FROM HR_DEPARTMENT
+			                 WHERE DEPT_DISTINGUISH_NO = IPDO.FIELD2_VALUE
+			              	 AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)) DEPTNO,
+			               HC.CPNY_ID CPNDID,
+			               (SELECT IAI.APPLY_INFORM_MARK FROM IS_APPLY_INFORM  IAI WHERE IAI.PARAM_DATA_NO_OTHER=IPDO.PARAM_DATA_NO) APPLY_INFORM_MARK
+			          FROM IS_PARAM_DATA_OTHER IPDO,
+			               HR_COMPANY          HC,
+			               IS_PARAM_ITEM_PARAM IPIP
+			         WHERE IPDO.CPNY_ID = HC.CPNY_ID
+			           AND IPDO.PARAM_NO = IPIP.PARAM_NO
+			           AND IPDO.FIELD2_VALUE IN
+			               (SELECT DISTINCT HD1.DEPT_DISTINGUISH_NO
+			                  FROM HR_DEPARTMENT HD1, HR_DEPARTMENT HD2
+			                 WHERE HD1.WORK_AREA = HD2.WORK_AREA
+			                   AND HD2.DEPT_DISTINGUISH_NO = #FIELD2_VALUE:VARCHAR#
+			                   AND HD1.DEPT_DISTINGUISH_NO <> #FIELD2_VALUE:VARCHAR#
+			              	   AND (HD1.DATE_ENDED IS NULL OR HD1.DATE_ENDED > SYSDATE))
+			           AND IPDO.PARAM_NO IN
+			               (SELECT IP1.PARAM_NO
+			                  FROM IS_PARAM_ITEM_PARAM IP1, IS_PARAM_ITEM_PARAM IP2
+			                 WHERE IP1.PARAM_ITEM_NO = IP2.PARAM_ITEM_NO
+			                   AND IP2.PARAM_NO = #PARAM_NO:VARCHAR#)) T
+			 WHERE RID <= 1
+			 ORDER BY DIFFERENTIATE_ITEM_ONE, DIFFERENTIATE_ITEM_TWO
+
+		 ]]>
+	</select>
+	<select id="getUnifySuitCompanyList4" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT ROW_NUMBER() OVER(PARTITION BY IPDO.FIELD2_VALUE ORDER BY IPDO.START_MONTH DESC) RID,
+			               GET_GLOBAL_NAME(HC.CPNY_NO, #interLanguage:VARCHAR#) || '-' || IPDO.FIELD2_VALUE COMPANY_NAME,
+			               IPDO.PARAM_NO,
+			               IPDO.PARAM_DATA_NO PARAM_DATA_NO_OTHER,
+			               GET_GLOBAL_NAME(IPIP.PARAM_ITEM_NO, #interLanguage:VARCHAR#) APPLY_ITEM_NAME,
+			               GET_GLOBAL_NAME(IPDO.FIELD1_VALUE,#interLanguage:VARCHAR#) DIFFERENTIATE_ITEM_ONE,
+			               IPDO.FIELD2_VALUE DIFFERENTIATE_ITEM_TWO,
+			               IPDO.RETURN_VALUE DEFAULT_VAL,
+			               IPDO.START_MONTH,
+			               IPDO.END_MONTH,
+			               (SELECT MIN(DEPTNO)
+			                  FROM HR_DEPARTMENT
+			                 WHERE GET_GLOBAL_NAME(DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) =
+			                       IPDO.FIELD2_VALUE
+			              	 AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)) DEPTNO,
+			               HC.CPNY_ID CPNDID,
+			               (SELECT IAI.APPLY_INFORM_MARK FROM IS_APPLY_INFORM  IAI WHERE IAI.PARAM_DATA_NO_OTHER=IPDO.PARAM_DATA_NO) APPLY_INFORM_MARK
+			          FROM IS_PARAM_DATA_OTHER IPDO,
+			               HR_COMPANY          HC,
+			               IS_PARAM_ITEM_PARAM IPIP
+			         WHERE IPDO.CPNY_ID = HC.CPNY_ID
+			           AND IPDO.PARAM_NO = IPIP.PARAM_NO
+			           AND IPDO.FIELD2_VALUE IN
+			               (SELECT DISTINCT GET_GLOBAL_NAME(HD1.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#)
+			                  FROM HR_DEPARTMENT HD1, HR_DEPARTMENT HD2
+			                 WHERE HD1.WORK_AREA = HD2.WORK_AREA
+			              	   AND (HD1.DATE_ENDED IS NULL OR HD1.DATE_ENDED > SYSDATE)
+			                   AND GET_GLOBAL_NAME(HD2.DEPT_DISTINGUISH_NO,'') = #FIELD2_VALUE:VARCHAR#
+			                   AND GET_GLOBAL_NAME(HD1.DEPT_DISTINGUISH_NO,'') <> #FIELD2_VALUE:VARCHAR#)
+			           AND IPDO.PARAM_NO IN
+			               (SELECT IP1.PARAM_NO
+			                  FROM IS_PARAM_ITEM_PARAM IP1, IS_PARAM_ITEM_PARAM IP2
+			                 WHERE IP1.PARAM_ITEM_NO = IP2.PARAM_ITEM_NO
+			                   AND IP2.PARAM_NO = #PARAM_NO:VARCHAR#)) T
+			 WHERE RID <= 1
+			 ORDER BY DIFFERENTIATE_ITEM_ONE, DIFFERENTIATE_ITEM_TWO
+
+
+		 ]]>
+	</select>
+	
+	
+	<!-- 提前获取到申请信息的编号 用关联到附件字段 -->
+	<select id="getNextparamDataNo" resultClass="int" parameterClass="linkMap">
+		<![CDATA[
+             SELECT IS_PARAM_APPLY_SEQ.NEXTVAL PARAMDATANO FROM DUAL CONNECT BY LEVEL < 2 			           
+		]]>
+	</select>
+	
+	<!--保存申请的附件信息 -->
+	<insert id="insertAccessory" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_PARAM_APPLY_ACCESSORY
+				(
+					IS_PARAM_APPLY_ACCESSORY_NO,
+					PARAM_DATA_NO,
+					ACCESSORY_SITE,
+					ORIGINAL_NAME,
+					ACTIVITY,
+					CREATE_DATE,
+					CREATED_BY
+				)
+			VALUES(
+					IS_PARAM_APPLY_ACCESSORY_SEQ.NEXTVAL,
+					#PARAM_DATA_NO:VARCHAR#,
+					#ACCESSORY_SITE:VARCHAR#,
+					#ORIGINAL_NAME:VARCHAR#,
+					1,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#
+					)
+		]]>
+	</insert>
+	
+	<select id="getaccessoryList" resultClass="linkMap" parameterClass="linkMap">
+		<![CDATA[
+            SELECT P.ACCESSORY_SITE,
+			       P.ORIGINAL_NAME,
+			       P.IS_PARAM_APPLY_ACCESSORY_NO ACCESSORY_NO
+			  FROM IS_PARAM_APPLY_ACCESSORY P
+			 WHERE P.PARAM_DATA_NO 	=#PARAM_DATA_NO:VARCHAR#	           
+		]]>
+	</select>
+	<!-- 查询登陆用户是否拥有法人管理权限  123293 否则返回0 只有C02 HQ才有此权限 -->
+	<select id="getUserRolesGroupCnt"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+              SELECT COUNT(T.ROLE_GROUP_NO)
+			  FROM SY_ROLE_GROUP T,
+			       (SELECT S.ROLE_GROUP_NO
+			          FROM SY_USER_RELATION S
+			         WHERE S.USER_NO IN
+			               (SELECT U.USER_NO FROM SY_USER U WHERE U.PERSON_ID = #PERSON_ID:VARCHAR#)) C
+			   WHERE T.ROLE_GROUP_NO = 123293
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND C.ROLE_GROUP_NO = T.ROLE_GROUP_NO	           
+		]]>
+	</select>
+	
+	<!--  查找输入项目的NO和名称 只查询DISTINCT_FIELD='PERSON_ID' 并且  apply_flag 是不等于Y的数据 -->
+	<select id="getItemNameList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       SY3.CONTENT          ALIAS_NAME
+			FROM IS_PARAM_ITEM_PARAM T,
+			     SY_GLOBAL_NAME      SY3
+			WHERE  T.PARAM_ITEM_NO = SY3.NO(+)
+			AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			AND T.Distinct_Field='PERSON_ID'
+			AND (T.APPLY_FLAG='N' OR T.APPLY_FLAG IS NULL)
+			AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+			AND T.ACTIVITY=1
+		]]>
+	</select>
+	
+	<select id="getItemBatchImportList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+              HE.LOCAL_NAME,
+              HD.CONTENT     DEPT_NAME,    
+              SY2.CONTENT    CPNY_NAME,
+              T.START_MONTH,
+              T.END_MONTH,
+              T.RETURN_VALUE,
+              T.PARAM_DATA_NO,
+              T.PARAM_NO,
+              T.CPNY_ID,
+              T.REMARK,
+              SY3.CONTENT          ALIAS_NAME
+         FROM IS_PARAM_DATA      T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              IS_PARAM_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.PARAM_ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1查询所有包括不是批量导入的*/
+		]]>
+		
+		<!-- <include refid="getInsuranceInputApplyDataListDistinctFieldIsEmpidCondition"/> -->
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<!--  <isEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		 TO_CHAR(T.CREATE_DATE,'yyyy-MM-dd')=TO_CHAR(SYSDATE,'yyyy-MM-dd')
+		    ]]>
+		</isEmpty>-->
+		
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#))
+		    ]]>
+		</isNotEmpty>
+		
+			<![CDATA[
+				order by t.create_date desc
+			]]>
+		
+	</select>
+	
+	<select id="getItemBatchImportListoCnt" parameterClass="linkMap" resultClass="int"  remapResults="true">
+		<![CDATA[
+			SELECT COUNT(0)
+         FROM IS_PARAM_DATA      T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              IS_PARAM_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.PARAM_ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+         /*AND T.BATCH_IMPORT_MARK=1查询所有包括不是批量导入的*/
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+
+		<!--  <isEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		 TO_CHAR(T.CREATE_DATE,'yyyy-MM-dd')=TO_CHAR(SYSDATE,'yyyy-MM-dd')
+		    ]]>
+		</isEmpty>-->
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+               AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+		    ]]>
+		</isNotEmpty>
+		</select>
+
+		
+	<!--  查找输入项目的NO和名称 只查询DISTINCT_FIELD='PERSON_ID'  -->
+	<select id="getItemNameListPa" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       SY3.CONTENT          ALIAS_NAME
+			FROM $TNAME$ T,
+			     SY_GLOBAL_NAME      SY3
+			WHERE  T.$PARAMETER1$ = SY3.NO(+)
+			AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			AND T.Distinct_Field='PERSON_ID'
+			AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+			$PARAMETER2$
+		]]>
+	</select>
+
+	<!--  查找输入项目的NO和名称   -->
+	<select id="getItemNameListPa2" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PARAM_NO,
+			       SY3.CONTENT          ALIAS_NAME
+			FROM $TNAME$ T,
+			     SY_GLOBAL_NAME      SY3
+			WHERE  T.$PARAMETER1$ = SY3.NO(+)
+			AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			
+			AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+			$PARAMETER2$
+		]]>
+	</select>
+	
+	<!--查找所有的福利地区-->
+	<select id="getWelfareArea" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT E.CONTENT,E.NO 
+			  FROM SY_CODE D,
+			       SY_GLOBAL_NAME E 
+			 WHERE E.NO = D.CODE_NO
+		       AND D.PARENT_CODE_NO = 216736
+			   AND D.ACTIVITY = 1
+			   AND E.LANGUAGE = 'zh'
+			 ORDER BY D.DESCRIPTION
+		]]>
+	</select>
+	<!-- <include refid="getInsuranceInputApplyDataListDistinctFieldIsEmpidCondition"/> -->
+	<!-- 4.10孙鹏修改，批量导入查询，查询表中所有数据，不再只查批量导入的数据 -->
+	<select id="getItemBatchImportListPa" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+              HE.LOCAL_NAME,
+              HD.CONTENT     DEPT_NAME,    
+              SY2.CONTENT    CPNY_NAME,
+              T.START_MONTH,
+              T.END_MONTH,
+              T.RETURN_VALUE,
+              T.PARAM_DATA_NO DATA_NO,
+              T.PARAM_NO,
+              T.CPNY_ID,
+              T.REMARK,
+              T.UP_FLAG,
+              SY3.CONTENT          ALIAS_NAME
+         FROM PA_PARAM_DATA      T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              PA_PARAM_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.PARAM_ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1 查询所有数据
+          AND T.UP_FLAG = 'Y'*/
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UP_FLAG">
+			<![CDATA[
+		 		  T.UP_FLAG=#UP_FLAG:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATA_NO">
+			<![CDATA[
+		 		  T.PARAM_DATA_NO=#DATA_NO# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				LENGTH(T.START_MONTH)=6
+				AND ((T.END_MONTH IS NOT NULL AND LENGTH(T.END_MONTH)=6) OR T.END_MONTH IS NULL )
+				AND TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+					BETWEEN T.START_MONTH AND NVL(T.END_MONTH,'204912')
+             ]]>
+		</isNotEmpty>
+		<!--  <isEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		 TO_CHAR(T.CREATE_DATE,'yyyy-MM-dd')=TO_CHAR(SYSDATE,'yyyy-MM-dd')
+		    ]]>
+		</isEmpty>-->
+		
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+		    ]]>
+		</isNotEmpty>
+		
+			<![CDATA[
+				order by t.create_date desc
+			]]>
+		
+	</select>
+	<!-- 4.10孙鹏修改，批量导入查询，查询表中所有数据，不再只查批量导入的数据 -->
+	<select id="getItemBatchImportListoCntPa" parameterClass="linkMap" resultClass="int"  remapResults="true">
+		<![CDATA[
+			SELECT COUNT(0)
+         FROM PA_PARAM_DATA      T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              PA_PARAM_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.PARAM_ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+           AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1 
+          AND T.UP_FLAG = 'Y'*/
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+				<isNotEmpty prepend="AND" property="UP_FLAG">
+			<![CDATA[
+		 		  T.UP_FLAG=#UP_FLAG:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATA_NO">
+			<![CDATA[
+		 		  T.PARAM_DATA_NO=#DATA_NO# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+		 		  T.START_DATE = #START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!--  <isEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		 TO_CHAR(T.CREATE_DATE,'yyyy-MM-dd')=TO_CHAR(SYSDATE,'yyyy-MM-dd')
+		    ]]>
+		</isEmpty>-->
+				<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				LENGTH(T.START_MONTH)=6
+				AND ((T.END_MONTH IS NOT NULL AND LENGTH(T.END_MONTH)=6) OR T.END_MONTH IS NULL )
+				AND TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+					BETWEEN T.START_MONTH AND NVL(T.END_MONTH,'204912')
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+               AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+		    ]]>
+		</isNotEmpty>
+		</select>
+
+		
+	<select id="getAddInsurancePersonalInputItemList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT * FROM 
+			(SELECT ROW_NUMBER() OVER(PARTITION BY BP.PARAM_NO ORDER BY A.START_MONTH DESC) RID,
+			       A.PARAM_DATA_NO,
+			       BP.PARAM_NO,
+			       BP.DISTINCT_FIELD,
+			       BP.DISTINCT_FIELD_2ND,
+			       BP.PARAM_ITEM_NO PARAM_ITEM_NO,
+			       A.START_MONTH AS START_MONTH,
+			       A.END_MONTH AS END_MONTH,
+			       NVL(A.RETURN_VALUE, '') AS RETURN_VALUE,
+			       BP.CPNY_ID,
+			       GET_GLOBAL_NAME(BP.PARAM_ITEM_NO, #interLanguage:VARCHAR#) ITEM_NAME,
+			       GET_GLOBAL_NAME(BP.CPNY_ID, #interLanguage:VARCHAR#) CPNY_NAME,
+			       A.REMARK
+			  FROM IS_PARAM_ITEM_PARAM BP, IS_PARAM_DATA A
+			 WHERE BP.PARAM_NO = A.PARAM_NO
+			   AND BP.DISTINCT_FIELD = 'PERSON_ID'
+			   AND BP.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND A.PERSON_ID = #PERSON_ID:VARCHAR#
+			  ]]> 
+			     <isNotEmpty prepend="AND" property="ACTIVITY">
+					<![CDATA[
+				 		  BP.ACTIVITY = #ACTIVITY:VARCHAR#
+				    ]]>
+				 </isNotEmpty>
+			<![CDATA[
+			   AND (A.END_MONTH IS NULL OR A.END_MONTH >= TO_CHAR(SYSDATE, 'YYYYMM'))
+			   AND A.PARAM_DATA_NO IS NOT NULL
+			 ORDER BY BP.ORDERNO
+			 )T
+			 WHERE T.RID<=1
+		]]>
+	</select>
+	<!-- 更新修改基本项目的数据 -->
+<update id="updateItemBatchDataForBasic" parameterClass="linkMap">
+		<![CDATA[
+		UPDATE PA_BASIC_DATA P
+				SET P.START_DATE = TO_DATE(#START_DATE:VARCHAR#,'YYYY/MM/DD'),
+				    P.END_DATE =TO_DATE(#END_DATE:VARCHAR#,'YYYY/MM/DD'),
+				    P.RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+				    P.REMARK =#REMARK:VARCHAR#,
+				    P.UPDATE_DATE =SYSDATE
+				    WHERE P.BASIC_DATA_NO= #DATA_NO#
+		]]>
+</update>
+	<!-- 更新修改输入项目的数据 -->
+<update id="updateItemBatchDataForParam" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PARAM_DATA P
+				SET P.START_MONTH = to_char(TO_DATE(#START_DATE:VARCHAR#,'YYYYMM'),'YYYYMM'),
+				    P.END_MONTH =  to_char(TO_DATE(#END_DATE:VARCHAR#,'YYYYMM'),'YYYYMM'),
+				    P.RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+				    P.REMARK =#REMARK:VARCHAR#,
+				    P.UPDATE_DATE =SYSDATE
+				    WHERE P.PARAM_DATA_NO= #DATA_NO#
+		]]>
+</update>
+<!-- <include refid="getInsuranceInputApplyDataListDistinctFieldIsEmpidCondition"/> -->
+<!-- 4.10孙鹏修改，批量导入查询，查询表中所有数据，不再只查批量导入的数据 -->
+	<select id="getItemBatchImportListPaBasis" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			      SELECT HE.EMPID,
+              HE.LOCAL_NAME,
+              HD.CONTENT     DEPT_NAME,    
+              SY2.CONTENT    CPNY_NAME,
+             to_char( T.START_DATE ,'yyyy-MM-dd') START_DATE,
+              to_char(T.END_DATE,'yyyy-MM-dd') END_DATE,
+              T.RETURN_VALUE,
+             T.PARAM_NO,
+             T.BASIC_DATA_NO DATA_NO,
+              T.CPNY_ID,
+              T.REMARK,
+              T.UP_FLAG,
+              SY3.CONTENT          ALIAS_NAME
+         FROM PA_BASIC_DATA      	T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              PA_BASIC_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1 
+          AND T.UP_FLAG = 'Y'*/
+
+		]]>
+		
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UP_FLAG">
+			<![CDATA[
+		 		  T.UP_FLAG=#UP_FLAG:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATA_NO">
+			<![CDATA[
+		 		  T.BASIC_DATA_NO=#DATA_NO# 
+		    ]]>
+		</isNotEmpty>
+		
+		<!--  <isEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		 TO_CHAR(T.CREATE_DATE,'yyyy-MM-dd')=TO_CHAR(SYSDATE,'yyyy-MM-dd')
+		    ]]>
+		</isEmpty>-->
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+		 		  T.START_DATE = #START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!--  <isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				LENGTH(T.START_DATE)=6
+				AND ((T.END_DATE IS NOT NULL AND LENGTH(T.END_DATE)=6) OR T.END_DATE IS NULL )
+				AND TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+					BETWEEN T.START_DATE AND NVL(T.END_DATE,'204912')
+             ]]>
+		</isNotEmpty>-->
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+               AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+		    ]]>
+		</isNotEmpty>
+		
+			<![CDATA[
+				order by t.create_date desc
+			]]>
+		
+	</select>
+	<!-- 4.10孙鹏修改，批量导入查询，查询表中所有数据，不再只查批量导入的数据 -->
+	<select id="getItemBatchImportListoCntPaBasis" parameterClass="linkMap" resultClass="int"  remapResults="true">
+		<![CDATA[
+			SELECT COUNT(0)
+        	FROM PA_BASIC_DATA      T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              PA_BASIC_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1 
+          AND T.UP_FLAG = 'Y'*/
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="UP_FLAG">
+			<![CDATA[
+		 		  T.UP_FLAG=#UP_FLAG:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATA_NO">
+			<![CDATA[
+		 		  T.BASIC_DATA_NO=#DATA_NO# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+		 		  T.START_DATE = #START_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!--  <isEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		 TO_CHAR(T.CREATE_DATE,'yyyy-MM-dd')=TO_CHAR(SYSDATE,'yyyy-MM-dd')
+		    ]]>
+		</isEmpty>-->
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				LENGTH(T.START_MONTH)=6
+				AND ((T.END_MONTH IS NOT NULL AND LENGTH(T.END_MONTH)=6) OR T.END_MONTH IS NULL )
+				AND TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+					BETWEEN T.START_MONTH AND NVL(T.END_MONTH,'204912')
+             ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+		    ]]>
+		</isNotEmpty>
+		</select>
+	
+	<select id="getInsuranceInputItemPersonTempAllList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DISTINCT T.PARAM_ITEM_NO		PARAM_ITEM_NO,
+				   T.PARAM_NO,
+			       GET_GLOBAL_NAME(T.PARAM_ITEM_NO, #interLanguage:VARCHAR#)	ITEM_NAME
+			  FROM IS_PARAM_ITEM_PARAM T
+			 WHERE T.DISTINCT_FIELD = 'PERSON_ID'
+               AND T.ACTIVITY = 1
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			 ORDER BY T.ORDERNO	ASC
+		]]>
+	</select>
+	<!-- 孙鹏添加，查询基础和输入工资项目 -->
+	<select id="getItemBatchImportListPaBasisAndParam" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+    <![CDATA[
+            SELECT HE.EMPID,
+              HE.LOCAL_NAME,
+              '507' ITEM_DISTINGUISH,
+              TO_NUMBER(T.BASIC_DATA_NO) DATA_NO,
+              HD.CONTENT     DEPT_NAME,    
+              SY2.CONTENT    CPNY_NAME,
+             to_char( T.START_DATE ,'yyyy-MM-dd') START_DATE,
+              to_char(T.END_DATE,'yyyy-MM-dd') END_DATE,
+              T.RETURN_VALUE,
+             T.PARAM_NO,
+             
+              T.CPNY_ID,
+              T.REMARK,
+              T.UP_FLAG,
+              SY3.CONTENT          ALIAS_NAME
+         FROM PA_BASIC_DATA        T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              PA_BASIC_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HE.EMP_TYPE_CODE  IN (
+               SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+         )
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1 */
+
+    ]]>
+    
+    
+    <isNotEmpty prepend="AND" property="PARAM_NO">
+      <![CDATA[
+           T.PARAM_NO=#PARAM_NO:VARCHAR# 
+        ]]>
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="UP_FLAG">
+			<![CDATA[
+		 		  T.UP_FLAG=#UP_FLAG:VARCHAR# 
+		    ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="DATA_NO">
+			<![CDATA[
+			
+		 		  T.BASIC_DATA_NO=#DATA_NO# 
+		    ]]>
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="START_DATE">
+      <![CDATA[
+           T.START_DATE = #START_DATE:VARCHAR#
+        ]]>
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="PA_MONTH">
+      <![CDATA[
+        LENGTH(T.START_DATE)=6
+        AND ((T.END_DATE IS NOT NULL AND LENGTH(T.END_DATE)=6) OR T.END_DATE IS NULL )
+        AND TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+          BETWEEN T.START_DATE AND NVL(T.END_DATE,'204912')
+             ]]>
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="EMPID">
+      <![CDATA[
+           ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+        ]]>
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="DEPTNO">
+      <![CDATA[
+           EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+               AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+        ]]>
+    </isNotEmpty>
+    
+     union all
+     
+		<![CDATA[
+			SELECT HE.EMPID,
+              HE.LOCAL_NAME,
+              '508' ITEM_DISTINGUISH,
+              TO_NUMBER(T.PARAM_DATA_NO) DATA_NO,
+              HD.CONTENT     DEPT_NAME,    
+              SY2.CONTENT    CPNY_NAME,
+              T.START_MONTH,
+              T.END_MONTH,
+              T.RETURN_VALUE,
+              
+              T.PARAM_NO,
+              T.CPNY_ID,
+              T.REMARK,
+              T.UP_FLAG,
+              SY3.CONTENT          ALIAS_NAME
+         FROM PA_PARAM_DATA      T,
+              HR_EMPLOYEE              HE,
+              HR_COMPANY               HR,
+              HR_DEPARTMENT_NAME       HD,
+              PA_PARAM_ITEM_PARAM      PA,
+              SY_GLOBAL_NAME           SY2,
+              SY_GLOBAL_NAME           SY3
+        WHERE T.PERSON_ID = HE.PERSON_ID
+       and pa.param_no=t.param_no
+      and pa.PARAM_ITEM_NO = SY3.NO(+)
+      AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND HE.DEPTNO = HD.DEPTNO(+)
+          AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = HR.CPNY_ID
+          AND HE.EMP_TYPE_CODE  IN (
+			   			SELECT E.EMP_TYPE_CODE 
+                         FROM PA_SUPERVISOR_EMPTYPE_INFO E,
+                         HR_JOB_TYPE_SETUP F
+                         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+                         AND E.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+                         AND F.CPNY_ID = #CPNY_ID:VARCHAR#
+			   )
+          AND HR.CPNY_NO = SY2.NO(+)
+          AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND  T.CPNY_ID =#CPNY_ID:VARCHAR#
+          /*AND T.BATCH_IMPORT_MARK=1 查询所有数据*/
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO=#PARAM_NO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+				<isNotEmpty prepend="AND" property="UP_FLAG">
+			<![CDATA[
+		 		  T.UP_FLAG=#UP_FLAG:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATA_NO">
+			<![CDATA[
+			
+		 		  T.PARAM_DATA_NO=#DATA_NO# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				LENGTH(T.START_MONTH)=6
+				AND ((T.END_MONTH IS NOT NULL AND LENGTH(T.END_MONTH)=6) OR T.END_MONTH IS NULL )
+				AND TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'),-0),'YYYYMM')
+					BETWEEN T.START_MONTH AND NVL(T.END_MONTH,'204912')
+             ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(SELECT *
+                 FROM HR_DEPARTMENT
+                WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO
+                START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+               CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+                AND HR_DEPARTMENT.DEPTNO IN(SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #PA_ADMIN_ID:VARCHAR#)
+               )
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	<!-- 保险项目申请 -->
+	<insert id="addApplyInform" parameterClass="linkMap">
+		<![CDATA[		
+			INSERT INTO IS_APPLY_INFORM
+			(
+			  INFORM_ID,
+			  PARAM_NO,
+			  CPNY_ID,
+			  APPLY_INFORM_MARK,
+			  INFORM_DATE,
+			  DEPTNO,
+			  ACTIVITY,
+			  CREATE_DATE,
+			  CREATED_BY,
+			  PARAM_DATA_NO,
+			  PARAM_DATA_NO_OTHER
+			 )
+			VALUES(
+				IS_APPLY_INFORM_SEQ.NEXTVAL,
+				#PARAM_NO:VARCHAR#,
+				#CPNDID:VARCHAR#,
+				1,
+				SYSDATE,
+				#DEPTNO:VARCHAR#,
+				1,
+				SYSDATE,
+				#CREATED_BY:VARCHAR#,
+				#PARAM_DATA_NO:VARCHAR#,
+				#PARAM_DATA_NO_OTHER:VARCHAR#
+			)		
+		]]>
+	</insert>
+	
+	<update id="updateInsuranceInputItemDataValue" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE IS_PARAM_DATA T
+			   SET T.RETURN_VALUE = #RETURN_VALUE:VARCHAR#,
+			   	   T.END_MONTH = #END_MONTH:VARCHAR#,
+			   	   T.REMARK = #REMARK:VARCHAR#
+			 WHERE T.PERSON_ID = #PERSON_ID:VARCHAR#
+			   AND T.START_MONTH = #START_MONTH:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getViewInsureSelfCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM IS_SUMMARY_HTSV M,HR_EMPLOYEE E
+			  WHERE 1=1
+			  AND   M.PERSON_ID = E.PERSON_ID
+		]]>
+		<isEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				  IS_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				  IS_MONTH = #paYear#||#paMonth#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		  (E.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR E.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = M.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AREA">
+			<![CDATA[
+				  E.INSRAREA_ID = #AREA:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+		
+				AND   M.DEPTNO IN (SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #CREATED_BY:VARCHAR#)
+				 AND M.EMP_TYPE_CODE IN
+			      (SELECT EMP_TYPE_CODE CODE_NO
+			                  FROM PA_SUPERVISOR_EMPTYPE_INFO P, HR_JOB_TYPE_SETUP HP
+			                 WHERE P.EMP_TYPE_CODE = HP.JOBTYPE_NO
+			                   AND HP.CPNY_ID =#interCpnyID:VARCHAR#
+			                   AND P.PERSON_ID =#CREATED_BY:VARCHAR#   )  
+		]]>
+	</select>
+	
+	<select id="getViewInsureSelfList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<isEqual property="CPNY_ID" compareValue='TSTO'>
+			  <![CDATA[
+			SELECT E.LOCAL_NAME,
+			   E.EMPID,
+			   M.DEPT_NAME,
+			   INSRAREA_ID_NAME,
+		       IS_MONTH,
+		       IS_ENDOWMENT_COR,
+		       IS_UNEMPLOY_COR,
+		       IS_MEDICAL_COR,
+		       IS_INJURY_COR,
+		       IS_FERTILITY_COR,
+		       IS_ENDOWMENT_PER,
+		       IS_UNEMPLOY_PER,
+		       IS_MEDICAL_PER,
+		       IS_TOTAL_COR - IS_FUND_COR IS_TOTAL_COR,
+		       IS_TOTAL_PER - IS_FUND_RER IS_TOTAL_PER,
+		       IS_FUND_COR,
+		       IS_FUND_RER,
+		       IS_SERIOUS_PER IS_SERIOUS_P,
+		       IS_SERIOUS_COR IS_SERIOUS_C,
+		       IS_BIGDISEASE_COR IS_BIGDISEASE_C,
+		       IS_TOTAL_COR COR,
+		       IS_TOTAL_PER PER,
+		        IS_AJUST_COR,
+		        IS_AJUST_PER
+		  FROM IS_SUMMARY_HTSV M,HR_EMPLOYEE E
+		  WHERE M.PERSON_ID = E.PERSON_ID
+		]]>
+		</isEqual>
+		<isEqual property="CPNY_ID" compareValue="LGEYT">
+		<![CDATA[
+			SELECT E.LOCAL_NAME,
+			         E.EMPID,
+			         M.DEPT_NAME,
+			         INSRAREA_ID_NAME,
+			         IS_MONTH,
+			         IS_MEDICAL_BC,
+			        IS_MEDICAL_BASE,
+			        IS_ENDOWMENT_BC,
+			        IS_ENDOWMENT_BASE,
+			        IS_UNEMPLOY_BC,
+			        IS_UNEMPLOY_BASE,
+			        IS_FERTILITY_BC,
+			        IS_FUND_BC,
+			        IS_FUND_BASE,
+			        IS_INJURY_BASE,
+			        IS_SERIOUS_P,
+			        P_IS_AJUST_COR,
+			        P_IS_AJUST_PER,
+			        IS_ENDOWMENT_PER,
+			        IS_UNEMPLOY_PER,
+			        IS_MEDICAL_PER,
+			        IS_FUND_RER,
+			        IS_AJUST_PER,
+			        IS_ENDOWMENT_COR,
+			        IS_UNEMPLOY_COR,
+			        IS_MEDICAL_COR,
+			        IS_FUND_COR,
+			        IS_FERTILITY_COR,
+			        IS_INJURY_COR,
+			        IS_AJUST_COR,
+			        IS_TOTAL_PER,
+			        IS_TOTAL_COR,
+			        P_INSUR_BASE_PER,
+			        P_INSUR_BASE_COP,
+			        M.EMP_TYPE_NAME
+			      FROM IS_SUMMARY_LGEYT M,HR_EMPLOYEE E
+			      WHERE M.PERSON_ID = E.PERSON_ID
+		]]>
+		</isEqual>
+		<isEmpty prepend="AND" property="paYear">
+			<![CDATA[
+			    M.IS_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				M.IS_MONTH = #paYear#||#paMonth#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+		 		(E.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR E.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+			 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = M.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AREA">
+			<![CDATA[
+				M.INSRAREA_ID = #AREA:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+		
+	AND   M.DEPTNO IN (SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #ADMINID:VARCHAR#)
+	 AND M.EMP_TYPE_CODE IN
+      (SELECT EMP_TYPE_CODE CODE_NO
+                  FROM PA_SUPERVISOR_EMPTYPE_INFO P, HR_JOB_TYPE_SETUP HP
+                 WHERE P.EMP_TYPE_CODE = HP.JOBTYPE_NO
+                   AND HP.CPNY_ID =#interCpnyID:VARCHAR#
+                   AND P.PERSON_ID =#ADMINID:VARCHAR#   )  
+      ORDER BY E.EMPID 
+		]]>
+	</select>
+	
+	<select id="getViewInsureDeptCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM IS_SUMMARY_HTSV M
+			  WHERE 1=1
+		]]>
+		<isEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				  M.IS_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				  M.IS_MONTH = #paYear#||#paMonth#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = M.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+		    AND   DEPTNO IN (SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #CREATED_BY:VARCHAR#)
+	 AND M.EMP_TYPE_CODE IN
+      (SELECT EMP_TYPE_CODE CODE_NO
+                  FROM PA_SUPERVISOR_EMPTYPE_INFO P, HR_JOB_TYPE_SETUP HP
+                 WHERE P.EMP_TYPE_CODE = HP.JOBTYPE_NO
+                   AND HP.CPNY_ID =#interCpnyID:VARCHAR#
+                   AND P.PERSON_ID =#CREATED_BY:VARCHAR#   )  
+		  ]]>
+	</select>
+	
+	<select id="getViewInsureDeptList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DEPT_NAME,
+		       IS_MONTH,
+		       IS_ENDOWMENT_COR,
+		       IS_UNEMPLOY_COR,
+		       IS_MEDICAL_COR,
+		       IS_INJURY_COR,
+		       IS_FERTILITY_COR,
+		       IS_ENDOWMENT_PER,
+		       IS_UNEMPLOY_PER,
+		       IS_MEDICAL_PER,
+		       IS_TOTAL_COR,
+		       IS_TOTAL_PER,
+		       IS_FUND_COR,
+		       IS_FUND_RER,
+		        ]]>
+		       <isEqual property="CPNY_ID" compareValue='TSTO'>
+		       P_IS_AJUST_PER P_IS_AJUST_PER,
+		       P_IS_AJUST_COR P_IS_AJUST_COR,
+		       </isEqual>
+		       <isNotEqual  property="CPNY_ID" compareValue='TSTO'>
+		       0 P_IS_AJUST_PER,
+		       0 P_IS_AJUST_COR,
+		       </isNotEqual>
+		      <![CDATA[
+		       IS_SERIOUS_P,
+		       IS_SERIOUS_C,
+		       IS_BIGDISEASE_C,
+		       IS_TOTAL_COR + IS_FUND_COR COR,
+		       IS_TOTAL_PER + IS_FUND_RER PER
+		  FROM IS_SUMMARY_HTSV M
+	     WHERE 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				  M.IS_MONTH = #paYear#||#paMonth#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="paYear">
+			<![CDATA[
+				  M.IS_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		 
+		 	 EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = M.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		    </isNotEmpty>
+		    <![CDATA[
+		    AND   DEPTNO IN (SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #ADMINID:VARCHAR#)
+	 AND M.EMP_TYPE_CODE IN
+      (SELECT EMP_TYPE_CODE CODE_NO
+                  FROM PA_SUPERVISOR_EMPTYPE_INFO P, HR_JOB_TYPE_SETUP HP
+                 WHERE P.EMP_TYPE_CODE = HP.JOBTYPE_NO
+                   AND HP.CPNY_ID =#interCpnyID:VARCHAR#
+                   AND P.PERSON_ID =#ADMINID:VARCHAR#   )  
+           ORDER BY M.DEPTNO,M.EMPID
+		  ]]>
+	</select>
+	
+	<select id="getInsuranceInputItemDataListDistinctFieldIsNotEmpidCnt1"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*)
+				   FROM IS_PARAM_DATA_OTHER_APPLY  A,
+			       HR_COMPANY                 HR,
+			       SY_GLOBAL_NAME             SY1,
+			       SY_GLOBAL_NAME             SY2,
+			       SY_GLOBAL_NAME             SY3
+			 WHERE A.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD1_VALUE = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.FIELD2_VALUE = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getInsuranceInputApplyDataListDistinctFieldIsNotEmpidCondition"/>
+	</select>
+	
+	
+	<procedure id="importISParamDataExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_WAGEBASE_EXCEL_TEMP.PR_IMPORT_ISPARAM_DATA(
+						 #PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<select id="getImportExcelTempISParamDataList" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			 SELECT T.EMPID,
+			       NVL(E.LOCAL_NAME,T.EMPID) CHINESENAME,
+			       T.START_MONTH,
+			       T.END_MONTH,
+			       T.RETURN_VALUE,
+			       T.REMARK,
+			       T.UPLOAD_ERROR_MSG,
+		           T.LINE_ID,
+			       T.RESULT_FLAG,
+			       
+			       E.LOCAL_NAME UPLOAD_BY,
+			       TO_CHAR(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE
+			  FROM IS_PARAM_DATA_TEMP T,HR_EMPLOYEE E
+			 WHERE T.EMPID = E.EMPID(+)
+			   AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY T.LINE_ID
+	</select>
+	
+	<select id="getImportExcelTempISParamDataListCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+			  FROM IS_PARAM_DATA_TEMP T
+		     WHERE T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getImportExcelTempISParamDataListErrCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM IS_PARAM_DATA_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	<!-- 查询临时标的数据 -->
+	<select id="getItemBatchImportDataTemp" parameterClass="linkMap" resultClass="linkMap" >
+		<![CDATA[
+			SELECT get_global_name(PP.$PARAMETER1$,'zh') NM,
+					PT.EMPID,
+					E.LOCAL_NAME,
+					PT.RETURN_VALUE,					
+					]]>
+				<isEqual property="TNAMETEMP" compareValue="PA_BASIC_DATA_TEMP">
+			    PT.START_DATE,
+		       </isEqual>
+			   <isEqual property="TNAMETEMP" compareValue="PA_PARAM_DATA_TEMP">
+			    PT.START_MONTH "START_DATE",
+				PT.END_MONTH,
+		       </isEqual>
+		       	<![CDATA[					
+       				PT.REMARK,
+       				PT.UPLOAD_ERROR_MSG,
+       				PT.LINE_ID
+				FROM $TNAMETEMP$ PT,
+				     HR_EMPLOYEE E,
+				     $TNAME$ PP
+				WHERE PT.PARAM_NO =PP.PARAM_NO 
+				AND   PT.EMPID = E.EMPID(+)
+				AND   PT.UPLOAD_BY = #PERSONID:VARCHAR#
+				
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+		    <![CDATA[
+				PT.RESULT_FLAG = #RESULT_FLAG#
+	        ]]>   
+		</isNotEmpty>
+		order by PT.RESULT_FLAG
+	</select>
+	<!-- 查询临时表的数据量-->
+		<select id="getItemBatchImportDataTempCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+				FROM $TNAMETEMP$ PT,
+				     HR_EMPLOYEE E,
+				     $TNAME$ PP
+				WHERE PT.PARAM_NO =PP.PARAM_NO 
+				AND   PT.EMPID = E.EMPID(+)
+				AND   PT.UPLOAD_BY = #PERSONID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+		    <![CDATA[
+				PT.RESULT_FLAG = #RESULT_FLAG#
+	        ]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getItemBatchImportDataTempErrorCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+		<![CDATA[
+		SELECT count(*)
+				FROM $TNAMETEMP$ PT,
+				     HR_EMPLOYEE E,
+				     $TNAME$ PP
+				WHERE PT.PARAM_NO =PP.PARAM_NO 
+				AND   PT.EMPID = E.EMPID(+)
+				AND   PT.UPLOAD_BY = #PERSONID:VARCHAR#
+			    AND   PT.RESULT_FLAG = 'E'
+		]]>
+ 	</select>
+	<!-- 写入excel临时表数据验证֤================================ -->
+	<procedure id="submitItemBatchData" parameterClass="linkMap">
+		<![CDATA[
+			{call $PR_NAME$(
+						 #PERSON_ID:VARCHAR#
+						,#CPNY_ID#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<!-- 删除通过LINE_ID-->
+	<delete id="delExceplImportLine" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM $TNAMETEMP$ PT WHERE PT.LINE_ID = #LINE_ID#
+			AND PT.UPLOAD_BY = #PERSONID:VARCHAR#
+		]]>
+	</delete>
+	
+		<!-- 删除临时表旧错误数据-->
+	<delete id="deleteErrorOldItemBatchData" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM $TNAMETEMP$ PT 
+			WHERE PT.UPLOAD_BY = #PERSONID:VARCHAR#
+			/*AND   PT.RESULT_FLAG = 'E'*/
+			AND   PT.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</delete>
+</sqlMap>

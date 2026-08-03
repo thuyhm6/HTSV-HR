@@ -1,0 +1,5 @@
+越南演示系统
+	svn地址：
+		https://106.3.40.155:8443/svn/hr/YN_TSTO_DEMO/YN_TSTO_DEMO
+	库地址及账号密码：
+		118.190.84.204    NO_DELETE/NO_DELETE 

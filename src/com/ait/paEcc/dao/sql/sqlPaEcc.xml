@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "sql-map-2.dtd" >
+<sqlMap namespace="paEcc.common">
+<select id="searchEmpEcc" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+	<![CDATA[
+		SELECT AVG_SALARY,
+			   B.LOCAL_NAME LOCAL_NAME,
+	           GET_DEPT_NAME(B.DEPTNO,#interLanguage#) DEPTNAME,
+		       GET_GLOBAL_NAME(B.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+		       GET_GLOBAL_NAME(B.POST_NO, #interLanguage:VARCHAR#) POST_NAME, 
+		       COMPENSATE,
+		       AVG_SALARY_FD,
+		       COMPENSATE_FD,
+		       ECCAMT,
+		       LEFT_TYPE,
+		       TAX
+		  FROM (SELECT EMPID,
+		               LEFT_TYPE,
+		               AVG_SALARY,
+		               COMPENSATE,
+		               AVG_SALARY_FD,
+		               COMPENSATE_FD,
+		               ROUND(AVG_SALARY_FD * COMPENSATE_FD, 2) ECCAMT,
+		               CASE
+		                  WHEN AVG_SALARY_FD * COMPENSATE_FD >=
+		                       TO_NUMBER(#ECCMIANSHUI#) THEN
+		                   TRUNC(GET_PI_TAX(#EMPID#,(AVG_SALARY_FD * COMPENSATE_FD - TO_NUMBER(#ECCMIANSHUI#)) / CASE
+		                  WHEN CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                                 TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                                 'YYYY-MM-DD'),
+		                                                         'YYYYMM'),
+		                                                 #interCpnyID#) / 12) > 12 THEN
+		                   12
+		                  ELSE
+		                   CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                             TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                             'YYYY-MM-DD'),
+		                                                     'YYYYMM'),
+		                                             #interCpnyID#) / 12)
+		                END, #interCpnyID#) *CASE
+		                 WHEN CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                                TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                                'YYYY-MM-DD'),
+		                                                        'YYYYMM'),
+		                                                #interCpnyID#) / 12) > 12 THEN
+		                  12
+		                 ELSE
+		                  CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                            TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                            'YYYY-MM-DD'),
+		                                                    'YYYYMM'),
+		                                            #interCpnyID#) / 12)
+		               END) ELSE 0 END TAX
+		          FROM (
+		          SELECT #EMPID# EMPID,
+		                       '不续签合同' LEFT_TYPE,
+		                       GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                             TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                            'YYYY-MM-DD'),
+		                                                    'YYYYMM'),
+		                                             #ECCMIN#,
+		                                             #ECCMAX#,
+		                                             '',
+		                                             #interCpnyID#) AVG_SALARY,
+		                       GET_PA_ECC_COMPENSATION_MONTHS(#EMPID#,
+		                                                      'leftReasonType001',
+		                                                      #EXPECTDATELEFT#,
+		                                                      #ECCMAX#,
+		                                                      GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                                                            TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+										                                                            'YYYY-MM-DD'),
+										                                                    'YYYYMM'),
+		                                                                            #ECCMIN#,
+		                                                                            #ECCMAX#,
+		                                                                            '',
+		                                                                            #interCpnyID#),
+		                                                      '',
+		                                                      #interCpnyID#) COMPENSATE,
+		                       GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                             TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+			                                                            'YYYY-MM-DD'),
+			                                                    'YYYYMM'),
+		                                             #ECCMIN#,
+		                                             #ECCMAX#,
+		                                             'FD',
+		                                             #interCpnyID#) AVG_SALARY_FD,
+		                       GET_PA_ECC_COMPENSATION_MONTHS(#EMPID#,
+		                                                      'leftReasonType001',
+		                                                      #EXPECTDATELEFT#,
+		                                                      #ECCMAX#,
+		                                                      GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                                                            TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+										                                                            'YYYY-MM-DD'),
+										                                                    'YYYYMM'),
+		                                                                            #ECCMIN#,
+		                                                                            #ECCMAX#,
+		                                                                            'FD',
+		                                                                            #interCpnyID#),
+		                                                      'FD',
+		                                                      #interCpnyID#) COMPENSATE_FD
+		                  FROM DUAL
+		        UNION ALL
+		          SELECT #EMPID# EMPID,
+		                       '劝告离职' LEFT_TYPE,
+		                       GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                             TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                            'YYYY-MM-DD'),
+		                                                    'YYYYMM'),
+		                                             #ECCMIN#,
+		                                             #ECCMAX#,
+		                                             '',
+		                                             #interCpnyID#) AVG_SALARY,
+		                       GET_PA_ECC_COMPENSATION_MONTHS(#EMPID#,
+		                                                      'leftReasonType002',
+		                                                      #EXPECTDATELEFT#,
+		                                                      #ECCMAX#,
+		                                                      GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                                                            TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+											                                                            'YYYY-MM-DD'),
+											                                                    'YYYYMM'),
+		                                                                            #ECCMIN#,
+		                                                                            #ECCMAX#,
+		                                                                            '',
+		                                                                            #interCpnyID#),
+		                                                      '',
+		                                                      #interCpnyID#) COMPENSATE,
+		                       GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                             TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                            'YYYY-MM-DD'),
+		                                                    'YYYYMM'),
+		                                             #ECCMIN#,
+		                                             #ECCMAX#,
+		                                             'FD',
+		                                             #interCpnyID#) AVG_SALARY_FD,
+		                       GET_PA_ECC_COMPENSATION_MONTHS(#EMPID#,
+		                                                      'leftReasonType002',
+		                                                      #EXPECTDATELEFT#,
+		                                                      #ECCMAX#,
+		                                                      GET_PA_ECC_AVG_SALARY(#EMPID#,
+		                                                                            TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+											                                                            'YYYY-MM-DD'),
+											                                                    'YYYYMM'),
+		                                                                            #ECCMIN#,
+		                                                                            #ECCMAX#,
+		                                                                            'FD',
+		                                                                            #interCpnyID#),
+		                                                      'FD',
+		                                                      #interCpnyID#) COMPENSATE_FD
+		                  FROM DUAL) A
+		        UNION ALL
+		        SELECT #EMPID#,
+		               '协议离职' LEFT_TYPE,
+		               0,
+		               0,
+		               0,
+		               0,
+		               NVL(TO_NUMBER(#XIEYIJIN#), 0),
+		               CASE
+		                  WHEN TO_NUMBER(#XIEYIJIN#) >=
+		                       TO_NUMBER(#ECCMIANSHUI#) THEN
+		                   TRUNC(GET_PI_TAX(#EMPID#,(TO_NUMBER(#XIEYIJIN#) - TO_NUMBER(#ECCMIANSHUI#)) / CASE
+		                  WHEN CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                                 TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                                 'YYYY-MM-DD'),
+		                                                         'YYYYMM'),
+		                                                 #interCpnyID#) / 12) > 12 THEN
+		                   12
+		                  ELSE
+		                   CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                             TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                             'YYYY-MM-DD'),
+		                                                     'YYYYMM'),
+		                                             #interCpnyID#) / 12)
+		                END, #interCpnyID#) *CASE
+		                 WHEN CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                                TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                                'YYYY-MM-DD'),
+		                                                        'YYYYMM'),
+		                                                #interCpnyID#) / 12) > 12 THEN
+		                  12
+		                 ELSE
+		                  CEIL(HR_GET_WORKMONTH_NOW(#EMPID#,
+		                                            TO_CHAR(TO_DATE(#EXPECTDATELEFT#,
+		                                                            'YYYY-MM-DD'),
+		                                                    'YYYYMM'),
+		                                            #interCpnyID#) / 12)
+		               END) ELSE 0 END TAX
+		          FROM DUAL) A,
+		       HR_EMPLOYEE B
+		 WHERE A.EMPID = B.EMPID
+		   AND B.CPNY_ID = #interCpnyID#
+		 ORDER BY A.LEFT_TYPE
+		
+	]]>		
+</select>
+
+<select id="getPaEccInfo" parameterClass="linkMap" resultClass="linkMap" 
+	remapResults="true">
+	<![CDATA[
+		SELECT T.*,
+	           HRE.LOCAL_NAME LOCAL_NAME,
+	           GET_DEPT_NAME(HRE.DEPTNO,#interLanguage#) DEPTNAME,
+	           GET_GLOBAL_NAME(HRE.GRADE_LEVEL, #interLanguage:VARCHAR#) GRADE_LEVEL_NAME,
+		       GET_GLOBAL_NAME(HRE.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+		       GET_GLOBAL_NAME(HRE.POST_NO, #interLanguage:VARCHAR#) POST_NAME 
+	      FROM T_PA_ECC_RESULT T
+	      LEFT JOIN HR_EMPLOYEE HRE ON T.EMPID = HRE.EMPID
+	      WHERE hre.cpny_id=#interCpnyID#
+	]]>	
+	<isNotEmpty prepend="and" property="PA_MONTH">
+		<![CDATA[
+			T.PA_MONTH = #PA_MONTH#
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="batches">
+		<![CDATA[
+			T.BATCHES = #batches#
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="EMPID">
+		<![CDATA[
+			T.EMPID = #EMPID#
+		]]>
+	</isNotEmpty>
+</select>
+<select id="getEmpIdListCnt" parameterClass="linkMap" resultClass="int" 
+	remapResults="true">
+	<![CDATA[
+		SELECT COUNT(*)
+		  FROM T_PA_ECC_RESULT T
+		 WHERE T.CPNY_ID = #CPNY_ID#
+	]]>	
+	<isNotEmpty prepend="and" property="PA_MONTH">
+		<![CDATA[
+			T.PA_MONTH = #PA_MONTH#
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="batches">
+		<![CDATA[
+			T.BATCHES = #batches#
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="EMPID">
+		<![CDATA[
+			T.EMPID = #EMPID#
+		]]>
+	</isNotEmpty>
+</select>
+<delete id="delPaEccInfo" parameterClass="linkMap">
+	<![CDATA[
+		DELETE FROM T_PA_ECC_RESULT T
+		 WHERE T.EMPID = #EMPID#
+		   AND t.cpny_id=#CPNY_ID#
+		   AND T.PA_MONTH = #PA_MONTH#
+		   AND T.BATCHES = #batches#
+	]]>
+</delete>
+<procedure id="calculatePaEcc" parameterClass="linkMap">
+	{call pa_ecc_calculate(#CPNY_ID#,#PA_MONTH#, #eccMax#,#eccMin#,#eccMianshui#,#message,jdbcType=VARCHAR,mode=OUT#)}
+</procedure>
+<update id="updatePaEcc" parameterClass="linkMap">
+	<![CDATA[
+		update t_pa_ecc_result
+		set left_type = #leftType:varchar#
+				,ecc_amt = #eccAmt:numeric#
+				,notice_amt = #noticeAmt:numeric# 
+				,AVG_SALARY = null
+				,COMPENSATION_MONTH = null
+				,AVG_SALARY_FD = null
+				,COMPENSATION_MONTH_FD = null
+				,UPDATE_TAX = #eccTax:numeric# 
+		where pa_ecc_no = #eccNo:numeric#
+	]]>	
+	</update>
+<procedure id="settlementPaEcc" parameterClass="linkMap">
+	<![CDATA[
+		{call pa_ecc_settlement(#PA_MONTH#,#batches#,#PAYDATE:VARCHAR#,#CPNY_ID#,#flag,jdbcType=VARCHAR,mode=OUT#)}
+	]]>
+</procedure>
+<procedure id="cancelSettlementPaEcc" parameterClass="linkMap">
+	<![CDATA[
+		{call PA_ECC_CANCEL_SETTLEMENT(#PA_MONTH#,#batches#,#CPNY_ID#,#flag,jdbcType=VARCHAR,mode=OUT#)}
+	]]>
+</procedure>
+<select id="searchBatchesByPaMonth" parameterClass="linkMap" resultClass="linkMap">
+	select batchValue from (
+		select batches batchValue
+		from pa_ecc_progress
+		where pa_month = #paMonth#
+		union all
+		select nvl(max(batches),0) + 1
+		from pa_ecc_progress
+		where pa_month = #paMonth#
+	) a order by a.batchValue desc
+</select>
+<select id="getEccFlag" parameterClass="linkMap" resultClass="string"  remapResults="true">
+	<![CDATA[
+		    SELECT SETTLEMENT
+		      FROM PA_ECC_PROGRESS T
+		     WHERE T.PA_MONTH = #PA_MONTH#
+		       AND T.BATCHES = #BATCHES:NUMERIC#
+		       AND T.CPNY_ID = #CPNY_ID#
+	]]>
+</select>
+<select id="getEccResultNo" parameterClass="linkMap" resultClass="string" 
+	remapResults="true">
+	<![CDATA[
+		SELECT T.PA_ECC_NO
+		  FROM T_PA_ECC_RESULT T
+		 WHERE T.CPNY_ID = #CPNY_ID#
+		   AND T.PA_MONTH = #PA_MONTH#
+		   AND T.BATCHES = #batches#
+		   AND ROWNUM=1
+	]]>	
+</select>
+<select id="getResignInfo" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+	<![CDATA[
+		SELECT PA.PA_MONTH PAMONTH,
+		       PA.BATCHES BATCHES,
+		       HRE.LOCAL_NAME LOCAL_NAME,
+		       GET_DEPT_NAME(HRE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+		       GET_GLOBAL_NAME(HRE.GRADE_LEVEL, #interLanguage:VARCHAR#) GRADE_LEVEL_NAME,
+		       GET_GLOBAL_NAME(HRE.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+		       GET_GLOBAL_NAME(HRE.POST_NO, #interLanguage:VARCHAR#) POST_NAME,
+		       HRE.DATE_STARTED DATE_STARTED,
+		       HRE.DATE_LEFT DATE_LEFT,
+		       PA.LEFT_TYPE LEFT_TYPE,
+		       PA.MONTH_START
+		  FROM T_PA_ECC_RESULT PA
+		  LEFT JOIN HR_EMPLOYEE HRE ON HRE.EMPID = PA.EMPID
+			WHERE HRE.CPNY_ID = #interCpnyID#
+		     AND HRE.EMPID = #EMPID#
+	]]>
+</select>
+<select id="getEccEmpPaInfo" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+		SELECT T.BASE_SALARY
+		  FROM PA_HISTORY_C02 T
+		 WHERE T.PA_MONTH = #PA_MONTH#
+		   AND T.EMPID = #EMPID#
+		   AND T.CPNY_ID = #interCpnyID#
+		   AND #PA_MONTH# >= #PA_MONTH_START#
+	]]>
+</select>
+<select id="getEmpPAStartMonth" parameterClass="linkMap" resultClass="string">
+	<![CDATA[
+		SELECT CASE
+	         WHEN TO_CHAR(AR_GET_STARTDATE(AR_GET_MONTHSTR(TO_CHAR(TO_DATE(#DATE_STARTED#,
+	                                                                       'yyyy/mm/dd'),
+	                                                               'yyyy/mm/dd'))),
+	                      'yyyy-mm-dd') = #DATE_STARTED# THEN
+	          TO_CHAR(AR_GET_MONTHSTR(TO_CHAR(TO_DATE(#DATE_STARTED#,
+	                                                  'yyyy/mm/dd'),
+	                                          'yyyy/mm/dd')))
+	         ELSE
+	          TO_CHAR(ADD_MONTHS(TO_DATE(AR_GET_MONTHSTR(TO_CHAR(TO_DATE(#DATE_STARTED#,
+	                                                                     'yyyy/mm/dd'),
+	                                                             'yyyy/mm/dd')) || '01',
+	                                     'YYYY-MM-DD'),
+	                             1),
+	                  'yyyymm')
+	       
+	       END AS W
+	  FROM DUAL
+		
+	]]>
+</select>
+</sqlMap>

@@ -1,0 +1,184 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java"
+	errorPage=""%>
+<%@ include file="/WEB-INF/view/inc/initTaglibs.jsp"%>
+
+<script type="text/javascript">
+
+
+function photoShow(empid,personId,cpnyID){
+	
+	document.getElementById("photoHref").href="/hrm/empinfo/phothChange?EMPID="+empid+"&PERSON_ID="+personId+"&CPNY_ID="+cpnyID;
+	
+	document.getElementById("photoHref").click();
+
+}
+
+function changePic1(photo){
+	document.getElementById(photo).src = '/resources/photo/default.jpg';
+}
+
+</script>
+
+<input type="hidden" id="isEssSystem" value="${isEssSystem }"/>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" height="140">
+	<tr>
+		<!--<td class="user_photo" valign="top">
+			<p>
+				<img align="middle" id="${photoId}" src="${PhotoPath}" onerror="changePic1(this.id);"/>
+				
+				<a id="photoHref" name="photoHref"  href="#" target="dialog" mask="true"  title="<spring:message code='hr.viewPersonalInfo.title.UPLOADPHOTO'/>" ></a><%--上传照片--%>
+				
+				<%--<input type="button" onclick="photoShow(${personInfo.EMPID},${personInfo.PERSON_ID})" value="上传照片" /> --%>
+				
+				<input type="button" onclick="photoShow('${personInfo.EMPID}','${personInfo.PERSON_ID}','${personInfo.CPNY_ID}')" value="<spring:message code='hr.viewPersonalInfo.title.UPLOADPHOTO'/>" />
+			</p>
+		</td>
+		--><td valign="top">
+		<br/>
+			<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="user_table">
+			<tr>
+					<td class="td_title" >
+						<spring:message code="hr.empinfo.cpny_id"/>
+						<!--法人代码 -->
+					</td>
+					<td class="td_type" width="15%">
+					${personInfo.CPNY_ID}
+					</td>
+					<td class="td_title" >
+						<spring:message code="hr.enpinfo.title.EMP.EMPNUMBER"/>
+						<!--社号  -->
+					</td>
+					<td class="td_type" width="15%">
+						<c:if test="${isEssSystem ne '1'}">
+							<!--<input id="EMPID" name="EMPID" type="text" value="${personInfo.EMPID }" size="10" onkeydown="F_HR_SubmitKeyClick2(event, this.value,'','','${param.navTabId}')" />
+						-->
+							${personInfo.EMPID }
+						</c:if>
+						<c:if test="${isEssSystem eq '1'}">
+							${personInfo.EMPID }
+						</c:if>
+							<input type="hidden" name="PERSON_ID" value="${personInfo.PERSON_ID }" >
+							<a id="onck" name="onck"  href="/hrm/empinfo/viewEmpIdList?pageNum=1" lookupGroup="person" width="950"></a>
+					</td>
+					<td class="td_title">
+						<spring:message code="hr.empinfo.english.name"/>
+						<!--英文姓名 -->
+					</td>
+					<td class="td_type">
+						${personInfo.CHINESE_PINYIN}
+					</td>
+					<td class="td_title">
+						<spring:message
+							code="hr.empinfo.chinese.name" />
+						<!--中文姓名-->
+					</td>
+					<td class="td_type" width="15%">
+						<c:if test="${isEssSystem ne '1'}">
+							<!--<input id="LOCAL_NAME" name="LOCAL_NAME" type="text" value="${personInfo.LOCAL_NAME }" size="10" onkeydown="F_HR_SubmitKeyClick('',this.value,'','${param.navTabId}')" /><br />
+						-->
+						${personInfo.LOCAL_NAME }
+						</c:if>
+						<c:if test="${isEssSystem eq '1'}">
+							${personInfo.LOCAL_NAME }
+						</c:if>
+					</td>
+				</tr>
+				
+				<tr>
+					<td class="td_title" >
+						<spring:message code="hr.viewPersonalInfo.title.DEPTNAME"/>
+						<!--部门  -->
+					</td>
+					<td class="td_type" width="15%">
+							${personInfo.DEPTNO_NAME }
+					</td>
+					<td class="td_title">
+						<spring:message code="heranr.trans.POSITIONNO"/>
+						<!--职位-->
+					</td>
+					<td class="td_type">
+						${personInfo.DUTY_NO }
+					</td>
+					<td class="td_title">
+						<spring:message code="sys.affirm.title.duty"/>
+						<!--职责 -->
+					</td>
+					<td class="td_type">
+                        ${personInfo.POSITION_NO}
+					</td>
+					<td class="td_title">
+						<spring:message
+							code="hr.assignment.zhiji" />
+						<!--职级(级号)-->
+					</td>
+					<td class="td_type" width="15%">
+                        ${personInfo.POST_GRADE_NO}
+					</td>
+				</tr>
+				<tr>
+					<td class="td_title">
+						<spring:message code="hr.assignment.group"/>
+						<!--职群-->
+					</td>
+					<td class="td_type">
+						${personInfo.JOB_FAM}
+					</td>
+					<td class="td_title">
+						<spring:message
+							code="hr.empinfo.term.type" />
+						<!--任期类型-->
+					</td>
+					<td class="td_type" width="15%">
+						${personInfo.STATUS_NAME }
+					</td>
+					<td class="td_title">
+						<spring:message code="hr.empinfo.lge.join.date" />
+						<!--LGE集团入职日期-->
+					</td>
+					<td class="td_type" width="15%">
+						${personInfo.JOIN_BLOC_DATE }
+					</td>
+					<td  class="td_title">
+						<spring:message code="hr.empinfo.cpny.join.date"/>
+						<!--法人入职日期-->
+					</td>
+					<td class="td_type" >
+						${personInfo.DATE_STARTED }
+					</td>
+				</tr>
+				<tr>
+					<td class="td_title">
+						<spring:message code="hr.enpinfo.title.EMP.PROBATION_START_DATE"/>
+						<!--试用期开始日期-->
+					</td>
+					<td class="td_type">
+						${personInfo.PROB_STRT_DATE }
+					</td>
+					<td class="td_title">
+							<spring:message code="hr.enpinfo.title.EMP.PROBATION_END_DATE"/>
+						<!--试用期结束日期-->
+					</td>
+					<td class="td_type">
+						 ${personInfo.END_PROBATION_DATE }
+					</td>
+					<td class="td_title">
+						<spring:message code="hr.enpinfo.title.EMP.PROBATION_PAY_RATE" />
+						<!--试用期比例-->
+					</td>
+					<td class="td_type">
+						${personInfo.PROB_PAY_RAT }
+					</td>
+					<td class="td_title">
+						<spring:message code="pa.insurance.title.resignDate"/>
+						<!--离职日期-->
+					</td>
+					<td class="td_type">
+						${personInfo.DATE_LEFT } 
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+

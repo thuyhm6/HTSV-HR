@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.pageStructure">
+
+	<select id="getPageStructureList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT A.MENU_NO,
+					   A.MENU_CODE,
+					   C.CONTENT MENU_NAME
+				  FROM SY_MENU A, 
+				       SY_MENU_PARAM B,
+				       SY_GLOBAL_NAME C
+				 WHERE A.MENU_NO = B.MENU_NO
+				   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND B.IS_CAN_BE_BUILD = '1'
+				   AND A.MENU_NO = C.NO(+)
+				   AND C.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ]]>	
+	</select>
+	
+	<select id="getPsDataList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		 select * from report_table t,SY_GLOBAL_NAME S where t.MENU_NO = #MENU_NO#  AND T.RT_NO=S.NO(+) and CPNY_ID = #interCpnyID:VARCHAR# ORDER BY T.RT_NO,S.LANGUAGE
+		]]>	
+	</select>
+	
+	<select id="retrieveReportItemListByTableName" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select * from (  SELECT 'AR' AS TYPE, 
+			       'AR_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PDL.ID AS ITEM_NO,
+			       PDL.CONTENT AS ITEM_NAME,
+			       PDL.DISTINCT_FIELD AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT S.CONTENT, A.DISTINCT_FIELD,a.TABLE_NAME,A.ID
+			          FROM PA_DISTINCT_LIST A, SY_GLOBAL_NAME S
+			         WHERE A.ID = S.NO(+)
+			           AND S.LANGUAGE(+) = #interLanguage:VARCHAR#) PDL
+			 WHERE UTC.COLUMN_NAME(+) = PDL.DISTINCT_FIELD
+			   AND UTC.TABLE_NAME = 'AR_SUMMARY_HTSV'
+			   AND PDL.TABLE_NAME <> 'PA_AR_V'
+			union
+			SELECT 'AR' AS TYPE,
+			       'AR_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       ASI.ITEM_NO,
+			       ASI.CONTENT ITEM_NAME,
+			       ASI.STA_ITEM_ID AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT S.CONTENT, A.STA_ITEM_ID, A.ITEM_NO
+			          FROM AR_STA_ITEM A, SY_GLOBAL_NAME S
+			         WHERE A.ITEM_NO = S.NO(+)
+			           AND S.LANGUAGE(+) = #interLanguage:VARCHAR#) ASI
+			 WHERE UTC.COLUMN_NAME(+) = ASI.STA_ITEM_ID
+			   AND UTC.TABLE_NAME = 'AR_SUMMARY_HTSV'
+			UNION
+			SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			        PDL.ID AS ITEM_NO,
+			       PDL.CONTENT AS ITEM_NAME,
+			       PDL.DISTINCT_FIELD AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,        (SELECT DISTINCT S.CONTENT, A.DISTINCT_FIELD ,A.ID
+			          FROM PA_DISTINCT_LIST A, SY_GLOBAL_NAME S
+			         WHERE A.ID = S.NO(+)
+			           AND S.LANGUAGE(+) = #interLanguage:VARCHAR#) PDL
+			 WHERE UTC.COLUMN_NAME(+) = PDL.DISTINCT_FIELD
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			union
+			SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PPI.ITEM_NO  ITEM_NO,
+			       PPI.content AS ITEM_NAME,
+			       PPI.item_id AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC, ( select distinct s.content,a.item_id,A.ITEM_NO from bn_item a,sy_global_name s  where a.item_no=s.no(+) and s.language(+)=#interLanguage:VARCHAR#) PPI
+			 WHERE UTC.COLUMN_NAME(+) = PPI.item_id
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			 UNION
+			 SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PBI.PARAM_ITEM_NO AS ITEM_NO,
+			       PBI.CONTENT AS ITEM_NAME,
+			       PBI.PARAM_ITEM_ID AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC, (SELECT DISTINCT A.PARAM_ITEM_ID,S.CONTENT,A.PARAM_ITEM_NO   FROM bn_param_item A ,SY_GLOBAL_NAME S WHERE A.PARAM_ITEM_NO=S.NO(+) AND S.LANGUAGE(+)=#interLanguage:VARCHAR#) PBI
+			 WHERE UTC.COLUMN_NAME(+) = PBI.PARAM_ITEM_ID
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			 UNION
+			   SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PI.ITEM_NO AS ITEM_NO,
+			       PI.CONTENT ITEM_NAME,
+			       PI.ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT A.ITEM_NO, A.ITEM_ID, S.CONTENT
+			          FROM is_item A, SY_GLOBAL_NAME S
+			         WHERE A.ITEM_NO = S.NO(+)
+			           AND S.LANGUAGE(+) =#interLanguage:VARCHAR#
+			        ) PI
+			 WHERE UTC.COLUMN_NAME(+) = PI.ITEM_ID
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			 UNION
+			   SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PI.PARAM_ITEM_NO AS ITEM_NO,
+			       PI.CONTENT ITEM_NAME,
+			       PI.PARAM_ID AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT A.PARAM_ITEM_NO, A.PARAM_ID, S.CONTENT
+			          FROM is_param_item A, SY_GLOBAL_NAME S
+			         WHERE A.PARAM_ITEM_NO = S.NO(+)
+			           AND S.LANGUAGE(+) =#interLanguage:VARCHAR#
+			        ) PI
+			 WHERE UTC.COLUMN_NAME(+) = PI.PARAM_ID
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			 UNION
+			   SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PI.ITEM_NO AS ITEM_NO,
+			       PI.CONTENT ITEM_NAME,
+			       PI.ITEM_ID AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT A.ITEM_NO, A.ITEM_ID, S.CONTENT
+			          FROM pa_item A, SY_GLOBAL_NAME S
+			         WHERE A.ITEM_NO = S.NO(+)
+			           AND S.LANGUAGE(+) =#interLanguage:VARCHAR#
+			        ) PI
+			 WHERE UTC.COLUMN_NAME(+) = PI.ITEM_ID
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			 UNION
+			   SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PI.PARAM_ITEM_NO AS ITEM_NO,
+			       PI.CONTENT ITEM_NAME,
+			       PI.PARAM_ITEM_ID AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT A.PARAM_ITEM_NO, A.PARAM_ITEM_ID, S.CONTENT
+			          FROM pa_param_item A, SY_GLOBAL_NAME S
+			         WHERE A.PARAM_ITEM_NO = S.NO(+)
+			           AND S.LANGUAGE(+) =#interLanguage:VARCHAR#
+			        ) PI
+			 WHERE UTC.COLUMN_NAME(+) = PI.PARAM_ITEM_ID
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			 UNION
+			   SELECT 'PA' AS TYPE,
+			       'PA_SUMMARY_HTSV' AS TABLE_NAME,
+			       UTC.COLUMN_ID AS ORDER_NO,
+			       PI.ITEM_NO AS ITEM_NO,
+			       PI.CONTENT ITEM_NAME,
+			       PI.ITEM_ID AS ITEM_ID
+			  FROM USER_TAB_COLUMNS UTC,
+			       (SELECT DISTINCT A.ITEM_NO, A.ITEM_ID, S.CONTENT
+			          FROM pa_basic_item A, SY_GLOBAL_NAME S
+			         WHERE A.ITEM_NO = S.NO(+)
+			           AND S.LANGUAGE(+) =#interLanguage:VARCHAR#
+			        ) PI
+			 WHERE UTC.COLUMN_NAME(+) = PI.ITEM_ID
+			   AND UTC.TABLE_NAME = 'PA_SUMMARY_HTSV'
+			)
+			where table_name = '$TABLE_NAME$_HTSV'
+		]]>	
+		<isNotEmpty prepend="AND" property="RT_NO">
+			<![CDATA[
+			    item_id not in(select ri.ref_item_id from report_item ri where rt_no = #RT_NO:VARCHAR# AND ri.CPNY_id=#interCpnyID:VARCHAR#)  
+			]]>	
+		</isNotEmpty>
+		<![CDATA[
+		 	order by order_no
+		]]>	
+	</select>
+	<insert id="addNewAliasInfo" parameterClass="linkMap" >
+		<![CDATA[
+		 INSERT INTO REPORT_ITEM(
+			 RI_NO,
+			 RT_NO,
+			 REF_TABLE_NAME,
+			 REF_ITEM_NO,
+			 REF_ITEM_ID,
+			 ORDERNO,
+			 CREATE_DATE,
+			 CREATED_BY,
+			 ACTIVITY,
+			 CPNY_ID
+		 )VALUES(
+			 SY_GLOBAL_SEQ.NEXTVAL,
+			 #RT_NO:VARCHAR#,
+			 #TABLE_NAME:VARCHAR#,
+			 #ITEM_NO:VARCHAR#,
+			 #ITEM_ID:VARCHAR#,
+			 #ORDER_NO:VARCHAR#,
+			 SYSDATE,
+			 #CREATED_BY:VARCHAR#,
+			 1,
+			 #interCpnyID:VARCHAR#
+		 )
+    	]]>
+	</insert>
+	<select id="retrieveReportItemList" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[	
+		 SELECT A.REF_ITEM_NO ITEM_NO,
+		 		S.CONTENT ITEM_NAME
+		    FROM REPORT_ITEM A ,
+		    	 SY_GLOBAL_NAME S
+		    WHERE RT_NO = #RT_NO:VARCHAR#
+		   	   AND A.REF_ITEM_NO = S.NO(+)
+			   AND CPNY_ID=#interCpnyID:VARCHAR#
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			ORDER BY A.ORDERNO
+	]]>		
+	</select>
+	<delete id="deleteNewAliasInfo" parameterClass="linkMap">
+	<![CDATA[	
+		DELETE FROM REPORT_ITEM 
+			WHERE  RT_NO = #RT_NO:VARCHAR# 
+			AND REF_ITEM_NO = #REF_ITEM_NO:VARCHAR# 
+			AND CPNY_ID=#interCpnyID:VARCHAR#
+	]]>		
+	</delete>
+	
+	<insert id="addAliasInfo" parameterClass="linkMap">
+		<![CDATA[
+		 INSERT INTO REPORT_TABLE(
+			 RT_NO,
+			 MENU_NO,
+			 REPORT_TYPE,
+			 VIEW_MODEL,
+			 CREATE_DATE,
+			 CREATED_BY,
+			 ACTIVITY,
+			 CPNY_ID
+		 )VALUES(
+			 #RT_NO:VARCHAR#,
+			 #MENU_NO:VARCHAR#,
+			 #REPORT_TYPE:VARCHAR#,
+			 #VIEW_MODEL:VARCHAR#,
+			 SYSDATE,
+			 #CREATED_BY:VARCHAR#,
+			 1,
+			 #interCpnyID:VARCHAR#
+		 )
+    	]]>
+	</insert>
+	<delete id="deleteAliasInfo" parameterClass="linkMap">
+	<![CDATA[	
+		DELETE FROM REPORT_TABLE 
+			WHERE  RT_NO = #RT_NO:VARCHAR#  
+			AND CPNY_ID=#interCpnyID:VARCHAR#
+	]]>		
+	</delete>
+</sqlMap>

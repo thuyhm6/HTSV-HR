@@ -1,0 +1,199 @@
+ 
+<!-- /WEB-INF/view/empsubject/viewNoSwipingListExcel.jsp -->
+
+
+
+
+
+<html>  
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+	教育实绩
+</title>
+</head>                              
+<body>
+   
+<table width="60%" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>
+    	<table width="60%" border="2" align="center" cellpadding="0" cellspacing="0" 
+    			style="padding: 2px 2px 2px 2px;border-collapse:collapse">
+    		<tr>
+	    		<td align="center" colspan="8" >
+	    			<b><font size="+2">
+	    				未刷卡信息
+	    			</font></b>
+	    		</td>
+	    	</tr>
+			<tr>
+				<th width="60">日期</th>
+				<th width="60">社号/姓名</th>
+				<th width="60">部门 </th>
+				<th width="60">班次</th>
+				<th width="60">状态</th>
+				<th width="60">上班打卡时间</th>
+				<th width="60">下班打卡时间</th>
+				<th width="60">长度</th>
+			</tr> 
+	       	
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >YCH479372/周金凤</td>
+					<td class='td_center'>MC营业室 营业Team 华东PR Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >YCH479372/周金凤</td>
+					<td class='td_center'>MC营业室 营业Team 华东PR Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH262191/陈欢</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH262191/陈欢</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH260938/崔晓燕</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH260938/崔晓燕</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH260473/傅燕红</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH260473/傅燕红</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH256574/金明智</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH256574/金明智</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH102665/林丽芳</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH102665/林丽芳</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH102325/林利功</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+				<tr>
+					<td class="td_center">2014/10/18</td>
+					<td class='td_center' >CH102325/林利功</td>
+					<td class='td_center'>上海支社 PS Part</td>
+					<td class='td_center'>CH常白班</td>
+					<td class='td_center'>正常出勤</td>
+					<td class='td_right'></td>
+					<td class='td_center'></td>
+					<td class='td_center'>8</td>
+				</tr>
+			
+      </table>  
+	</td>
+  </tr>
+</table>
+</body>
+</html>

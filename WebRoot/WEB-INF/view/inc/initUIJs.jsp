@@ -1,0 +1,1 @@
+<script src="/resources/js/ligerUI/js/ligerui.min.js" type="text/javascript"></script>

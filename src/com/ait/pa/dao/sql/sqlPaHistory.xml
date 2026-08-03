@@ -1,0 +1,1720 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.history">
+	
+	<select id="getCheckPaHistoryFlag" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM $paSummeryTable$  PA		
+		]]>
+		<dynamic prepend="WHERE">  			
+			<isNotEmpty prepend="AND" property="PA_MONTH">
+				<![CDATA[
+			 		  PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 离职人员补发工资，added on 2014-06-29 -->
+	<select id="getPaAllItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select item_No ITEM_NO,
+			       item_id ITEM_ID,
+			       content CONTENT,
+			       '1' BIGITEM,
+			       '工资项目' BIGTIMENAME
+			  from (SELECT T.Item_No,
+			               t.item_id,
+			               sg.content,
+			               '1' bigitem,
+			               '工资项目' bigitemname
+			          FROM PA_ITEM T, pa_item_param p, sy_global_name sg
+			         WHERE T.ITEM_NO = p.item_no
+			           and t.item_no = sg.no
+			           and p.cpny_id = #interCpnyID:VARCHAR#
+			           and sg.language = #interLanguage:VARCHAR#
+			           and t.activity = 1
+			           
+			        union
+			        
+			        SELECT t.param_item_no,
+			               T.PARAM_ITEM_ID,
+			               sg.content,
+			               '1' bigitem,
+			               '工资项目' bigitemname
+			          FROM PA_PARAM_ITEM T, pa_param_item_param p, sy_global_name sg
+			         WHERE T.PARAM_ITEM_NO = p.param_item_no
+			           and t.param_item_no = sg.no
+			           and p.cpny_id = #interCpnyID:VARCHAR#
+			           and sg.language = #interLanguage:VARCHAR#
+			           and t.activity = 1
+			           
+			        union
+			        
+			        SELECT p.item_no,
+			               I.ITEM_ID,
+			               sg.content,
+			               '2' bigitem,
+			               '保险项目' bigitemname
+			          FROM IS_ITEM I, is_item_param p, sy_global_name sg
+			         WHERE i.item_no = p.item_no
+			           and i.item_no = sg.no
+			           and p.cpny_id = #interCpnyID:VARCHAR#
+			           and sg.language = #interLanguage:VARCHAR#
+			           and i.activity = 1
+			        
+			        union
+			        
+			        SELECT ip.param_item_no,
+			               IP.PARAM_ID,
+			               sg.content,
+			               '2' bigitem,
+			               '保险项目' bigitemname
+			          FROM IS_PARAM_ITEM IP, is_param_item_param p, sy_global_name sg
+			         WHERE ip.param_item_no = p.param_item_no
+			           and ip.param_item_no = sg.no
+			           and p.cpny_id = #interCpnyID:VARCHAR#
+			           and sg.language = #interLanguage:VARCHAR#
+			           and ip.activity = 1
+			           ) a
+			 where a.item_id in
+			       (select UT.COLUMN_NAME
+			          from user_tab_cols ut
+			         where ut.table_name = #table_name:VARCHAR#)
+			 order by bigitem, item_id				
+		]]>
+	</select>
+	
+	<insert id="submitAddPaForleftMen" parameterClass="linkMap" >
+		<![CDATA[
+			insert into pa_leftmen_adding values 
+				(#paMonthFafang:VARCHAR#,
+				
+				GET_EMP_PERSONID(#EMP_ID:VARCHAR#,#interCpnyID:VARCHAR# ),
+				#EMP_ID:VARCHAR#,
+				GET_EMP_LOCAL_NAME(#EMP_ID:VARCHAR#,#interCpnyID:VARCHAR# ),
+				#interCpnyID:VARCHAR#,
+				#bigItem:VARCHAR#,
+				#smallItem:VARCHAR#,
+				#paMonthZhifu:VARCHAR#,
+				
+				#ITEM_DATA#, 
+				#REMARK:VARCHAR#,
+				PA_LEFTMEN_SEQ.NEXTVAL,
+				SYSDATE,
+				GET_EMP_PERSONID(#EMP_ID:VARCHAR#,#interCpnyID:VARCHAR# ),
+				SYSDATE,
+				GET_EMP_PERSONID(#EMP_ID:VARCHAR#,#interCpnyID:VARCHAR# )
+				)
+		]]>
+	</insert>
+
+	<select id="getPaForLeftMenDetailList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.APPLY_NO,
+			       PA.BATCH_NO,
+			       PA.PA_MONTH,
+			       PA.PA_MONTH_FOR,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT,
+			       PA.PERSON_ID,
+			       PA.CPNY_ID,
+			       PA.ITEM_TYPE,
+			       PA.ITEM_NO,
+			       GG.CONTENT ITEM_NAME,
+			       PA.ITEM_DATA,
+			       PA.REMARK,
+			       SUBSTR(PA.REMARK, 0, 8) REMARK_INFO,
+			       TO_CHAR(PA.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       PA.CREATED_BY,
+			       PA.ORDERNO,
+			       PA.ACTIVITY
+			  FROM PA_LEFTMEN_ADDING PA, HR_EMPLOYEE HE,SY_GLOBAL_NAME GG
+			 WHERE PA.PERSON_ID = HE.PERSON_ID
+			   AND PA.ITEM_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_KEY">
+			<![CDATA[
+		 		  (HE.PERSON_ID LIKE '%' || #EMP_KEY# || '%' OR HE.EMPID LIKE '%' || #EMP_KEY# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMP_KEY# || '%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ITEM_KEY">
+			<![CDATA[
+		 		  (PA.ITEM_NO LIKE '%' || #ITEM_KEY# || '%' OR GG.CONTENT LIKE '%' || #ITEM_KEY# || '%') 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #BATCH_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getPaForLeftMenDetailListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				SELECT PA.APPLY_NO,
+			       PA.BATCH_NO,
+			       PA.PA_MONTH,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT,
+			       PA.PERSON_ID,
+			       PA.CPNY_ID,
+			       PA.PA_MONTH_FOR,
+			       PA.ITEM_TYPE,
+			       PA.ITEM_NO,
+			       GG.CONTENT ITEM_NAME,
+			       PA.ITEM_DATA,
+			       PA.REMARK,
+			       SUBSTR(PA.REMARK, 0, 8) REMARK_INFO,
+			       TO_CHAR(PA.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       PA.CREATED_BY,
+			       PA.ORDERNO,
+			       PA.ACTIVITY
+			  FROM PA_LEFTMEN_ADDING PA, HR_EMPLOYEE HE,SY_GLOBAL_NAME GG
+			 WHERE PA.PERSON_ID = HE.PERSON_ID
+			   AND PA.ITEM_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_KEY">
+			<![CDATA[
+		 		  (HE.PERSON_ID LIKE '%' || #EMP_KEY# || '%' OR HE.EMPID LIKE '%' || #EMP_KEY# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMP_KEY# || '%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ITEM_KEY">
+			<![CDATA[
+		 		  (PA.ITEM_NO LIKE '%' || #ITEM_KEY# || '%' OR GG.CONTENT LIKE '%' || #ITEM_KEY# || '%') 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #BATCH_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+	</select>
+	
+	<select id="getPaForLeftMenApplyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.BATCH_NO,
+			       PA.APPLYOR,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPART,
+			       PA.CPNY_ID,
+			       PA.AFFIRM_FLAG,
+			       PA.APPLY_CONTENT,
+			       SUBSTR(PA.APPLY_CONTENT,0,8) APPLY_INFO,
+			       TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE
+			  FROM PA_LEFTMEN_APPLY PA, HR_EMPLOYEE HE
+			 WHERE PA.APPLYOR = HE.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_KEY">
+			<![CDATA[
+		 		  (HE.PERSON_ID LIKE '%' || #EMP_KEY# || '%' OR HE.EMPID LIKE '%' || #EMP_KEY# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMP_KEY# || '%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+		 		  PA.AFFIRM_FLAG = #AFFIRM_FLAG#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #BATCH_NO#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #APPLY_NO#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.EMPID
+		]]>
+	</select>
+
+	<select id="getPaForLeftMenApplyListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				SELECT PA.BATCH_NO,
+				       PA.APPLYOR,
+				       HE.EMPID,
+				       HE.LOCAL_NAME,
+				       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPART,
+				       PA.CPNY_ID,
+				       PA.AFFIRM_FLAG,
+				       PA.APPLY_CONTENT,
+				       SUBSTR(PA.APPLY_CONTENT,0,8) APPLY_INFO,
+				       TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE
+				  FROM PA_LEFTMEN_APPLY PA, HR_EMPLOYEE HE
+				 WHERE PA.APPLYOR = HE.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_KEY">
+			<![CDATA[
+		 		  (HE.PERSON_ID LIKE '%' || #EMP_KEY# || '%' OR HE.EMPID LIKE '%' || #EMP_KEY# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMP_KEY# || '%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+		 		  PA.AFFIRM_FLAG = #AFFIRM_FLAG#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #BATCH_NO#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #APPLY_NO#
+		    ]]>
+		</isNotEmpty>
+			<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+	</select>
+	
+	<!-- 导入的离职人员补发工资 -->
+	<select id="getPaForLetMenTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.APPLY_NO,
+			       PA.BATCH_NO,
+			       PA.PA_MONTH,
+			       PA.PERSON_ID,
+			       PA.EMPID,
+			       
+			       PA.LOCAL_NAME,
+			       PA.CPNY_ID,
+			       PA.PA_MONTH_FOR,
+			       PA.ITEM_TYPE,
+			       PA.ITEM_NO,
+			       
+			       PA.ITEM_ID,
+			       PA.ITEM_DATA,
+			       PA.REMARK,
+			       PA.CHECK_FLAG,
+			       PA.CHECK_ERROR,
+			       
+			       TO_CHAR(PA.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       PA.CREATED_BY,
+			       PA.ORDERNO,
+			       PA.ACTIVITY
+			  FROM PA_LEFTMEN_ADDING_TEMP PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+		 		  PA.CREATED_BY = #CREATED_BY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CHECK_FLAG">
+			<![CDATA[
+		 		  PA.CHECK_FLAG = #CHECK_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getPaForLetMenTempListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_LEFTMEN_ADDING_TEMP PA
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+		 		  PA.CREATED_BY = #CREATED_BY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CHECK_FLAG">
+			<![CDATA[
+		 		  PA.CHECK_FLAG = #CHECK_FLAG:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaForLetMenTempErrorCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_LEFTMEN_ADDING_TEMP PA
+			 WHERE PA.CHECK_FLAG = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+		 		  PA.CREATED_BY = #CREATED_BY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		  PA.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaForLeftApplySeq" parameterClass="linkMap" resultClass="int" remapResults="true">
+	    <![CDATA[				     
+			SELECT PA_LEFTMEN_APPLY_SEQ.NEXTVAL FROM DUAL
+	    ]]>
+	</select>
+	
+	<insert id="insertPaInfoForEmpLeftApply" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_LEFTMEN_APPLY
+			  (BATCH_NO,
+			   APPLY_TYPE_NO,
+			   CPNY_ID,
+			   APPLYOR,
+			   APPLY_CONTENT,
+			   
+			   AFFIRM_FLAG,
+			   CURRENT_AFFIRM_ID,
+			   
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ORDERNO)
+			VALUES
+			  (#BATCH_NO#,
+			   #APPLY_TYPE_NO#,
+			   #CPNY_ID:VARCHAR#,
+			   #CREATED_BY:VARCHAR#,
+			   #TITLE:VARCHAR#,
+			   
+			   0,
+		 	   #CURRENT_AFFIRM_ID:VARCHAR#,
+			   1,
+			   SYSDATE,
+			   #CREATED_BY:VARCHAR#,
+			   #BATCH_NO#)	 	 
+		]]>
+	</insert>
+	
+	<insert id="insertPaInfoForEmpLeftDetail" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_LEFTMEN_ADDING
+			  (APPLY_NO,
+			   BATCH_NO,
+			   PA_MONTH,
+			   PERSON_ID,
+			   CPNY_ID,
+			   
+			   PA_MONTH_FOR,
+			   ITEM_TYPE,
+			  
+			  
+			
+			   
+			   REMARK,
+			   SEND_FLAG,
+			   
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY,
+			   ORDERNO)
+			VALUES
+			  (#APPLY_NO#,
+			   #BATCH_NO#,
+			   #PA_MONTH#,
+			   #PERSON_ID#,
+			   #CPNY_ID#,
+			   
+			   #PA_MONTH_FOR#,
+			   #ITEM_TYPE#,
+			  
+			  
+			  
+			   
+			   #REMARK#,
+			   'N',
+			   
+			   SYSDATE,
+			   #CREATED_BY#,
+			   0,
+			   #APPLY_NO#) 	 
+		]]>
+	</insert>
+	
+	<delete id="deletePaInfoForEmpLeftDetail" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_LEFTMEN_ADDING_TEMP T
+			 WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.CREATED_BY = #CREATED_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="cancelPaForLeftApplyImport" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_LEFTMEN_ADDING_TEMP T
+			 WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.CREATED_BY = #CREATED_BY:VARCHAR#
+		]]>
+	</delete>
+		
+	<!-- 申请加决裁者 -->
+	<insert id="insertPaBackAffirmor" parameterClass="linkMap">
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				APPLY_TYPE,
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID,
+				
+				AFFIRM_COM_TYPE, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #APPLY_NO#,
+    		    #APPLY_TYPE#,
+				0, 
+				#AFFIRM_LEVEL#, 
+				#AFFIRMOR_ID#, 
+		]]>
+		<isNotEmpty property="AFFIRM_COM_TYPE" >
+			<![CDATA[
+    		    #AFFIRM_COM_TYPE:VARCHAR#,
+			]]>
+		</isNotEmpty>		
+		<isEmpty property="AFFIRM_COM_TYPE">
+			<![CDATA[
+	        	'DB_COM',
+	      	]]>
+	    </isEmpty>
+		<![CDATA[						
+				SYSDATE, 
+				#CREATED_BY#, 
+				0
+				)
+	    ]]>
+	</insert>
+	
+	<update id="updatePaForLetMenDataCheckResult" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_LEFTMEN_ADDING_TEMP T
+			   SET CHECK_ERROR = CHECK_ERROR || #ERROR_CONTENT#,
+			       CHECK_FLAG = 1
+			 WHERE APPLY_NO = #APPLY_NO#
+		]]>
+	</update>
+	
+	<select id="getCodeCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		<![CDATA[
+			SELECT T.APPLY_NO,
+			       T.PA_MONTH,
+			       T.PERSON_ID,
+			       T.EMPID,
+			       T.LOCAL_NAME,
+			       T.CPNY_ID,
+			       T.PA_MONTH_FOR,
+			       T.ITEM_TYPE,
+			       T.ITEM_NO,
+			       T.ITEM_DATA,
+			       T.REMARK
+			  FROM PA_LEFTMEN_ADDING_TEMP T
+			 WHERE 1 = 1
+			   AND T.APPLY_NO = #APPLY_NO#
+		]]>   
+	</select>
+	
+	<select id="getCpnyCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		<![CDATA[
+			SELECT CPNY_ID FROM HR_COMPANY 
+			 WHERE 1 = 1
+			   AND CPNY_ID = #CPNY_ID#
+		]]>
+	</select>
+	
+	<select id="getEmpidCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		<![CDATA[
+			SELECT EMPID, PERSON_ID, LOCAL_NAME, CPNY_ID,TO_CHAR(DATE_LEFT,'YYYY-MM-DD') DATE_LEFT
+			  FROM HR_EMPLOYEE HE
+			 WHERE 1 = 1
+		       AND EMPID = #EMPID#
+			   AND CPNY_ID = #CPNY_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="CHECK_CONDITION" >
+			<![CDATA[
+    		    DATE_LEFT IS NOT NULL
+			]]>
+		</isNotEmpty>	
+	</select>
+	
+	<select id="getItemCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_NO, T.ITEM_NAME, T.ITEM_ID, T.ITEM_TYPE, T.CPNY_ID
+			  FROM PA_IS_ITEM_V T, PA_LEFTMEN_ADDING_TEMP PA
+			 WHERE T.ITEM_NAME = PA.ITEM_NO
+			   AND PA.APPLY_NO = #APPLY_NO#
+			   AND T.CPNY_ID = PA.CPNY_ID
+			   AND PA.CPNY_ID = #CPNY_ID#
+			   AND T.ITEM_ID IN
+			       (select UT.COLUMN_NAME
+			          from user_tab_cols ut
+			         where ut.table_name = #TABLE_NAME:VARCHAR#)
+		]]>
+	</select>
+	
+	<select id="getItemTypeAndItemCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_NO, T.ITEM_NAME, T.ITEM_ID, T.ITEM_TYPE, T.CPNY_ID
+			  FROM PA_IS_ITEM_V T, PA_LEFTMEN_ADDING_TEMP PA
+			 WHERE T.ITEM_NAME = PA.ITEM_NO
+			   AND T.ITEM_TYPE LIKE '%'||PA.ITEM_TYPE||'%'
+			   AND T.CPNY_ID = PA.CPNY_ID
+			   AND PA.CPNY_ID = #CPNY_ID#
+			   AND PA.APPLY_NO = #APPLY_NO#
+			   AND T.ITEM_ID IN
+			       (select UT.COLUMN_NAME
+			          from user_tab_cols ut
+			         where ut.table_name = #TABLE_NAME:VARCHAR#)
+		]]>
+	</select>
+	
+	<select id="getExistDataNormalCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.APPLY_NO,
+			       PA.BATCH_NO,
+			       PA.PA_MONTH,
+			       PA.PERSON_ID,
+			       PA.CPNY_ID,
+			       PA.PA_MONTH_FOR,
+			       PA.ITEM_TYPE,
+			       PA.ITEM_NO,
+			       PA.ITEM_DATA,
+			       PA.REMARK
+			  FROM PA_LEFTMEN_ADDING      PA,
+			       HR_EMPLOYEE            HE
+			 WHERE PA.PERSON_ID = HE.PERSON_ID
+			   AND PA.SEND_FLAG = 'Y'
+		]]>		   
+		 <isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			   HE.CPNY_ID = #CPNY_ID#
+			]]>
+		</isNotEmpty>			   
+		 <isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[			   
+			   PA.PA_MONTH = #PA_MONTH#
+			]]>
+		</isNotEmpty>			   
+		 <isNotEmpty prepend="AND" property="PA_MONTH_FOR">
+			<![CDATA[			   
+			   PA.PA_MONTH_FOR = #PA_MONTH_FOR#
+			]]>
+		</isNotEmpty>				   
+		 <isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[			   
+			   HE.EMPID = #EMPID#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getExistDataTempCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.APPLY_NO,
+			       PA.BATCH_NO,
+			       PA.PA_MONTH,
+			       PA.PERSON_ID,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.CPNY_ID,
+			       PA.PA_MONTH_FOR,
+			       PA.ITEM_TYPE,
+			       PA.ITEM_NO,
+			       PA.ITEM_DATA,
+			       PA.REMARK
+			  FROM PA_LEFTMEN_ADDING_TEMP PA
+			 WHERE PA.PA_MONTH = #PA_MONTH#
+			   AND PA.PA_MONTH_FOR = #PA_MONTH_FOR#
+			   AND PA.CPNY_ID = #CPNY_ID#
+			   AND PA.EMPID = #EMPID#
+			   AND PA.APPLY_NO <> #APPLY_NO#
+			   AND CHECK_FLAG IS NULL
+		]]>
+	</select>
+	
+	<update id="updatePaForLetMenDataToPersonId" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_LEFTMEN_ADDING_TEMP T
+			   SET T.PERSON_ID = (SELECT PERSON_ID
+			                        FROM HR_EMPLOYEE
+			                       WHERE CPNY_ID = T.CPNY_ID
+			                         AND EMPID = T.EMPID)
+			 WHERE APPLY_NO = #APPLY_NO#
+		]]>
+	</update>
+	
+	<update id="updatePaForLetMenDataToItemType" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_LEFTMEN_ADDING_TEMP T
+			   SET T.ITEM_TYPE = DECODE(T.ITEM_TYPE, '保险', 'IS', 'PA')
+			 WHERE APPLY_NO = #APPLY_NO#
+		]]>
+	</update>
+	
+	<update id="updatePaForLetMenDataToItemNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_LEFTMEN_ADDING_TEMP T
+			   SET T.ITEM_NO = (SELECT MAX(PA.ITEM_NO)
+			                      FROM PA_IS_ITEM_V PA
+			                     WHERE T.ITEM_NO = PA.ITEM_NAME),
+				   T.ITEM_ID = (SELECT MAX(PA.ITEM_ID)
+			                      FROM PA_IS_ITEM_V PA
+			                     WHERE T.ITEM_NO = PA.ITEM_NAME)			                     
+			 WHERE APPLY_NO = #APPLY_NO#
+		]]>
+	</update>
+	
+	<!-- 删除决裁者 -->
+	<delete id="deletePaBackAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+		    DELETE FROM ESS_AFFIRM
+		    	WHERE APPLY_NO = #EVENT_ID#
+		    	AND APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		    	AND AFFIRM_FLAG = 0
+	    ]]>
+	    <isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				ESS_AFFIRM_NO <> #ESS_AFFIRM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<select id="getPaForLeftMenAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.BATCH_NO,
+			       PA.APPLY_TYPE_NO,
+			       PA.APPLYOR,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+			       PA.CPNY_ID,
+			       PA.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+			       PA.APPLY_CONTENT,
+			       SUBSTR(PA.APPLY_CONTENT, 0, 8) APPLY_INFO,
+			       TO_CHAR(PA.CREATE_DATE,'YYYYMMDD') CREATE_DATE,
+			       TO_CHAR(PA.UPDATE_DATE,'YYYYMMDD') UPDATE_DATE,
+			       PA.CURRENT_AFFIRM_ID,
+			       ESS.ESS_AFFIRM_NO,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRMOR_ID
+			  FROM PA_LEFTMEN_APPLY PA, HR_EMPLOYEE HE, ESS_AFFIRM ESS
+			 WHERE PA.APPLYOR = HE.PERSON_ID
+			   AND PA.BATCH_NO = ESS.APPLY_NO
+			   AND PA.APPLY_TYPE_NO = ESS.APPLY_TYPE
+			   AND ESS.AFFIRMOR_ID = #supervisorPersonId:VARCHAR#
+		]]>			 			               
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_KEY">
+			<![CDATA[
+		 		  (HE.PERSON_ID LIKE '%' || #EMP_KEY# || '%' OR HE.EMPID LIKE '%' || #EMP_KEY# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMP_KEY# || '%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+		 		  PA.AFFIRM_FLAG = #AFFIRM_FLAG#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #BATCH_NO#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA.BATCH_NO DESC, HE.EMPID,ESS.AFFIRM_LEVEL
+		]]>
+	</select>
+
+	<select id="getPaForLeftMenAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+				SELECT PA.BATCH_NO,
+				       PA.APPLY_TYPE_NO,
+				       PA.APPLYOR,
+				       HE.EMPID,
+				       HE.LOCAL_NAME,
+				       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+				       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+				       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+				       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+				       PA.CPNY_ID,
+				       PA.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+				       PA.APPLY_CONTENT,
+				       SUBSTR(PA.APPLY_CONTENT, 0, 8) APPLY_INFO,
+				       TO_CHAR(PA.CREATE_DATE,'YYYYMMDD') CREATE_DATE,
+			           TO_CHAR(PA.UPDATE_DATE,'YYYYMMDD') UPDATE_DATE,
+				       PA.CURRENT_AFFIRM_ID,
+				       ESS.ESS_AFFIRM_NO,
+				       ESS.AFFIRM_FLAG,
+				       ESS.AFFIRM_LEVEL,
+				       ESS.AFFIRMOR_ID
+				  FROM PA_LEFTMEN_APPLY PA, HR_EMPLOYEE HE, ESS_AFFIRM ESS
+				 WHERE PA.APPLYOR = HE.PERSON_ID
+				   AND PA.BATCH_NO = ESS.APPLY_NO
+				   AND PA.APPLY_TYPE_NO = ESS.APPLY_TYPE
+				   AND ESS.AFFIRMOR_ID = #supervisorPersonId:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_KEY">
+			<![CDATA[
+		 		  (HE.PERSON_ID LIKE '%' || #EMP_KEY# || '%' OR HE.EMPID LIKE '%' || #EMP_KEY# || '%' OR HE.LOCAL_NAME LIKE '%' || #EMP_KEY# || '%')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+		 		  TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+		 		  PA.AFFIRM_FLAG = #AFFIRM_FLAG#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #BATCH_NO#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+	</select>
+	
+	<select id="getPaForLeftAffirmorByApplyNoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT ESS.APPLY_NO,
+			       ESS.APPLY_TYPE,
+			       ESS.ESS_AFFIRM_NO,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_CONTENT,
+			       ESS.AFFIRM_COM_TYPE,
+			       TO_CHAR(ESS.UPDATE_DATE, 'YYYYMMDD') AFFIRM_DATE,
+			       ESS.CURRENT_CHECKOR_ID
+			       
+			  FROM HR_EMPLOYEE HE, ESS_AFFIRM ESS
+			 WHERE HE.PERSON_ID = ESS.AFFIRMOR_ID
+		]]>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				 ESS.ESS_AFFIRM_NO = #ESS_AFFIRM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #BATCH_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+				 ESS.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY ESS.AFFIRM_LEVEL
+		]]>
+	</select>
+	
+	<select id="getPaForLeftCheckorByApplyNoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT ESS.APPLY_NO,
+			       ESS.APPLY_TYPE,
+			       ESS.ESS_AFFIRM_NO,
+			       HE.EMPID AFFIRM_EMPID,
+			       HE.LOCAL_NAME AFFIRM_NAME,
+			        HE.POSITION_NO AFFIRM_POSITION,
+			       
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) AFFIRM_POST,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) AFFIRM_DUTY,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) AFFIRM_DEPT_NAME,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_CONTENT,
+			       TO_CHAR(ESS.UPDATE_DATE, 'YYYYMMDD') AFFIRM_DATE,
+			       ESS.CURRENT_CHECKOR_ID,
+			       
+			       CHE.EMPID CHECK_EMPID,
+			       CHE.LOCAL_NAME CHECK_NAME,
+			         
+			       CHE.POSITION_NO CHECK_POSITION,
+			     
+			       get_global_name(CHE.POST_NO, #interLanguage:VARCHAR#) CHECK_POST,
+			       get_global_name(CHE.DUTY_NO, #interLanguage:VARCHAR#) CHECK_DUTY,
+			       get_dept_name(CHE.DEPTNO, #interLanguage:VARCHAR#) CHECK_DEPT_NAME,
+			       EC.ESS_CHECK_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_FLAG,
+			       EC.CHECKOR_ID,
+			       EC.CHECK_CONTENT,
+			       TO_CHAR(EC.CREATED_DATE, 'YYYYMMDD') CHECK_CREATE_DATE,
+			       EC.CREATED_BY CHECK_CREATE_BY,
+			       TO_CHAR(EC.UPDATE_DATE, 'YYYYMMDD') CHECKED_DATE,
+			       EC.UPDATED_BY CHECKED_BY
+			
+			  FROM HR_EMPLOYEE HE, ESS_AFFIRM ESS, HR_EMPLOYEE CHE,ESS_CHECK EC
+			 WHERE HE.PERSON_ID = ESS.AFFIRMOR_ID
+			   AND ESS.ESS_AFFIRM_NO = EC.ESS_AFFIRM_NO
+			   AND EC.CHECKOR_ID = CHE.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_NO">
+			<![CDATA[
+				 ESS.APPLY_NO = #BATCH_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+				 ESS.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				 ESS.ESS_AFFIRM_NO = #ESS_AFFIRM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY ESS.APPLY_NO,EC.CHECK_LEVEL
+		]]>
+	</select>
+	
+	<select id="getAffirmorCntByApplyNo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_AFFIRM ESS
+			 WHERE ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+			   AND ESS.AFFIRMOR_ID = #AFFIRMOR_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+				 ESS.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>	
+	
+	<!-- 插入新的决裁者之前先将其它决裁信息的等级先提高一级 -->
+	<update id="updateAffirmLevelByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_AFFIRM ESS
+			   SET ESS.AFFIRM_LEVEL = ESS.AFFIRM_LEVEL + 1
+			 WHERE ESS.APPLY_NO = #APPLY_NO#
+			   AND ESS.AFFIRM_LEVEL >= #AFFIRM_LEVEL#
+	    ]]>
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+	              APPLY_TYPE =  #APPLY_TYPE_NO:VARCHAR#
+	     ]]>
+	     </isNotEmpty>
+	</update>
+	<!-- 插入新的决裁者之前先将其它决裁信息的等级先提高一级 -->
+	
+	<!-- 添加新的决裁者 -->
+	<insert id="insertApplyAffirmor" parameterClass="linkMap">
+	    <![CDATA[
+			INSERT  INTO ESS_AFFIRM 
+					(ESS_AFFIRM_NO, 
+					APPLY_NO, 
+					APPLY_TYPE,
+					AFFIRM_FLAG, 
+					AFFIRM_LEVEL, 
+					
+					AFFIRM_COM_TYPE,
+					AFFIRMOR_ID, 
+					CREATE_DATE, 
+					CREATED_BY, 
+					ACTIVITY
+	                ) 
+			VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+	    		    #APPLY_NO#,
+	    		    #APPLY_TYPE#,
+					0, 
+					#AFFIRM_LEVEL#,
+					
+					#AFFIRM_COM_TYPE#,
+					#AFFIRMOR_ID#, 
+					SYSDATE, 
+					#CREATED_BY#, 
+					0
+					)
+	    ]]>
+	</insert>
+	
+	<delete id="delPaForLeftApplyByApplyNo" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM PA_LEFTMEN_APPLY PA WHERE AFFIRM_FLAG = 0 AND BATCH_NO = #APPLY_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="delPaForLeftAffirmByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_AFFIRM ESS WHERE APPLY_TYPE = '224' AND APPLY_NO = #APPLY_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="delPaForLeftApplyDetailByApplyNo" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM PA_LEFTMEN_ADDING PA WHERE SEND_FLAG = 'N' AND BATCH_NO = #APPLY_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 按affirmNo获得申请信息 -->
+  	<select id="getEssAffirmInfoByAffirmNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+	    <![CDATA[
+	        SELECT EA.ESS_AFFIRM_NO,
+	               EA.APPLY_NO,
+	               EA.APPLY_TYPE,
+	               EA.AFFIRM_FLAG,
+	               EA.AFFIRM_LEVEL,
+	               EA.AFFIRMOR_ID,
+	               EA.AFFIRM_COM_TYPE,
+	               EA.AFFIRM_CONTENT,
+	               EA.CURRENT_CHECKOR_ID,
+	               EA.ACTIVITY
+	          FROM ESS_AFFIRM EA
+	         WHERE EA.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#         
+    	]]>    
+	</select>
+  
+	<select id="getMaxAffirmLevelByApplyNo" parameterClass="linkMap" resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT NVL(MAX(HA.AFFIRM_LEVEL), 0) 
+			  FROM ESS_AFFIRM HA 
+			 WHERE HA.APPLY_NO = #APPLY_NO#		  				   
+	    ]]>		
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE">
+			<![CDATA[
+				 HA.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<!-- 按affirmNo和level获得申请信息 -->
+	<select id="getEssAffirmInfoByApplyNoAndLevel" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT EA.ESS_AFFIRM_NO,
+			       EA.APPLY_NO,
+			       EA.APPLY_TYPE,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY,
+			       H.LOCAL_NAME
+			  FROM ESS_AFFIRM  EA,
+			       HR_EMPLOYEE H
+			 WHERE EA.APPLY_NO = #APPLY_NO#
+			   AND EA.AFFIRMOR_ID = H.PERSON_ID		   
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			<![CDATA[
+				EA.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NEXT_AFFIRM_LEVEL">
+			<![CDATA[
+				EA.AFFIRM_LEVEL = #NEXT_AFFIRM_LEVEL#
+			]]>
+		</isNotEmpty>			
+	</select>  
+	
+	<!-- 修改ESS_AFFIRM start -->
+  	<update id="updateEssAffirmPaForLeftByAffirmNo" parameterClass="linkMap">
+    	<![CDATA[
+            UPDATE ESS_AFFIRM EA
+               SET EA.AFFIRM_FLAG = #AFFIRM_FLAG#,
+    	]]>
+        <isNotEmpty prepend="" property="AFFIRM_CONTENT">
+            <![CDATA[
+            	EA.AFFIRM_CONTENT = #AFFIRM_CONTENT:VARCHAR#,
+			]]>   
+        </isNotEmpty>         
+    	<![CDATA[    
+                   EA.ACTIVITY    = #AFFIRM_FLAG#,
+                   EA.UPDATE_DATE = SYSDATE,
+                   EA.UPDATED_BY  = #UPDATED_BY#
+             WHERE EA.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+    	]]>
+  	</update>
+  	<!-- 修改ESS_AFFIRM end -->
+  
+	<!-- 修改申请 如果不是流程的最后一步,通过后续修改ESS_APPLY_OT.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+	<update id="updateEssApplyPaForLeftByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_LEFTMEN_APPLY PA
+			   SET PA.ACTIVITY          = #ACTIVITY#,
+			       PA.AFFIRM_FLAG       = #AFFIRM_READ_FLAG#,
+			       PA.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+			       PA.UPDATE_DATE       = SYSDATE,
+			       PA.UPDATED_BY        = #UPDATED_BY#
+			 WHERE PA.BATCH_NO = #APPLY_NO#			
+	    ]]>
+	</update>
+	
+	
+	<update id="updateApplyPaForLeftByApplyNo" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE PA_LEFTMEN_APPLY
+		  	SET AFFIRM_FLAG = #FLAG:VARCHAR#,
+		  	CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#,
+		  	UPDATE_DATE = SYSDATE,
+		  	UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE BATCH_NO = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<select id="getPaForLeftApplyInfoByApplyNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.BATCH_NO,
+			       PA.APPLYOR,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPART,
+			       PA.CPNY_ID,
+			       PA.AFFIRM_FLAG,
+			       PA.APPLY_CONTENT,
+			       SUBSTR(PA.APPLY_CONTENT,0,8) APPLY_INFO,
+			       TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE
+			  FROM PA_LEFTMEN_APPLY PA, HR_EMPLOYEE HE
+			 WHERE PA.APPLYOR = HE.PERSON_ID
+			   AND ROWNUM = 1
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+		 		  PA.BATCH_NO = #APPLY_NO#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaForLeftApplyDetailList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.APPLY_NO,
+			       PA.BATCH_NO,
+			       PA.PA_MONTH,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       PA.PERSON_ID,
+			       PA.CPNY_ID,
+			       'AR_SUMMARY_' || PA.CPNY_ID PA_TABLE,
+			       PA.PA_MONTH_FOR,
+			       PA.ITEM_TYPE,
+			       PA.ITEM_NO,
+			       PA.ITEM_ID,
+			       PA.ITEM_DATA,
+			       PA.REMARK,
+			       #ADMIN_ID# as ADMIN_ID
+			  FROM PA_LEFTMEN_ADDING PA, HR_EMPLOYEE HE
+			 WHERE PA.PERSON_ID = HE.PERSON_ID
+			   AND PA.BATCH_NO = #BATCH_NO#
+		]]>
+	</select>
+	
+	<select id="getPaInfoListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM $PA_TABLE$
+			 WHERE AR_MONTH = #PA_MONTH#
+			   AND PERSON_ID = #PERSON_ID#
+		]]>	
+	</select>
+	
+	<update id="updatePaForLeftSendFlagByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_LEFTMEN_ADDING
+			   SET SEND_FLAG = 'Y',
+			   	   UPDATE_DATE = SYSDATE    
+			 WHERE APPLY_NO = #APPLY_NO#			
+	    ]]>
+	</update>
+	
+	<insert id="insertPaForLeftByApplyResultLGECH" parameterClass="linkMap">
+	    <![CDATA[
+			INSERT INTO AR_SUMMARY_LGECH
+						  (AR_MONTH,
+						   ADD_FLAG,
+						   PERSON_ID,
+						   CREATED_BY,
+						   CREATE_DATE,
+						   PAY_AREA_NO,
+						   JOB_FAM,
+						   NATIONALITY_NAME,
+						   EMP_TYPE_NAME,
+						   STAT_NO,
+						   INSRAREA_ID,
+						   EMP_TYPE_CODE,
+						   NATIONALITY_NO,
+						   CPNY_ID,
+						   EMPID,
+						   LOCAL_NAME,
+						   DEPTNO,
+						   POSITION_NO,
+						   POST_GRADE_NO,
+						   DUTY_NO,
+						   DATE_STARTED,
+						   DATE_LEFT,
+						   DEPT_NAME,
+						   PROB_PAY_RAT,
+						   END_PROBATION_DATE,
+						   EMPTYPE_GROUPNO,
+						   INSRAREA_ID_NAME,
+						   EMPTYPE_GROUP,
+						   PAY_AREA_CD,
+						   IF_PAYMENT_RENT,
+						   PROMTR_TP)
+						  SELECT #PA_MONTH#,
+						         'Y',
+						         #PERSON_ID#,
+						         #ADMIN_ID#,
+						         SYSDATE,
+						         PAY_AREA_NO,
+						         JOB_FAM,
+						         NATIONALITY_NAME,
+						         EMP_TYPE_NAME,
+						         STAT_NO,
+						         INSRAREA_ID,
+						         EMP_TYPE_CODE,
+						         NATIONALITY_NO,
+						         CPNY_ID,
+						         EMPID,
+						         LOCAL_NAME,
+						         DEPTNO,
+						         POSITION_NO,
+						         POST_GRADE_NO,
+						         DUTY_NO,
+						         DATE_STARTED,
+						         DATE_LEFT,
+						         DEPT_NAME,
+						         PROB_PAY_RAT,
+						         END_PROBATION_DATE,
+						         EMPTYPE_GROUPNO,
+						         INSRAREA_ID_NAME,
+						         EMPTYPE_GROUP,
+						         PAY_AREA_CD,
+						         IF_PAYMENT_RENT,
+						         PROMTR_TP
+						    FROM AR_SUMMARY_LGECH P
+						   WHERE P.AR_MONTH = (SELECT MAX(PP.AR_MONTH)
+						                         FROM AR_SUMMARY_LGECH PP
+						                        WHERE PP.PERSON_ID = #PERSON_ID#)
+						     AND P.PERSON_ID = #PERSON_ID#
+
+	    ]]>
+	</insert>
+	
+	<insert id="insertPaForLeftByApplyResult" parameterClass="linkMap">
+	    <![CDATA[
+				INSERT INTO $PA_TABLE$
+					  (AR_MONTH,
+					   ADD_FLAG,
+					   PERSON_ID,
+					   CREATED_BY,
+					   CREATE_DATE,
+					   JOB_FAM,
+					   NATIONALITY_NAME,
+					   EMP_TYPE_NAME,
+					   STAT_NO,
+					   INSRAREA_ID,
+					   EMP_TYPE_CODE,
+					   NATIONALITY_NO,
+					   CPNY_ID,
+					   EMPID,
+					   LOCAL_NAME,
+					   DEPTNO,
+					   POSITION_NO,
+					   POST_GRADE_NO,
+					   DUTY_NO,
+					   DATE_STARTED,
+					   DATE_LEFT,
+					   DEPT_NAME,
+					   PROB_PAY_RAT,
+					   END_PROBATION_DATE,
+					   EMPTYPE_GROUPNO,
+					   INSRAREA_ID_NAME,
+					   EMPTYPE_GROUP,
+					   PAY_GRADE,
+					   PAY_STEP)
+					  SELECT #PA_MONTH#,
+					         'Y',
+					         #PERSON_ID#,
+					         #ADMIN_ID#,
+					         SYSDATE,
+					         JOB_FAM,
+					         NATIONALITY_NAME,
+					         EMP_TYPE_NAME,
+					         STAT_NO,
+					         INSRAREA_ID,
+					         EMP_TYPE_CODE,
+					         NATIONALITY_NO,
+					         CPNY_ID,
+					         EMPID,
+					         LOCAL_NAME,
+					         DEPTNO,
+					         POSITION_NO,
+					         POST_GRADE_NO,
+					         DUTY_NO,
+					         DATE_STARTED,
+					         DATE_LEFT,
+					         DEPT_NAME,
+					         PROB_PAY_RAT,
+					         END_PROBATION_DATE,
+					         EMPTYPE_GROUPNO,
+					         INSRAREA_ID_NAME,
+					         EMPTYPE_GROUP,
+					         PAY_GRADE,
+					         PAY_STEP
+					    FROM $PA_TABLE$ P
+					   WHERE P.AR_MONTH = (SELECT MAX(PP.AR_MONTH)
+					                         FROM $PA_TABLE$ PP
+					                        WHERE PP.PERSON_ID = #PERSON_ID#)
+					     AND P.PERSON_ID = #PERSON_ID#
+									
+	    ]]>
+	</insert>
+	
+	<update id="updatePaForLeftByApplyResult" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE $PA_TABLE$
+			   SET $ITEM_ID$ = #ITEM_DATA#,
+			       ADD_FLAG = 'Y' 
+			 WHERE PA_MONTH = #PA_MONTH#
+			   AND PERSON_ID = #PERSON_ID#			
+	    ]]>
+	</update>
+	
+	<!-- 按checkorId获得申请信息Cnt -->
+	<select id="getEssCheckCntByCheckorId" parameterClass="linkMap" resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT count(*)
+			  FROM ESS_CHECK EC
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				EC.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="CHECKOR_ID">
+			<![CDATA[
+				EC.CHECKOR_ID = #CHECKOR_ID#
+			]]>
+		</isNotEmpty>	
+	</select>
+	
+	<!--取出当前登录者可以进行决裁的所有离职员工薪资补发申请记录-->
+	<select id="getPaForLeftCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT AP.BATCH_NO APPLY_NO,
+			       AP.APPLY_TYPE_NO APPLY_TYPE,
+			       AP.APPLYOR PERSON_ID,
+			       H.EMPID,
+			       H.LOCAL_NAME,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.JOIN_COMPANY_DATE,
+			       H.WORK_AREA,
+			       H.POSITION_NO,
+			       get_global_name(H.POSITION_NO, 'zh') POSITION_NAME,
+			       H.POST_NO,
+			       get_global_name(H.POST_NO, 'zh') POST_NAME,
+			       H.DEPTNO,
+			       get_dept_name(H.DEPTNO, 'zh') DEPT_NAME,
+			       
+			       AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+			       AP.APPLY_CONTENT,
+			       SUBSTR(AP.APPLY_CONTENT, 0, 10) INTRO,
+			       AP.CURRENT_AFFIRM_ID,
+			       
+			       TO_CHAR(AP.CREATE_DATE, 'YYYYMMDD') CREATE_DATE,
+			       TO_CHAR(AP.UPDATE_DATE, 'YYYYMMDD') UPDATE_DATE,
+			       
+			       EA.ESS_AFFIRM_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY,
+			       EA.CURRENT_CHECKOR_ID,
+			       
+			       EC.ESS_CHECK_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECKOR_ID,
+			       EC.CHECK_FLAG,
+			       
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_CONTENT,
+			       (SELECT DECODE((SELECT 1
+			                        FROM ESS_AFFIRM A1, ESS_CHECK B1
+			                       WHERE A1.ESS_AFFIRM_NO = B1.ESS_AFFIRM_NO
+			                         AND A1.APPLY_NO = AP.BATCH_NO
+			                         AND A1.APPLY_TYPE = AP.APPLY_TYPE_NO
+			                         AND B1.CHECK_FLAG = 0
+			                         AND B1.CHECKOR_ID = #PERSON_ID:VARCHAR#
+			                       GROUP BY A1.APPLY_NO),
+			                      NULL,
+			                      0,
+			                      1)
+			          FROM DUAL) AFFIRM_FLAG_PERSON
+			  FROM PA_LEFTMEN_APPLY AP, HR_EMPLOYEE H, ESS_AFFIRM EA, ESS_CHECK EC
+			 WHERE AP.APPLYOR = H.PERSON_ID
+			   AND AP.BATCH_NO = EA.APPLY_NO
+			   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+			   and AP.AFFIRM_FLAG NOT IN ('1', '2')
+			   AND EA.ESS_AFFIRM_NO = EC.ESS_AFFIRM_NO(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  AP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+		 		  TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+		 		  TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+				 EA.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<!-- 决裁状态 start -->
+	    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+	 		]]>
+		</isNotEmpty>
+		<!-- 决裁状态 end -->
+		
+	    <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 部门查询条件 end -->
+	
+	    <isNotEmpty prepend="AND" property="ADMIN_ID">
+		    <![CDATA[
+				 EC.CHECKOR_ID = #ADMIN_ID#
+	        ]]>   
+		</isNotEmpty>
+		
+		<![CDATA[
+			  ORDER BY AP.CREATE_DATE DESC,
+			           H.DEPTNO,
+			           H.EMPID
+		]]>   
+	</select>
+	
+	<select id="getPaForLeftCheckListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+			  SELECT AP.BATCH_NO APPLY_NO,
+			       AP.APPLY_TYPE_NO APPLY_TYPE,
+			       AP.APPLYOR PERSON_ID,
+			       H.EMPID,
+			       H.LOCAL_NAME,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.JOIN_COMPANY_DATE,
+			       H.WORK_AREA,
+			       H.POSITION_NO,
+			       get_global_name(H.POSITION_NO, 'zh') POSITION_NAME,
+			       H.POST_NO,
+			       get_global_name(H.POST_NO, 'zh') POST_NAME,
+			       H.DEPTNO,
+			       get_dept_name(H.DEPTNO, 'zh') DEPT_NAME,
+			       
+			       AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+			       AP.APPLY_CONTENT,
+			       SUBSTR(AP.APPLY_CONTENT, 0, 10) INTRO,
+			       AP.CURRENT_AFFIRM_ID,
+			       
+			       TO_CHAR(AP.CREATE_DATE, 'YYYYMMDD') CREATE_DATE,
+			       TO_CHAR(AP.UPDATE_DATE, 'YYYYMMDD') UPDATE_DATE,
+			       
+			       EA.ESS_AFFIRM_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY,
+			       EA.CURRENT_CHECKOR_ID,
+			       
+			       EC.ESS_CHECK_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECKOR_ID,
+			       EC.CHECK_FLAG,
+			       
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_CONTENT,
+			       (SELECT DECODE((SELECT 1
+			                        FROM ESS_AFFIRM A1, ESS_CHECK B1
+			                       WHERE A1.ESS_AFFIRM_NO = B1.ESS_AFFIRM_NO
+			                         AND A1.APPLY_NO = AP.BATCH_NO
+			                         AND A1.APPLY_TYPE = AP.APPLY_TYPE_NO
+			                         AND B1.CHECK_FLAG = 0
+			                         AND B1.CHECKOR_ID = #PERSON_ID:VARCHAR#
+			                       GROUP BY A1.APPLY_NO),
+			                      NULL,
+			                      0,
+			                      1)
+			          FROM DUAL) AFFIRM_FLAG_PERSON
+			  FROM PA_LEFTMEN_APPLY AP, HR_EMPLOYEE H, ESS_AFFIRM EA, ESS_CHECK EC
+			 WHERE AP.APPLYOR = H.PERSON_ID
+			   AND AP.BATCH_NO = EA.APPLY_NO
+			   AND H.CPNY_ID = #CPNY_ID:VARCHAR#
+			   and AP.AFFIRM_FLAG NOT IN ('1', '2')
+			   AND EA.ESS_AFFIRM_NO = EC.ESS_AFFIRM_NO(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  AP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+		 		  TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD') >= #FROM_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+		 		  TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD') <= #TO_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+				 EA.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<!-- 决裁状态 start -->
+	    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+	 		]]>
+		</isNotEmpty>
+		<!-- 决裁状态 end -->
+		
+	    <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 部门查询条件 end -->
+	
+	    <isNotEmpty prepend="AND" property="ADMIN_ID">
+		    <![CDATA[
+				 EC.CHECKOR_ID = #ADMIN_ID#
+	        ]]>   
+		</isNotEmpty>
+		
+	    <![CDATA[
+			) TT		
+        ]]> 
+	</select>
+	
+	<update id="affirmPaForLeftInfoAffirm" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE PA_LEFTMEN_APPLY SET
+		  	CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#
+			WHERE BATCH_NO = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+</sqlMap>

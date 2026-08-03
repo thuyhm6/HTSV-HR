@@ -1,0 +1,746 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.hrc01">
+    <select id="getGradeLevelList" remapResults="true" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[  
+		   	SELECT GG.NO GRADE_LEVEL_NO, GG.CONTENT GRADE_LEVEL_NAME
+			  FROM SY_GLOBAL_NAME gg
+			 WHERE LANGUAGE = 'zh'
+			   AND NO IN (SELECT DISTINCT (GRADE_LEVEL)
+			                FROM HR_POST_GRADE
+			               WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<![CDATA[ 		                
+			    )
+			 ORDER BY TO_NUMBER(NO)
+		]]>
+    </select>
+    
+     <select id="getEmpPaRiseList" remapResults="true" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[  
+		   	SELECT get_global_name(HD.dept_distinguish_no, #interLanguage:VARCHAR#) DEPT_DISTINGUISH_NAME,
+			       get_global_name(HE.SOCIAL_SECURITY_AREA, #interLanguage:VARCHAR#) SOCIAL_SECURITY_AREA,
+			       get_global_name(HE.ENTRY_AREA, #interLanguage:VARCHAR#) ENTRY_AREA,
+			       HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       HDN.CONTENT DEPARTMENT,
+			       get_global_name(HE.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       get_global_name(HP.SEXCODE, #interLanguage:VARCHAR#) SEX,
+			       TO_CHAR(HP.DOB, 'YYYY-MM-DD') DOB,
+			       DECODE(HP.DOB,
+			              null,
+			              0,
+			              (to_number(substr(to_char(sysdate, 'yyyy'), 0, 4)) -
+			              to_number(substr(to_char(HP.DOB, 'yyyy'), 0, 4)))) AGE,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       get_global_name(HP.FINAL_DEGREE_CODE, #interLanguage:VARCHAR#) FINAL_DEGREE_NAME,
+			       get_contract_date(HE.PERSON_ID, HE.CPNY_ID) END_CONTRACT_DATE,
+			       HP.FINAL_SCHOOL,
+			       get_global_name(HP.FINAL_SUBJECT, #interLanguage:VARCHAR#) FINAL_SUBJECT,
+			       get_pa_basic_data_bydate(HE.PERSON_ID,
+			                                TO_CHAR(HE.DATE_STARTED,'YYYY-MM-DD'),
+			                                HE.CPNY_ID,
+			                                'LAST') PA_BASIC_DATA,
+			       NVL(HP.CELLPHONE, HP.HOME_PHONE) CELLPHONE
+			  FROM HR_EMPLOYEE        HE,
+			       HR_PERSONAL_INFO   HP,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE HE.PERSON_ID = HP.PERSON_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="PERSONPA_RESIGNATION">
+			<![CDATA[
+		 		HE.STATUS_CODE <> '1375'
+		    ]]>
+		</isEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3684">
+				<![CDATA[
+					1 = 1
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3685">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL IN('3685','3686','3687','3688'))
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3686">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL IN ('3686','3687','3688'))
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3687">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL IN ('3687','3688'))
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3688">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL = '3688')
+				]]>
+			</isEqual>
+		</isNotEmpty>	
+    </select>
+    
+    <select id="getEmpPaRiseListCnt" remapResults="true" parameterClass="linkMap" resultClass="int">
+		<![CDATA[  
+		   	SELECT COUNT(*)
+			  FROM HR_EMPLOYEE        HE,
+			       HR_PERSONAL_INFO   HP,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE HE.PERSON_ID = HP.PERSON_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR HE.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+					HE.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="PERSONPA_RESIGNATION">
+			<![CDATA[
+		 		HE.STATUS_CODE <> '1375'
+		    ]]>
+		</isEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3684">
+				<![CDATA[
+					1 = 1
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3685">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL IN('3685','3686','3687','3688'))
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3686">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL IN ('3686','3687','3688'))
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3687">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL IN ('3687','3688'))
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="GRADE_LEVEL" compareValue="3688">
+				<![CDATA[
+					HE.POST_GRADE_NO IN (SELECT POST_GRADE_NO
+	                              FROM HR_POST_GRADE
+	                             WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+	                               AND GRADE_LEVEL = '3688')
+				]]>
+			</isEqual>
+		</isNotEmpty>
+    </select>
+    
+    <select id="getOutExperienceList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   	SELECT PERSON_ID,
+			       CPNY_NAME,
+			       DEPT_NAME,
+			       nvl(POSITION,DUTY) POST_NAME,
+			       START_DATE,
+			       END_DATE,
+			  FROM HR_WORK_EXPERIENCE
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+    </select>
+    
+    <select id="getInsideExperienceList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   	SELECT get_global_name(HI.TRANS_NO, #interLanguage:VARCHAR#) TRANS_NAME,
+			       get_global_name(HI.TRANS_CODE, #interLanguage:VARCHAR#) TRANS_CODE_NAME,
+			       HI.PERSON_ID,
+			       get_global_name(HD.dept_distinguish_no, #interLanguage:VARCHAR#) DEPT_DISTINGUISH_NAME,
+			       HDN.CONTENT DEPARTMENT,
+			       TO_CHAR(HI.START_DATE, 'YYYY-MM-DD') START_DATE,
+			       TO_CHAR(HI.END_DATE, 'YYYY-MM-DD') END_DATE,
+			       get_global_name(HI.POST_NO, #interLanguage:VARCHAR#) POST_NAME,
+			       get_pa_basic_data_bydate(HI.PERSON_ID,
+			                                TO_CHAR(HI.START_DATE, 'YYYY-MM-DD'),
+			                                HE.CPNY_ID,
+			                                'DATE') PA_BASIC_DATA
+			  FROM HR_EMPLOYEE          HE,
+			       HR_EXPERIENCE_INSIDE HI,
+			       HR_DEPARTMENT        HD,
+			       HR_DEPARTMENT_NAME   HDN
+			 WHERE HI.PERSON_ID = HE.PERSON_ID(+)
+			   AND HI.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HI.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				HE.PERSON_ID = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+    </select>
+    
+    <select id="getAllDistinguishList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   SELECT * FROM HR_DEPT_TREE_C01	
+		]]>
+    </select>
+    
+    <select id="getEmpOnStatusCntByDisType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   	SELECT COUNT(CASE nvl(EMP_TYPE_CODE, 'NO')
+		               WHEN '1369' THEN
+		                '1'
+		               ELSE
+		                NULL
+		             END) CON_CNT,
+		       COUNT(CASE nvl(EMP_TYPE_CODE, 'NO')
+		               WHEN '14889' THEN
+		                '1'
+		               WHEN '14890' THEN
+		                '1'
+		               WHEN '3942' THEN
+		                '1'
+		               WHEN '3943' THEN
+		                '1'
+		               ELSE
+		                NULL
+		             END) DIS_CNT,
+		       COUNT(CASE nvl(EMP_TYPE_CODE, 'NO')
+		               WHEN '1371' THEN
+		                '1'
+		               WHEN '3946' THEN
+		                '1'
+		               ELSE
+		                NULL
+		             END) HOU_CNT,
+		       COUNT(CASE nvl(EMP_TYPE_CODE, 'NO')
+		               WHEN '14888' THEN
+		                '1'
+		               WHEN '3944' THEN
+		                '1'
+		               WHEN '3947' THEN
+		                '1'
+		               ELSE
+		                NULL
+		             END) STU_CNT,
+		       COUNT(*) ALL_CNT,
+		       COUNT(CASE nvl(DATE_LEFT_MONTH, 'NO')
+		               WHEN '201302' THEN
+		                '1'
+		               ELSE
+		                NULL
+		             END) LIZHI_CNT,
+		       round((COUNT(CASE nvl(DATE_LEFT_MONTH, 'NO')
+		                      WHEN '201302' THEN
+		                       '1'
+		                      ELSE
+		                       NULL
+		                    END) / (CASE NVL(COUNT(*),1) WHEN 0 THEN 1 ELSE COUNT(*) END)
+		                ),
+		             4) LIZHI_PET
+		  FROM (SELECT HE.EMPID,
+		               HE.LOCAL_NAME,
+		               HE.PERSON_ID,
+		               HE.EMP_TYPE_CODE,
+		               get_global_name(HE.EMP_TYPE_CODE, 'zh') EMP_TYPE,
+		               HE.STATUS_CODE,
+		               get_global_name(HE.STATUS_CODE, 'zh') STATUS,
+		               TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+		               TO_CHAR(HE.DATE_STARTED, 'YYYYMM') DATE_STARTED_MONTH,
+		               TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+		               TO_CHAR(HE.DATE_LEFT, 'YYYYMM') DATE_LEFT_MONTH,
+		               HE.DEPTNO,
+		               HDN.CONTENT DEPT_NAME,
+		               HD.DEPT_TYPE,
+		               get_global_name(HD.DEPT_TYPE, 'zh') DEPT_TYPE_NAME,
+		               HD.DEPT_DISTINGUISH_NO,
+		               get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') DEPT_DISTINGUISH_NAME
+		          FROM HR_EMPLOYEE HE, HR_DEPARTMENT HD, HR_DEPARTMENT_NAME HDN
+		         WHERE HE.DEPTNO = HD.DEPTNO(+)
+		           AND HD.DEPTNO = HDN.DEPTNO(+)
+		           AND HDN.LANGUAGE = 'zh'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				((HE.DATE_STARTED IS NULL AND
+		               (HE.DATE_LEFT IS NULL OR
+		               HE.DATE_LEFT >= TO_DATE(#PA_MONTH:VARCHAR# || '-01', 'YYYY-MM-DD'))) OR
+		               (HE.DATE_STARTED <= TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(#PA_MONTH:VARCHAR# || '-01','YYYY-MM-DD')),'YYYY-MM-DD'),'YYYY-MM-DD') AND
+		               (HE.DATE_LEFT IS NULL OR
+		               HE.DATE_LEFT >= TO_DATE(#PA_MONTH:VARCHAR# || '-01', 'YYYY-MM-DD'))))
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HD.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DIS_TYPE">
+			<isEqual property="DIS_TYPE" compareValue="COMPANY">
+				<![CDATA[
+					1 = 1
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="ZONGBU">
+				<![CDATA[
+					HD.DEPTNO NOT IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE IN('15945','15946','15947','15948')))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="FENDIAN">
+				<![CDATA[
+					HD.DEPTNO IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE IN('15945','15946','15947','15948')))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="DEPT_TYPE">
+				<![CDATA[
+					HD.DEPTNO IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE = #DEPT_TYPE:VARCHAR#))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HD.DEPTNO IN(SELECT DD.DEPTNO FROM HR_DEPARTMENT DD WHERE DD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>			
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+    </select>
+    
+    <select id="getEmpCalIsCntByDisType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   	SELECT COUNT(*) IS_CNT,
+			       COUNT(CASE NVL(DISPATCH_FLAG, 'NO')
+			               WHEN 'YES' THEN
+			                '1'
+			               ELSE
+			                NULL
+			             END) DIANLI_CNT,
+			       COUNT(CASE NVL(DISPATCH_FLAG, 'NO')
+			               WHEN 'NO' THEN
+			                '1'
+			               ELSE
+			                NULL
+			             END) DISPATCH_CNT
+			  FROM (SELECT HE.EMPID,
+			               HE.LOCAL_NAME,
+			               HE.PERSON_ID,
+			               HE.EMP_TYPE_CODE,
+			               get_global_name(HE.EMP_TYPE_CODE, 'zh') EMP_TYPE,
+			               HE.STATUS_CODE,
+			               get_global_name(HE.STATUS_CODE, 'zh') STATUS,
+			               TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			               TO_CHAR(HE.DATE_STARTED, 'YYYYMM') DATE_STARTED_MONTH,
+			               TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			               TO_CHAR(HE.DATE_LEFT, 'YYYYMM') DATE_LEFT_MONTH,
+			               HE.SOCIAL_SECURITY_AREA_NAME,
+			               get_global_name(HE.WORK_AREA, 'zh') WORK_AREA,
+			               (CASE nvl(HE.SOCIAL_SECURITY_AREA_NAME, 'NO')
+			                 WHEN get_global_name(HE.WORK_AREA, 'zh') THEN
+			                  'YES'
+			                 ELSE
+			                  'NO'
+			               END) DISPATCH_FLAG,
+			               HE.DEPTNO,
+			               HDN.CONTENT DEPT_NAME,
+			               HD.DEPT_TYPE,
+			               get_global_name(HD.DEPT_TYPE, 'zh') DEPT_TYPE_NAME,
+			               HD.DEPT_DISTINGUISH_NO,
+			               get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') DEPT_DISTINGUISH_NAME
+			          FROM IS_SUMMARY_C01 HE, HR_DEPARTMENT HD, HR_DEPARTMENT_NAME HDN
+			         WHERE HE.DEPTNO = HD.DEPTNO(+)
+			           AND HD.DEPTNO = HDN.DEPTNO(+)
+			           AND HDN.LANGUAGE = 'zh'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR_MONTH">
+			<![CDATA[
+				IS_MONTH = #YEAR_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HD.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DIS_TYPE">
+			<isEqual property="DIS_TYPE" compareValue="COMPANY">
+				<![CDATA[
+					1 = 1
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="ZONGBU">
+				<![CDATA[
+					HD.DEPTNO NOT IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE IN('15945','15946','15947','15948')))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="FENDIAN">
+				<![CDATA[
+					HD.DEPTNO IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE IN('15945','15946','15947','15948')))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="DEPT_TYPE">
+				<![CDATA[
+					HD.DEPTNO IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE = #DEPT_TYPE:VARCHAR#))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HD.DEPTNO IN(SELECT DD.DEPTNO FROM HR_DEPARTMENT DD WHERE DD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>			
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+    </select>
+    
+    <select id="getEmpCalPaCntByDisType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   	SELECT COUNT(*) PA_CNT
+			  FROM (SELECT HE.EMPID,
+			               HE.LOCAL_NAME,
+			               HE.PERSON_ID,
+			               HE.EMP_TYPE_CODE,
+			               get_global_name(HE.EMP_TYPE_CODE, 'zh') EMP_TYPE,
+			               HE.STATUS_CODE,
+			               get_global_name(HE.STATUS_CODE, 'zh') STATUS,
+			               TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			               TO_CHAR(HE.DATE_STARTED, 'YYYYMM') DATE_STARTED_MONTH,
+			               TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			               TO_CHAR(HE.DATE_LEFT, 'YYYYMM') DATE_LEFT_MONTH,
+			               HE.SOCIAL_SECURITY_AREA_NAME,
+			               get_global_name(HE.WORK_AREA, 'zh') WORK_AREA,
+			               HE.DEPTNO,
+			               HDN.CONTENT DEPT_NAME,
+			               HD.DEPT_TYPE,
+			               get_global_name(HD.DEPT_TYPE, 'zh') DEPT_TYPE_NAME,
+			               HD.DEPT_DISTINGUISH_NO,
+			               get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') DEPT_DISTINGUISH_NAME
+			          FROM PA_SUMMARY_C01 HE, HR_DEPARTMENT HD, HR_DEPARTMENT_NAME HDN
+			         WHERE HE.DEPTNO = HD.DEPTNO(+)
+			           AND HD.DEPTNO = HDN.DEPTNO(+)
+			           AND HDN.LANGUAGE = 'zh'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR_MONTH">
+			<![CDATA[
+				PA_MONTH = #YEAR_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HD.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DIS_TYPE">
+			<isEqual property="DIS_TYPE" compareValue="COMPANY">
+				<![CDATA[
+					1 = 1
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="ZONGBU">
+				<![CDATA[
+					HD.DEPTNO NOT IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE IN('15945','15946','15947','15948')))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="FENDIAN">
+				<![CDATA[
+					HD.DEPTNO IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE IN('15945','15946','15947','15948')))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="DEPT_TYPE">
+				<![CDATA[
+					HD.DEPTNO IN
+		               (SELECT DD.DEPTNO
+		                  FROM HR_DEPARTMENT DD
+		                 WHERE DD.DEPT_DISTINGUISH_NO IN
+		                       (SELECT DEPT_DISTINGUISH_NO
+		                          FROM HR_DEPARTMENT
+		                         WHERE DEPT_TYPE = #DEPT_TYPE:VARCHAR#))
+				]]>			
+			</isEqual>
+			<isEqual property="DIS_TYPE" compareValue="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HD.DEPTNO IN(SELECT DD.DEPTNO FROM HR_DEPARTMENT DD WHERE DD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>			
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[
+			) TT
+		]]>
+    </select>
+    
+     <select id="getPersonalStatusInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+		   	SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       get_global_name(HD.DEPT_DISTINGUISH_NO, #interLanguage:VARCHAR#) DISTINGUISH_DEPT,
+			       get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT,
+			       get_global_name(HE.STATUS_CODE, #interLanguage:VARCHAR#) STATUS,
+			       get_global_name(HE.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE,
+			       HE.EMP_OFFICE EMP_OFFICE_CODE,
+			       get_global_name(HE.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE,
+			       get_global_name(HE.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE,
+			       get_global_name(HE.POST_NO, #interLanguage:VARCHAR#) POST,
+			       get_global_name(HE.DUTY_NO, #interLanguage:VARCHAR#) DUTY,
+			       get_global_name(HE.POSITION_NO, #interLanguage:VARCHAR#) POSITION,
+			       NVL(HP.IDCARD_NO, NVL(HP.FOREIGNER_IDCARD_NO, HP.PASSPORT_NO)) IDCARD_NO,
+			       TO_CHAR(HP.DOB, 'YYYY-MM-DD') DOB,
+			       get_global_name(HP.SEXCODE, #interLanguage:VARCHAR#) SEX,
+			       
+			       TO_CHAR(HE.JOIN_BLOC_DATE, 'YYYY-MM-DD') JOIN_BLOC_DATE,
+			       TO_CHAR(HE.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       TO_CHAR(HE.NOW_DEPARTMENT_DATE, 'YYYY-MM-DD') NOW_DEPARTMENT_DATE,
+			       TO_CHAR(HE.BEFORE_END_PROBATION_DATE, 'YYYY-MM-DD') BEFORE_END_PROBATION_DATE,
+			       get_global_name(HP.RECRUITMENT_SOURCE_TYPE, #interLanguage:VARCHAR#) RECRUITMENT_SOURCE_TYPE,
+			       get_global_name(HP.REC_SOURCE_DETAIL_NO, #interLanguage:VARCHAR#) REC_SOURCE_DETAIL_NO
+			
+			  FROM HR_EMPLOYEE HE, HR_PERSONAL_INFO HP, HR_DEPARTMENT HD
+			 WHERE HE.PERSON_ID = HP.PERSON_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USER_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO FROM SY_USER_DEPT WHERE USER_NO = #USER_NO:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="EXPORT_EMP_STATUS">
+			<isEqual property="EXPORT_EMP_STATUS" compareValue="YES">
+				<isNotEmpty prepend="AND" property="DEPTNO_STATUS">
+					<![CDATA[
+						HE.DEPTNO IN (SELECT DEPTNO
+				                       FROM HR_DEPARTMENT DD
+				                      START WITH DEPTNO = #DEPTNO_STATUS:VARCHAR#
+				                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+					]]>
+				</isNotEmpty>	
+			</isEqual>
+			<isEqual property="EXPORT_EMP_STATUS" compareValue="NO">
+				<isNotEmpty prepend="AND" property="DEPTNO_STATUS">
+					<![CDATA[
+						HE.DEPTNO = #DEPTNO_STATUS:VARCHAR#
+					]]>
+				</isNotEmpty>	
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY_STATUS">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR
+			       HE.CHINESE_PINYIN LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR HE.ENGLISH_NAME LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR
+			       HE.KOREAN_NAME LIKE '%' || #KEY_STATUS:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE_STATUS">
+			<![CDATA[
+				HE.EMP_OFFICE = #EMP_OFFICE_STATUS:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HD.DEPT_DISTINGUISH_NO,HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	 <select id="getPersonalStatusInfoListCnt" remapResults="true" parameterClass="linkMap" resultClass="int">
+		<![CDATA[  
+		   	SELECT COUNT(*)
+			  FROM HR_EMPLOYEE HE, HR_PERSONAL_INFO HP, HR_DEPARTMENT HD
+			 WHERE HE.PERSON_ID = HP.PERSON_ID(+)
+			   AND HE.DEPTNO = HD.DEPTNO(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USER_NO">
+			<![CDATA[
+				HE.DEPTNO IN (SELECT DEPTNO FROM SY_USER_DEPT WHERE USER_NO = #USER_NO:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="EXPORT_EMP_STATUS">
+			<isEqual property="EXPORT_EMP_STATUS" compareValue="YES">
+				<isNotEmpty prepend="AND" property="DEPTNO_STATUS">
+					<![CDATA[
+						HE.DEPTNO IN (SELECT DEPTNO
+				                       FROM HR_DEPARTMENT DD
+				                      START WITH DEPTNO = #DEPTNO_STATUS:VARCHAR#
+				                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+					]]>
+				</isNotEmpty>	
+			</isEqual>
+			<isEqual property="EXPORT_EMP_STATUS" compareValue="NO">
+				<isNotEmpty prepend="AND" property="DEPTNO_STATUS">
+					<![CDATA[
+						HE.DEPTNO = #DEPTNO_STATUS:VARCHAR#
+					]]>
+				</isNotEmpty>	
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY_STATUS">
+			<![CDATA[
+				(HE.EMPID LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR HE.LOCAL_NAME LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR
+			       HE.CHINESE_PINYIN LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR HE.ENGLISH_NAME LIKE '%' || #KEY_STATUS:VARCHAR# || '%' OR
+			       HE.KOREAN_NAME LIKE '%' || #KEY_STATUS:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE_STATUS">
+			<![CDATA[
+				HE.EMP_OFFICE = #EMP_OFFICE_STATUS:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+</sqlMap>

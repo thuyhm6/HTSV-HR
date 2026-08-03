@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.empCalendar">
+	<select id="getRealDate" parameterClass="string" resultClass="string">
+		<![CDATA[
+		SELECT to_char(AR_GET_REALDATE(#DDATE_STR:VARCHAR#),'yyyy/mm/dd') from dual
+		]]> 
+	</select>
+  <select id="getEmpCalendarList" parameterClass="linkMap" resultClass="linkMap">
+		 <!--  ,  T_SCHEDULE.SCHEDULE_SHIFT_NO 改为 decode 内段 -->
+		<![CDATA[
+		SELECT CASE WHEN AR_CALENDER_GROUP.DDATE IS NOT NULL THEN AR_CALENDER_GROUP.DDATE ELSE AR_CALENDER.DDATE END DDATE,
+		       CASE WHEN AR_CALENDER_GROUP.IYEAR IS NOT NULL THEN AR_CALENDER_GROUP.IYEAR ELSE AR_CALENDER.IYEAR END IYEAR,
+		       CASE WHEN AR_CALENDER_GROUP.IMONTH IS NOT NULL THEN AR_CALENDER_GROUP.IMONTH ELSE AR_CALENDER.IMONTH END IMONTH,
+		       CASE WHEN AR_CALENDER_GROUP.IDAY IS NOT NULL THEN AR_CALENDER_GROUP.IDAY ELSE AR_CALENDER.IDAY END IDAY,
+		       CASE WHEN AR_CALENDER_GROUP.IWEEK IS NOT NULL THEN AR_CALENDER_GROUP.IWEEK ELSE AR_CALENDER.IWEEK END IWEEK,
+		       CASE WHEN TO_CHAR(T_SCHEDULE.TYPEID) IS NOT NULL THEN TO_CHAR(T_SCHEDULE.TYPEID) 
+		            WHEN TO_CHAR(AR_CALENDER_GROUP.TYPEID) IS NOT NULL THEN TO_CHAR(AR_CALENDER_GROUP.TYPEID) ELSE AR_CALENDER.TYPEID END TYPEID,
+		       CASE WHEN TO_CHAR(AR_CALENDER_GROUP.OVERTYPEID) IS NOT NULL THEN TO_CHAR(AR_CALENDER_GROUP.OVERTYPEID) ELSE AR_CALENDER.OVERTYPEID END OVERTYPEID,
+		       CASE WHEN AR_CALENDER_GROUP.WORKDAYFLAG IS NOT NULL THEN AR_CALENDER_GROUP.WORKDAYFLAG ELSE AR_CALENDER.WORKDAYFLAG END WORKDAYFLAG,
+		       CASE WHEN TO_CHAR(AR_CALENDER_GROUP.SHIFT_NO) IS NOT NULL THEN TO_CHAR(AR_CALENDER_GROUP.SHIFT_NO) ELSE AR_CALENDER.SHIFT_NO END SHIFT_NO,
+		       CASE WHEN TO_CHAR(AR_CALENDER_GROUP.TYPEID_DEFAULT) IS NOT NULL THEN TO_CHAR(AR_CALENDER_GROUP.TYPEID_DEFAULT) ELSE AR_CALENDER.TYPEID_DEFAULT END TYPEID_DEFAULT,
+		       CASE WHEN AR_CALENDER_GROUP.AR_DATE_STR IS NOT NULL THEN AR_CALENDER_GROUP.AR_DATE_STR ELSE AR_CALENDER.DDATE_STR END DDATE_STR,
+		       GET_AR_SHIFTNO(#PERSON_ID:VARCHAR#, AR_CALENDER.DDATE_STR, #CPNY_ID:VARCHAR#) SCHEDULE_SHIFT_NO,
+		       GET_AR_DATETYPE_DETAIL(#PERSON_ID:VARCHAR#, AR_CALENDER.DDATE_STR, #CPNY_ID:VARCHAR#) SCHEDULE_TYPEID,
+		       T_SCHEDULE.DATATYPE,
+		       T_SCHEDULE.REMARK,
+		       SY1.CONTENT TYPENAME,
+		       SY2.CONTENT SHIFT_NAME,
+		       SY3.CONTENT DATETYPENAME,
+		       (CASE WHEN GET_AR_SHIFTNO(#PERSON_ID:VARCHAR#, AR_CALENDER.DDATE_STR, #CPNY_ID:VARCHAR#) = '14015838'
+		               OR GET_AR_SHIFTNO(#PERSON_ID:VARCHAR#, AR_CALENDER.DDATE_STR, #CPNY_ID:VARCHAR#) = '217887' THEN
+		              'Y'
+		             ELSE
+		              'N'
+		           END) ISXIUXI
+		  FROM AR_CALENDER,
+		       (SELECT * FROM AR_CALENDER_GROUP 
+			     WHERE AR_CALENDER_GROUP.GROUP_ID = (SELECT SHIFT_GROUP 
+				                                       FROM HR_EMP_HISTORY_STATUS 
+													  WHERE PERSON_ID= #PERSON_ID:VARCHAR# 
+													    AND DATE_STR = TO_CHAR(SYSDATE,'YYYY/MM/DD')) 
+				   AND AR_CALENDER_GROUP.CPNY_ID = #CPNY_ID:VARCHAR#) AR_CALENDER_GROUP,
+		       (SELECT T1.SHIFT_NO SCHEDULE_SHIFT_NO,
+		               T1.AR_DATE_STR,
+		               T1.TYPEID,
+		               T1.REMARK,
+		               T2.DATATYPE
+		          FROM AR_SCHEDULE_HTSV T1,
+		               AR_SHIFT010 T2
+		         WHERE T1.SHIFT_NO = T2.SHIFT_NO
+		           AND T1.PERSON_ID = #PERSON_ID:VARCHAR#) T_SCHEDULE,
+		       SY_GLOBAL_NAME SY1,
+		       SY_GLOBAL_NAME SY2,
+		       SY_GLOBAL_NAME SY3
+		 WHERE AR_CALENDER.DDATE_STR = AR_CALENDER_GROUP.AR_DATE_STR(+)
+		   AND AR_CALENDER.CPNY_ID = #CPNY_ID:VARCHAR#
+		   AND AR_CALENDER.DDATE = to_date(T_SCHEDULE.AR_DATE_STR(+),'yyyy-mm-dd')
+		   AND AR_CALENDER.DDATE BETWEEN
+		       GET_AR_START_DATE(#AR_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#) AND
+		       GET_AR_END_DATE(#AR_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#)
+		   AND AR_CALENDER.TYPEID = SY1.NO(+)
+		   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND AR_CALENDER.SHIFT_NO = SY2.NO(+)
+		   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND T_SCHEDULE.DATATYPE = SY3.NO(+)
+		   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ORDER BY AR_CALENDER.DDATE
+		]]> 
+	</select>
+	<select id="getShiftList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.SHIFT_NO,
+			       SY.CONTENT SHIFT_NAME,
+			       T.DATATYPE,
+			       T.SHIFT_ID,
+			       SY.CONTENT SHIFT_SHORTNAME
+			  FROM AR_SHIFT010 T,
+			  	   SY_GLOBAL_NAME SY
+			  WHERE T.SHIFT_NO = SY.NO(+)
+			  	AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  	AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			  	AND T.ACTIVITY = 1
+			  	ORDER BY T.SHIFT_SHORTNAME
+		]]>	
+   </select>
+	<select id="getDateTypeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  SELECT  DISTINCT
+             T.DATATYPE,
+             SY.CONTENT DATATYPENAME
+        FROM AR_SHIFT010 T,
+             SY_GLOBAL_NAME SY
+        WHERE T.DATATYPE = SY.NO(+)
+          AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+          AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+          AND T.ACTIVITY = 1
+		UNION ALL
+		SELECT 1442 DATATYPE,GET_GLOBAL_NAME('1442',#interLanguage:VARCHAR#) DATATYPENAME
+		FROM DUAL
+		UNION ALL
+	    SELECT 90000425 DATATYPE,GET_GLOBAL_NAME('90000425',#interLanguage:VARCHAR#) DATATYPENAME
+	    FROM DUAL
+		]]>	
+   </select>
+   
+   <delete id="DeleteEmpCalendarInfo" parameterClass="linkMap">
+	   <![CDATA[
+	      DELETE FROM AR_SCHEDULE_HTSV T
+				 WHERE T.PERSON_ID = #PERSON_ID:VARCHAR#
+				 AND T.LOCK_YN ='N'
+	   		     AND   T.AR_DATE_STR  =  #DDATE_STR:VARCHAR# 
+			       
+		]]>		         
+   </delete>
+   
+   <!--  AND TO_DATE(T.AR_DATE_STR, 'YYYY-MM-DD') IN
+			       (SELECT MIN(DDATE) FROM AR_CALENDER
+			         WHERE DDATE >= GET_AR_START_DATE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#, 'YYYY-MM-DD'),'YYYYMM'),#CPNY_ID:VARCHAR#,
+			                  (SELECT MIN(STAT_NO) FROM AR_STATISTIC_EMPTYPE WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			                    AND EMP_TYPE_CODE IN (SELECT DECODE(EMP_TYPE_CODE, NULL, '1369',EMP_TYPE_CODE)
+			                                                   FROM HR_EMPLOYEE
+			                                                  WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			                                                    AND PERSON_ID = #PERSON_ID:VARCHAR#)
+			                                                    ))
+			           AND DDATE <= GET_AR_END_DATE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYYMM'),#CPNY_ID:VARCHAR#,
+			                  (SELECT MIN(STAT_NO) FROM AR_STATISTIC_EMPTYPE WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			                    AND EMP_TYPE_CODE IN (SELECT DECODE(EMP_TYPE_CODE, NULL, '1369',EMP_TYPE_CODE)
+			                                                   FROM HR_EMPLOYEE
+			                                                  WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			                                                    AND PERSON_ID = #PERSON_ID:VARCHAR#)
+			                                                    AND IDAY = TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#, 'YYYY-MM-DD'), 'DD')
+			                                                     AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			                                                    ))  -->
+   <select id="checkEmpCalendarInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	      SELECT COUNT(T.EMPID) FROM AR_SCHEDULE T WHERE T.EMPID = #EMPID:VARCHAR#
+				 AND T.AR_DATE_STR = TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+		]]>		         				 
+   </select>
+   <select id="getArDetailTSTONUM" parameterClass="linkMap" resultClass="String">
+		<![CDATA[
+	     select  distinct NVL(t.ot_allowance, 0)
+				  from AR_SHIFT010 t
+				 where t.shift_no = #SHIFT_NO:VARCHAR#
+				   and t.cpny_id = #CPNY_ID:VARCHAR#
+				   and t.activity = 1
+		]]>		         				 
+   </select>
+   <insert id="insertEmpCalendarInfo" parameterClass="linkMap">
+   	<![CDATA[
+        INSERT INTO AR_SCHEDULE_HTSV
+			  (PK_NO,
+			   PERSON_ID,
+			   TYPEID,
+			   SHIFT_NO,
+			   AR_DATE_STR,
+			   LOCK_YN,
+			   REMARK,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   CREATED_IP)
+			VALUES
+			  (Ar_Schedule_Seq.NEXTVAL,
+			   #PERSON_ID:VARCHAR#,
+			   #DATE_TYPE:VARCHAR#,
+			   #SHIFT_NO:VARCHAR#,
+			   #DDATE_STR:VARCHAR#,
+			   'N',
+			   #REMARK:VARCHAR#,
+			   SYSDATE,
+			   #CREATED_BY:VARCHAR#,
+			   #adminIP:VARCHAR#)
+		]]>		         			  
+   </insert>
+   <!--  TO_CHAR(TO_DATE(
+			                (SELECT to_char(MIN(DDATE),'YYYY/MM/DD') FROM AR_CALENDER
+			                     WHERE DDATE >= GET_AR_START_DATE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYYMM'),#CPNY_ID:VARCHAR#,
+			                       (SELECT MIN(STAT_NO) FROM AR_STATISTIC_EMPTYPE WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			                         AND EMP_TYPE_CODE IN(SELECT DECODE(EMP_TYPE_CODE, NULL,'1369',EMP_TYPE_CODE)
+			                          FROM HR_EMPLOYEE WHERE CPNY_ID = #CPNY_ID:VARCHAR# AND PERSON_ID = #PERSON_ID:VARCHAR#)))
+			                      AND DDATE <= GET_AR_END_DATE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYYMM'),#CPNY_ID:VARCHAR#,
+			                          (SELECT MIN(STAT_NO) FROM AR_STATISTIC_EMPTYPE WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			                         AND EMP_TYPE_CODE IN(SELECT DECODE(EMP_TYPE_CODE,NULL,'1369',EMP_TYPE_CODE)
+			                           FROM HR_EMPLOYEE WHERE CPNY_ID = #CPNY_ID:VARCHAR# AND PERSON_ID = #PERSON_ID:VARCHAR#)))
+			                      AND IDAY = TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'DD')
+			                      AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			              ,'YYYY/MM/DD'),'YYYY/MM/DD')  -->
+   <select id="getEmpInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.LOCAL_NAME,
+				   HR.EMPID,
+				   HR.PERSON_ID,
+				   HR.CPNY_ID,
+			        get_dept_name(HR.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       GET_AR_STATNO(HR.PERSON_ID,HR.CPNY_ID) STAT_NO
+			  FROM HR_EMPLOYEE HR 
+			  WHERE   HR.PERSON_ID = #person_id:VARCHAR#
+		]]>	
+   </select>
+   
+   <select id="getBigDistinct" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DEPTNO,
+				   CONTENT 
+			  FROM HR_DEPARTMENT_NAME T 
+			  WHERE T.CONTENT LIKE '%地域' 
+			    AND ACTIVITY = 1 
+			  ORDER BY CONTENT
+		]]>	
+   </select>
+   
+   <select id="getDefaultGroup" parameterClass="linkMap" resultClass="string" >
+		<![CDATA[
+			select distinct hre.shift_no from hr_employee hre 
+			where hre.cpny_id = #CPNY_ID:VARCHAR# and hre.shift_no is not null
+			and rownum = 1
+		]]>	
+   </select>
+	<select id="getArClassCalendarList" parameterClass="linkMap" resultClass="linkMap">
+		 <![CDATA[
+	      SELECT DDATE,
+	             IYEAR,
+	             IMONTH,
+	             IDAY,
+	             IWEEK,
+	             WORKDAYFLAG,
+	             C.TYPEID,
+	             S1.CONTENT DATETYPENAME,
+	             OVERTYPEID,
+	             TYPEID_DEFAULT,
+	             C.SHIFT_NO,
+	             S2.CONTENT SHIFT_NAME,
+	             TO_CHAR(TO_DATE(C.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') DDATE_STR,
+	             TO_CHAR(DDATE, 'YYYY-MM-DD') MODFIY_DATE_STR,
+	             #interLanguage:VARCHAR# LANGUAGE,
+	             C.SHIFT_NO SCHEDULE_SHIFT_NO,
+	             AS010.SHIFT_SHORTNAME
+	        FROM AR_CALENDER_GROUP C,
+	             SY_GLOBAL_NAME S1,
+	             SY_GLOBAL_NAME S2,
+	             AR_SHIFT010 AS010
+	       WHERE C.TYPEID = S1.NO(+)
+	         AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+	         AND C.SHIFT_NO = S2.NO(+)
+	         AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+	         AND C.SHIFT_NO = AS010.SHIFT_NO(+)
+	         AND C.CPNY_ID = #CPNY_ID:VARCHAR#     
+	         AND TO_CHAR(C.DDATE, 'YYYYMM') = #AR_MONTH:VARCHAR#
+	         AND C.GROUP_ID=#GROUP_ID:VARCHAR#
+	    ]]>  
+		<isEqual prepend="AND" property="MENU_CODE" compareValue="ess3410">
+			<![CDATA[
+		 		  exists (
+	         	SELECT ASLT.PK_NO
+	         	FROM AR_DETAIL_HTSV_APPLY ASLT
+	         	WHERE ASLT.CREATED_BY = 'SYS'AND ASLT.DELETE_FLAG = 1 AND ASLT.NULL_FLAG = 1
+           		AND ASLT.ITEM_NO NOT IN(141440,141444,141445,141446,141452)
+	         	AND ( ASLT.AR_MONTH_STR = TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH:VARCHAR#||'01','YYYY/MM/DD'),1), 'YYYYMM')
+	         		OR (#CPNY_ID:VARCHAR#='SST'AND ASLT.AR_MONTH_STR = #AR_MONTH:VARCHAR#)
+	         	)
+	         )
+		    ]]>
+		</isEqual>
+    
+	    <![CDATA[
+	      ORDER BY IYEAR, IMONTH, IDAY
+	    ]]>
+	</select>
+	<select id="getArClassCalendarListForNormalShift" parameterClass="linkMap" resultClass="linkMap">
+		 <![CDATA[
+	      SELECT DDATE,
+	             IYEAR,
+	             IMONTH,
+	             IDAY,
+	             IWEEK,
+	             WORKDAYFLAG,
+	             C.TYPEID,
+	             S1.CONTENT DATETYPENAME,
+	             OVERTYPEID,
+	             TYPEID_DEFAULT,
+	             C.SHIFT_NO,
+	             S2.CONTENT SHIFT_NAME,
+	              C.DDATE_STR,
+	             TO_CHAR(DDATE, 'YYYY-MM-DD') MODFIY_DATE_STR,
+	             #interLanguage:VARCHAR# LANGUAGE,
+	             C.SHIFT_NO SCHEDULE_SHIFT_NO,
+	             AS010.SHIFT_SHORTNAME
+	        FROM AR_CALENDER C,
+	             SY_GLOBAL_NAME S1,
+	             SY_GLOBAL_NAME S2,
+	             AR_SHIFT010 AS010
+	       WHERE C.TYPEID = S1.NO(+)
+	         AND S1.LANGUAGE(+) = #interLanguage:VARCHAR#
+	         AND C.SHIFT_NO = S2.NO(+)
+	         AND S2.LANGUAGE(+) = #interLanguage:VARCHAR#
+	         AND C.SHIFT_NO = AS010.SHIFT_NO(+)
+	         AND C.CPNY_ID = #CPNY_ID:VARCHAR#     
+	         AND TO_CHAR(C.DDATE, 'YYYYMM') = #AR_MONTH:VARCHAR#
+	         ]]>  
+		<isEqual prepend="AND" property="MENU_CODE" compareValue="ess3410">
+			<![CDATA[
+		 		  exists (
+	         	SELECT ASLT.PK_NO
+	         	FROM AR_DETAIL_HTSV_APPLY ASLT
+	         	WHERE ASLT.CREATED_BY = 'SYS'AND ASLT.DELETE_FLAG = 1 AND ASLT.NULL_FLAG = 1
+           		AND ASLT.ITEM_NO NOT IN(141440,141444,141445,141446,141452)
+	         	AND ( ASLT.AR_MONTH_STR = TO_CHAR(ADD_MONTHS(TO_DATE(#AR_MONTH:VARCHAR#||'01','YYYY/MM/DD'),1), 'YYYYMM')
+	         		OR (#CPNY_ID:VARCHAR#='SST'AND ASLT.AR_MONTH_STR = #AR_MONTH:VARCHAR#)
+	         	)
+	         )
+		    ]]>
+		</isEqual>
+    
+	    <![CDATA[
+	      ORDER BY IYEAR, IMONTH, IDAY
+	    ]]>
+	</select>
+	<select id="getArClassCalendarListGs" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		SELECT AR_CALENDER_GROUP.DDATE,
+       AR_CALENDER_GROUP.IYEAR,
+       AR_CALENDER_GROUP.IMONTH,
+       AR_CALENDER_GROUP.IDAY,
+       AR_CALENDER_GROUP.IWEEK,
+       AR_CALENDER_GROUP.TYPEID,
+       AR_CALENDER_GROUP.OVERTYPEID,
+       AR_CALENDER_GROUP.WORKDAYFLAG,
+       AR_CALENDER_GROUP.SHIFT_NO AS SHIFT_NO,
+       AR_CALENDER_GROUP.TYPEID_DEFAULT
+  FROM AR_CALENDER AR_CALENDER_GROUP
+ WHERE AR_CALENDER_GROUP.CPNY_ID = #CPNY_ID:VARCHAR#
+		   AND AR_CALENDER_GROUP.DDATE 
+		   		BETWEEN ADD_MONTHS(TO_DATE(#AR_MONTH:VARCHAR#,'YYYY-MM'),-1)+19
+			   AND TO_DATE(#AR_MONTH:VARCHAR#||'19','YYYY-MM-DD')
+		 ORDER BY AR_CALENDER_GROUP.DDATE 		
+		]]> 
+	</select>
+		   		<!-- BETWEEN
+		       GET_AR_START_DATE(#AR_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#) AND
+		       GET_AR_END_DATE(#AR_MONTH:VARCHAR#, #CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#) -->
+
+	<insert id="updateClassCalendarInfo" parameterClass="linkMap">
+		<![CDATA[
+			      insert into ar_calender_group
+						  (ddate,
+						   iyear,
+						   imonth,
+						   iday,
+						   iweek,
+						   workdayflag,
+						   typeid,
+						   overtypeid,
+						   typeid_default,
+						   group_id,
+						   shift_no,
+						   ar_date_str,
+						   cpny_id,
+						   CREATED_BY,
+						   CREATE_DATE,
+						   CREATED_IP)
+						select T.ddate,T.iyear,
+						   T.imonth,
+						   T.iday,
+						   T.iweek,
+						  DECODE(#DATE_TYPE:VARCHAR#,'1440',1,0),
+						  #DATE_TYPE:VARCHAR#,
+						  #DATE_TYPE:VARCHAR#,
+						  T.typeid_default,
+						  #GROUP:VARCHAR#,
+						  #SHIFT_NO:VARCHAR#,
+						  T.DDATE_STR,
+						  T.CPNY_ID,
+						  #CREATED_BY:VARCHAR#,
+						   SYSDATE,
+						   #CREATED_IP:VARCHAR#
+						FROM AR_CALENDER T
+						WHERE T.DDATE_STR=TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+						AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+			]]> 
+	</insert>
+	<!-- 更新初始化的加班数据跟班组日历的日期类型和班次一样 -->
+	<update id="updateArDetailOTCreateByNull" parameterClass="linkMap" >
+		<![CDATA[
+			update ar_detail_tsto_apply adta
+					set (adta.date_type,adta.item_no,adta.shift_no,ALLOWANCE)=(
+					select distinct acg.typeid,case when acg.typeid = '1440'then '141444'when acg.typeid = '1441'then '141445'  else '141446'end,acg.shift_no,#allowance#
+					from ar_calender_group acg
+					where acg.cpny_id = 'TSTO'
+					and acg.group_id = adta.group_id
+					and acg.ar_date_str = adta.ar_date_str
+					)
+					where adta.person_id in(
+					select hre.person_id
+					from hr_employee hre
+					where hre.cpny_id = 'TSTO'
+					and hre.shift_no =  #GROUP:VARCHAR#
+					)
+					and adta.ar_date_str = #DDATE_STR:VARCHAR# 
+					AND adta.ITEM_NO  IN('141444','141445','141446','141452')
+					AND adta.DELETE_FLAG = 1 AND adta.NULL_FLAG = 1
+					and adta.created_by like '%SYS%' and adta.updated_by is null
+		]]>
+	</update>
+	<!-- 更新实际数据或者已经变动过的加班数据，只更新日期类型和班次，保留内务输入的考勤代码 -->
+	<update id="updateArDetailOTCreateByNotNull" parameterClass="linkMap" >
+		<![CDATA[
+			update ar_detail_tsto_apply adta
+					set (adta.date_type,adta.shift_no)=(
+					select distinct acg.typeid,acg.shift_no
+					from ar_calender_group acg
+					where acg.cpny_id = 'TSTO'
+					and acg.group_id = adta.group_id
+					and acg.ar_date_str = adta.ar_date_str
+					)
+					where adta.person_id in(
+					select hre.person_id
+					from hr_employee hre
+					where hre.cpny_id = 'TSTO'
+					and hre.shift_no =   #GROUP:VARCHAR#
+					)
+					and adta.ar_date_str = #DDATE_STR:VARCHAR# 
+					AND adta.ITEM_NO  IN('141444','141445','141446','141452')
+					AND adta.DELETE_FLAG = 1 AND adta.NULL_FLAG = 1
+					and ((adta.created_by is not  null and created_by not like '%SYS%') or adta.updated_by is not null)
+		]]>
+	</update>
+	
+	<!-- 更新初始化的考勤数据跟班组日历的日期类型和班次一样 -->
+	<update id="updateArDetailLeaveCreateByNull" parameterClass="linkMap" >
+		<![CDATA[
+			update ar_detail_tsto_apply adta
+					set (adta.date_type,adta.item_no,adta.shift_no)=(
+					select distinct acg.typeid,case when acg.typeid = '1440'then '141439'else '141440'end,acg.shift_no
+					from ar_calender_group acg
+					where acg.cpny_id = 'TSTO'
+					and acg.group_id = adta.group_id
+					and acg.ar_date_str = adta.ar_date_str
+					)
+					where adta.person_id in(
+					select hre.person_id
+					from hr_employee hre
+					where hre.cpny_id = 'TSTO'
+					and hre.shift_no = #GROUP:VARCHAR#
+					)
+					and adta.ar_date_str = #DDATE_STR:VARCHAR# 
+					AND adta.ITEM_NO NOT IN('141444','141445','141446','141452')
+					AND adta.DELETE_FLAG = 1 AND adta.NULL_FLAG = 1
+					and adta.created_by like '%SYS%' and adta.updated_by is null
+		]]>
+	</update>
+	<!-- 更新实际数据或者已经变动过的考勤数据，只更新日期类型和班次，保留内务输入的考勤代码 -->
+	<update id="updateArDetailLeaveCreateByNotNull" parameterClass="linkMap" >
+		<![CDATA[
+			update ar_detail_tsto_apply adta
+					set (adta.date_type,adta.shift_no)=(
+					select distinct acg.typeid,acg.shift_no
+					from ar_calender_group acg
+					where acg.cpny_id = 'TSTO'
+					and acg.group_id = adta.group_id
+					and acg.ar_date_str = adta.ar_date_str
+					)
+					where adta.person_id in(
+					select hre.person_id
+					from hr_employee hre
+					where hre.cpny_id = 'TSTO'
+					and hre.shift_no = #GROUP:VARCHAR#
+					)
+					and adta.ar_date_str = #DDATE_STR:VARCHAR# 
+					AND adta.ITEM_NO NOT IN('141444','141445','141446','141452')
+					AND adta.DELETE_FLAG = 1 AND adta.NULL_FLAG = 1
+					and ((adta.created_by is not null and created_by not like '%SYS%') or adta.updated_by is not null)
+		]]>
+	</update>
+	<insert id="insertArShiftChange" parameterClass="linkMap">
+	  <![CDATA[
+		insert into ar_shift_change 
+           (NO,
+		    PERSON_ID,
+		    CPNY_ID,
+		    DATE_STR,
+		    ACTIVITY,
+		    CREATE_DATE,
+        	END_DATE_STR,
+        	CHANGE_TYPE)
+            (SELECT Ar_Shift_Change_Seq.Nextval,
+           #PERSON_ID:VARCHAR#,
+           #CPNY_ID:VARCHAR#,
+           to_char(AR_GET_REALDATE(#DDATE_STR:VARCHAR#),'yyyy/mm/dd'),
+           0,
+           SYSDATE,
+           to_char(AR_GET_REALDATE(#DDATE_STR:VARCHAR#),'yyyy/mm/dd'),
+           '个人日历修改'
+           FROM DUAL
+           WHERE AR_GET_REALDATE(#DDATE_STR:VARCHAR#) > ADD_MONTHS(SYSDATE,-2) )
+           ]]> 
+		</insert>
+		
+		
+	<insert id="insertArShiftChangeByCompany" parameterClass="linkMap">
+	  <![CDATA[
+		insert into ar_shift_change 
+           (NO,
+		    PERSON_ID,
+		    CPNY_ID,
+		    DATE_STR,
+		    ACTIVITY,
+		    CREATE_DATE,
+        	END_DATE_STR,
+        	CHANGE_TYPE)
+            (
+            SELECT Ar_Shift_Change_Seq.Nextval,
+           		   PERSON_ID,
+           		   CPNY_ID,
+           			TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYY/MM/DD'),
+           			0,
+           			SYSDATE,
+           			TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYY/MM/DD'),
+           			'公司日历修改'
+           	 FROM HR_EMPLOYEE 
+           	 WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+           	   AND PERSON_ID NOT IN (
+           	   		SELECT PERSON_ID 
+           	   		FROM AR_SCHEDULE_HTSV
+           	   		WHERE AR_DATE_STR = TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYY/MM/DD')
+           	   )
+           	   AND SHIFT_NO NOT IN (
+           	   		SELECT GROUP_ID 
+           	   		FROM AR_CALENDER_GROUP
+           	   		WHERE AR_DATE_STR = TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'),'YYYY/MM/DD')
+           	   )
+           	   AND TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD') > ADD_MONTHS(SYSDATE,-2) 
+           	   AND (DATE_LEFT IS NULL OR DATE_LEFT >= TO_DATE(#DDATE_STR:VARCHAR#,'YYYY-MM-DD'))
+           	  )
+           ]]> 
+		</insert>
+	<insert id="insertArShiftChangeByShift" parameterClass="linkMap">
+	  <![CDATA[
+		insert into ar_shift_change 
+           (NO,
+		    PERSON_ID,
+		    CPNY_ID,
+		    DATE_STR,
+		    ACTIVITY,
+		    CREATE_DATE,
+        	END_DATE_STR,
+        	CHANGE_TYPE)
+            (
+            SELECT Ar_Shift_Change_Seq.Nextval,
+           		   PERSON_ID,
+           		   CPNY_ID,
+           			to_char(AR_GET_REALDATE(#DDATE_STR:VARCHAR#),'yyyy/mm/dd'),
+           			0,
+           			SYSDATE,
+           			to_char(AR_GET_REALDATE(#DDATE_STR:VARCHAR#),'yyyy/mm/dd'),
+           			'班次日历修改'
+           	 FROM HR_EMPLOYEE 
+           	 WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+           	   AND SHIFT_NO = #GROUP:VARCHAR#
+           	   AND PERSON_ID NOT IN (
+           	   		SELECT PERSON_ID 
+           	   		FROM AR_SCHEDULE_HTSV
+           	   		WHERE AR_DATE_STR = to_char(AR_GET_REALDATE(#DDATE_STR:VARCHAR#),'yyyy/mm/dd')
+           	   )
+           	   AND (DATE_LEFT IS NULL OR DATE_LEFT >= AR_GET_REALDATE(#DDATE_STR:VARCHAR#))
+           	   AND AR_GET_REALDATE(#DDATE_STR:VARCHAR#) > ADD_MONTHS(SYSDATE,-2) )
+           ]]> 
+		</insert>
+		
+	   <delete id="deleteClassCalendarInfo" parameterClass="linkMap">
+	   <![CDATA[
+		   DELETE FROM ar_calender_group WHERE ddate=to_date(REPLACE(REPLACE(TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD-MM-YYYY'),'YYYY-MM-DD'), '.', '/'),'-','/'),'YYYY/MM/DD') and cpny_id=#CPNY_ID:VARCHAR# 
+	    ]]> 
+	    <isNotEmpty prepend="AND" property="GROUP">
+			<![CDATA[
+		 	  GROUP_ID=#GROUP:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	   </delete>
+	   <select id="getShiftNo" parameterClass="linkMap" resultClass="linkMap">
+		    <![CDATA[
+            select distinct(shift_no) AS  shiftno from hr_employee where CPNY_ID=#CPNY_ID:VARCHAR# and shift_no is not null
+	        ]]> 
+		</select>
+		
+		<delete id="deleteClassCalendarHistoryInfo" parameterClass="linkMap">
+		<![CDATA[
+			      delete  ar_calender_group_history T
+				  
+						WHERE T.AR_DATE_STR=TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+						AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+						AND T.GROUP_ID=#GROUP:VARCHAR#
+			]]> 
+	</delete>			
+		
+		
+	<insert id="insertClassCalendarHistoryInfo" parameterClass="linkMap">
+		<![CDATA[
+			      insert into ar_calender_group_history
+						  (ddate,
+						   iyear,
+						   imonth,
+						   iday,
+						   iweek,
+						   workdayflag,
+						   typeid,
+						   overtypeid,
+						   typeid_default,
+						   group_id,
+						   shift_no,
+						   ar_date_str,
+						   cpny_id,
+						   CREATED_BY,
+						   CREATE_DATE,
+						   CREATED_IP)
+						select T.ddate,T.iyear,
+						   T.imonth,
+						   T.iday,
+						   T.iweek,
+						   DECODE(#DATE_TYPE:VARCHAR#,'1440',1,0),
+						  #DATE_TYPE:VARCHAR#,
+						  #DATE_TYPE:VARCHAR#,
+						  T.typeid_default,
+						  #GROUP:VARCHAR#,
+						  #SHIFT_NO:VARCHAR#,
+						  T.DDATE_STR,
+						  T.CPNY_ID,
+						  #CREATED_BY:VARCHAR#,
+						  SYSDATE,
+						  #CREATED_IP:VARCHAR#
+						FROM AR_CALENDER T
+						WHERE T.DDATE_STR=TO_CHAR(TO_DATE(#DDATE_STR:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD') 
+						AND T.CPNY_ID=#CPNY_ID:VARCHAR#
+			]]> 
+	</insert>			
+	<insert id="createArDEtailClassCalendarInfo" parameterClass="linkMap">
+	  <![CDATA[
+		{call AR_CREATE_CLASS_CALENDAR_PROC(#IN_MONTH_STR:VARCHAR#,'',#CPNY_ID:VARCHAR#,'', #VAR_OUTSTR,jdbcType=VARCHAR,mode=INOUT#)}
+           ]]> 
+		</insert>
+<insert id="createArDEtailClassOverTimeLimit" parameterClass="linkMap">
+	  <![CDATA[
+		{call AR_CREATE_OT_LIMI_PRE(#IN_MONTH_STR:VARCHAR#)}
+           ]]> 
+</insert>
+
+	<select id="viewEmpCalendarCheckInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT     get_emp_local_name(AR.EMPLOYEE_ID,#interCpnyID:VARCHAR#) LOCAL_NAME,
+    				   ar.employee_id EMPID,
+ 				      get_dept_name(get_dept_no(get_person_id(ar.employee_id)), #interLanguage:VARCHAR#) DEPTNAME,
+ 				      AR.PERSON_ID,
+ 				      AR.SHIFT_NO,
+				       get_global_name(AR.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME,
+				       get_global_name(AR.DATE_TYPE,#interLanguage:VARCHAR#) DATE_TYPE,
+				       AR.AR_DATE_STR AR_DATE_STR,
+				       AR.RESULT_FLAG RESULT_FLAG,
+				       AR.UPLOAD_ERROR_MSG UPLOAD_ERROR_MSG,
+       				   get_emp_local_name(AR.CREATED_BY,#interCpnyID:VARCHAR#) || ' '||AR.CREATED_IP CREATED_BY,
+       				   TO_CHAR(AR.CREATE_DATE,'DD/MM/YYYY HH24:MI') CREATE_DATE,
+       				    get_emp_local_name(AR.UPDATED_BY,#interCpnyID:VARCHAR#) || ' '||AR.UPDATED_IP UPDATED_BY,
+       				   TO_CHAR(AR.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE
+				FROM AR_SCHEDULE_TEMP AR
+				WHERE AR.UPDATED_BY = #adminID:VARCHAR#
+				
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">	
+			AR.RESULT_FLAG = #RESULT_FLAG:VARCHAR#
+		</isNotEmpty>
+		ORDER BY to_number(ar.line_id) ASC
+		
+	</select>
+	
+</sqlMap>

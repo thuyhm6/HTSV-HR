@@ -1,0 +1,123 @@
+@charset "utf-8";
+body{ width:100%; overflow-x:hidden; height:100%; margin:0px auto;padding:0px; color:#333333;  font-size:12px; /* font-family: 'Microsoft Yahei','SimSun',sans-serif; */font-family: Helvetica, Arial, Tahoma, sans-serif;  background: #f1f1f1;}
+form,p,h1,h2,h3,h4,h5,h6,dl,dt,dd{ margin:0px;padding:0px; }
+i{ font-style:normal;}
+img{margin:0px; padding:0px; border:0px;}
+ul,li{margin:0px;padding:0px;list-style-type:none;}
+input,select{margin:0px;padding:0px;font-size:12px; vertical-align:middle; outline:0; /* font-family: 'Microsoft Yahei','SimSun',sans-serif; */font-family: Helvetica, Arial, Tahoma, sans-serif;}
+a{ color:#333; text-decoration:none;}
+a:hover{color:#d60f16; text-decoration:none; cursor: pointer;}
+.fix:before,.fix:after{content:"";display:table;}
+.fix{*zoom:1;}
+.fix:after{clear:both;}
+.l{ float:left;}
+.r{ float:right;}
+.w1200{ width:1200px; margin:0px auto;}
+/*header*/
+.header{ width:100%; padding-bottom:36px; position:fixed; left:0px; z-index:9999999; border-bottom:5px solid #2a4c7a; background:#ffffff; top:0px;}
+/*top*/
+.top{ height:36px; width:100%;}
+.top .top_link{ float:right; margin-right:24px;height:36px; line-height:36px}
+.top .top_link a{ font-size:12px; color:#002e8f; margin:0px 9px;}
+.top .top_link span{ font-size:12px; color:#002e8f;}
+.top .top_link a:hover{ color:#F00;}
+.header .logo{ position:absolute; left:10px;top:16px;}
+/*nav*/
+.nav{ width:727px; height:36px; background:url(../images/nav_bg1.png) no-repeat; position:absolute; left:260px}
+.nav ul{ float:left;}
+.nav ul li{ float:left; width:132px;  height:30px; line-height:30px; margin-top:3px}
+.nav ul li h3{ display:block;border-right:1px solid #fff; height:20px; line-height:20px; margin-top:5px;}
+.nav ul li h3 a{ display:block; text-align:center; color:#fff; font-size:15px;}
+.nav ul li:first-child{ margin-left:30px; }
+.nav ul li:hover{ background:#fff; border-radius:5px;}
+.nav ul li.on {background:#fff; border-radius:5px;}
+.nav ul li.on{ background:#fff;}
+.nav ul li:hover h3 a{ color:#2a4c7a}
+.nav ul li.on h3 a{ color:#2a4c7a}
+.index_content{ margin-top:76px; height:100%;}
+/*middle*/
+.middle{ height:100%; position:relative; min-height:1000px}
+/*left_cn*/
+.left_cn{ width:auto; margin-left:186px}
+/*position*/
+.position{ width:100%; border-bottom:1px solid #2a4c7a; height:30px; margin-top:10px}
+.position h3{ float:left; background:url(../images/position_tb.jpg) repeat-x; height:30px; line-height:30px; width:90px; text-align:center; font-size:16px; font-size:12px; color:#000; font-weight:normal; margin-left:2px; border:1px solid #c8c7c7; border-bottom:0px; margin-bottom:-1px; position:relative;}
+.index_details{ width:90%; margin:0px 5%; height:800px; margin-top:44px}
+.index_topcn1{ background:#f1f1f1;}
+.index_topcn2{ background:#f1f1f1}
+.index_topcn3{ background:#f1f1f1}
+/*index_topcn1*/
+.index_toptp{border-radius:10px; box-shadow:-2px 0px 10px 10px #d2dbe5; background:#d2dbe5;}
+.index_topcn1 img{ display:block; width:100%; height:100%;}
+/*index_news*/
+.index_news{ width:100%; background:#fff; height:100%; border-radius:10px; box-shadow:-2px 0px 10px 10px #d2dbe5}
+.index_bt{padding:0px 10px;}
+.index_bt .index_btcn{width:100%; height:44px; line-height:44px; border-bottom:1px solid #e8e7e7; margin-top:10px}
+.index_bt .index_btcn i{ float:left; width:24px; height:24px; margin-top:10px;}
+.index_bt .index_btcn i img{ display:block; max-width:24px;width:auto; height:24px;}
+.index_bt .index_btcn h3{ float:left; font-size:16px; color:#024a9a; font-weight:normal;height:44px; line-height:44px; margin-left:10px}
+.index_bt .index_btcn a{ float:right; background:url(../images/index_bt5.png) center no-repeat; width:4px; height:24px; margin-top:10px; margin-right:12px}
+/*index_newscn*/
+.index_newscn{ padding:0px 10px}
+.index_newscn ul{ float:left; width:100%;}
+.index_newscn ul li{ float:left; width:100%; border-bottom:1px  dashed #024a9a; height:63px; line-height:63px; overflow:hidden; background:url(../images/index_newstb.png) 6px center no-repeat; cursor:pointer}
+.index_newscn ul li:hover{ background:url(../images/index_newstb11.png) 6px center no-repeat;}
+.index_newscn ul li span{ float:left; color:#666666; font-size:14px; margin-left:22px}
+.index_newscn ul li a{ float:left; margin-left:4px;color:#666666; font-size:14px;}
+.index_newscn ul li:hover a{ color:#024a9a}
+/*index_Notice*/
+.index_Notice{ width:100%; height:100%;background:url(../images/index_Noticebg.png) left top no-repeat; background-size:100% 100%; border-radius:10px; box-shadow:-2px 0px 10px 10px #d2dbe5}
+.index_bt1{padding:0px 10px;}
+.index_bt1 .index_btcn1{width:100%; height:44px; line-height:44px; margin-top:10px;}
+.index_bt1 .index_btcn1 i{ float:left; width:24px; height:24px; margin-top:10px;}
+.index_bt1 .index_btcn1 i img{ display:block; max-width:24px;width:auto; height:24px;}
+.index_bt1 .index_btcn1 h3{ float:left; font-size:16px; color:#024a9a; font-weight:normal;height:44px; line-height:44px; margin-left:10px}
+.index_bt1 .index_btcn1 a{ float:right; background:url(../images/index_bt5.png) center no-repeat; width:4px; height:24px; margin-top:10px; margin-right:12px}
+/*index_center*/
+.index_center{ margin-top:34px; float:left; width:100%;}
+/*index_Record*/
+.index_Record{  width:100%; background:#fff;  min-height:320px;border-radius:10px; box-shadow:-2px 0px 10px 10px #d2dbe5}
+.index_Recordcn{ padding:0px 10px;}
+.index_Recordcn ul{ float:left; width:100%;}
+.index_Recordcn ul li{float:left; width:100%; height:52px; background:#fff;box-shadow:-1px 0px 4px 4px #d2dbe5; margin-top:8px}
+.index_Recordcn ul li a{ float:left; width:100%;}
+.index_Recordcn ul li a span{height:52px; float:left; margin-left:14px; width:86%;height:52px; line-height:52px; overflow:hidden; color:#666666; font-size:14px;}
+.index_Recordcn ul li a i{ float:right; background:url(../images/index_Recordtb1.png) center no-repeat; width:13px; height:16px; margin-top:18px; margin-right:10px;}
+.index_Recordcn ul li:hover a i{ background:url(../images/index_Recordtb21.png) center no-repeat;}
+/*index_system*/
+.index_system{width:100%; background:#fff; height:100%; border-radius:10px; box-shadow:-1px 0px 10px 10px #d2dbe5}
+.index_systemcn{ width:100%; background:#e9f2fa; height:40px;}
+/*.index_bt2*/
+.index_bt2{ width:100%;}
+.index_bt2 .index_btcn2{width:100%; height:44px; line-height:44px; margin-top:10px; border-bottom:1px solid #e8e7e7;}
+.index_bt2 .index_btcn2 i{ float:left; width:24px; height:24px; margin-top:10px; margin-left:10px}
+.index_bt2 .index_btcn2 i img{ display:block; max-width:24px;width:auto; height:24px;}
+.index_bt2 .index_btcn2 h3{ float:left; font-size:16px; color:#024a9a; font-weight:normal;height:44px; line-height:44px; margin-left:10px}
+.index_bt2 .index_btcn2 a{ float:right; background:url(../images/index_bt5.png) center no-repeat; width:4px; height:24px; margin-top:10px; margin-right:30px}
+/***********Sign***********/
+/*Sign_top*/
+.Sign_top{ width:100%; height:124px}
+.Sign_top a{ float:left;width:381px; height:60px; margin-top:32px; margin-left:30px;}
+.Sign_top a img{ display:block; width:381px; height:60px;}
+/*Sign*/
+.Sign{ width:100%; padding-bottom:102px;}
+.Sign .Sign_cn{width:100%; background:url(../images/Sign_bg.jpg) repeat-x; height:853px; position:relative; z-index:1;}
+.Sign .Sign_cn .Sign_bg{ position:absolute; left:6%; top:100px; z-index:10;}
+/*Sign_nr*/
+.Sign_nr{ position:absolute; background:#fff7ea; width:498px; height:542px; z-index:20; top:140px; right:8%;}
+.Sign_bt{ width:428px; margin:0px auto; margin-top:60px;}
+.Sign_bt img{ display:block; width:257px; height:61px;}
+.Sign_form{width:428px; margin:0px auto; margin-top:20px;}
+.Sign_form .Sign_bl{width:426px; border:1px solid #dbd9da; height:58px; line-height:58px; background:#fff; box-shadow:3px 3px 3px #dddddd inset; margin-bottom:22px;}
+.Sign_form .Sign_bl i{ float:left; width:22px; height:20px; margin-top:20px; margin-left:12px;}
+.Sign_form .Sign_bl i img{ display:block; width:auto; margin:0px auto; height:20px;}
+.Sign_form .Sign_bl .Sign_text{ float: left; height:52px; line-height:52px; margin-left:10px; width:378px; border:0px; font-size:13px; color:#999999; background:none;}
+.Sign_form .Sign_bl .Sign_password{ float: left; height:52px; line-height:52px; margin-left:10px; width:378px; border:0px; font-size:13px; color:#999999; background:none;}
+.Sign_bl1{ width:100%;}
+.Sign_select{ float:left; width:200px; height:30px; line-height:30px; border:1px solid #dbd9da;box-shadow:3px 3px 3px #dddddd inset; padding-left:10px}
+.Sign_xz{ float:right; width:96px; height:30px; line-height:30px;}
+.Sign_xz .Sign_checkbox{ float:left; width:16px; height:16px; margin-top:7px; margin-right:10px;}
+.Sign_xz a{ float:left; font-size:14px; color:#666666}
+.Sign_xz a:hover{ color:#F00;}
+.Sign_tj{ margin-top:70px;}
+.Sign_submit{ display:block; width:100%; height:60px; line-height:60px; font-size:20px; color:#fff; border:0px; background:#ee8704; border-radius:6px; letter-spacing:1px;}

@@ -1,0 +1,1528 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="recruit.manage">
+
+	<!-- 招聘发令信息 -->
+	<select id="viewRecruitList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.PERSON_ID,
+			       A.CPNY_ID,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       A.EMPID,
+			       A.LOCAL_NAME,
+			       A.CHINESE_PINYIN,
+			       A.ENGLISH_NAME,
+			       A.KOREAN_NAME,
+			       A.JOIN_TYPE,
+			       get_global_name(A.JOIN_TYPE ,#interLanguage:VARCHAR#) JOIN_TYPE_NAME,
+			       A.JOIN_DETAIL_TYPE,
+			       get_global_name(A.JOIN_DETAIL_TYPE ,#interLanguage:VARCHAR#) JOIN_DETAIL_NAME,
+			       A.EMPLOYEE_STATUS,
+			       get_global_name(A.EMPLOYEE_STATUS ,#interLanguage:VARCHAR#) EMPLOYEE_STATUS_NAME,
+			       A.POST_FAMILY,
+			       get_global_name(A.POST_FAMILY ,#interLanguage:VARCHAR#) POST_FAMILY_NAME,
+			       A.DATE_STARTED,
+			       A.END_PROBATION_DATE,
+			       A.CONFIRM_WORK_DATE,
+			       A.TIME_STARTED,
+			       A.POSITION_CONFIRMATION_DATE,
+			       A.DETAIN_LENGTH,
+			       A.COST_CENTER,
+			       A.SHIFT_NO,
+			       get_global_name(A.SHIFT_NO ,#interLanguage:VARCHAR#) SHIFT_NO_NAME,
+			       A.PAY_STEP_NO,
+			       get_global_name(A.PAY_STEP_NO ,#interLanguage:VARCHAR#) PAY_STEP_NAME,
+			       A.EMP_TYPE_CODE,
+			       get_global_name(A.EMP_TYPE_CODE ,#interLanguage:VARCHAR#) EMP_TYPE_CODE_NAME,
+			       A.IS_PROBATION,
+			       A.MAIN_BUSINESS,
+			       get_global_name(A.MAIN_BUSINESS ,#interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+			       A.POST_GRADE_NO,
+			       get_global_name(A.POST_GRADE_NO ,#interLanguage:VARCHAR#) POST_GRADE_NO_NAME,
+			       A.WORK_AREA,
+			       get_work_area_name(A.CPNY_ID,A.WORK_AREA, #interLanguage:VARCHAR#) WORK_AREA_NAME,
+			       A.POSITION_NO,
+			       get_global_name(A.POSITION_NO ,#interLanguage:VARCHAR#) POSITION_NO_NAME,
+				   A.AFFIRM_WORK_AGE,
+			       PKG_DECRYPT.DECRYPT_DES(A.IDCARD_NO) IDCARD_NO,
+			       A.IDCARD_START_DATE,
+			       A.ISSUING_AUTHORITY,
+			       A.SEXCODE,
+			       get_global_name(A.SEXCODE ,#interLanguage:VARCHAR#) SEXCODE_NAME,
+			       A.DOB,
+			       A.NATIONALITY_CODE,
+			       get_global_name(A.NATIONALITY_CODE ,#interLanguage:VARCHAR#) NATIONALITY_CODE_NAME,
+			       A.NATION_CODE,
+			       get_global_name(A.NATION_CODE ,#interLanguage:VARCHAR#) NATION_CODE_NAME,
+			       A.MARITAL_STATUS_CODE,
+			       get_global_name(A.MARITAL_STATUS_CODE ,#interLanguage:VARCHAR#) MARITAL_STATUS_NAME,
+			       PKG_DECRYPT.DECRYPT_DES(A.HOME_PHONE) HOME_PHONE,
+			       PKG_DECRYPT.DECRYPT_DES(A.COMPANY_PHONE) COMPANY_PHONE,
+			       A.SING_ID,
+			       A.EXIST_SINGLE,
+			       get_global_name(A.EXIST_SINGLE ,#interLanguage:VARCHAR#) EXIST_SINGLE_NAME,
+			       A.REMARK,
+			       A.EMAIL,
+			       A.EXPERIENCE,
+			       A.RELIGION,
+			       A.CV_UPDATE_STATUS,
+			       get_global_name(A.CV_UPDATE_STATUS ,#interLanguage:VARCHAR#) CV_UPDATE_STATUS_NAME,
+			       A.REG_PLACE,
+			       A.ORIGIN,
+			       A.HEIGHT,
+			       A.WEIGHT,
+			       A.ADDRESS_TYPE,
+			       get_global_name(A.ADDRESS_TYPE ,#interLanguage:VARCHAR#) ADDRESS_TYPE_NAME,
+			       A.EFFECTIVE_START_DATE,
+			       A.NATIONALITY,
+			       get_global_name(A.NATIONALITY ,#interLanguage:VARCHAR#) NATIONALITY_NAME,
+			       A.ADDRESS_CONTENT,
+			       A.HUJIADDRESS_TYPE,
+			       get_global_name(A.HUJIADDRESS_TYPE ,#interLanguage:VARCHAR#) HUJIADDRESS_TYPE_NAME,
+				   A.HUJIYOUXIAO_START_DATE,
+				   A.HUJIGUOJI,
+				   A.HUJIADDRESS_CONTENT,
+			       NVL(A.PHOTO_PATH,'/resources/photo/default.jpg') PHOTO_PATH,
+			       TO_CHAR(A.CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+			       A.CREATED_BY,
+			       A.CREATED_IP,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY') UPDATE_DATE,
+			       A.UPDATED_BY,
+			       A.UPDATED_IP,
+			       A.PERSON_SUPPLIER_COMPANY,
+			       A.ACTIVITY
+			  FROM HR_EMPLOYEE_RECRUIT A 
+			 WHERE A.CPNY_ID = #interCpnyID:VARCHAR# 
+			   AND A.ACTIVITY <> 2
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				A.PERSON_ID = #PERSON_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="OBJECT">
+			<![CDATA[
+				A.ACTIVITY = #OBJECT#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATA_SOURCES">
+			<![CDATA[
+				A.DATA_SOURCES IN ($DATA_SOURCES$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				TO_DATE(A.DATE_STARTED,'DD/MM/YYYY') >= TO_DATE(#START_DATE#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				TO_DATE(A.DATE_STARTED,'DD/MM/YYYY') <= TO_DATE(#END_DATE#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<!-- 添加基本信息 -->
+	<insert id="addEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_EMPLOYEE_RECRUIT
+				  (PERSON_ID,
+				   CPNY_ID,
+				   DEPTNO,
+				   EMPID,
+				   LOCAL_NAME,
+				   ENGLISH_NAME,
+				   IS_PROBATION,
+				   JOIN_TYPE,
+				   JOIN_DETAIL_TYPE,
+				   EMP_TYPE_CODE,
+				   DATE_STARTED,
+				   END_PROBATION_DATE,
+				   TIME_STARTED,
+				   POSITION_CONFIRMATION_DATE,
+				   MAIN_BUSINESS,
+				   COST_CENTER,
+				   POST_FAMILY,
+				   POST_GRADE_NO,
+				   POSITION_NO,
+				   DETAIN_LENGTH,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   ACTIVITY,
+				   DATA_SOURCES,
+				   SHIFT_NO,
+				   PAY_STEP_NO,
+				   PERSON_SUPPLIER_COMPANY
+				   )
+				VALUES
+				  (HR_PERSON_ID_SEQ.NEXTVAL,
+				   #interCpnyID:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   #EMPID:VARCHAR#,
+				   #LOCAL_NAME:VARCHAR#,
+				   #ENGLISH_NAME:VARCHAR#,
+				   NVL(#IS_PROBATION:VARCHAR#,'0'),
+				   #JOIN_TYPE:VARCHAR#,
+				   #JOIN_DETAIL_TYPE:VARCHAR#,
+				   #EMP_TYPE_CODE:VARCHAR#,
+				   #DATE_STARTED:VARCHAR#,
+				   #END_PROBATION_DATE:VARCHAR#,
+				   #TIME_STARTED:VARCHAR#,
+				   #POSITION_CONFIRMATION_DATE:VARCHAR#,
+				   #MAIN_BUSINESS:VARCHAR#,
+				   #COST_CENTER:VARCHAR#,
+				   #POST_FAMILY:VARCHAR#,
+				   #POST_GRADE_NO:VARCHAR#,
+				   #POSITION_NO:VARCHAR#,
+				   #DETAIN_LENGTH:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   0,
+				   1,
+				   #SHIFT_NO:VARCHAR#,
+				   #PAY_STEP_NO:VARCHAR#,
+				   #COMPANY_NAME:VARCHAR#
+				   )
+		]]>
+	</insert>
+
+	<!-- 更新基本信息 -->
+	<update id="updateEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EMPLOYEE_RECRUIT
+			   SET DEPTNO = #DEPTNO:VARCHAR#,
+			       EMPID = #EMPID:VARCHAR#,
+			       LOCAL_NAME = #LOCAL_NAME:VARCHAR#,
+			       ENGLISH_NAME = #ENGLISH_NAME:VARCHAR#,
+			       IS_PROBATION = #IS_PROBATION:VARCHAR#,
+			       JOIN_TYPE = #JOIN_TYPE:VARCHAR#,
+			       JOIN_DETAIL_TYPE = #JOIN_DETAIL_TYPE:VARCHAR#,
+			       EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#,
+			       DATE_STARTED = #DATE_STARTED:VARCHAR#,
+			       END_PROBATION_DATE = #END_PROBATION_DATE:VARCHAR#,
+			       TIME_STARTED = #TIME_STARTED:VARCHAR#,
+			       POSITION_CONFIRMATION_DATE = #POSITION_CONFIRMATION_DATE:VARCHAR#,
+			       MAIN_BUSINESS = #MAIN_BUSINESS:VARCHAR#,
+			       COST_CENTER =#COST_CENTER:VARCHAR#,
+			       POST_FAMILY = #POST_FAMILY:VARCHAR#,
+			       POST_GRADE_NO = #POST_GRADE_NO:VARCHAR#,
+			       POSITION_NO = #POSITION_NO:VARCHAR#,
+			       DETAIN_LENGTH = #DETAIN_LENGTH:VARCHAR#,
+			       SHIFT_NO = #SHIFT_NO:VARCHAR#,
+			       PAY_STEP_NO = #PAY_STEP_NO:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	<update id="editEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_EMPLOYEE_RECRUIT H
+			  	SET H.END_PROBATION_DATE = #END_PROBATION_DATE:VARCHAR#,
+			  	    H.UPDATED_BY=#UPDATED_BY:VARCHAR#,
+			  	    H.UPDATE_DATE=SYSDATE,
+			  	    H.UPDATED_IP=#UPDATED_IP:VARCHAR#
+					WHERE H.PERSON_ID= #PERSON_ID:VARCHAR#
+			  ]]>
+	</update>
+
+	<!-- 更新附加信息 -->
+	<update id="updatePersonalInfo" parameterClass="linkMap">
+		<![CDATA[
+	        UPDATE HR_EMPLOYEE_RECRUIT
+		       SET IDCARD_NO = PKG_DECRYPT.ENCRYPT_DES(#IDCARD_NO:VARCHAR#),
+		           IDCARD_START_DATE = #IDCARD_START_DATE:VARCHAR#,
+		           ISSUING_AUTHORITY = #ISSUING_AUTHORITY:VARCHAR#,
+		           DOB = #DOB:VARCHAR#,
+		           SEXCODE = #SEXCODE:VARCHAR#,
+		           MARITAL_STATUS_CODE = #MARITAL_STATUS_CODE:VARCHAR#,
+		           NATIONALITY_CODE = #NATIONALITY_CODE:VARCHAR#,
+		           NATION_CODE = #NATION_CODE:VARCHAR#,
+		           HOME_PHONE = PKG_DECRYPT.ENCRYPT_DES(#HOME_PHONE:VARCHAR#),
+		           COMPANY_PHONE = PKG_DECRYPT.ENCRYPT_DES(#COMPANY_PHONE:VARCHAR#),
+		           EXIST_SINGLE = #EXIST_SINGLE:VARCHAR#,
+		           SING_ID = #SING_ID:VARCHAR#,
+		       	   EMAIL = #EMAIL:VARCHAR#,
+		           EXPERIENCE = #EXPERIENCE:VARCHAR#,
+		           RELIGION = #RELIGION:VARCHAR#,
+		           CV_UPDATE_STATUS = #CV_UPDATE_STATUS:VARCHAR#,
+		           REG_PLACE = #REG_PLACE:VARCHAR#,
+		           ORIGIN = #ORIGIN:VARCHAR#,
+		           HEIGHT = #HEIGHT:VARCHAR#,
+		           WEIGHT = #WEIGHT:VARCHAR#,
+		           ADDRESS_TYPE = #ADDRESS_TYPE:VARCHAR#,
+		           EFFECTIVE_START_DATE = #EFFECTIVE_START_DATE:VARCHAR#,
+		           NATIONALITY = #NATIONALITY:VARCHAR#,
+		           ADDRESS_CONTENT = #ADDRESS_CONTENT:VARCHAR#,
+		           HUJIADDRESS_TYPE = #HUJIADDRESS_TYPE:VARCHAR#,
+		           HUJIYOUXIAO_START_DATE = #HUJIYOUXIAO_START_DATE:VARCHAR#,
+		           HUJIGUOJI = #HUJIGUOJI:VARCHAR#,
+		           HUJIADDRESS_CONTENT = #HUJIADDRESS_CONTENT:VARCHAR#,
+		           UPDATE_DATE = SYSDATE,
+		           UPDATED_BY = #adminID:VARCHAR#,
+		           UPDATED_IP = #adminIP:VARCHAR# 
+		     WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+
+	<!-- 更新照片路径 -->
+	<update id="updatePhotoPathInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EMPLOYEE_RECRUIT
+		   SET PHOTO_PATH = #PHOTO_PATH:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE EMPID = #PERSON_ID:VARCHAR#
+		   AND CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+	</update>
+
+	<!--<update id="deleteEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EMPLOYEE_RECRUIT
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	-->
+	
+	<update id="deleteEmployeeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE HR_EMPLOYEE_RECRUIT WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+
+	<!-- 经历信息管理-->
+	<select id="viewWorkExperienceList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.PERSON_ID,
+			       A.CPNY_NAME,
+			       A.DEPT_NAME,
+			       A.START_DATE,
+			       A.END_DATE,
+			       A.DUTY,
+			       A.POSITION,
+			       A.PAYROLL,
+			       A.REMARK, 
+			       A.LEFT_REASON,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP,
+			       A.ORDERNO,
+			       A.ACTIVITY 
+			  FROM HR_WORK_EXPERIENCE_RECRUIT A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.ACTIVITY <> 0
+			   AND A.PERSON_ID = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<insert id="addWorkExperienceInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_WORK_EXPERIENCE_RECRUIT
+				  (SEQ,
+				   PERSON_ID,
+				   CPNY_NAME,
+				   DEPT_NAME,
+				   START_DATE,
+				   END_DATE,
+				   DUTY,
+				   POSITION,
+				   PAYROLL,
+				   REMARK,
+				   LEFT_REASON,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP)
+				VALUES
+				  (HR_W_EXP_SEQ.NEXTVAL,
+				   #PERSON_ID:VARCHAR#,
+				   #CPNY_NAME:VARCHAR#,
+				   #DEPT_NAME:VARCHAR#,
+				   #START_DATE:VARCHAR#,
+				   #END_DATE:VARCHAR#,
+				   #DUTY:VARCHAR#,
+				   #POSITION:VARCHAR#,
+				   #PAYROLL:VARCHAR#,
+				   #REMARK:VARCHAR#,
+				   #LEFT_REASON:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#)
+	]]>
+	</insert>
+
+	<update id="updateWorkExperienceInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE HR_WORK_EXPERIENCE_RECRUIT
+			   SET CPNY_NAME = #CPNY_NAME:VARCHAR#,
+			       DEPT_NAME = #DEPT_NAME:VARCHAR#,
+			       START_DATE = #START_DATE:VARCHAR#,
+			       END_DATE = #END_DATE:VARCHAR#,
+			       DUTY = #DUTY:VARCHAR#,
+			       POSITION = #POSITION:VARCHAR#,
+			       PAYROLL = #PAYROLL:VARCHAR#,
+			       REMARK = #REMARK:VARCHAR#,
+			       LEFT_REASON = #LEFT_REASON:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+	<update id="deleteWorkExperienceInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_WORK_EXPERIENCE_RECRUIT
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+
+	<!-- 教育信息管理-->
+	<select id="viewEducationList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.PERSON_ID,
+			       A.DEGREE_CODE,
+				   get_global_name(A.DEGREE_CODE,#interLanguage:VARCHAR#) DEGREE_CODE_NAME,
+			       A.FINAL_DEGREE_WHETHER,
+			       A.INSTITUTION_NAME,
+			       A.SUBJECT,
+			       A.START_DATE,
+			       A.END_DATE,
+			       A.SUBJECT_SECOND,
+			       A.EDU_DEG_NUM,
+			       A.SITE_COUNTRY,
+			       A.REMARK,
+			       A.ADDRESS,
+			       A.SCHOOL_LENGTH,
+			       get_global_name(A.SCHOOL_LENGTH,#interLanguage:VARCHAR#) SCHOOL_LENGTH_NAME,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP,
+			       A.ORDERNO,
+			       A.ADDRESS,
+			       A.ACTIVITY
+			  FROM HR_EDUCATION_RECRUIT A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.ACTIVITY <> 0
+			   AND A.PERSON_ID = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<insert id="addEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_EDUCATION_RECRUIT
+				  (SEQ,
+				   PERSON_ID,
+				   DEGREE_CODE,
+				   FINAL_DEGREE_WHETHER,
+				   INSTITUTION_NAME,
+				   SUBJECT,
+				   START_DATE,
+				   END_DATE,
+				   SUBJECT_SECOND,
+				   EDU_DEG_NUM,
+				   SITE_COUNTRY,
+				   ADDRESS,
+				   SCHOOL_LENGTH,
+				   REMARK,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP)
+				VALUES
+				  (HR_EDU_SEQ.NEXTVAL,
+				   #PERSON_ID:VARCHAR#,
+				   #DEGREE_CODE:VARCHAR#,
+				   #FINAL_DEGREE_WHETHER:VARCHAR#,
+				   #INSTITUTION_NAME:VARCHAR#,
+				   #SUBJECT:VARCHAR#,
+				   #START_DATE:VARCHAR#,
+				   #END_DATE:VARCHAR#,
+				   #SUBJECT_SECOND:VARCHAR#,
+				   #EDU_DEG_NUM:VARCHAR#,
+				   #SITE_COUNTRY:VARCHAR#,
+				   #ADDRESS:VARCHAR#,
+				   #SCHOOL_LENGTH:VARCHAR#,
+				   #REMARK:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#)
+	]]>
+		<selectKey resultClass="string" keyProperty="id">
+			SELECT HR_EDU_SEQ.CURRVAL AS ID FROM DUAL
+   	</selectKey>
+	</insert>
+
+	<update id="updateEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE HR_EDUCATION_RECRUIT
+			   SET DEGREE_CODE = #DEGREE_CODE:VARCHAR#,
+			       FINAL_DEGREE_WHETHER = #FINAL_DEGREE_WHETHER:VARCHAR#,
+			       INSTITUTION_NAME = #INSTITUTION_NAME:VARCHAR#,
+			       SUBJECT = #SUBJECT:VARCHAR#,
+			       START_DATE = #START_DATE:VARCHAR#,
+			       END_DATE = #END_DATE:VARCHAR#,
+			       SUBJECT_SECOND = #SUBJECT_SECOND:VARCHAR#,
+			       EDU_DEG_NUM = #EDU_DEG_NUM:VARCHAR#,
+			       SITE_COUNTRY = #SITE_COUNTRY:VARCHAR#,
+			       ADDRESS = #ADDRESS:VARCHAR#,
+			       SCHOOL_LENGTH = #SCHOOL_LENGTH:VARCHAR#,
+			       REMARK = #REMARK:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+ 			WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+	<update id="deleteEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EDUCATION_RECRUIT
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+	<!-- 家庭信息管理-->
+	<select id="viewFamilyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.PERSON_ID,
+			       A.FAM_NAME,
+			       A.FAM_TYPE_CODE,
+			       get_global_name(A.FAM_TYPE_CODE,#interLanguage:VARCHAR#) FAM_TYPE_CODE_NAME,
+			       A.GENDER,
+			       get_global_name(A.GENDER,#interLanguage:VARCHAR#) GENDER_NAME,
+			       A.FAM_BORNDATE,
+			       A.EMERGENCY_CONTACT_YN,
+			       A.FAM_ADDRESS,
+			       PKG_DECRYPT.DECRYPT_DES(A.FAM_FAMILY_PHONE) FAM_FAMILY_PHONE,
+			       A.FAM_EMAIL,
+			       PKG_DECRYPT.DECRYPT_DES(A.FAM_PHONE) FAM_PHONE,
+			       PKG_DECRYPT.DECRYPT_DES(A.WORK_PHONE) WORK_PHONE,
+			       A.WORK_UNIT,
+			       A.OCCUPATION,
+			       A.REMARK,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP,
+			       A.ORDERNO,
+			       A.ACTIVITY
+			  FROM HR_FAMILY_RECRUIT A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.PERSON_ID = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<insert id="addFamilyInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_FAMILY_RECRUIT
+				  (SEQ,
+				   PERSON_ID,
+				   FAM_NAME,
+				   FAM_TYPE_CODE,
+				   GENDER,
+				   FAM_BORNDATE,
+				   EMERGENCY_CONTACT_YN,
+				   FAM_ADDRESS,
+				   FAM_FAMILY_PHONE,
+				   FAM_EMAIL,
+				   FAM_PHONE,
+				   WORK_PHONE,
+				   OCCUPATION,
+				   WORK_UNIT,
+				   REMARK,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP)
+				VALUES
+				  (HR_FAMILY_SEQ.NEXTVAL,
+				   #PERSON_ID:VARCHAR#,
+				   #FAM_NAME:VARCHAR#,
+				   #FAM_TYPE_CODE:VARCHAR#,
+				   #GENDER:VARCHAR#,
+				   #FAM_BORNDATE:VARCHAR#,
+				   #EMERGENCY_CONTACT_YN:VARCHAR#,
+				   #FAM_ADDRESS:VARCHAR#,
+				   PKG_DECRYPT.ENCRYPT_DES(#FAM_FAMILY_PHONE:VARCHAR#),
+				   #FAM_EMAIL:VARCHAR#,
+				   PKG_DECRYPT.ENCRYPT_DES(#FAM_PHONE:VARCHAR#),
+				   PKG_DECRYPT.ENCRYPT_DES(#WORK_PHONE:VARCHAR#),
+				   #OCCUPATION:VARCHAR#,
+				   #WORK_UNIT:VARCHAR#,
+				   #REMARK:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#)
+	]]>
+	</insert>
+
+	<update id="updateFamilyInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE HR_FAMILY_RECRUIT
+			   SET FAM_NAME = #FAM_NAME:VARCHAR#,
+			       FAM_TYPE_CODE = #FAM_TYPE_CODE:VARCHAR#,
+			       FAM_BORNDATE = #FAM_BORNDATE:VARCHAR#,
+			       GENDER = #GENDER:VRCHAR#,
+			       EMERGENCY_CONTACT_YN = #EMERGENCY_CONTACT_YN:VARCHAR#,
+			       FAM_ADDRESS = #FAM_ADDRESS:VARCHAR#,
+			       FAM_EMAIL = #FAM_EMAIL:VARCHAR#,
+			       FAM_FAMILY_PHONE = PKG_DECRYPT.ENCRYPT_DES(#FAM_FAMILY_PHONE:VARCHAR#),
+			       FAM_PHONE = PKG_DECRYPT.ENCRYPT_DES(#FAM_PHONE:VARCHAR#),
+			       WORK_PHONE = PKG_DECRYPT.ENCRYPT_DES(#WORK_PHONE:VARCHAR#),
+			       OCCUPATION = #OCCUPATION:VARCHAR#,
+			       WORK_UNIT = #WORK_UNIT:VARCHAR#,
+			       REMARK = #REMARK:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #UPDATED_BY:VARCHAR#,
+			       UPDATED_IP = #UPDATED_IP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+	<update id="deleteFamilyInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_FAMILY_RECRUIT
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+	<procedure id="executeRecruit" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RECRUIT_MANAGE.PR_RECRUIT_EXECUTE(
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#empIds:VARCHAR#,
+						#type:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+
+	<procedure id="getEmpId" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RECRUIT_MANAGE.HR_GET_EMP_NO(
+						#interCpnyID:VARCHAR#,
+						#DATE_STARTED:VARCHAR#,
+						#V_EMP_TYPE:VARCHAR#,
+                        #POST_FAMILY:VARCHAR#,
+                        #WORK_AREA:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+
+	<!-- 执行sql -->
+	<select id="doSql" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			$sql$
+		]]>
+	</select>
+
+	<!-- 添加招聘发令注册信息 -->
+	<insert id="addRegisterInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_RECRUIT_REGISTER_INFO
+				  (SEQ,
+				   REGISTER_TYPE,
+				   REGISTER_DATE,
+				   REGISTER_INFO,
+				   REGISTER_CODE,
+				   REMARK,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP)
+				VALUES
+				  (HR_RECRUIT_REGISTER_INFO_SEQ.NEXTVAL,
+				   #REGISTER_TYPE:VARCHAR#,
+				   #REGISTER_DATE:VARCHAR#,
+				   TO_CHAR(SYSDATE,'DD/MM/YYYY'),
+				   'HA' || GET_RESUME_NO(#interCpnyID#,'A'),
+				   #REGISTER_DATE:VARCHAR#,
+				   #interCpnyID:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#)
+		]]>
+	</insert>
+
+	<!-- 查询招聘发令注册日信息 -->
+	<select id="viewRegisterInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       REGISTER_TYPE,
+			       get_global_name(REGISTER_TYPE, #interLanguage:VARCHAR#) REGISTER_TYPE_NAME,
+			       REGISTER_DATE,
+			       CPNY_ID,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       CREATED_IP,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       UPDATED_IP,
+			       ACTIVITY
+			  FROM HR_RECRUIT_REGISTER_INFO
+			 WHERE ACTIVITY <> 2
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="FLAG">
+			<isEqual prepend="" property="FLAG" compareValue="1">
+				<![CDATA[
+				REGISTER_TYPE = '14014410'
+	             ]]>
+			</isEqual>
+			<isEqual prepend="" property="FLAG" compareValue="2">
+            	<![CDATA[
+				REGISTER_TYPE = '80000057'
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="FLAG" compareValue="3">
+            	<![CDATA[
+				REGISTER_TYPE = '80000058'
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(SEQ) DESC
+		]]>
+	</select>
+
+	<!-- 招聘发令信息 -->
+	<select id="viewRecruitBatchList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.PERSON_ID,
+			       A.REGISTER_SEQ,
+			       A.CPNY_ID,
+			       A.EMPID,
+			       A.VIETNAM_NAME,
+			       A.ENGLISH_NAME,
+			       TO_CHAR(TO_DATE(A.DOB,'YYYY/MM/DD'), 'DD/MM/YYYY') DOB,
+			       TO_CHAR(TO_DATE(A.DATE_STARTED,'YYYY/MM/DD'), 'DD/MM/YYYY') DATE_STARTED,
+			       A.CONTRACT_START_DATE,
+			       A.CONTRACT_END_DATE,
+			       TO_CHAR(TO_DATE(A.END_PROBATION_DATE,'YYYY/MM/DD'), 'DD/MM/YYYY') END_PROBATION_DATE,
+			       A.TEST_NOT,
+			       A.NEXT_PROMOTE_DATE1,
+			       A.NEXT_PROMOTE_DATE2,
+			       A.JOIN_TYPE,
+			       GET_GLOBAL_NAME(A.JOIN_TYPE,#interLanguage:VARCHAR#) JOIN_TYPE_NAME,
+			       A.JOIN_DETAIL_TYPE,
+			       GET_GLOBAL_NAME(A.JOIN_DETAIL_TYPE,#interLanguage:VARCHAR#) JOIN_DETAIL_TYPE_NAME,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       A.POST_FAMILY,
+			       GET_GLOBAL_NAME(A.POST_FAMILY, #interLanguage:VARCHAR#) POST_FAMILY_NAME,
+			       A.POST_GRADE_NO,
+			       GET_GLOBAL_NAME(A.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       A.SHIFT_NO,
+			       GET_GLOBAL_NAME(A.SHIFT_NO, #interLanguage:VARCHAR#) SHIFT_NO_NAME,
+			       A.MAIN_BUSINESS,
+			       GET_GLOBAL_NAME(A.MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+			       A.POSITION_NO,
+			       GET_GLOBAL_NAME(A.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       A.EMP_TYPE_CODE,
+			       GET_GLOBAL_NAME(A.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_CODE_NAME,
+			       A.COST_CENTER,
+			       get_COST_CENTER_name(A.CPNY_ID,A.COST_CENTER, #interLanguage:VARCHAR#) COST_CENTER_NAME,
+			       A.FINAL_DEGREE_CODE,
+			       GET_GLOBAL_NAME(A.FINAL_DEGREE_CODE, #interLanguage:VARCHAR#) FINAL_DEGREE_CODE_NAME,
+			       A.START_DATE,
+			       A.END_DATE,
+			       A.INSTITUTION_NAME,
+			       A.SUBJECT_NAME,
+			       A.IDCARD_NO,
+			       TO_CHAR(TO_DATE(A.IDCARD_S_DATE,'YYYY/MM/DD'), 'DD/MM/YYYY') IDCARD_S_DATE,
+			       A.ISSUING_AUTHORITY,
+			       A.SEXCODE,
+			       GET_GLOBAL_NAME(A.SEXCODE, #interLanguage:VARCHAR#) SEXCODE_NAME,
+			       A.NATIONALITY_CODE,
+			       GET_GLOBAL_NAME(A.NATIONALITY_CODE, #interLanguage:VARCHAR#) NATIONALITY_CODE_NAME,
+			       A.NATION_CODE,
+			       GET_GLOBAL_NAME(A.NATION_CODE, #interLanguage:VARCHAR#) NATION_CODE_NAME,
+			       A.RELIGION_CODE,
+			       A.MARITAL_STATUS_CODE,
+			       GET_GLOBAL_NAME(A.MARITAL_STATUS_CODE, #interLanguage:VARCHAR#) MARITAL_STATUS_NAME,
+			       A.EMAIL,
+			       A.EMAIL_SECOND,
+			       A.SING_ID,
+			       A.HOME_PHONE,
+			       A.TELEPHONE,
+			       A.ADDRESS_CONTENT,
+			       A.REG_PLACE,
+			       A.BORN_PLACE,
+			       A.CREATE_DATE,
+			       A.CREATED_BY,
+			       A.CREATED_IP,
+			       A.UPDATE_DATE,
+			       A.UPDATED_BY,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       A.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP,
+			       A.ACTIVITY,
+			       A.LINE_ID,
+			       A.POSITION_PLACE,
+			       A.PAY_STEP_NO,
+			       GET_GLOBAL_NAME(A.PAY_STEP_NO, #interLanguage:VARCHAR#) PAY_STEP_NAME,
+			       A.POST_FAMILY,
+			       GET_GLOBAL_NAME(A.POST_FAMILY, #interLanguage:VARCHAR#) POST_FAMILY_NAME,
+			       A.GRADUATION_ACHIEVEMENT,
+			       GET_GLOBAL_NAME(A.GRADUATION_ACHIEVEMENT, #interLanguage:VARCHAR#) GRADUATION_ACHIEVEMENT_NAME,
+			       A.AVERAGE_SCORE,
+			       A.LANGUAGE_ABILITY,
+			       GET_GLOBAL_NAME(A.LANGUAGE_ABILITY, #interLanguage:VARCHAR#) LANGUAGE_ABILITY_NAME
+			  FROM HR_EMPLOYEE_RECRUIT_BATCH A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 2
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.REGISTER_SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.SEQ
+		]]>
+	</select>
+	<!-- 单条删除批量导入的人员信息 -->
+	<!--<update id="deleteRecruitBatchInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EMPLOYEE_RECRUIT_BATCH
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	-->
+	<update id="deleteRecruitBatchInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE HR_EMPLOYEE_RECRUIT_BATCH WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 修改批量导入的人员信息 -->
+	<update id="addRecruitBatchInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EMPLOYEE_RECRUIT_BATCH
+			   SET VIETNAM_NAME         = #VIETNAM_NAME:VARCHAR#,
+			   	   ENGLISH_NAME         = #ENGLISH_NAME:VARCHAR#,
+			   	   EMPID                = #EMPID:VARCHAR#,
+			   	   DOB                  = #DOB:VARCHAR#,
+			   	   DATE_STARTED         = #DATE_STARTED:VARCHAR#,
+			   	   CONTRACT_START_DATE  = #CONTRACT_START_DATE:VARCHAR#,
+			   	   CONTRACT_END_DATE    = #CONTRACT_END_DATE:VARCHAR#,
+			   	   END_PROBATION_DATE   = #END_PROBATION_DATE:VARCHAR#,
+			   	   TEST_NOT             = #TEST_NOT:VARCHAR#,
+			   	   PROMOTE_DATE         = #PROMOTE_DATE:VARCHAR#,
+			   	   JOIN_TYPE            = GET_CODE_NO(#JOIN_TYPE_NAME:VARCHAR#,'1359',#interCpnyID:VARCHAR#,'CODE'),
+			       JOIN_DETAIL_TYPE     = GET_CODE_NO(#JOIN_DETAIL_TYPE_NAME:VARCHAR#,'1359',#interCpnyID:VARCHAR#,'SON_CODE'),
+			       DEPTNO               = GET_CODE_NO(#DEPTNAME:VARCHAR#,'0',#interCpnyID:VARCHAR#,'DEPT'),
+			       POST_GRADE_NO        = GET_CODE_NO(#POST_GRADE_NO_NAME:VARCHAR#,'14015812',#interCpnyID:VARCHAR#,'SON_CODE'),
+			       SHIFT_NO             = '400224',
+			       MAIN_BUSINESS        = GET_CODE_NO(#MAIN_BUSINESS:VARCHAR#,'400098',#interCpnyID:VARCHAR#,'CODE'),
+			       POSITION_NO          = GET_CODE_NO(#POSITION_NO_NAME:VARCHAR#,'14014036',#interCpnyID:VARCHAR#,'CODE'),
+			       EMP_TYPE_CODE        = GET_CODE_NO(#EMP_TYPE_CODE_NAME:VARCHAR#,'13864',#interCpnyID:VARCHAR#,'CODE'),
+			       COST_CENTER          = GET_CODE_NO(#COST_CENTER_NAME:VARCHAR#,'0',#interCpnyID:VARCHAR#,'COST_CENTER'),
+			       FINAL_DEGREE_CODE    = GET_CODE_NO(#FINAL_DEGREE_CODE_NAME:VARCHAR#,'13769',#interCpnyID:VARCHAR#,'CODE'),
+			       START_DATE           = #START_DATE:VARCHAR#,
+			       END_DATE             = #END_DATE:VARCHAR#,
+			       INSTITUTION_NAME     = #INSTITUTION_NAME:VARCHAR#,
+			       SUBJECT_NAME         = #SUBJECT_NAME:VARCHAR#,
+			       IDCARD_NO            = #IDCARD_NO:VARCHAR#,
+			       IDCARD_S_DATE        = #IDCARD_S_DATE:VARCHAR#,
+			       ISSUING_AUTHORITY    = #ISSUING_AUTHORITY:VARCHAR#,
+			       SEXCODE              = GET_CODE_NO(#SEXCODE_NAME:VARCHAR#,'1324',#interCpnyID:VARCHAR#,'CODE'),
+			       NATIONALITY_CODE     = GET_CODE_NO(#NATIONALITY_CODE_NAME:VARCHAR#,'870',#interCpnyID:VARCHAR#,'CODE'),
+			       NATION_CODE          = GET_CODE_NO(#NATION_CODE_NAME:VARCHAR#,'210942',#interCpnyID:VARCHAR#,'CODE'),
+			       RELIGION_CODE        = #RELIGION_CODE:VARCHAR#,
+			       MARITAL_STATUS_CODE  = GET_CODE_NO(#MARITAL_STATUS_CODE_NAME:VARCHAR#,'1709',#interCpnyID:VARCHAR#,'CODE'),
+			       PAY_STEP_NO          = GET_CODE_NO(#PAY_STEP_NO:VARCHAR#,'14016325',#interCpnyID:VARCHAR#,'CODE'),
+			       POST_FAMILY          = GET_CODE_NO(#POST_FAMILY:VARCHAR#,'14015812',#interCpnyID:VARCHAR#,'CODE'),
+			       GRADUATION_ACHIEVEMENT    = GET_CODE_NO(#GRADUATION_ACHIEVEMENT:VARCHAR#,'14014324',#interCpnyID:VARCHAR#,'CODE'),
+			       LANGUAGE_ABILITY     = GET_CODE_NO(#LANGUAGE_ABILITY:VARCHAR#,'14015514',#interCpnyID:VARCHAR#,'CODE'),
+			       AVERAGE_SCORE        = #AVERAGE_SCORE:VARCHAR#,
+			       EMAIL_SECOND         = #EMAIL_SECOND:VARCHAR#,
+			       EMAIL                = #EMAIL:VARCHAR#,
+			       SING_ID              = #SING_ID:VARCHAR#,
+			       HOME_PHONE           = #HOME_PHONE:VARCHAR#,
+			       TELEPHONE            = #TELEPHONE:VARCHAR#,
+			       ADDRESS_CONTENT      = #ADDRESS_CONTENT:VARCHAR#,
+			       REG_PLACE            = #REG_PLACE:VARCHAR#,
+			       UPDATE_DATE          = SYSDATE,
+			       UPDATED_BY           = #adminID:VARCHAR#,
+			       UPDATED_IP           = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+
+	<!-- 增加一条空的数据  -->
+	<update id="addEmptyRecruitInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_EMPLOYEE_RECRUIT_BATCH
+				  (SEQ,
+				   PERSON_ID,
+				   REGISTER_SEQ,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   ACTIVITY)
+				VALUES
+				  (HR_EMPLOYEE_RECRUIT_BATCH_SEQ.NEXTVAL,
+				   HR_PERSON_ID_SEQ.NEXTVAL,
+				   #SEQ:VARCHAR#,
+				   #interCpnyID#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   0)
+		]]>
+	</update>
+
+	<!-- 删除空的数据  -->
+	<update id="deleteEmptyRecruitInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM  HR_EMPLOYEE_RECRUIT_BATCH WHERE VIETNAM_NAME IS NULL AND KOREAN_NAME IS NULL AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="deleteExperienceInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM  HR_EXPERIENCE_INSIDE_BATCH WHERE LOCAL_NAME IS NULL AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+
+	<!-- 发令信息 -->
+	<select id="viewExperienceBatchList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.REGISTER_SEQ,
+			       A.CPNY_ID,
+			       A.EMPID,
+			       A.LOCAL_NAME,
+			       get_global_name(A.NEW_POST_GRADE_NO, #interLanguage:VARCHAR#) NEW_POST_GRADE_NAME,
+			       A.START_DATE,
+			       A.TRANS_CODE,
+			       get_global_name(A.TRANS_CODE, #interLanguage:VARCHAR#) TRANS_CODE_NAME,
+			       A.TRANS_REASON,
+			       get_global_name(A.TRANS_REASON, #interLanguage:VARCHAR#) TRANS_REASON_NAME,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       A.MAIN_BUSINESS,
+			       get_global_name(A.MAIN_BUSINESS, #interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+			       A.POSITION_NO,
+			       get_global_name(A.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       A.LEVEL_GRADE,
+			       A.COST_CENTER,
+			       get_COST_CENTER_name(A.CPNY_ID, A.COST_CENTER, #interLanguage:VARCHAR#) COST_CENTER_NAME,
+			       A.PAY_STEP_NO,
+			       get_global_name(A.PAY_STEP_NO, #interLanguage:VARCHAR#) PAY_STEP_NAME,
+			       A.CREATE_DATE,
+			       A.CREATED_BY,
+			       A.CREATED_IP,
+			       A.UPDATE_DATE,
+			       A.UPDATED_BY,
+			       A.UPDATED_IP,
+			       A.ACTIVITY,
+				   A.ENGLISH_NAME,
+				   A.KOREAN_NAME,
+				   get_global_name(A.RECRUIT_TYPE, #interLanguage:VARCHAR#) RECRUIT_TYPE_NAME,
+				   A.DATE_STARTED,
+				   A.AFFIRM_WORK_AGE,
+				   get_global_name(A.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_CODE_NAME,
+				   get_global_name(A.EMPLOYEE_OWNED, #interLanguage:VARCHAR#) EMPLOYEE_OWNED_NAME,
+				   get_global_name(A.STATUS_CODE, #interLanguage:VARCHAR#) STATUS_CODE_NAME,
+				   A.END_PROBATION_DATE,
+				   get_global_name(A.NEW_POST_GRADE_NO, #interLanguage:VARCHAR#) NEW_POST_GRADE_NO_NAME,
+				   get_global_name(A.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+				   get_global_name(A.POSITION, #interLanguage:VARCHAR#) POSITION_NAME,
+				   get_global_name(A.POST_FAMILY, #interLanguage:VARCHAR#) POST_FAMILY_NAME,
+				   A.FILENUMBER,
+			       A.LINE_ID,
+			       A.REMARKS
+			  FROM HR_EXPERIENCE_INSIDE_BATCH A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 2
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.REGISTER_SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY TO_NUMBER(A.LINE_ID)
+		]]>
+	</select>
+	<!-- 单条删除批量导入的发令信息 -->
+	<update id="deleteExperienceBatchInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_EXPERIENCE_INSIDE_BATCH
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	<!-- 发令概要管理 -->
+	<select id="viewResumeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       REGISTER_TYPE,
+			       get_global_name(A.REGISTER_TYPE, 'zh') REGISTER_TYPE_NAME,
+			       REGISTER_DATE,
+			       REGISTER_INFO,
+			       REGISTER_CODE,
+			       ACTIVITY,
+			       DECODE(A.ACTIVITY,1,'Action Completed','In Progress') ACTIVITY_NAME,
+			       REMARK
+			  FROM HR_RECRUIT_REGISTER_INFO A
+			 WHERE A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 2
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REGISTER_TYPE">
+			<![CDATA[
+				A.REGISTER_TYPE = #REGISTER_TYPE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				A.ACTIVITY = #ACTIVITY#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				TO_DATE(A.REGISTER_INFO,'dd.MM.yyyy') >= TO_DATE(#START_DATE#,'dd.MM.yyyy')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				TO_DATE(A.REGISTER_INFO,'dd.MM.yyyy') <= TO_DATE(#END_DATE#,'dd.MM.yyyy')
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<insert id="addResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_RECRUIT_REGISTER_INFO
+				  (SEQ,
+				   REGISTER_TYPE,
+				   REGISTER_DATE,
+				   REGISTER_INFO,
+				   REGISTER_CODE,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   ACTIVITY,
+				   REMARK)
+				VALUES
+				  (HR_RECRUIT_REGISTER_INFO_SEQ.NEXTVAL,
+				   #REGISTER_TYPE:VARCHAR#,
+				   #REGISTER_DATE:VARCHAR#,
+				   TO_CHAR(SYSDATE,'dd/MM/yyyy'),
+				   'HA' || GET_RESUME_NO(#interCpnyID#,'A'),
+				   #interCpnyID#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   0,
+				   #REMARK:VARCHAR#)
+	]]>
+	</insert>
+
+	<update id="updateResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_RECRUIT_REGISTER_INFO
+		   SET REGISTER_TYPE = #REGISTER_TYPE:VARCHAR#,
+		       REGISTER_DATE = #REGISTER_DATE:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+
+	<update id="deleteResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_RECRUIT_REGISTER_INFO
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 2,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+
+	<select id="IS_EXISTS_EMPID" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+		 SELECT COUNT(1)
+		  FROM (SELECT 1
+		          FROM HR_EMPLOYEE
+		         WHERE EMPID = #EMPID:VARCHAR#
+		           AND CPNY_ID = #interCpnyID:VARCHAR#
+		        UNION ALL
+		        SELECT 1
+		          FROM HR_EMPLOYEE_RECRUIT HRE
+		         WHERE EMPID = #EMPID:VARCHAR#
+		           AND CPNY_ID = #interCpnyID:VARCHAR#)
+		]]>
+	</select>
+	
+	<select id="IS_EXISTS_EMPID1" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+		SELECT COUNT(1)
+      FROM (SELECT 1
+              FROM HR_EMPLOYEE
+             WHERE EMPID = #EMPID:VARCHAR#
+               AND CPNY_ID = #interCpnyID:VARCHAR#
+            UNION ALL
+            SELECT 1
+              FROM HR_EMPLOYEE_RECRUIT HRE
+             WHERE EMPID =  #EMPID:VARCHAR#
+               AND CPNY_ID =  #interCpnyID:VARCHAR#
+            UNION ALL
+            SELECT 1
+              FROM HR_EMPLOYEE_RECRUIT_BATCH HREB
+             WHERE EMPID =  #EMPID:VARCHAR#
+              AND PERSON_ID NOT IN ($PERSON_ID$)
+               AND CPNY_ID =  #interCpnyID:VARCHAR#)
+		]]>
+	</select>
+	
+	<select id = "isExistsEmpidRecruitBatch" parameterClass = "linkMap"
+	    resultClass = "linkMap" remapResults = "true">
+	    <![CDATA[
+	        SELECT HREB.EMPID, HREB.SEQ  FROM HR_EMPLOYEE_RECRUIT_BATCH HREB
+	            WHERE HREB.EMPID = #EMPID:VARCHAR#
+	              AND HREB.CPNY_ID = #interCpnyID:VARCHAR#
+	              AND HREB.ACTIVITY = 0
+	    ]]>
+	</select>
+	
+	<select id="IS_EXISTS_NAME" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+		 SELECT COUNT(1)
+		  FROM (SELECT 1
+		          FROM HR_EMPLOYEE
+		         WHERE LOCAL_NAME = #LOCAL_NAME:VARCHAR#
+		           AND CPNY_ID = #interCpnyID:VARCHAR#
+		        UNION ALL
+		        SELECT 1
+		          FROM HR_EMPLOYEE_RECRUIT HRE
+		         WHERE LOCAL_NAME = #LOCAL_NAME:VARCHAR#
+		           AND CPNY_ID = #interCpnyID:VARCHAR#)
+		]]>
+	</select>
+	
+	<!-- 发令检索 -->
+	<select id="viewExperienceList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.START_DATE,
+			       A.TRANS_CODE,
+			       get_global_name(A.TRANS_CODE,#interLanguage:VARCHAR#) TRANS_CODE_NAME,
+			       A.TRANS_RESOURCE,
+			       get_global_name(A.TRANS_RESOURCE,#interLanguage:VARCHAR#) TRANS_RESOURCE_NAME,
+			       get_global_name(A.JOB_TYPE,#interLanguage:VARCHAR#) JOB_TYPE_NAME,
+			       get_global_name(C.SEXCODE,#interLanguage:VARCHAR#) SEXCODE_NAME,
+			       B.LOCAL_NAME,
+			       B.EMPID,
+			       TO_CHAR(B.DATE_STARTED,'dd.MM.yyyy') DATE_STARTED,
+			       A.DUTY_NO,
+			       get_global_name(A.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NO_NAME,
+			       A.DEPTNO,
+			       get_dept_name(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNO_NAME,
+		           TRUNC(MONTHS_BETWEEN(SYSDATE,C.DOB)/12) || ' YEARS' 
+		           || TRUNC(MOD(MONTHS_BETWEEN(SYSDATE,C.DOB),12)) || ' MONTHS'  AGE,
+		         
+		           TRUNC(MONTHS_BETWEEN(NVL(B.DATE_LEFT,SYSDATE),B.DATE_STARTED)/12) ||  ' YEARS' 
+		           || TRUNC(MOD(MONTHS_BETWEEN(NVL(B.DATE_LEFT,SYSDATE),B.DATE_STARTED),12)) || ' MONTHS'  WORK_TIME,
+			       A.EMP_TYPE_CODE,
+			       get_global_name(A.EMP_TYPE_CODE,#interLanguage:VARCHAR#) EMP_TYPE_CODE_NAME,
+			       A.POST_GRADE_NO,
+			       get_global_name(A.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NO_NAME,
+			       A.POST_FAMILY,
+			       get_global_name(A.POST_FAMILY,#interLanguage:VARCHAR#) POST_FAMILY_NAME,
+			       A.ACTIVITY,
+			       A.REMARK,    
+			       A.PERSON_ID,
+       			   get_global_name(A.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+       			   A.POSITION_NO,
+       			   get_global_name(A.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NO_NAME
+			  FROM HR_EXPERIENCE_INSIDE A,
+			       HR_EMPLOYEE B,
+			       HR_PERSONAL_INFO C 
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND A.PERSON_ID = C.PERSON_ID
+			   AND A.ACTIVITY <> 0
+			   AND B.CPNY_ID = #interCpnyID#
+			   AND B.EMPID NOT LIKE '111111%'
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+				A.PERSON_ID = #PERSON_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				TO_DATE(A.START_DATE,'dd/MM/yyyy') >= TO_DATE(#START_DATE#,'dd/MM/yyyy')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				TO_DATE(A.START_DATE,'dd/MM/yyyy') <= TO_DATE(#END_DATE#,'dd/MM/yyyy')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="IDCARD_NO">
+			<![CDATA[
+				C.IDCARD_NO = PKG_DECRYPT.ENCRYPT_DES(#IDCARD_NO#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE_JOIN">
+			<![CDATA[
+				B.DATE_STARTED >= TO_DATE(#START_DATE_JOIN#,'dd/MM/yyyy')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE_JOIN">
+			<![CDATA[
+				B.DATE_STARTED <= TO_DATE(#END_DATE_JOIN#,'dd/MM/yyyy')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_CODE_Multi">
+			<![CDATA[
+				A.TRANS_CODE IN ($TRANS_CODE_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_RESOURCE_Multi">
+			<![CDATA[
+				A.TRANS_RESOURCE IN ($TRANS_RESOURCE_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE_Multi">
+			<![CDATA[
+				A.EMP_OFFICE IN ($EMP_OFFICE_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO_Multi">
+			<![CDATA[
+				B.POST_GRADE_NO IN ($POST_GRADE_NO_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_FAMILY_Multi">
+			<![CDATA[
+				B.POST_FAMILY IN ($POST_FAMILY_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MAIN_BUSINESS_Multi">
+			<![CDATA[
+				B.MAIN_BUSINESS IN ($MAIN_BUSINESS_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE_Multi">
+			<![CDATA[
+				B.EMP_TYPE_CODE IN ($EMP_TYPE_CODE_Multi$)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					B.DEPTNO IN (
+						SELECT DEPTNO 
+						  FROM HR_DEPARTMENT
+						 WHERE CPNY_ID = #interCpnyID#
+						 START WITH DEPTNO =  #DEPTNO#
+	                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+					)
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SON_FLAG">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					B.DEPTNO = #DEPTNO#
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.START_DATE DESC
+		]]>
+	</select>
+
+	<!-- 发令概要管理 -->
+	<select id="viewMainBusinessList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SY.CODE_NO,
+			       SY.DESCRIPTION,
+			       SY.REMARK,
+			       GET_CODE_NAME(SY.CODE_NO,'zh') CODE_NAME,
+			       TO_CHAR(SY.UPDATE_DATE,'YYYY.MM.DD HH24:MI') UPDATE_DATE,
+			       get_updated_info(SY.UPDATED_BY) UPDATED_BY
+			  FROM SY_CODE SY, SY_CODE_PARAM SYC
+			 WHERE SY.CODE_NO = SYC.CODE_NO
+			   AND SYC.CPNY_ID = #interCpnyID#
+			   AND SY.PARENT_CODE_NO = '400098'
+		]]>
+		<isNotEmpty prepend="AND" property="CODE_NO">
+			<![CDATA[
+				SY.CODE_NO = #CODE_NO#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY SY.ORDERNO
+		]]>
+	</select>
+
+	<update id="updateMainBusinessInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE SY_CODE
+		   SET REMARK = #REMARK:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#
+		 WHERE CODE_NO = #CODE_NO#
+		]]>
+	</update>
+
+	<procedure id="PR_VALID_EMP_DATA" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RECRUIT_MANAGE.PR_VALID_EMP_DATA(
+						#REGISTER_SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 修改供人公司信息 -->
+	<update id="addPersonSupplier" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_PERSON_SUPPLIER
+			   SET COMPANY_ID         = #COMPANY_ID:VARCHAR#,
+			   	   COMPANY_NAME         = #COMPANY_NAME:VARCHAR#,
+			   	   ADDRESS                = #ADDRESS:VARCHAR#,
+			   	   PHONE                  = #PHONE:VARCHAR#,
+			       UPDATE_DATE          = SYSDATE,
+			       UPDATED_BY           = #adminID:VARCHAR#,
+			       UPDATED_IP           = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 增加一条空的数据  -->
+	<update id="addEmptyPersonSupplier" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_PERSON_SUPPLIER
+				  (SEQ,
+				   COMPANY_ID,
+				   COMPANY_NAME,
+				   ADDRESS,
+				   PHONE,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   ACTIVITY)
+				VALUES
+				  (HR_PERSON_SUPPLIER_SEQ.NEXTVAL,
+				   #COMPANY_ID:VARCHAR#,
+				   #COMPANY_NAME:VARCHAR#,
+				   #ADDRESS:VARCHAR#,
+				   #PHONE:VARCHAR#,
+				   #interCpnyID#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1)
+		]]>
+	</update>
+	
+	<!-- 删除空的数据  -->
+	<update id="deleteEmptyPersonSupplier" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE FROM  HR_PERSON_SUPPLIER WHERE COMPANY_NAME IS NULL AND COMPANY_ID IS NULL AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<!-- 查询供人公司信息 -->
+	<select id="viewPersonSupplier" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.COMPANY_ID,
+			       A.COMPANY_NAME,
+			       A.ADDRESS,
+			       A.PHONE,
+			       A.ACTIVITY,
+			       A.CREATED_BY,
+			       A.CREATE_DATE,
+			       A.CREATED_IP,
+			       A.UPDATE_DATE,
+			       A.UPDATED_BY,
+			       A.UPDATED_IP
+			  FROM HR_PERSON_SUPPLIER A
+			 WHERE A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="" property="SON_FLAG">
+		<isNotEmpty prepend="AND" property="NAME">
+			<![CDATA[
+				A.COMPANY_NAME = #NAME#
+			]]>
+		</isNotEmpty>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.SEQ DESC
+		]]>
+	</select>
+	
+	<!-- 单条删除批量导入的发令信息 -->
+	<update id="deletePersonSupplierInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE HR_PERSON_SUPPLIER
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+</sqlMap>

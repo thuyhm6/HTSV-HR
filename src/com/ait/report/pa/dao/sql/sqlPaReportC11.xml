@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.pac11">
+
+ 
+	
+	<select id="retrievePaJasperReportPayrollC11Data" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+		SELECT PA_MONTH PA_MONTH,
+			       PA_HISTORY.EMPID,
+			        LOCAL_NAME CHINESENAME,
+			       PA_HISTORY.DEPT_NAME DEPARTMENT,
+			       PA_HISTORY.EMP_TYPE_NAME,
+			       PA_HISTORY.EMP_TYPE_CODE,
+			       PA_HISTORY.BASIS_SALARY,
+			       PA_HISTORY.DUTY_SALARY,
+			       PA_HISTORY.POSITION_ALLOWANCE_CAL,
+			       PA_HISTORY.NIGHT_SHIFT_FEE,
+			       NVL(PA_HISTORY.JIAOTONGFEI, 0) + NVL(PA_HISTORY.TONGXUNBUTIE, 0) JIAOTONGTONGXUN,
+			       NVL(PA_HISTORY.MEALS_ALLOWANCE, 0) + NVL(PA_HISTORY.AGENT_FEE, 0) QITAJINTIE,
+			       PA_HISTORY.MONTH_BONUS,
+			       PA_HISTORY.BONUS_TOTAL,
+			       PA_HISTORY.OT_TOTAL,
+			       NVL(PA_HISTORY.SICK_CHARGE_BACK, 0) +
+			       NVL(PA_HISTORY.LEAVE_CHARGE_BACK, 0) BINGSHIJIAKOUKUAN,
+			       NVL(PA_HISTORY.TARDINESS_DEDUCTIONS, 0) +
+			       NVL(PA_HISTORY.EARLYDAY_DEDUCTIONS, 0) +
+			       NVL(PA_HISTORY.TARD_EARLY_LONG_DEDUCTIONS, 0) +
+			       NVL(PA_HISTORY.ABSENTEEISM_DEDUCTIONS, 0) +
+			       NVL(PA_HISTORY.TARD_EARLY_TO_ABSENT, 0) CHIZAOKUANGKOUHEJI,
+			       PA_HISTORY.OTHER_DEDUCTIONS,
+			       PA_HISTORY.PAY_TOTAL,
+			       PA_HISTORY.ENDOWMENT_PERSONAL,
+			       PA_HISTORY.UNEMPLOYMENT_PERSONAL,
+			       PA_HISTORY.MEDICAL_PERSONAL,
+			       PA_HISTORY.GERENDABINGYILIAO,
+			       PA_HISTORY.HOUSE_FUNDING_PERSONAL,
+			       PA_HISTORY.BEFORE_TAXABLE_PAY_DEDUCT,
+			       PA_HISTORY.BEFORE_TAXABLE_PAY_PLUS,
+			       PA_HISTORY.SHOULD_RELEASE_SALARY,
+			       NVL(PA_HISTORY.HOT_FEE, 2) + NVL(PA_HISTORY.HEATING_FEE, 0) MEISHUFEI,
+			       NVL(PA_HISTORY.IS_TO_MEDICAL_FEE, 2) +
+			       NVL(PA_HISTORY.IS_TO_BIRTH_FEE, 0) FANYAOFEI,
+			       NVL(PA_HISTORY.FANJIN, 0) FANJIN,
+			       PA_HISTORY.AFTER_TAXABLE_PAY_DEDUCT,
+			       PA_HISTORY.TAX_PERSONAL_INCOME,
+			       PA_HISTORY.ACTUAL_RELEASE_SALARY
+			
+			  FROM PA_SUMMARY_C11 PA_HISTORY, HR_PERSONAL_INFO T
+			 WHERE PA_HISTORY.PERSON_ID = T.PERSON_ID
+			
+				]]>	
+				<isNotEmpty prepend="AND" property="emp_type_code">
+			      <![CDATA[
+				        PA_HISTORY.emp_type_code = #emp_type_code:VARCHAR#
+				        ]]>
+				 </isNotEmpty>       	
+				<isNotEmpty prepend="AND" property="deptid">
+			      <![CDATA[
+					PA_HISTORY.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #deptid:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				        ]]>
+				 </isNotEmpty>       
+				
+				
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				
+		(PA_HISTORY.EMPID LIKE '%' || #EMPID:VARCHAR# || '%' OR PA_HISTORY.PERSON_ID LIKE '%' || #EMPID:VARCHAR# || '%' OR 
+          PA_HISTORY.LOCAL_NAME LIKE '%' || #EMPID:VARCHAR# || '%')
+			]]>
+		</isNotEmpty>
+			  
+	           and PA_HISTORY.PA_MONTH = #pamonth#
+	</select>	
+
+	<select id="getArMonthShiftList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.EMPID,
+			       HDN.CONTENT DEPT_NAME,
+			       A.LOCAL_NAME,
+			       A.ANNUAL_VACATION,
+			       A.MARRIAGE_LEAVE + A.BEREFT_LEAVE HUNSANG,
+			       A.INDUSTRY_INJURY,
+			       A.BIRTHDAY_TAL,
+			       A.LIUCHANJIATIANSHU,
+			       A.WAICHUSHISHU,
+			       A.NIGHT_SHIFT,
+			       A.TARDINESS_COUNT + A.EARLYDAY_COUNT CHIDAOZAOTUI,
+			       A.ZHENGSHIBJSHISHU,
+			       A.SHIYONGBJSHISHU,
+			       A.ZHENGSHISJSHISHU,
+			       A.SHIYONGSJSHISHU,
+			       A.TIAOXIUTIANSHU,
+			       (A.ACTUAL_WORK_DAYS - A.ACTUAL_WORK_DAYS - A.INDUSTRY_INJURY -
+			       A.MATERNITY_LEAVE - A.MARRIAGE_LEAVE - A.BEREFT_LEAVE -
+			       A.SPECIAL_MATERNITY_LEAVE_DAYS - A.ANNUAL_VACATION -
+			       A.BURUJIATIANSHU - A.CHANQIANJIATIANSHU - A.CHANHOUJIATIANSHU -
+			       A.LIUCHANJIATIANSHU - A.PERIOD_DAYS - A.TANQINJIATIANSHU -
+			       A.BIRTHDAY_TAL - A.TIAOXIUTIANSHU) WEIQIN
+			  FROM AR_SUMMARY_C11 A, HR_DEPARTMENT_NAME HDN
+			 WHERE A.AR_MONTH = #AR_MONTH:VARCHAR#
+			   AND A.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #LANGUAGE:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="DEPTID">
+				<![CDATA[
+					A.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTID:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				        ]]>
+				 </isNotEmpty>   
+	</select>	
+
+</sqlMap>

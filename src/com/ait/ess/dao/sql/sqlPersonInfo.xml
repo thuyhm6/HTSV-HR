@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.personinfo">
+	<select id="retrieveEssPersonalInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+				SELECT A.PERSON_ID,
+				       TO_CHAR(A.DOB,'yyyy-MM-dd') DOB,
+				       B.LOCAL_NAME,
+				       B.CHINESE_PINYIN,
+				       B.EMPID,
+				       A.FINAL_DEGREE_CODE,
+				       BE.CONTENT FINAL_DEGREE_CODE_NAME,
+				       A.SEXCODE,
+				       BF.CONTENT SEXCODE_NAME,
+				       A.NATION_CODE,
+				       BH.CONTENT NATION_CODE_NAME,
+				       A.NATIONALITY_CODE,
+				       BI.CONTENT NATIONALITY_CODE_NAME,
+				       A.BORNPLACE_CODE,
+				       BJ.CONTENT BORNPLACE_CODE_NAME,
+				       A.POLITY_CODE,
+				       BK.CONTENT POLITY_CODE_NAME,
+				       A.MARITAL_STATUS_CODE,
+				       BL.CONTENT MARITAL_STATUS_CODE_NAME,
+				       A.REG_TYPE_CODE,
+				       BM.CONTENT REG_TYPE_CODE_NAME,
+				       A.EMAIL,
+				       A.HOME_PHONE,
+				       A.OFFICE_PHONE,
+				       A.CELLPHONE,
+				       A.HOUSING_STATE_CODE,
+				       BN.CONTENT HOUSING_STATE_CODE_NAME,
+				       A.REG_PLACE,
+				       A.IDCARD_NO,
+				       A.LEGAL_DOCUMENTS_ADDRESS,
+				       A.HOME_ADDRESS
+				  FROM ESS_PERSONAL_INFO A,
+				       HR_EMPLOYEE      B,
+				       SY_GLOBAL_NAME   BE,
+				       SY_GLOBAL_NAME   BF,
+				       SY_GLOBAL_NAME   BH,
+				       SY_GLOBAL_NAME   BI,
+				       SY_GLOBAL_NAME   BJ,
+				       SY_GLOBAL_NAME   BK,
+				       SY_GLOBAL_NAME   BL,
+				       SY_GLOBAL_NAME   BM,
+                       SY_GLOBAL_NAME   BN
+				 WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+				   AND A.PERSON_ID = B.PERSON_ID(+)
+				   AND A.FINAL_DEGREE_CODE = BE.NO(+)
+				   AND A.SEXCODE = BF.NO(+)
+				   AND A.NATION_CODE = BH.NO(+)
+				   AND A.NATIONALITY_CODE = BI.NO(+)
+				   AND A.BORNPLACE_CODE = BJ.NO(+)
+				   AND A.POLITY_CODE = BK.NO(+)
+				   AND A.MARITAL_STATUS_CODE = BL.NO(+)
+				   AND A.REG_TYPE_CODE = BM.NO(+)
+				   AND A.HOUSING_STATE_CODE = BN.NO(+)
+				   AND BE.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BF.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BH.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BI.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BJ.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BK.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BL.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BM.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+	</select>
+	<select id="retrieveHrPersonalInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+				SELECT A.PERSON_ID,
+				       TO_CHAR(A.DOB,'yyyy-MM-dd') DOB,
+				       B.LOCAL_NAME,
+				       B.CHINESE_PINYIN,
+				       B.EMPID,
+				       A.FINAL_DEGREE_CODE,
+				       BE.CONTENT FINAL_DEGREE_CODE_NAME,
+				       A.SEXCODE,
+				       BF.CONTENT SEXCODE_NAME,
+				       A.NATION_CODE,
+				       BH.CONTENT NATION_CODE_NAME,
+				       A.NATIONALITY_CODE,
+				       BI.CONTENT NATIONALITY_CODE_NAME,
+				       A.BORNPLACE_CODE,
+				       BJ.CONTENT BORNPLACE_CODE_NAME,
+				       A.POLITY_CODE,
+				       BK.CONTENT POLITY_CODE_NAME,
+				       A.MARITAL_STATUS_CODE,
+				       BL.CONTENT MARITAL_STATUS_CODE_NAME,
+				       A.REG_TYPE_CODE,
+				       BM.CONTENT REG_TYPE_CODE_NAME,
+				       A.EMAIL,
+				       A.HOME_PHONE,
+				       A.OFFICE_PHONE,
+				       A.CELLPHONE,
+				       A.HOUSING_STATE_CODE,
+				       BN.CONTENT HOUSING_STATE_CODE_NAME,
+				       A.REG_PLACE,
+				       A.IDCARD_NO,
+				       A.LEGAL_DOCUMENTS_ADDRESS,
+				       A.HOME_ADDRESS
+				  FROM HR_PERSONAL_INFO A,
+				       HR_EMPLOYEE      B,
+				       SY_GLOBAL_NAME   BE,
+				       SY_GLOBAL_NAME   BF,
+				       SY_GLOBAL_NAME   BH,
+				       SY_GLOBAL_NAME   BI,
+				       SY_GLOBAL_NAME   BJ,
+				       SY_GLOBAL_NAME   BK,
+				       SY_GLOBAL_NAME   BL,
+				       SY_GLOBAL_NAME   BM,
+                       SY_GLOBAL_NAME   BN
+				 WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+				   AND A.PERSON_ID = B.PERSON_ID(+)
+				   AND A.FINAL_DEGREE_CODE = BE.NO(+)
+				   AND A.SEXCODE = BF.NO(+)
+				   AND A.NATION_CODE = BH.NO(+)
+				   AND A.NATIONALITY_CODE = BI.NO(+)
+				   AND A.BORNPLACE_CODE = BJ.NO(+)
+				   AND A.POLITY_CODE = BK.NO(+)
+				   AND A.MARITAL_STATUS_CODE = BL.NO(+)
+				   AND A.REG_TYPE_CODE = BM.NO(+)
+				   AND A.HOUSING_STATE_CODE = BN.NO(+)
+				   AND BE.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BF.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BH.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BI.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BJ.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BK.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BL.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BM.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND BN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+	</select>	
+	<select id="retrieveContractInfo" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+		 SELECT EDUC_NO           					educationNo,
+		  		 EMPID             					empID,   
+		  		 SUBJECT           			 		subjectCode,
+				 B.CODE_NAME						subject,
+		         B.CODE_EN_NAME         englishSubject,
+		         B.CODE_KOR_NAME        korSubject,
+		  		 DEGREE_CODE       					degreeCode,
+				 C.CODE_NAME						DEGREE,
+		         C.CODE_EN_NAME         englishDegree,
+		         C.CODE_KOR_NAME        korDegree,
+		  		 DEGREE_TYPE       					degreeType,
+		  		 INSTITUTION_NAME  					institutionName,
+		  		 RANK              					rank,
+		  		 EDUC_CARD_NO      					eduCardNo,
+		  		 SCHOOL_ADDRESS      			    schoolAddress,
+		  		 TO_CHAR(START_DATE,'YYYY-MM-DD')   startDate,
+		  		 TO_CHAR(END_DATE,'YYYY-MM-DD')     endDate,
+		  		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')creatDate,
+		  		 A.CREATED_BY        				creatorID,
+		  		 TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')modifyDate,
+		  		 A.UPDATED_BY        				modifierID,
+		  		 A.ORDERNO           				orderNo,
+		  		 A.ACTIVITY 		   				activity
+		    FROM HR_EDUCATION A,
+				 SY_CODE B,
+				 SY_CODE C
+		   WHERE A.EMPID   = #EMPID#
+		     AND B.CODE_ID(+) = A.SUBJECT
+			 AND C.CODE_ID(+) = A.DEGREE_CODE  
+			    order by startDate desc  
+   	   	]]>
+	</select>
+	<select id="retrieveContractInfoCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	    SELECT COUNT(*)
+		 FROM HR_EDUCATION A,
+				 SY_CODE B,
+				 SY_CODE C
+		   WHERE A.EMPID   = #EMPID#
+		     AND B.CODE_ID(+) = A.SUBJECT
+			 AND C.CODE_ID(+) = A.DEGREE_CODE  
+   	   	]]>
+	</select>
+	<select id="retrieveEvaluateByYear" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+
+		   SELECT O.EV_PERIOD_ID,
+		   		  O.EV_PERIOD_NAME,
+		   		  O.EV_TYPE_ID,
+				  O.EV_TYPE_NAME,
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS005',O.PROCESS_MARK,0)) "自我评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS005',O.PROCESS_IDEA,'')) "自我评价意见",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS006',O.PROCESS_MARK,0)) "一次评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS006',O.PROCESS_IDEA,'')) "一次评价意见",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS007',O.PROCESS_MARK,0)) "二次评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS007',O.PROCESS_IDEA,'')) "二次评价意见",
+				  O.EV_FINAL_MARK,
+				  O.EV_FINAL_GRADE
+		  FROM (		
+				   SELECT M.EV_PERIOD_ID,
+				   		  M.EV_PERIOD_NAME,
+				   		  M.EV_TYPE_ID,
+						  M.EV_TYPE_NAME,
+						  M.EV_PROCESS_ID,
+						  M.EV_PROCESS_NAME,
+						  SUM(M.EV_DETAIL_MARK * 0.01 * M.EV_DETAIL_PROP * M.EV_ITEM_PROP) PROCESS_MARK,
+						  MAX(M.EV_DETAIL_IDEA) PROCESS_IDEA,
+						  M.EV_FINAL_MARK,
+						  M.EV_FINAL_GRADE
+				   	 FROM (
+							SELECT A.EV_PERIOD_ID,
+								   L.EV_PERIOD_NAME,
+								   A.EV_EMP_ID,
+								   A.EV_EMP_NAME,
+								   A.EV_DEPT_ID,
+								   A.EV_DEPT_NAME,
+								   A.EV_TYPE_ID,
+								   E.CODE_NAME 	  		EV_TYPE_NAME,
+								   D.EV_PROCESS_ID,
+								   K.CODE_NAME		    EV_PROCESS_NAME,
+								   I.EV_PROCESS_PROP,
+								   I.EV_OPERATE_ID,
+								   H.CODE_NAME	   	    EV_OPERATE_NAME,
+								   B.EV_ITEM_ID,
+								   G.CODE_NAME			EV_ITEM_NAME,
+								   I.EV_ITEM_PROP,
+								   B.EV_DETAIL_PROP,
+								   B.EV_DETAIL_ORDER,
+								   D.EV_MARK		    EV_DETAIL_MARK,
+								   D.EV_IDEA		    EV_DETAIL_IDEA,
+								   A.EV_MARK	   	    EV_FINAL_MARK,
+								   A.EV_GRADE_ID,
+								   F.CODE_NAME	   	    EV_FINAL_GRADE,
+								   B.SEQ_EV_ITEM_DETAIL
+							FROM EVS_EMP A,
+								 EVS_ITEM_DETAIL B,
+								 EVS_DETAIL_MARK D,
+								 SY_CODE E,
+								 SY_CODE F,
+								 SY_CODE G,
+								 SY_CODE H,
+								 EVS_RELATION I,
+								 SY_CODE K,
+								 EVS_PERIOD L
+							WHERE A.EV_EMP_ID 	   	   = #EMPID#
+							  AND A.EV_PROCESS_ID 	   = 'EVPROCESS010'
+							  AND A.EV_PERIOD_ID 	   = B.EV_PERIOD_ID
+							  AND A.EV_EMP_ID 		   = B.EV_EMP_ID
+							  AND A.EV_TYPE_ID 		   = E.CODE_ID
+							  AND A.EV_GRADE_ID 	   = F.CODE_ID(+)
+							  AND B.EV_ITEM_ID 		   = G.CODE_ID
+							  AND B.SEQ_EV_ITEM_DETAIL =D.SEQ_EV_ITEM_DETAIL
+							  AND I.EV_OPERATE_ID 	   = H.CODE_ID
+							  AND A.EV_PERIOD_ID 	   = I.EV_PERIOD_ID
+							  AND A.EV_TYPE_ID 		   = I.EV_TYPE_ID
+							  AND D.EV_PROCESS_ID 	   = I.EV_PROCESS_ID
+							  AND B.EV_ITEM_ID 		   = I.EV_ITEM_ID
+							  AND D.EV_PROCESS_ID 	   = K.CODE_ID
+							  AND A.EV_PERIOD_ID	   = L.EV_PERIOD_ID
+							  AND I.EV_OPERATE_ID	   <> 'EVOPERATE006'
+					
+					 ) M
+				 GROUP BY M.EV_PERIOD_ID, M.EV_TYPE_ID, M.EV_PROCESS_ID,
+				          M.EV_PERIOD_NAME, M.EV_TYPE_NAME, M.EV_PROCESS_NAME,
+						  M.EV_FINAL_MARK, M.EV_FINAL_GRADE		 
+			UNION ALL 
+				   SELECT N.EV_PERIOD_ID,
+				   		  N.EV_PERIOD_NAME,
+				   		  N.EV_TYPE_ID,
+						  N.EV_TYPE_NAME,
+						  N.EV_PROCESS_ID,
+						  N.EV_PROCESS_NAME,
+						  SUM(PROCESS_MARK)   PROCESS_MARK,
+						  MAX(N.PROCESS_IDEA) PROCESS_IDEA,
+						  N.EV_FINAL_MARK,
+						  N.EV_FINAL_GRADE
+			         FROM (
+					       SELECT M.EV_PERIOD_ID,
+						   		  M.EV_PERIOD_NAME,
+						   		  M.EV_TYPE_ID,
+								  M.EV_TYPE_NAME,
+								  M.EV_PROCESS_ID,
+								  M.EV_PROCESS_NAME,
+								  MAX(M.EV_DETAIL_MARK * M.EV_ITEM_PROP) PROCESS_MARK,
+								  MAX(M.EV_DETAIL_IDEA) PROCESS_IDEA,
+								  M.EV_FINAL_MARK,
+								  M.EV_FINAL_GRADE
+						   	 FROM (
+									SELECT A.EV_PERIOD_ID,
+										   L.EV_PERIOD_NAME,
+										   A.EV_EMP_ID,
+										   A.EV_EMP_NAME,
+										   A.EV_DEPT_ID,
+										   A.EV_DEPT_NAME,
+										   A.EV_TYPE_ID,
+										   E.CODE_NAME 	  		EV_TYPE_NAME,
+										   D.EV_PROCESS_ID,
+										   K.CODE_NAME		    EV_PROCESS_NAME,
+										   I.EV_PROCESS_PROP,
+										   I.EV_OPERATE_ID,
+										   H.CODE_NAME	   	    EV_OPERATE_NAME,
+										   B.EV_ITEM_ID,
+										   G.CODE_NAME			EV_ITEM_NAME,
+										   I.EV_ITEM_PROP,
+										   B.EV_DETAIL_PROP,
+										   B.EV_DETAIL_ORDER,
+										   D.EV_MARK		    EV_DETAIL_MARK,
+										   D.EV_IDEA		    EV_DETAIL_IDEA,
+										   A.EV_MARK	   	    EV_FINAL_MARK,
+										   A.EV_GRADE_ID,
+										   F.CODE_NAME	   	    EV_FINAL_GRADE,
+										   B.SEQ_EV_ITEM_DETAIL
+									FROM EVS_EMP A,
+										 EVS_ITEM_DETAIL B,
+										 EVS_DETAIL_MARK D,
+										 SY_CODE E,
+										 SY_CODE F,
+										 SY_CODE G,
+										 SY_CODE H,
+										 EVS_RELATION I,
+										 SY_CODE K,
+										 EVS_PERIOD L
+									WHERE A.EV_EMP_ID 	   	   = #EMPID#
+									  AND A.EV_PROCESS_ID 	   = 'EVPROCESS010'
+									  AND A.EV_PERIOD_ID 	   = B.EV_PERIOD_ID
+									  AND A.EV_EMP_ID 		   = B.EV_EMP_ID
+									  AND B.SEQ_EV_ITEM_DETAIL = D.SEQ_EV_ITEM_DETAIL
+									  AND A.EV_TYPE_ID 		   = E.CODE_ID
+									  AND A.EV_GRADE_ID 	   = F.CODE_ID
+									  AND B.EV_ITEM_ID 		   = G.CODE_ID
+									  AND I.EV_OPERATE_ID 	   = H.CODE_ID
+									  AND A.EV_PERIOD_ID 	   = I.EV_PERIOD_ID
+									  AND A.EV_TYPE_ID 		   = I.EV_TYPE_ID
+									  AND D.EV_PROCESS_ID 	   = I.EV_PROCESS_ID
+									  AND B.EV_ITEM_ID 		   = I.EV_ITEM_ID
+									  AND D.EV_PROCESS_ID 	   = K.CODE_ID
+									  AND A.EV_PERIOD_ID	   = L.EV_PERIOD_ID
+									  AND I.EV_OPERATE_ID	   = 'EVOPERATE006'
+							
+							 ) M
+						 GROUP BY M.EV_PERIOD_ID, M.EV_TYPE_ID, M.EV_PROCESS_ID, M.EV_ITEM_ID,
+						          M.EV_PERIOD_NAME, M.EV_TYPE_NAME, M.EV_PROCESS_NAME,
+								  M.EV_FINAL_MARK, M.EV_FINAL_GRADE		  
+					 ) N	  
+			GROUP BY N.EV_PERIOD_ID, N.EV_TYPE_ID, N.EV_PROCESS_ID, 
+				     N.EV_PERIOD_NAME, N.EV_TYPE_NAME, N.EV_PROCESS_NAME,
+					 N.EV_FINAL_MARK, N.EV_FINAL_GRADE	  
+			  
+		) O			  
+GROUP BY O.EV_PERIOD_ID, O.EV_TYPE_ID, O.EV_PERIOD_NAME, O.EV_TYPE_NAME, O.EV_FINAL_MARK, O.EV_FINAL_GRADE
+
+	 	]]>
+	</select>
+	<select id="retrieveEvaluateByYearCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+		  SELECT COUNT(*) FROM (
+		   SELECT O.EV_PERIOD_ID,
+		   		  O.EV_PERIOD_NAME,
+		   		  O.EV_TYPE_ID,
+				  O.EV_TYPE_NAME,
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS005',O.PROCESS_MARK,0)) "自我评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS005',O.PROCESS_IDEA,'')) "自我评价意见",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS006',O.PROCESS_MARK,0)) "一次评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS006',O.PROCESS_IDEA,'')) "一次评价意见",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS007',O.PROCESS_MARK,0)) "二次评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS007',O.PROCESS_IDEA,'')) "二次评价意见",
+				  O.EV_FINAL_MARK,
+				  O.EV_FINAL_GRADE
+		  FROM (		
+				   SELECT M.EV_PERIOD_ID,
+				   		  M.EV_PERIOD_NAME,
+				   		  M.EV_TYPE_ID,
+						  M.EV_TYPE_NAME,
+						  M.EV_PROCESS_ID,
+						  M.EV_PROCESS_NAME,
+						  SUM(M.EV_DETAIL_MARK * 0.01 * M.EV_DETAIL_PROP * M.EV_ITEM_PROP) PROCESS_MARK,
+						  MAX(M.EV_DETAIL_IDEA) PROCESS_IDEA,
+						  M.EV_FINAL_MARK,
+						  M.EV_FINAL_GRADE
+				   	 FROM (
+							SELECT A.EV_PERIOD_ID,
+								   L.EV_PERIOD_NAME,
+								   A.EV_EMP_ID,
+								   A.EV_EMP_NAME,
+								   A.EV_DEPT_ID,
+								   A.EV_DEPT_NAME,
+								   A.EV_TYPE_ID,
+								   E.CODE_NAME 	  		EV_TYPE_NAME,
+								   D.EV_PROCESS_ID,
+								   K.CODE_NAME		    EV_PROCESS_NAME,
+								   I.EV_PROCESS_PROP,
+								   I.EV_OPERATE_ID,
+								   H.CODE_NAME	   	    EV_OPERATE_NAME,
+								   B.EV_ITEM_ID,
+								   G.CODE_NAME			EV_ITEM_NAME,
+								   I.EV_ITEM_PROP,
+								   B.EV_DETAIL_PROP,
+								   B.EV_DETAIL_ORDER,
+								   D.EV_MARK		    EV_DETAIL_MARK,
+								   D.EV_IDEA		    EV_DETAIL_IDEA,
+								   A.EV_MARK	   	    EV_FINAL_MARK,
+								   A.EV_GRADE_ID,
+								   F.CODE_NAME	   	    EV_FINAL_GRADE,
+								   B.SEQ_EV_ITEM_DETAIL
+							FROM EVS_EMP A,
+								 EVS_ITEM_DETAIL B,
+								 EVS_DETAIL_MARK D,
+								 SY_CODE E,
+								 SY_CODE F,
+								 SY_CODE G,
+								 SY_CODE H,
+								 EVS_RELATION I,
+								 SY_CODE K,
+								 EVS_PERIOD L
+							WHERE A.EV_EMP_ID 	   	   = #EMPID#
+							  AND A.EV_PROCESS_ID 	   = 'EVPROCESS010'
+							  AND A.EV_PERIOD_ID 	   = B.EV_PERIOD_ID
+							  AND A.EV_EMP_ID 		   = B.EV_EMP_ID
+							  AND A.EV_TYPE_ID 		   = E.CODE_ID
+							  AND A.EV_GRADE_ID 	   = F.CODE_ID(+)
+							  AND B.EV_ITEM_ID 		   = G.CODE_ID
+							  AND B.SEQ_EV_ITEM_DETAIL =D.SEQ_EV_ITEM_DETAIL
+							  AND I.EV_OPERATE_ID 	   = H.CODE_ID
+							  AND A.EV_PERIOD_ID 	   = I.EV_PERIOD_ID
+							  AND A.EV_TYPE_ID 		   = I.EV_TYPE_ID
+							  AND D.EV_PROCESS_ID 	   = I.EV_PROCESS_ID
+							  AND B.EV_ITEM_ID 		   = I.EV_ITEM_ID
+							  AND D.EV_PROCESS_ID 	   = K.CODE_ID
+							  AND A.EV_PERIOD_ID	   = L.EV_PERIOD_ID
+							  AND I.EV_OPERATE_ID	   <> 'EVOPERATE006'
+					
+					 ) M
+				 GROUP BY M.EV_PERIOD_ID, M.EV_TYPE_ID, M.EV_PROCESS_ID,
+				          M.EV_PERIOD_NAME, M.EV_TYPE_NAME, M.EV_PROCESS_NAME,
+						  M.EV_FINAL_MARK, M.EV_FINAL_GRADE		 
+			UNION ALL 
+				   SELECT N.EV_PERIOD_ID,
+				   		  N.EV_PERIOD_NAME,
+				   		  N.EV_TYPE_ID,
+						  N.EV_TYPE_NAME,
+						  N.EV_PROCESS_ID,
+						  N.EV_PROCESS_NAME,
+						  SUM(PROCESS_MARK)   PROCESS_MARK,
+						  MAX(N.PROCESS_IDEA) PROCESS_IDEA,
+						  N.EV_FINAL_MARK,
+						  N.EV_FINAL_GRADE
+			         FROM (
+					       SELECT M.EV_PERIOD_ID,
+						   		  M.EV_PERIOD_NAME,
+						   		  M.EV_TYPE_ID,
+								  M.EV_TYPE_NAME,
+								  M.EV_PROCESS_ID,
+								  M.EV_PROCESS_NAME,
+								  MAX(M.EV_DETAIL_MARK * M.EV_ITEM_PROP) PROCESS_MARK,
+								  MAX(M.EV_DETAIL_IDEA) PROCESS_IDEA,
+								  M.EV_FINAL_MARK,
+								  M.EV_FINAL_GRADE
+						   	 FROM (
+									SELECT A.EV_PERIOD_ID,
+										   L.EV_PERIOD_NAME,
+										   A.EV_EMP_ID,
+										   A.EV_EMP_NAME,
+										   A.EV_DEPT_ID,
+										   A.EV_DEPT_NAME,
+										   A.EV_TYPE_ID,
+										   E.CODE_NAME 	  		EV_TYPE_NAME,
+										   D.EV_PROCESS_ID,
+										   K.CODE_NAME		    EV_PROCESS_NAME,
+										   I.EV_PROCESS_PROP,
+										   I.EV_OPERATE_ID,
+										   H.CODE_NAME	   	    EV_OPERATE_NAME,
+										   B.EV_ITEM_ID,
+										   G.CODE_NAME			EV_ITEM_NAME,
+										   I.EV_ITEM_PROP,
+										   B.EV_DETAIL_PROP,
+										   B.EV_DETAIL_ORDER,
+										   D.EV_MARK		    EV_DETAIL_MARK,
+										   D.EV_IDEA		    EV_DETAIL_IDEA,
+										   A.EV_MARK	   	    EV_FINAL_MARK,
+										   A.EV_GRADE_ID,
+										   F.CODE_NAME	   	    EV_FINAL_GRADE,
+										   B.SEQ_EV_ITEM_DETAIL
+									FROM EVS_EMP A,
+										 EVS_ITEM_DETAIL B,
+										 EVS_DETAIL_MARK D,
+										 SY_CODE E,
+										 SY_CODE F,
+										 SY_CODE G,
+										 SY_CODE H,
+										 EVS_RELATION I,
+										 SY_CODE K,
+										 EVS_PERIOD L
+									WHERE A.EV_EMP_ID 	   	   = #EMPID#
+									  AND A.EV_PROCESS_ID 	   = 'EVPROCESS010'
+									  AND A.EV_PERIOD_ID 	   = B.EV_PERIOD_ID
+									  AND A.EV_EMP_ID 		   = B.EV_EMP_ID
+									  AND B.SEQ_EV_ITEM_DETAIL = D.SEQ_EV_ITEM_DETAIL
+									  AND A.EV_TYPE_ID 		   = E.CODE_ID
+									  AND A.EV_GRADE_ID 	   = F.CODE_ID
+									  AND B.EV_ITEM_ID 		   = G.CODE_ID
+									  AND I.EV_OPERATE_ID 	   = H.CODE_ID
+									  AND A.EV_PERIOD_ID 	   = I.EV_PERIOD_ID
+									  AND A.EV_TYPE_ID 		   = I.EV_TYPE_ID
+									  AND D.EV_PROCESS_ID 	   = I.EV_PROCESS_ID
+									  AND B.EV_ITEM_ID 		   = I.EV_ITEM_ID
+									  AND D.EV_PROCESS_ID 	   = K.CODE_ID
+									  AND A.EV_PERIOD_ID	   = L.EV_PERIOD_ID
+									  AND I.EV_OPERATE_ID	   = 'EVOPERATE006'
+							
+							 ) M
+						 GROUP BY M.EV_PERIOD_ID, M.EV_TYPE_ID, M.EV_PROCESS_ID, M.EV_ITEM_ID,
+						          M.EV_PERIOD_NAME, M.EV_TYPE_NAME, M.EV_PROCESS_NAME,
+								  M.EV_FINAL_MARK, M.EV_FINAL_GRADE		  
+					 ) N	  
+			GROUP BY N.EV_PERIOD_ID, N.EV_TYPE_ID, N.EV_PROCESS_ID, 
+				     N.EV_PERIOD_NAME, N.EV_TYPE_NAME, N.EV_PROCESS_NAME,
+					 N.EV_FINAL_MARK, N.EV_FINAL_GRADE	  
+			  
+		) O			  
+GROUP BY O.EV_PERIOD_ID, O.EV_TYPE_ID, O.EV_PERIOD_NAME, O.EV_TYPE_NAME, O.EV_FINAL_MARK, O.EV_FINAL_GRADE
+)
+	 	]]>
+	</select>
+	<!-- 显示个人信息申请修改页面  -->
+	<select id="retrieveEssPersonalInfoNew" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+				SELECT A.PERSON_ID,
+					   A.CELLPHONE,
+				       A.HOME_ADDRESS,
+				       A.EMAIL,
+				       A.EMPLOYEE_ENGLISH_NAME ENGLISH_NAME
+				  FROM ESS_PERSONAL_INFO A
+				 WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<!-- 显示个人信息申请修改页面 -->
+	<select id="retrieveHrPersonalInfoNew" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+				SELECT A.PERSON_ID,
+					   A.CELLPHONE,
+				       A.HOME_ADDRESS,
+				       A.EMAIL,
+				       B.ENGLISH_NAME
+				  FROM HR_PERSONAL_INFO A,
+				       HR_EMPLOYEE      B
+				 WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#
+				   AND A.PERSON_ID = B.PERSON_ID(+)
+		]]>
+	</select>	
+	<!-- 20150209  zyh start-->
+	<!-- 个人考勤追溯查看页面-->
+	<select id="personalAttendanceBack" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+		    SELECT   
+		       AR_DETAIL.PERSON_ID,
+		       AR_DETAIL.AR_DATE_STR,
+		       AR_DETAIL.DATE_TYPE, 
+		       AR_DETAIL.AR_MONTH_STR,
+		       AR_DETAIL.ITEM_NO,
+		       CASE
+		         WHEN AR_DETAIL.ITEM_NO = '141440' THEN
+		          (select MIN(NVL(to_char(t.r_time, 'YYYY-MM-DD HH24:MI:SS'), ''))
+		             from AR_MAC_RECORDS_HTSV t
+		            where t.person_id = AR_DETAIL.PERSON_ID
+		              and to_char(t.r_time, 'YYYY/MM/DD') = AR_DETAIL.AR_DATE_STR
+		              and t.door_type = 'IN')
+		         ELSE
+		          NVL(TO_CHAR(AR_DETAIL.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS'), '')
+		       END FROMTIME,
+		       CASE
+		         WHEN AR_DETAIL.ITEM_NO = '141440' THEN
+		          (select MAX(NVL(to_char(t.r_time, 'YYYY-MM-DD HH24:MI:SS'), ''))
+		             from AR_MAC_RECORDS_HTSV t
+		            where t.person_id = AR_DETAIL.PERSON_ID
+		              and to_char(t.r_time, 'YYYY/MM/DD') = AR_DETAIL.AR_DATE_STR
+		              and t.door_type = 'OUT') 
+		         ELSE
+		          NVL(TO_CHAR(AR_DETAIL.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'), '')
+		       END TOTIME, 
+		       AR_DETAIL.SHIFT_NO,
+		       AR_DETAIL.QUANTITY,
+		       AR_DETAIL.UNIT UNIT,
+		       AR_DETAIL.LOCK_YN,
+		       GET_DAILY_STATUS(AR_DETAIL.AR_DATE_STR,  #interCpnyID:VARCHAR#, AR_DETAIL.PERSON_ID) status,
+		       E.EMPID,
+		       E.LOCAL_NAME,
+		        (SELECT DEPTNO FROM HR_EMP_HISTORY_STATUS B WHERE CPNY_ID = #interCpnyID# AND PERSON_ID = AR_DETAIL.PERSON_ID AND B.DATE_STR = AR_DETAIL.AR_DATE_STR ) DEPTNO,
+		       get_dept_name((SELECT DEPTNO FROM HR_EMP_HISTORY_STATUS B WHERE CPNY_ID = #interCpnyID:VARCHAR# AND PERSON_ID = AR_DETAIL.PERSON_ID AND B.DATE_STR = AR_DETAIL.AR_DATE_STR ), 'zh') DEPTNAME,
+		       get_global_name(AR_DETAIL.SHIFT_NO, 'zh') SHIFT_NAME,
+		       get_global_name(AR_DETAIL.ITEM_NO, 'zh') ITEM_NAME
+		  FROM AR_DETAIL_LASTMONTH_HTSV   AR_DETAIL,
+		       HR_EMPLOYEE           E
+		 WHERE E.LOCAL_NAME <> 'admin'
+		   AND E.CPNY_ID = #interCpnyID:VARCHAR#
+		   AND AR_DETAIL.PERSON_ID = E.PERSON_ID
+		   AND AR_DETAIL.PERSON_ID = #PERSON_ID:VARCHAR#
+		   AND E.CPNY_ID=#interCpnyID#
+		   AND AR_DATE_STR  >=  #sDate:VARCHAR# 
+		   AND  AR_DATE_STR  <= #eDate:VARCHAR# 
+		 ORDER BY AR_DETAIL.AR_DATE_STR, AR_DETAIL.PERSON_ID
+		]]>
+	</select>
+	<select id="personalAttendanceBackCnt" resultClass="int" parameterClass="linkMap">
+		<![CDATA[	
+		    SELECT   
+		       COUNT(1)
+		  FROM AR_DETAIL_LASTMONTH_HTSV   AR_DETAIL,
+		       HR_EMPLOYEE           E
+		 WHERE E.LOCAL_NAME <> 'admin'
+		   AND AR_DETAIL.PERSON_ID = E.PERSON_ID
+		   AND AR_DETAIL.PERSON_ID = #PERSON_ID:VARCHAR#
+		   AND E.CPNY_ID=#interCpnyID#
+		   AND AR_DATE_STR  >=  #sDate:VARCHAR# 
+		   AND  AR_DATE_STR  <= #eDate:VARCHAR# 
+		 ORDER BY AR_DETAIL.AR_DATE_STR, AR_DETAIL.PERSON_ID
+		]]>
+	</select>
+	<!-- 20150209 zyh end -->
+</sqlMap>

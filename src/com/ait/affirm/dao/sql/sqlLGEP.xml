@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="affirm.LGEP">
+
+     <insert id="addAffirmInfo" parameterClass="linkMap">
+		INSERT /*+ append */ INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   NO,
+			   C1,
+			   C2,
+			   C5,
+			   C4,
+			   C3,
+			   N2,
+			   N1,
+			   DATE1,
+			   SABUN2,
+			   SABUN1,
+			   URL2,
+			   URL1,
+			   CREATION_DATE,
+			   RESULT_YN,
+			   MSG)
+			VALUES
+			  (APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+			   #COMMAND#,
+			   #SYSTEM_ID#,
+			   #SYSTEM_PK#,
+			   #NO#,
+			   #C1#,
+			   #C2#,
+			   #C5#,
+			   #C4#,
+			   #C3#,
+			   #NO#,
+			   #N2#,
+			   $DATE1$,
+			   #SABUN2#,
+			   ( SELECT EMPID FROM HR_EMPLOYEE WHERE PERSON_ID = #SABUN1# ),
+			   #URL2#,
+			   #URL1#,
+			   SYSDATE,
+			   'N',
+			#MSG#)
+     </insert>
+     
+     <insert id="addAffirmInfoNoDate" parameterClass="linkMap">
+		INSERT /*+ append */ INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   NO,
+			   C1,
+			   C2,
+			   C5,
+			   C4,
+			   C3,
+			   N2,
+			   N1,
+			   SABUN2,
+			   SABUN1,
+			   URL2,
+			   URL1,
+			   CREATION_DATE,
+			   RESULT_YN,
+			   MSG)
+			VALUES
+			  (APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+			   #COMMAND#,
+			   #SYSTEM_ID#,
+			   #SYSTEM_PK#,
+			   #NO#,
+			   #C1#,
+			   #C2#,
+			   #C5#,
+			   #C4#,
+			   #C3#,
+			   #NO#,
+			   #N2#,
+			   #SABUN2#,
+			   ( SELECT EMPID FROM HR_EMPLOYEE WHERE PERSON_ID = #SABUN1# ),
+			   #URL2#,
+			   #URL1#,
+			   SYSDATE,
+			   'N',
+			#MSG#)
+     </insert>
+     
+     
+     <insert id="addAffirmInfoDelegate" parameterClass="linkMap">
+		INSERT INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   C1,
+			   N2,
+			   N1,
+			   SABUN2,
+			   SABUN1,
+			   DATE1,
+			   DATE2,
+			   CREATION_DATE,
+			   RESULT_YN,
+			   MSG)
+			VALUES
+			  (APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+			   #COMMAND#,
+			   #SYSTEM_ID#,
+			   'DLI' || '_' || APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+			   #C1#,
+			   -1,
+			   -1,
+			   ( SELECT EMPID FROM HR_EMPLOYEE WHERE PERSON_ID = #SABUN2# ),
+			   ( SELECT EMPID FROM HR_EMPLOYEE WHERE PERSON_ID = #SABUN1# ),
+			   TO_DATE(#DATE1#,'YYYY-MM-DD'),
+			   TO_DATE(#DATE1#,'YYYY-MM-DD') + 36500,
+			   SYSDATE,
+			   'N',
+			#MSG#)
+     </insert>
+</sqlMap>

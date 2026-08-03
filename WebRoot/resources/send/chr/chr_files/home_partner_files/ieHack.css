@@ -1,0 +1,183 @@
+HTML {
+	
+}
+BODY {
+	
+}
+#header .nav LI A {
+	LINE-HEIGHT: 14px
+}
+#header .menu LI A {
+	LINE-HEIGHT: 37px
+}
+#header .menu LI SPAN {
+	LINE-HEIGHT: 37px
+}
+#taskbar LI .taskbutton SPAN {
+	LINE-HEIGHT: 31px
+}
+.toggleCollapse H2 {
+	LINE-HEIGHT: 27px
+}
+.panel .panelHeaderContent H1 {
+	LINE-HEIGHT: 32px
+}
+.accordion .accordionHeader H2 {
+	LINE-HEIGHT: 27px
+}
+.tabsHeader LI SPAN {
+	LINE-HEIGHT: 32px
+}
+.tabsPanel .panelHeader LI SPAN {
+	LINE-HEIGHT: 30px
+}
+.tabsPanel .panelHeader LI.selected SPAN {
+	LINE-HEIGHT: 32px
+}
+.tabsPage .tabsPageHeader {
+	WIDTH: auto
+}
+.tabsPage .tabsPageHeader LI SPAN {
+	FONT-FAMILY: "ËÎÌו"; _line-height: 24px
+}
+.tabsPage .tabsRight {
+	_right: 16px
+}
+.tabsPage .tabsMore {
+	_right: -1px
+}
+.tabsPage .tabsMoreList {
+	_right: -1px
+}
+.tabsPage .tabsMoreList LI A {
+	LINE-HEIGHT: 23px
+}
+.alert H1 {
+	LINE-HEIGHT: 34px
+}
+.alert H1 {
+	LINE-HEIGHT: 34px
+}
+.dialog .dialogHeader H1 {
+	LINE-HEIGHT: 32px
+}
+.shadow .shadow_h_l {
+	_background: none
+}
+.shadow .shadow_h_r {
+	_background: none
+}
+.shadow .shadow_h_c {
+	_background: none
+}
+.shadow .shadow_c_l {
+	_background: none
+}
+.shadow .shadow_c_r {
+	_background: none
+}
+.shadow .shadow_c_c {
+	_background: none
+}
+.shadow .shadow_f_l {
+	_background: none
+}
+.shadow .shadow_f_r {
+	_background: none
+}
+.shadow .shadow_f_c {
+	_background: none
+}
+.tree A {
+	LINE-HEIGHT: 24px
+}
+.tree SPAN {
+	LINE-HEIGHT: 24px
+}
+.tree A {
+	_margin-left: -3px
+}
+.panelBar .toolBar SPAN {
+	LINE-HEIGHT: 25px
+}
+.panelBar .toolBar LI.hover SPAN {
+	LINE-HEIGHT: 25px
+}
+.panelBar .pagination SPAN {
+	LINE-HEIGHT: 25px
+}
+.panelBar .pagination LI.hover SPAN {
+	LINE-HEIGHT: 25px
+}
+.grid .gridCol {
+	LINE-HEIGHT: 23px
+}
+.textInput {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textInputHover {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textInputRequired {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textInputInvalid {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textInputReadonly {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textInputDisabled {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textArea {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textAreaHover {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textAreaRequired {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textAreaInvalid {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textAreaReadonly {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.textAreaDisabled {
+	PADDING-BOTTOM: 1px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 3px
+}
+.button SPAN {
+	LINE-HEIGHT: 18px
+}
+.buttonDisabled SPAN {
+	LINE-HEIGHT: 18px
+}
+.buttonActive SPAN {
+	LINE-HEIGHT: 18px
+}
+.button BUTTON {
+	LINE-HEIGHT: 18px
+}
+.buttonActive BUTTON {
+	LINE-HEIGHT: 18px
+}
+.buttonDisabled BUTTON {
+	LINE-HEIGHT: 18px
+}
+#calendar .time .hh {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+#calendar .time .mm {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+#calendar .time .ss {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+#calendar .time .up {
+	FONT-SIZE: 7px
+}
+#calendar .time .down {
+	FONT-SIZE: 7px
+}

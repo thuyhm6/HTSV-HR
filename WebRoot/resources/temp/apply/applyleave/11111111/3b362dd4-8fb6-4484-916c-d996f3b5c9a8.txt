@@ -1,0 +1,13 @@
+public int getPersonCnt(Object obj) {
+		int returnInt = 0;
+
+		try {
+			returnInt = NumberUtils.parseNumber(ObjectUtils.toString(this
+					.queryForObject("hrm.empinfo.getEmpIdListCnt", obj)),
+					Integer.class);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return returnInt;
+	}

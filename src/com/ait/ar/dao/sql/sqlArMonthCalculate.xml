@@ -1,0 +1,1521 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arMonthCalculate">
+	<!--
+		<procedure id="monthCalculate" parameterClass="linkMap"> <![CDATA[
+		{CALL AR_MONTH_CAL_P(#arMonth#,#empid,jdbcType=VARCHAR,mode=OUT#)} ]]>
+		</procedure>
+	-->
+
+	<procedure id="monthCalculate" parameterClass="linkMap">
+		<![CDATA[
+             {CALL AR_MONTH_CAL_P(#arMonth:VARCHAR#,#interCpnyID:VARCHAR#,#AR_SUPERVISIOR_INFO:VARCHAR#,#STAT_NO:VARCHAR#,#AR_DEPT_NO:VARCHAR#,#OUT_INFO,jdbcType=VARCHAR,mode=OUT#)}
+		]]>
+	</procedure>
+
+
+	<procedure id="monthCalculateConfirm" parameterClass="linkMap">
+		<![CDATA[
+             {CALL AR_MONTH_KAOQIN_CONFIRM(#arMonth:VARCHAR#,#interCpnyID:VARCHAR#,#flag:VARCHAR#,#STAT_NO:VARCHAR#,#AR_DEPT_NO:VARCHAR#,#OUT_INFO,jdbcType=VARCHAR,mode=OUT#)}
+		]]>
+	</procedure>
+
+	<procedure id="monthCalculateConfirmApply" parameterClass="linkMap">
+		<![CDATA[
+             {CALL AR_MONTH_KAOQIN_CONFIRMAPPLY(#arMonth:VARCHAR#,#interCpnyID:VARCHAR#,#AR_SUPERVISIOR_INFO:VARCHAR#,#STAT_NO:VARCHAR#,#AR_DEPT_NO:VARCHAR#,#OUT_INFO,jdbcType=VARCHAR,mode=OUT#)}
+		]]>
+	</procedure>
+
+	<select id="getMonthlyStatusCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			   SELECT COUNT(*) CNT
+				 FROM PA_PROGRESS
+				 WHERE 1 = 1
+	  	]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_DEPT_NO">
+			<![CDATA[
+				  AR_DEPT_NO = #AR_DEPT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getMonthlyStatusByDeptDisCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			   SELECT COUNT(*) CNT
+				 FROM PA_PROGRESS_DEPT
+				 WHERE 1 = 1
+	  	]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+			<![CDATA[
+				  DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<update id="updateDetailLock" parameterClass="linkMap">
+		<![CDATA[	
+		
+			UPDATE AR_DETAIL_LOCK
+			   SET STATUS 	   = #STATUS:VARCHAR#,
+			   	   UPDATE_DATE = SYSDATE,
+				   UPDATED_BY  = #supervisor:VARCHAR#
+			 WHERE ACTIVITY = 1
+	    
+		]]>
+
+		<isNotEmpty prepend="AND" property="AR_MONTH_STR">
+			<![CDATA[
+			        AR_MONTH_STR = #AR_MONTH_STR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			        AR_DATE_STR = #AR_DATE_STR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+	</update>
+
+	<update id="updateDailyAttStatus" parameterClass="linkMap">
+		<![CDATA[
+	  			  UPDATE PA_PROGRESS
+				     SET ATT_MO_FLAG = NVL(#ATT_MO_FLAG:NUMERIC#,0)
+				   WHERE PA_MONTH_STR = #PA_MONTH_STR#
+				     AND ATT_MO_LOCK_FLAG = 0
+		]]>
+	</update>
+
+	<update id="updateMonthlyAttStatus" parameterClass="linkMap">
+		<![CDATA[
+	  			  UPDATE PA_PROGRESS
+				     SET ATT_MO_LOCK_FLAG = NVL(#ATT_MO_LOCK_FLAG:NUMERIC#,0)
+				   WHERE PA_MONTH_STR = #PA_MONTH_STR#
+				     AND PA_LOCK_FLAG = 0
+		]]>
+	</update>
+
+	<insert id="insertMonthlyStatus" parameterClass="linkMap">
+		<![CDATA[	
+		
+		  INSERT INTO PA_PROGRESS
+					  (PA_MONTH_STR,
+					  STAT_NO,
+					  ATT_MO_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE,
+					  CPNY_ID,
+					  AR_DEPT_NO,
+					  CREATE_DATE,
+					  CREATED_BY)
+			   VALUES (#PA_MONTH_STR:VARCHAR#,
+			   		   #STAT_NO:VARCHAR#,
+			   		   NVL(#ATT_MO_FLAG:NUMERIC#,0),
+					   NVL(#ATT_MO_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_OPEN_FLAG:NUMERIC#,0),
+					   #LOCK_USER_ID:VARCHAR#,
+					   SYSDATE,
+					   #CPNY_ID:VARCHAR#,
+					   #AR_DEPT_NO:VARCHAR#,
+					   SYSDATE,
+					   #LOCK_USER_ID:VARCHAR#
+			   		  )
+			 ]]>
+	</insert>
+
+	<select id="getMonthlyStatusList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT PA_MONTH_STR,
+					  ATT_MO_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE
+				 FROM PA_PROGRESS
+	  	]]>
+		<isNotEmpty prepend="WHERE" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_DEPT_NO">
+			<![CDATA[
+				  AR_DEPT_NO = #AR_DEPT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getDeptDistinguishListBySupervisior" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT GG.NO DEPT_DISTINGUISH_NO, GG.CONTENT DEPT_DISTINGUISH_NAME
+			  FROM SY_GLOBAL_NAME GG
+			 WHERE GG.LANGUAGE = 'zh'
+			   AND GG.NO IN (SELECT DISTINCT (HD.DEPT_DISTINGUISH_NO)
+			                   FROM HR_DEPARTMENT HD
+			                  WHERE HD.CPNY_ID = 'C01'
+			                    AND HD.DEPTNO IN (SELECT AA.DEPTNO
+			                                        FROM AR_SUPERVISOR_INFO AA
+			                                       WHERE AA.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#))
+			 ORDER BY GG.CONTENT
+	  	]]>
+	</select>
+
+	<insert id="insertMonthlyStatusByDept" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO PA_PROGRESS_DEPT
+					  (PA_MONTH_STR,
+					  STAT_NO,
+					  ATT_MO_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE,
+					  CPNY_ID,
+					  DEPT_DISTINGUISH_NO,
+					  CREATE_DATE,
+					  CREATED_BY)
+			   VALUES (#PA_MONTH_STR:VARCHAR#,
+			   		   #STAT_NO:VARCHAR#,
+			   		   NVL(#ATT_MO_FLAG:NUMERIC#,0),
+					   NVL(#ATT_MO_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_OPEN_FLAG:NUMERIC#,0),
+					   #LOCK_USER_ID:VARCHAR#,
+					   SYSDATE,
+					   #CPNY_ID:VARCHAR#,
+					   #DEPT_DISTINGUISH_NO:VARCHAR#,
+					   SYSDATE,
+					   #LOCK_USER_ID:VARCHAR#
+			   		  )
+			 ]]>
+	</insert>
+
+	<insert id="updateMonthlyStatusByDept" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE PA_PROGRESS_DEPT
+			 SET ATT_MO_FLAG = 1,
+			     ATT_MO_LOCK_FLAG = 1,
+				 PA_LOCK_FLAG = 1,
+				 PA_OPEN_FLAG = 1,
+				 LOCK_USER_ID = #LOCK_USER_ID:VARCHAR#,
+				 LOCK_DATE = SYSDATE
+		   WHERE PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			 AND STAT_NO = #STAT_NO:VARCHAR#
+			 AND DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+			 ]]>
+	</insert>
+
+	<select id="getMonthlyStatusByDeptCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) CNT
+			  FROM PA_PROGRESS_DEPT PA
+			 WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND PA.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			   AND PA.STAT_NO = #STAT_NO:VARCHAR#
+			   AND PA.ATT_MO_LOCK_FLAG = 1
+			   AND PA.DEPT_DISTINGUISH_NO IN
+			       (SELECT DISTINCT (HD.DEPT_DISTINGUISH_NO)
+			          FROM HR_DEPARTMENT HD
+			         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           AND HD.DEPTNO IN (SELECT AP.DEPTNO
+			                               FROM AR_SUPERVISOR_INFO AP
+			                              WHERE AP.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#))
+	  	]]>
+	</select>
+
+	<select id="getStatNoList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+				   
+			SELECT DISTINCT ASDP.STAT_NO,
+              GET_GLOBAL_NAME(ASDP.STAT_NO, #interLanguage:VARCHAR#) STAT_NAME
+		        FROM AR_STATISTIC_DATE_PARAM ASDP,AR_STATISTIC_EMPTYPE ASE,
+		        HR_JOB_TYPE_SETUP HJTS,SY_SUPERVISOR_EMPTYPE_INFO SSEI
+		       WHERE ASDP.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASE.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND HJTS.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASDP.STAT_NO = ASE.STAT_NO
+		       AND ASE.EMP_TYPE_CODE = HJTS.JOBTYPE_NO
+		       AND HJTS.JOBTYPE_GROUP_NO = SSEI.EMP_TYPE_CODE
+		       AND SSEI.PERSON_ID = #supervisorPersonId:VARCHAR#
+	  	]]>
+	</select>
+
+	<select id="getDeptAreaList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  
+				   SELECT DISTINCT GET_DEPT_NAME(HD.DEPTNO,  #interLanguage:VARCHAR#) DEPTNAME, HD.DEPTNO
+						   FROM HR_DEPARTMENT HD
+						  WHERE HD.CPNY_ID = #interCpnyID:VARCHAR#
+						    AND HD.DEPT_LEVEL = '2'
+						  START WITH HD.DEPTNO IN (SELECT DISTINCT T.DEPTNO
+						                             FROM AR_SUPERVISOR_INFO T
+						                            WHERE T.PERSON_ID = #PERSON_ID:VARCHAR# )
+						 CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO 
+				   
+				   
+	  	]]>
+		<![CDATA[
+				ORDER BY  HD.DEPTNO  
+		]]>
+	</select>
+
+
+	<select id="getDeptTypeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT GG.NO DEPT_TYPE_NO, GG.CONTENT DEPT_TYPE
+				  FROM SY_GLOBAL_NAME GG
+				 WHERE GG.LANGUAGE = #interLanguage:VARCHAR#
+				   AND GG.NO IN (SELECT DISTINCT (DEPT_TYPE)
+				                   FROM HR_DEPARTMENT HD
+				                  WHERE CPNY_ID = 'C01')
+				 ORDER BY GG.CONTENT
+	  	]]>
+	</select>
+
+	<update id="updatearapplyCloseGuan" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE PA_PROGRESS
+			   SET ATT_APPLY_LOCK_FLAG = #FLAG:VARCHAR#
+			 WHERE STAT_NO = #STAT_NO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND PA_MONTH_STR = #arMonth:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		  <![CDATA[ 
+			   AR_DEPT_NO = #DEPT_NO:VARCHAR#
+	      ]]>
+		</isNotEmpty> 
+	</update>
+
+
+
+
+	<update id="updatepaapplyCloseGuan" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE PA_PROGRESS
+			   SET PA_APPLY_LOCK_FLAG = #FLAG:VARCHAR#
+			 WHERE STAT_NO = #STAT_NO:VARCHAR#
+			  AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND PA_MONTH_STR = #arMonth:VARCHAR#
+			  ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		  <![CDATA[ 
+			  AR_DEPT_NO = #DEPT_NO:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+	</update>
+   
+   <delete id="deleteArSummaryapplyClose" parameterClass="linkMap">
+		<![CDATA[	
+		  DELETE FROM AR_SUMMARY_HTSV  
+          WHERE  ADD_FLAG = 'N'
+          AND  AR_MONTH =  #arMonth:VARCHAR#
+          AND  STAT_NO =#STAT_NO:VARCHAR#
+        ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		  <![CDATA[ 
+			  PAY_AREA_NO  = #DEPT_NO:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+	</delete>
+	
+ <delete id="deletePaSummaryapplyClose" parameterClass="linkMap">
+		<![CDATA[	
+		  DELETE FROM PA_SUMMARY_HTSV  
+          WHERE  ADD_FLAG = 'N'
+          AND  PA_MONTH =  #arMonth:VARCHAR#
+          AND   STAT_NO =#STAT_NO:VARCHAR#
+        ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		  <![CDATA[ 
+			   PAY_AREA_NO   = #DEPT_NO:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+	</delete>
+   
+	<procedure id="rowTranscolsPa" parameterClass="linkMap"> 
+	<![CDATA[
+             {CALL pa_insert_pay_p(#interCpnyID:VARCHAR#,#arMonth:VARCHAR#)}
+		]]> 
+	</procedure>
+
+	<select id="getPaProgressLockFlag" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			  SELECT ATT_APPLY_LOCK_FLAG
+			    FROM PA_PROGRESS
+			   WHERE PA_MONTH_STR = #MONTHSTR:VARCHAR#
+			     AND STAT_NO =
+			         (SELECT STAT_NO
+			            FROM AR_STATISTIC_EMPTYPE
+			           WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			             AND EMP_TYPE_CODE =
+			                 (SELECT EMP_TYPE_CODE
+			                    FROM HR_EMPLOYEE
+			                   WHERE PERSON_ID = #PERSON_ID:VARCHAR#))
+			     AND AR_DEPT_NO =
+			         (SELECT PAY_AREA_CD
+			            FROM HR_EMPLOYEE
+			           WHERE PERSON_ID = #PERSON_ID:VARCHAR#)
+	  	]]>
+	</select>
+
+	<select id="getdeptNamebyno" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+		
+			         SELECT get_dept_name(#DEPT_NO:VARCHAR#,#interLanguage:VARCHAR#) DEPT_NAME FROM DUAL
+	  	]]>
+	</select>
+
+
+	<select id="getATTMOLOCKFLAG" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+			     SELECT  ATT_MO_LOCK_FLAG 
+				    FROM PA_PROGRESS
+				     WHERE STAT_NO = #STAT_NO#
+				   AND CPNY_ID = #interCpnyID#
+				   AND PA_MONTH_STR = #arMonth#
+	 	]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		  <![CDATA[ 
+			      AR_DEPT_NO = #DEPT_NO:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+
+
+	</select>
+
+
+
+	<select id="getarEssNOApplyCount" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT '休假' TYPE, COUNT(*) SHU
+				          FROM ESS_LEAVE_APPLY_TB ETB
+				         WHERE ETB.AFFIRM_FLAG IN (0,4,-1)
+				           AND ETB.LEAVE_FROM_TIME between
+				               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+				           AND GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+				           AND PERSON_ID IN
+				               (SELECT B.PERSON_ID
+				                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+				                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+				                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           		   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+				         ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+							<![CDATA[
+			
+				                  B.DEPTNO in
+							         (SELECT HR_DEPARTMENT.DEPTNO
+							                          FROM HR_DEPARTMENT
+							                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+							                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+							                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+				              	  
+								]]>
+		</isNotEmpty>   
+							  <![CDATA[                 
+				                                    )
+				UNION ALL
+				SELECT '加班' TYPE, COUNT(*) SHU
+				  FROM ESS_APPLY_OT EAO
+				 WHERE EAO.AFFIRM_FLAG IN (0,4,-1)
+				   AND EAO.APPLY_OT_DATE between
+				       add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+				   AND GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+				   AND EAO.PERSON_ID IN
+				       (SELECT B.PERSON_ID
+				          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+				         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+				           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+				             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+                B.DEPTNO in
+							         (SELECT HR_DEPARTMENT.DEPTNO
+							                          FROM HR_DEPARTMENT
+							                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+							                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+							                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              
+              	]]>
+		</isNotEmpty>   
+							  <![CDATA[  
+				           
+				                            
+				                            )
+				UNION ALL
+				SELECT '考勤异常' TYPE, COUNT(*) SHU
+				  FROM ESS_CARD_APPLY_TB ECB
+				 WHERE ECB.AFFIRM_FLAG IN (0,4,-1)
+				   AND ECB.AR_DATE_STR between
+				       TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY/MM/DD')
+				   AND TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY/MM/DD')
+				   AND ECB.PERSON_ID IN
+				       (SELECT B.PERSON_ID
+				          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+				         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+				           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+				             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+              
+              B.DEPTNO in
+							         (SELECT HR_DEPARTMENT.DEPTNO
+							                          FROM HR_DEPARTMENT
+							                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+							                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+							                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              
+              	]]>
+		</isNotEmpty>   
+							  <![CDATA[  
+				                            )
+				UNION ALL
+				SELECT '漏刷卡' TYPE, COUNT(*) SHU
+				  FROM AR_MAC_RECORDS_APPLY AMT
+				 WHERE AMT.AFFIRM_FLAG IN (0,4,-1)
+				   AND AMT.APPLY_DATE between
+				       TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+				   AND TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+				   AND AMT.PERSON_ID IN
+				       (SELECT B.PERSON_ID
+				          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+				         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+				           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+				             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		              <![CDATA[
+		              B.DEPTNO in
+							         (SELECT HR_DEPARTMENT.DEPTNO
+							                          FROM HR_DEPARTMENT
+							                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+							                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+							                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+		              
+		              	]]>
+		</isNotEmpty>   
+							  <![CDATA[  
+				            )
+	  	]]>
+	</select>
+
+
+	<select id="getpaEssNOApplyCount" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT '费用申请' TYPE,COUNT(*) SHU
+  		FROM ESS_WAGEAPPLICATION A,
+	       (SELECT APPLY_NO,
+	               CASE
+	                 WHEN MAX(AFFIRM_FLAG) = 0 THEN
+	                  0
+	                 WHEN MAX(AFFIRM_FLAG) = 2 THEN
+	                  2
+	                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+	                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN
+	                  1
+	                 ELSE
+	                  3
+	               END FLAG
+	          FROM ESS_AFFIRM
+	         WHERE APPLY_TYPE = 217886
+	         GROUP BY APPLY_NO) B
+	 WHERE A.ID = B.APPLY_NO
+	   AND B.FLAG IN (0, 3)
+	   AND TO_CHAR(A.APPTIME, 'YYYY/MM/DD') between
+	       TO_CHAR(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                 #interCpnyID:VARCHAR#,
+	                                 #STAT_NO:VARCHAR#),
+	               'YYYY/MM/DD')
+	   AND TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                               #interCpnyID:VARCHAR#,
+	                               #STAT_NO:VARCHAR#),
+	               'YYYY/MM/DD')
+	   AND A.APPEMP IN
+	       (SELECT B.PERSON_ID
+	          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	           AND A.STAT_NO = #STAT_NO:VARCHAR#
+               AND B.CPNY_ID = #interCpnyID:VARCHAR#
+	           
+	                ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		              <![CDATA[
+	          B.DEPTNO in
+							         (SELECT HR_DEPARTMENT.DEPTNO
+							                          FROM HR_DEPARTMENT
+							                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+							                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+							                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+	                            ]]>
+		</isNotEmpty>                      
+	                            <![CDATA[
+	                            )
+		 ]]>
+	</select>
+
+
+
+	<update id="updateLeave" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_LEAVE_APPLY_TB  A SET A.AFFIRM_FLAG = 2,A.ACTIVITY = 2 ,CURRENT_AFFIRM_ID = '',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+				WHERE A.APPLY_NO IN (
+				SELECT  ETB.APPLY_NO
+                  FROM ESS_LEAVE_APPLY_TB ETB
+                 WHERE ETB.AFFIRM_FLAG IN (0, 4, -1)
+	               AND ETB.APPLY_TYPE = 'PERSON'
+                   AND ETB.LEAVE_FROM_TIME >=
+                       add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+                   AND ETB.LEAVE_FROM_TIME <=
+                       GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+                   AND PERSON_ID IN
+                       (SELECT B.PERSON_ID
+                          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT ETB.APPLY_NO
+	          FROM ESS_LEAVE_APPLY_TB ETB,
+	               ESS_LEAVE_APPLY_TB_BATCH ETBB
+	         WHERE ETB.APPLY_NO = ETBB.APPLY_NO
+	           AND ETB.APPLY_TYPE = 'BATCH'
+	           AND ETB.AFFIRM_FLAG IN (0, 4,-1)
+	           AND ETBB.LEAVE_FROM_TIME >=
+	               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                         #interCpnyID:VARCHAR#,
+	                                         #STAT_NO:VARCHAR#),-1)
+	           AND ETBB.LEAVE_FROM_TIME <=
+	               GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                                       #interCpnyID:VARCHAR#,
+	                                       #STAT_NO:VARCHAR#)
+	           AND ETBB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+
+
+	<update id="updateLeaveAffirm" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_AFFIRM  A SET A.AFFIRM_FLAG = 2,A.ACTIVITY = 2 ,AFFIRM_CONTENT = '考勤锁定，强制否决',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+				WHERE (A.APPLY_NO,A.APPLY_TYPE) IN (
+				SELECT  ETB.APPLY_NO,ETB.LEAVE_TYPE_CODE
+                  FROM ESS_LEAVE_APPLY_TB ETB
+                 WHERE ETB.AFFIRM_FLAG IN (0, 4,-1)
+	               AND ETB.APPLY_TYPE = 'PERSON'
+                   AND ETB.LEAVE_FROM_TIME >=
+                       add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+                   AND ETB.LEAVE_FROM_TIME <=
+                       GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+                   AND PERSON_ID IN
+                       (SELECT B.PERSON_ID
+                          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT ETB.APPLY_NO,ETB.LEAVE_TYPE_CODE
+	          FROM ESS_LEAVE_APPLY_TB ETB,
+	               ESS_LEAVE_APPLY_TB_BATCH ETBB
+	         WHERE ETB.APPLY_NO = ETBB.APPLY_NO
+	           AND ETB.APPLY_TYPE = 'BATCH'
+	           AND ETB.AFFIRM_FLAG IN (0, 4,-1)
+	           AND ETBB.LEAVE_FROM_TIME >=
+	               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                         #interCpnyID:VARCHAR#,
+	                                         #STAT_NO:VARCHAR#),-1)
+	           AND ETBB.LEAVE_FROM_TIME <=
+	               GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                                       #interCpnyID:VARCHAR#,
+	                                       #STAT_NO:VARCHAR#)
+	           AND ETBB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+
+	<update id="updateLeaveEp" parameterClass="linkMap">
+		<![CDATA[	
+		INSERT INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   NO,
+			   N2,
+			   N1,
+			   CREATION_DATE,
+			   RESULT_YN)
+			SELECT APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+				   'ARD',
+				   '121',
+				   APPLY_NO || '-21',
+				   -1,
+				   -1,
+				   -1,
+				   SYSDATE,
+				   'N'
+			FROM (
+				SELECT  ETB.APPLY_NO
+                  FROM ESS_LEAVE_APPLY_TB ETB
+                 WHERE ETB.AFFIRM_FLAG IN (0, 4,-1)
+	               AND ETB.APPLY_TYPE = 'PERSON'
+                   AND ETB.LEAVE_FROM_TIME >=
+                       add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+                   AND ETB.LEAVE_FROM_TIME <=
+                       GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+                   AND PERSON_ID IN
+                       (SELECT B.PERSON_ID
+                          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+		)
+			UNION
+	        SELECT ETB.APPLY_NO
+	          FROM ESS_LEAVE_APPLY_TB ETB,
+	               ESS_LEAVE_APPLY_TB_BATCH ETBB
+	         WHERE ETB.APPLY_NO = ETBB.APPLY_NO
+	           AND ETB.APPLY_TYPE = 'BATCH'
+	           AND ETB.AFFIRM_FLAG IN (0, 4,-1)
+	           AND ETBB.LEAVE_FROM_TIME >=
+	               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                         #interCpnyID:VARCHAR#,
+	                                         #STAT_NO:VARCHAR#),-1)
+	           AND ETBB.LEAVE_FROM_TIME <=
+	               GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                                       #interCpnyID:VARCHAR#,
+	                                       #STAT_NO:VARCHAR#)
+	           AND ETBB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+	<update id="updatepawage" parameterClass="linkMap">
+		<![CDATA[
+		      UPDATE ESS_AFFIRM EA SET EA.AFFIRM_FLAG = 2
+		      WHERE EA.APPLY_TYPE = '217886'
+		      AND EA.APPLY_NO IN ( 
+				SELECT  A.ID
+		  		FROM ESS_WAGEAPPLICATION A,
+			       (SELECT APPLY_NO,
+			               CASE
+			                 WHEN MAX(AFFIRM_FLAG) = 0 THEN
+			                  0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN
+			                  2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+			                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN
+			                  1
+			                 ELSE
+			                  3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = '217886'
+			         GROUP BY APPLY_NO) B
+			 WHERE A.ID = B.APPLY_NO
+			   AND B.FLAG IN (0, 3)
+			   AND TO_CHAR(A.APPTIME, 'YYYY/MM/DD') >=
+			       TO_CHAR(GET_AR_START_DATE(#arMonth:VARCHAR#,
+			                                 #interCpnyID:VARCHAR#,
+			                                 #STAT_NO:VARCHAR#),
+			               'YYYY/MM/DD')
+			   AND TO_CHAR(A.APPTIME, 'YYYY/MM/DD') <=
+			       TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#,
+			                               #interCpnyID:VARCHAR#,
+			                               #STAT_NO:VARCHAR#),
+			               'YYYY/MM/DD')
+			   AND A.APPEMP IN
+			       (SELECT B.PERSON_ID
+			          FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+			         WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+			           AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+	           
+	        ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+		   <![CDATA[
+	          B.DEPTNO IN
+	               (SELECT HR_DEPARTMENT.DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+	                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+	                            HR_DEPARTMENT.PARENT_DEPT_NO)
+	      ]]>
+		</isNotEmpty>                      
+	      <![CDATA[
+	              ))
+		 ]]>
+	</update>
+
+	<update id="updateArOffApplyOt" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_APPLY_OT  OT SET  OT.ACTIVITY = 2  ,OT.AFFIRM_FLAG =2,CURRENT_AFFIRM_ID = '',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+				WHERE OT.APPLY_NO IN (
+				SELECT  EAO.APPLY_NO
+		          FROM ESS_APPLY_OT EAO
+		         WHERE EAO.AFFIRM_FLAG IN (0,4,-1)
+		           AND EAO.APPLY_TYPE = 'PERSON'
+		           AND EAO.APPLY_OT_DATE >=
+		               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+		           AND EAO.APPLY_OT_DATE <=
+		               GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+		           AND EAO.PERSON_ID IN
+		               (SELECT B.PERSON_ID
+		                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+		                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+		                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+		                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+		                       (SELECT HR_DEPARTMENT.DEPTNO
+		                          FROM HR_DEPARTMENT
+		                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+		                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+		                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+		                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT ETB.APPLY_NO
+	          FROM ESS_APPLY_OT ETB,
+	               ESS_APPLY_OT_BATCH ETBB
+	         WHERE ETB.APPLY_NO = ETBB.APPLY_NO
+	           AND ETB.APPLY_TYPE = 'BATCH'
+	           AND ETB.AFFIRM_FLAG IN (0, 4,-1)
+	           AND ETBB.APPLY_OT_DATE >=
+	               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                         #interCpnyID:VARCHAR#,
+	                                         #STAT_NO:VARCHAR#),-1)
+	           AND ETBB.APPLY_OT_DATE <=
+	               GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                                       #interCpnyID:VARCHAR#,
+	                                       #STAT_NO:VARCHAR#)
+	           AND ETBB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+
+
+	<update id="updateArOffApplyOtAffirm" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_AFFIRM  A SET A.AFFIRM_FLAG = 2,A.ACTIVITY = 2 ,AFFIRM_CONTENT = '考勤锁定，强制否决',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+				WHERE A.APPLY_TYPE = 31
+				  AND A.APPLY_NO IN (
+				SELECT  EAO.APPLY_NO
+		          FROM ESS_APPLY_OT EAO
+		         WHERE EAO.AFFIRM_FLAG IN (0,4,-1)
+		           AND EAO.APPLY_TYPE = 'PERSON'
+		           AND EAO.APPLY_OT_DATE >=
+		               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+		           AND EAO.APPLY_OT_DATE <=
+		               GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+		           AND EAO.PERSON_ID IN
+		               (SELECT B.PERSON_ID
+		                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+		                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+		                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+		                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+		                       (SELECT HR_DEPARTMENT.DEPTNO
+		                          FROM HR_DEPARTMENT
+		                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+		                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+		                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+		                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT ETB.APPLY_NO
+	          FROM ESS_APPLY_OT ETB,
+	               ESS_APPLY_OT_BATCH ETBB
+	         WHERE ETB.APPLY_NO = ETBB.APPLY_NO
+	           AND ETB.APPLY_TYPE = 'BATCH'
+	           AND ETB.AFFIRM_FLAG IN (0, 4,-1)
+	           AND ETBB.APPLY_OT_DATE >=
+	               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                         #interCpnyID:VARCHAR#,
+	                                         #STAT_NO:VARCHAR#),-1)
+	           AND ETBB.APPLY_OT_DATE <=
+	               GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                                       #interCpnyID:VARCHAR#,
+	                                       #STAT_NO:VARCHAR#)
+	           AND ETBB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+	
+	<update id="updateArOffApplyOtEp" parameterClass="linkMap">
+		<![CDATA[	
+		INSERT INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   NO,
+			   N2,
+			   N1,
+			   CREATION_DATE,
+			   RESULT_YN)
+			SELECT APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+				   'ARD',
+				   '121',
+				   APPLY_NO || '-31',
+				   -1,
+				   -1,
+				   -1,
+				   SYSDATE,
+				   'N'
+			FROM (
+				SELECT  EAO.APPLY_NO
+		          FROM ESS_APPLY_OT EAO
+		         WHERE EAO.AFFIRM_FLAG IN (0,4,-1)
+		           AND EAO.APPLY_TYPE = 'PERSON'
+		           AND EAO.APPLY_OT_DATE >=
+		               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1)
+		           AND EAO.APPLY_OT_DATE <=
+		               GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#)
+		           AND EAO.PERSON_ID IN
+		               (SELECT B.PERSON_ID
+		                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+		                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+		                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+		                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+		                       (SELECT HR_DEPARTMENT.DEPTNO
+		                          FROM HR_DEPARTMENT
+		                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+		                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+		                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+		                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT ETB.APPLY_NO
+	          FROM ESS_APPLY_OT ETB,
+	               ESS_APPLY_OT_BATCH ETBB
+	         WHERE ETB.APPLY_NO = ETBB.APPLY_NO
+	           AND ETB.APPLY_TYPE = 'BATCH'
+	           AND ETB.AFFIRM_FLAG IN (0, 4,-1)
+	           AND ETBB.APPLY_OT_DATE >=
+	               add_months(GET_AR_START_DATE(#arMonth:VARCHAR#,
+	                                         #interCpnyID:VARCHAR#,
+	                                         #STAT_NO:VARCHAR#),-1)
+	           AND ETBB.APPLY_OT_DATE <=
+	               GET_AR_END_DATE(#arMonth:VARCHAR#,
+	                                       #interCpnyID:VARCHAR#,
+	                                       #STAT_NO:VARCHAR#)
+	           AND ETBB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+	
+	<update id="updateArOffCwa" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_CARD_APPLY_TB  OT    SET  OT.AFFIRM_FLAG = 2,OT.ACTIVITY = 2 ,CURRENT_AFFIRM_ID = '',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+			WHERE OT.APPLY_NO IN (
+			SELECT  ECB.APPLY_NO
+          FROM ESS_CARD_APPLY_TB ECB
+         WHERE ECB.AFFIRM_FLAG IN (0,4,-1)
+           AND ECB.AR_DATE_STR >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY/MM/DD')
+           AND ECB.AR_DATE_STR <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY/MM/DD')
+           AND ECB.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+              
+              B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+				)
+          )
+		]]>
+	</update>
+
+	<update id="updateArOffAffirm" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_AFFIRM  A SET A.AFFIRM_FLAG = 2,A.ACTIVITY = 2 ,AFFIRM_CONTENT = '考勤锁定，强制否决',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+			WHERE A.APPLY_TYPE = 218197
+			  AND A.APPLY_NO IN (
+			SELECT  ECB.APPLY_NO
+          FROM ESS_CARD_APPLY_TB ECB
+         WHERE ECB.AFFIRM_FLAG IN (0,4,-1)
+           AND ECB.AR_DATE_STR >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY/MM/DD')
+           AND ECB.AR_DATE_STR <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY/MM/DD')
+           AND ECB.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+              
+              B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+				)
+          )
+		]]>
+	</update>
+	
+	<update id="updateArOffEp" parameterClass="linkMap">
+		<![CDATA[	
+			INSERT INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   NO,
+			   N2,
+			   N1,
+			   CREATION_DATE,
+			   RESULT_YN)
+			SELECT APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+				   'ARD',
+				   '121',
+				   APPLY_NO || '-218197',
+				   -1,
+				   -1,
+				   -1,
+				   SYSDATE,
+				   'N'
+			FROM (
+			SELECT  ECB.APPLY_NO
+          FROM ESS_CARD_APPLY_TB ECB
+         WHERE ECB.AFFIRM_FLAG IN (0,4,-1)
+           AND ECB.AR_DATE_STR >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY/MM/DD')
+           AND ECB.AR_DATE_STR <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY/MM/DD')
+           AND ECB.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+              
+              B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+				)
+          )
+		]]>
+	</update>
+	<update id="updateArOffAnnu" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_ANNUAL_LEAVE_APPLY_TB  OT    SET  OT.ACTIVITY = 2  ,OT.AFFIRM_FLAG =2
+WHERE OT.APPLY_NO IN (
+SELECT  EAT.APPLY_NO
+          FROM ESS_ANNUAL_LEAVE_APPLY_TB EAT
+         WHERE EAT.ACTIVITY = 0
+           AND TO_CHAR(EAT.APPLY_TIME, 'YYYY/MM/DD') >=
+               TO_CHAR(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY/MM/DD')
+           AND TO_CHAR(EAT.APPLY_TIME, 'YYYY/MM/DD') <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY/MM/DD')
+           AND EAT.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+              
+              B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              
+              	]]>
+		</isNotEmpty>   
+							  <![CDATA[
+							  )  
+                   )
+		]]>
+	</update>
+
+
+	<update id="updateArOffMac" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE AR_MAC_RECORDS_APPLY  OT   SET  OT.ACTIVITY = 2  ,OT.AFFIRM_FLAG =2,CURRENT_AFFIRM_ID = '',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+		WHERE OT.RECORD_NO IN (
+		SELECT  AMT.RECORD_NO
+		          FROM AR_MAC_RECORDS_APPLY AMT
+         WHERE AMT.AFFIRM_FLAG IN (0,4,-1)
+           AND AMT.BATCH_YN = 'N'
+           AND AMT.APPLY_DATE >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+           AND AMT.APPLY_DATE <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+           AND AMT.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+             B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT AMT.RECORD_NO
+		      FROM AR_MAC_RECORDS_APPLY AMT,
+		      	   AR_MAC_RECORDS_APPLY_BATCH AMTB
+         WHERE AMT.RECORD_NO = AMTB.BATCH_RECORD_NO
+           AND AMT.AFFIRM_FLAG IN (0,4,-1)
+           AND AMT.BATCH_YN = 'Y'
+           AND AMTB.APPLY_DATE >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+           AND AMTB.APPLY_DATE <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+	           AND AMTB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+
+	<update id="updateArOffMacAffirm" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE ESS_AFFIRM  A SET A.AFFIRM_FLAG = 2,A.ACTIVITY = 2 ,AFFIRM_CONTENT = '考勤锁定，强制否决',UPDATE_DATE = SYSDATE,UPDATED_BY = 'AR_CLOSE'
+				WHERE A.APPLY_TYPE = '218294'
+				  AND A.APPLY_NO IN (
+		SELECT  AMT.RECORD_NO APPLY_NO
+		  FROM AR_MAC_RECORDS_APPLY AMT
+         WHERE AMT.AFFIRM_FLAG IN (0,4,-1)
+           AND AMT.BATCH_YN = 'N'
+           AND AMT.APPLY_DATE >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+           AND AMT.APPLY_DATE <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+           AND AMT.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+             B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT AMT.RECORD_NO
+		      FROM AR_MAC_RECORDS_APPLY AMT,
+		      	   AR_MAC_RECORDS_APPLY_BATCH AMTB
+         WHERE AMT.RECORD_NO = AMTB.BATCH_RECORD_NO
+           AND AMT.AFFIRM_FLAG IN (0,4,-1)
+           AND AMT.BATCH_YN = 'Y'
+           AND AMTB.APPLY_DATE >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+           AND AMTB.APPLY_DATE <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+	           AND AMTB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+
+	<update id="updateArOffMacEp" parameterClass="linkMap">
+		<![CDATA[	
+		INSERT INTO APT_MQ_COMMAND_SENDER
+			  (COMMAND_SEQ,
+			   COMMAND,
+			   SYSTEM_ID,
+			   SYSTEM_PK,
+			   NO,
+			   N2,
+			   N1,
+			   CREATION_DATE,
+			   RESULT_YN)
+			SELECT APT_MQ_COMMAND_SENDER_SEQ.NEXTVAL,
+				   'ARD',
+				   '121',
+				   APPLY_NO || '-218294',
+				   -1,
+				   -1,
+				   -1,
+				   SYSDATE,
+				   'N'
+			FROM (
+		SELECT AMT.RECORD_NO APPLY_NO
+		  FROM AR_MAC_RECORDS_APPLY AMT
+         WHERE AMT.AFFIRM_FLAG IN (0,4,-1)
+           AND AMT.BATCH_YN = 'N'
+           AND AMT.APPLY_DATE >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+           AND AMT.APPLY_DATE <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+           AND AMT.PERSON_ID IN
+               (SELECT B.PERSON_ID
+                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                     ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+             B.DEPTNO IN
+                       (SELECT HR_DEPARTMENT.DEPTNO
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                         START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                    HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>   
+		<![CDATA[  
+			)
+			UNION
+	        SELECT AMT.RECORD_NO APPLY_NO
+		      FROM AR_MAC_RECORDS_APPLY AMT,
+		      	   AR_MAC_RECORDS_APPLY_BATCH AMTB
+         WHERE AMT.RECORD_NO = AMTB.BATCH_RECORD_NO
+           AND AMT.AFFIRM_FLAG IN (0,4,-1)
+           AND AMT.BATCH_YN = 'Y'
+           AND AMTB.APPLY_DATE >=
+               TO_CHAR(add_months(GET_AR_START_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#),-1), 'YYYY-MM-DD')
+           AND AMTB.APPLY_DATE <=
+               TO_CHAR(GET_AR_END_DATE(#arMonth:VARCHAR#, #interCpnyID:VARCHAR#, #STAT_NO:VARCHAR#), 'YYYY-MM-DD')
+	           AND AMTB.PERSON_ID IN
+	               (SELECT B.PERSON_ID
+	                  FROM AR_STATISTIC_EMPTYPE A, HR_EMPLOYEE B
+	                 WHERE A.EMP_TYPE_CODE = B.EMP_TYPE_CODE
+	                   AND A.STAT_NO = #STAT_NO:VARCHAR#
+                       AND B.CPNY_ID = #interCpnyID:VARCHAR#
+                             ]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+              <![CDATA[
+               B.DEPTNO IN
+                               (SELECT HR_DEPARTMENT.DEPTNO
+                                  FROM HR_DEPARTMENT
+                                 WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+                                 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+                                CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO =
+                                            HR_DEPARTMENT.PARENT_DEPT_NO)
+              	]]>
+		</isNotEmpty>  
+		 <![CDATA[ 
+          ))
+		]]>
+	</update>
+</sqlMap>

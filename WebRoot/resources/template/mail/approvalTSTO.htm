@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>审批</title>
+  <style type="text/css">
+	.user_table {border-bottom:1px solid #DEEDF8;border-left:1px solid #DEEDF8;}
+	.user_table td{border-right:1px solid #DEEDF8;border-top:1px solid #DEEDF8;}
+	.user_photo p {background:url(images/photo/photo.jpg) no-repeat left top;}
+	.td_title {background:#F5FBFE;color:#276FA4;font:12px/20px arial,sans-serif;}
+	.th_title {border-right:1px solid #DEEDF8;background:#F5FBFE;color:#276FA4;}
+	.td_type {color:#333;font:12px/20px arial,sans-serif;}
+	.user_table td.td_title {text-align:center;}
+	.tablea th {background:url(./images/grid/tableth.png) repeat-x scroll 0 0 #F0EFF0;}
+</style>
+ </head>
+ <body>
+   <div style="width:800px;">
+						<table width="100%" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td style="font:bold 16px/20px arial,sans-serif;text-align:left">
+								您好：请您在4:30（三次决裁）前完成考勤审批。<br>
+								考勤审批链接：Partner->Management->部门员工考勤 -><a style="text-decoration:none;" href="http://{MAIL_LOGIN_HOST}?reqSysType=Partner&reqCpny=TSTO&role=manager&emp_number=[MAIL_LOGIN_EMPID]">考勤审批
+								</a>
+								</td>
+							</tr>
+						</table>
+						<table class="user_table"  width="40%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td class="td_title" style="text-align: center;width:15%;"><!-- 决裁等级 -->
+									No
+								</td>
+								<td class="td_title" style="text-align: center;width:45%;"><!-- 决裁等级 -->
+									部门
+								</td>
+								<td class="td_title" style="text-align: center;width:40%;"><!-- 决裁者 -->
+									部门申请出差人数
+								</td>
+							</tr>
+							[AFFIRM_CONTENT_CHUCHAI]
+						</table>
+						
+						<table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td style="font:bold 16px/20px arial,sans-serif;text-align:left">
+								您好：请您在4:30（三次决裁）前完成加班审批。<br>
+								加班审批链接：Partner->Management->部门员工考勤 -><a style="text-decoration:none;" href="http://{MAIL_LOGIN_HOST}?reqSysType=Partner&reqCpny=TSTO&role=manager&emp_number=[MAIL_LOGIN_EMPID]">加班审批
+								</a>
+								</td>
+							</tr>
+						</table>
+						<table class="user_table"  width="40%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td class="td_title" style="text-align: center;width:15%;"><!-- 决裁等级 -->
+									No
+								</td>
+								<td class="td_title" style="text-align: center;width:45%;"><!-- 决裁等级 -->
+									部门
+								</td>
+								<td class="td_title" style="text-align: center;width:40%;"><!-- 决裁者 -->
+									部门申请加班人数
+								</td>
+							</tr>
+							[AFFIRM_CONTENT_OT]
+						</table>
+						
+						<table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td style="font:bold 16px/20px arial,sans-serif;text-align:left">
+									以下是月别部门加班情况，请参考按法律规定、公司制度严格管理加班。 
+								</td>
+							</tr>
+						</table>
+						<table class="user_table"  width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+							<tr>
+								<td class="td_title" style="text-align: center;width:7%;"><!-- 决裁等级 -->
+									No
+								</td>
+								<td class="td_title" style="text-align: center;width:16%;"><!-- 决裁等级 -->
+									部门
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									部门总人数
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									部门平均
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									≤20h
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									20h＜月别≤36h
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									36h＜月别≤50h
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									50h＜月别≤70h
+								</td>
+								<td class="td_title" style="text-align: center;width:11%;"><!-- 决裁者 -->
+									月别>70H
+								</td>
+							</tr>
+							[AFFIRM_CONTENT_OT_TOTAL]
+						</table>
+   </div>
+ </body>
+</html>

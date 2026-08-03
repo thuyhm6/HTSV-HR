@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<settings lazyLoadingEnabled="false" useStatementNamespaces="true" />
+	
+	<!-- 设置全局 parameterMapping 和 resultMapping 别名 -->	
+		<!-- 定义基本数据类型Mapping -->
+		<typeAlias alias="int" type="java.lang.Integer" />
+		<typeAlias alias="float" type="java.lang.Float" />
+		<typeAlias alias="boolean" type="java.lang.Boolean" />
+		<typeAlias alias="string" type="java.lang.String" />
+		<typeAlias alias="date" type="java.util.Date" />
+		<typeAlias alias="bigDecimal" type="java.math.BigDecimal" />
+				
+		<!-- 定义集合类型的Mapping -->
+		<typeAlias alias="linkMap" type="java.util.LinkedHashMap" />
+		<typeAlias alias="list" type="java.util.List" />
+		
+		<!-- 定义JavaBean的Mapping -->
+		<!-- session admin -->
+		<typeAlias alias="AdminBean" type="com.ait.sys.bean.AdminBean" />
+		<typeAlias alias="CodeBean" type="com.ait.sys.bean.CodeBean" />
+		<typeAlias alias="SalaryCode" type="com.ait.pa.bean.SalaryCode" />
+		<!-- 处理超长字符long类型的配置 
+		<typeHandler javaType="java.lang.String" jdbcType="CLOB" callback="org.springframework.orm.ibatis.support.ClobStringTypeHandler"/>--> 
+	<!-- 其他文件嵌入 -->	
+	<sqlMap resource="com/ait/sys/dao/sql/sqlInclude.xml" />
+	<!-- LOGIN -->
+	<sqlMap resource="com/ait/sys/dao/sql/sqlLogin.xml" />
+	
+	<!-- HR -->
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlHrm.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlEmpInfo.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlHrmCount.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlContractInfo.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlTransferOrder.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlSearchTransferOrder.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlTransView.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlInformationRetrieval.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlJobType.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlEssApplyInfo.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlRecruitManage.xml" />
+	<!-- EDU -->
+	<sqlMap resource="com/ait/edu/dao/sql/sqlTrainEducation.xml" />
+	<sqlMap resource="com/ait/edu/dao/sql/sqlTrainReport.xml" />
+	<!-- 招聘工作 -->
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlAddRecPageHub.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlResumeSelection.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlResumeSearch.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlInterviewSchedule.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlInterviewScheduleConfirm.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlInterviewProcess.xml" />
+	<sqlMap resource="com/ait/hrm/dao/sql/sqlRecHrConfirm.xml" />
+	<!-- ESS -->
+	
+	<sqlMap resource="com/ait/ess/dao/sql/sqlAttendanceExConfirm.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlOvertime.xml" />
+	<!-- 员工自助费用申请 -->
+	<sqlMap resource="com/ait/ess/dao/sql/sqlWageApplication.xml" />
+	
+	
+	<!-- AR -->
+	<sqlMap resource="com/ait/ar/dao/sql/sqlCountAttendance.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArVacation.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArBasic.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlCycle.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlItem.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlDynamicGroup.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlPersonDynGroup.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlShift.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlCompanyCalendar.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlSummaryItem.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlAttendanceKeeper.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlSummaryFormula.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlEmpShift.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlEmpCalendar.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArDetailCalulate.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArMonthCalculate.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArDetail.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArEmail.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArMonth.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArMacRecord.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArProgress.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArCardRecord.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArAnnualLeave.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArAnnualStandard.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArAdjustRest.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArCardAssociate.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArReadCard.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArEatCardAssociate.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArEatMealCount.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlDailyDetail.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlattendanceViewSchedule.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlRecordTestList.xml" />
+	<sqlMap resource="com/ait/ar/dao/sql/sqlArShiftGroupManagement.xml" />
+	<!-- PA -->
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaBasic.xml" />
+	
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaBasicItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaAccount.xml" />
+	
+	<sqlMap resource="com/ait/pa/dao/sql/sqlInsurancePersonnel.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlInsuranceComputeItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlInsuranceInputItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlInsuranceFormula.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlInsuranceCalculate.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlInsuranceResult.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlSalaryCode.xml" />
+	
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusType.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusPersonnel.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusComputeItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusInputItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusFormula.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusCalculate.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusResult.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusInputItemParam.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlBonusComputeItemParam.xml" />
+    <sqlMap resource="com/ait/pa/dao/sql/sqlBonusInputItemData.xml" />
+	
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaComputeItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaInputItem.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlViewPaParam.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaFormula.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaCalculate.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaResult.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaProgress.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaHistory.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaCityCoefficient.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaSupervisor.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPortal.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlSalaryCs.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlExcelUtil.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlEmpSummary.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlWorkManagement.xml" />
+	<!-- PA_ECC 补偿金 -->
+ 	<sqlMap resource="com/ait/paEcc/dao/sql/sqlPaEcc.xml"/>
+ 	<!-- 最低工资调整 -->
+ 	<sqlMap resource="com/ait/pa/dao/sql/sqlPaLowAdjust.xml" />
+ 	<!-- 临促工资 -->
+ 	<sqlMap resource="com/ait/pa/dao/sql/sqlTempsale.xml" />
+ 	<sqlMap resource="com/ait/affirm/dao/sql/sqlLGEP.xml" />
+	<sqlMap resource="com/ait/pa/dao/sql/sqlPaWageCom.xml" />
+    <!-- fse -->
+	<sqlMap resource="com/ait/pa/dao/sql/sqlFSESalaryItem.xml" />
+	<!-- ETN -->
+	
+	<!-- REC -->
+	
+	<!-- EVS -->
+ 	<sqlMap resource="com/ait/ev/dao/sql/sqlEvGroup.xml" />
+ 	<sqlMap resource="com/ait/evs/dao/sql/sqlEvsManage.xml" />
+	
+	<!-- SYS -->
+	<sqlMap resource="com/ait/sys/dao/sql/sqlAjax.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlModel.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlMyHome.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlBasicMaintenance.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlPost.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlCompany.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlRolesGroup.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlSyMenu.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlLoginUser.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlLoginInfo.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlSyPageStructure.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlLanguage.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlAffirm.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlAffirmSpecial.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlArAffirm.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlHrmAffirm.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlArAffirmPost.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlEssParam.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlHomeParam.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlToolMenu.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlPageStructure.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlTableStructure.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlCommons.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlHrmAffirmConfig.xml" />
+	<sqlMap resource="com/ait/sys/dao/sql/sqlNoticeInfo.xml"/>
+	<sqlMap resource="com/ait/sys/dao/sql/sqlSalaryMapping.xml"/>
+	<sqlMap resource="com/ait/sys/dao/sql/sqlAttendItem.xml"/>
+	<sqlMap resource="com/ait/sys/dao/sql/sqlAffirmReplace.xml"/>
+	
+	
+	<!-- ESS -->
+	
+		<sqlMap resource="com/ait/ess/dao/sql/sqlChange.xml" />
+	
+	<sqlMap resource="com/ait/ess/dao/sql/sqlDeptPer.xml" />
+ 	<sqlMap resource="com/ait/ess/dao/sql/sqlPersonInfo.xml" />
+ 	<sqlMap resource="com/ait/ess/dao/sql/sqlEmpInfo.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlInfoApply.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlArMacRecordApply.xml" />
+ 	<sqlMap resource="com/ait/ess/dao/sql/sqlViewApply.xml" />
+ 	<sqlMap resource="com/ait/ess/dao/sql/sqlAffirmApply.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlHumanAffirm.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlTransAffirm.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlPersonalPaInfo.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlInfoApplyLeave.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlAnnualadjustment.xml" /><!-- 年休假申请sql -->
+	<sqlMap resource="com/ait/ess/dao/sql/sqlAffirmLeaveApply.xml" />
+	 
+	<sqlMap resource="com/ait/ess/dao/sql/sqlDimissionApply.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlEditionAffirm.xml" />
+	<sqlMap resource="com/ait/ess/dao/sql/sqlRecordTest.xml" />
+ 	
+ 	<!-- Report -->
+ 	<sqlMap resource="com/ait/report/hr/dao/sql/sqlHrReport.xml" />
+ 	<sqlMap resource="com/ait/report/hr/dao/sql/sqlHrReportC01.xml" />
+ 	<sqlMap resource="com/ait/report/ar/dao/sql/sqlArReport.xml" />
+ 	<sqlMap resource="com/ait/report/pa/dao/sql/sqlPaReport.xml" />
+ 	<sqlMap resource="com/ait/report/pa/dao/sql/sqlPaReportC01.xml" />
+ 	<sqlMap resource="com/ait/report/pa/dao/sql/sqlPaReportC04.xml" />
+ 	<sqlMap resource="com/ait/report/pa/dao/sql/sqlPaReportC03.xml" />
+ 	<sqlMap resource="com/ait/report/pa/dao/sql/sqlPaReportC11.xml" />
+ 	<!-- org -->
+ 	<sqlMap resource="com/ait/org/dao/sql/sqlOrgManage.xml" />
+	<!-- is -->
+	<sqlMap resource="com/ait/is/dao/sql/sqlInsuranceSystemCalculate.xml" />
+	<sqlMap resource="com/ait/is/dao/sql/sqlAccumulationFund.xml" />
+	<sqlMap resource="com/ait/is/dao/sql/sqlAccumulationFundManage.xml" />
+	<sqlMap resource="com/ait/is/dao/sql/sqlIsCompanyMaintain.xml" />
+	<sqlMap resource="com/ait/is/dao/sql/sqlBaseManagementForSearch.xml"/>
+	<sqlMap resource="com/ait/is/dao/sql/sqlJoinInsurance.xml"/>
+	<sqlMap resource="com/ait/is/dao/sql/sqlStopInsurance.xml"/>
+	<sqlMap resource="com/ait/is/dao/sql/sqlObjManagement.xml"/>
+	
+	<!--laborUnion-->
+	<sqlMap resource="com/ait/laborUnion/dao/spl/sqlLaborUnion.xml" />
+	
+	<!--incentive/salesman-->
+	<sqlMap resource="com/ait/inct/dao/sql/sqlSalesmanEvaluation.xml" />
+	<sqlMap resource="com/ait/inct/dao/sql/sqlSalesmanIncentive.xml" />
+	
+	<!-- Promoter -->
+	<!-- @Create date: 2014.06.09 CH.W.G Add -->
+	<sqlMap resource="com/ait/promoter/dao/sql/sqlPromoter.xml" />
+	
+	<!-- Empsubject -->
+	<sqlMap resource="com/ait/empsubject/dao/sql/sqlEmpsubject.xml" />
+	<!-- disc -->
+	<sqlMap	resource="com/ait/disc/dao/sql/sqlAutoExcel.xml"/>
+	
+	<!-- Partner -->
+	<sqlMap	resource="com/ait/ess/dao/sql/sqlPersonShfit.xml"/>
+	<sqlMap	resource="com/ait/ess/dao/sql/sqlEssDeptEmpAtt.xml"/>
+	<sqlMap	resource="com/ait/ess/dao/sql/sqlTempEmp.xml"/>
+</sqlMapConfig>

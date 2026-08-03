@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.affirmreplace">
+		<!-- 查询替换日志 -->
+		<select id="getAffrimReplaceList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					             
+			SELECT
+			 S.AFFIRM_REPLACE_NO,
+			 S.OLDCHECK_PERSONID,
+			 S.NEWCHECK_PERSONID,
+			 S.REPLACE_TYPE,
+			 S.CPNY_ID,
+			 S.REPLACE_DEPTID,
+			(select hr1.local_name oldname from HR_EMPLOYEE hr1 where s.oldcheck_personid=hr1.person_id ) oldname,     
+  			(select hr2.local_name oldname from HR_EMPLOYEE hr2 where s.newcheck_personid=hr2.person_id ) newname,
+			 to_char(CREATE_DATE,'yyyy/mm/dd hh24:mm:ss') CREATE_DATE,
+			(select hr3.local_name oldname from HR_EMPLOYEE hr3 where s.CREATE_BY=hr3.person_id ) CREATE_BY,
+			 S.UPDATE_DATE,
+			 S.UPDATE_BY,
+			 S.HR_AFFIRM_NO,
+			 S.ESS_AFFIRM_NO,
+			 S.TABLE_NAME 
+			FROM	sy_affirm_replace s
+			WHERE S.ACTIVITY='1'
+			
+		]]>	
+			<!-- 被替换决裁者 PERSONID -->
+		 <isNotEmpty prepend="and" property="OLDCHECK_PERSONID">
+			 	S.OLDCHECK_PERSONID=#OLDCHECK_PERSONID:VARCHAR# 
+		 </isNotEmpty>
+		 	<!-- 替换决裁者  PERSONID-->
+		 <isNotEmpty prepend="and" property="NEWCHECK_PERSONID">
+			 	S.NEWCHECK_PERSONID=#NEWCHECK_PERSONID:VARCHAR# 
+		 </isNotEmpty> 
+		 
+		 <!-- 被替换决裁者 EMPID -->
+		 <isNotEmpty prepend="and" property="OLD_EMPID">
+			 S.OLDCHECK_PERSONID=
+			 (select HR1.person_id FROM HR_EMPLOYEE hr1 WHERE HR1.EMP_ID=#OLD_EMPID:VARCHAR#) 
+		 </isNotEmpty>
+		 	<!-- 替换决裁者  EMPID-->
+		 <isNotEmpty prepend="and" property="NEW_EMPID">
+			 S.NEWCHECK_PERSONID=
+			 (select HR1.person_id FROM HR_EMPLOYEE hr1 WHERE HR1.EMP_ID=#NEW_EMPID:VARCHAR#)
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="AFFIRM_REPLACE_NO">
+			 	S.AFFIRM_REPLACE_NO=#AFFIRM_REPLACE_NO# 
+		 </isNotEmpty>   
+		 <isNotEmpty prepend="and" property="CPNY_ID">
+		 		s.cpny_id=#CPNY_ID:VARCHAR# 
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="TABLE_NAME">
+			 	S.TABLE_NAME=#TABLE_NAME:VARCHAR# 
+		 </isNotEmpty>
+		 ORDER BY S.CREATE_DATE DESC
+	</select>
+			<!-- 查询替换日志列表数量-->
+		<select id="getAffrimReplaceListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT
+				COUNT(*)
+			FROM	sy_affirm_replace s
+			WHERE S.ACTIVITY='1'
+			
+		]]>	
+			<!-- 被替换决裁者 PERSONID -->
+		 <isNotEmpty prepend="and" property="OLDCHECK_PERSONID">
+			 	S.OLDCHECK_PERSONID=#OLDCHECK_PERSONID:VARCHAR# 
+		 </isNotEmpty>
+		 	<!-- 替换决裁者  PERSONID-->
+		 <isNotEmpty prepend="and" property="NEWCHECK_PERSONID">
+			 	S.NEWCHECK_PERSONID=#NEWCHECK_PERSONID:VARCHAR# 
+		 </isNotEmpty> 
+		 
+		 <!-- 被替换决裁者 EMPID -->
+		 <isNotEmpty prepend="and" property="OLD_EMPID">
+			 S.OLDCHECK_PERSONID=
+			 (select HR1.person_id FROM HR_EMPLOYEE hr1 WHERE HR1.EMP_ID=#OLD_EMPID:VARCHAR#) 
+		 </isNotEmpty>
+		 	<!-- 替换决裁者  EMPID-->
+		 <isNotEmpty prepend="and" property="NEW_EMPID">
+			 S.NEWCHECK_PERSONID=
+			 (select HR1.person_id FROM HR_EMPLOYEE hr1 WHERE HR1.EMP_ID=#NEW_EMPID:VARCHAR#)
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="AFFIRM_REPLACE_NO">
+			 	S.AFFIRM_REPLACE_NO=#AFFIRM_REPLACE_NO# 
+		 </isNotEmpty>   
+		 <isNotEmpty prepend="and" property="CPNY_ID">
+		 		s.cpny_id=#CPNY_ID:VARCHAR# 
+		 </isNotEmpty>
+		  <isNotEmpty prepend="and" property="TABLE_NAME">
+			 	S.TABLE_NAME=#TABLE_NAME:VARCHAR# 
+		 </isNotEmpty>
+		 ORDER BY S.CREATE_DATE DESC
+	</select>
+	<!-- 查询被替换者原来的deptid -->
+	<select id="getReplaceDeptid" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					             
+			   SELECT 
+  		 		H.DEPTID
+   				FROM 
+   					HR_DEPARTMENT H
+   				WHERE 
+   				H.MANAGER_EMP_ID=#OLDCHECK_PERSONID:VARCHAR#
+				
+		]]>	
+			
+		 <isNotEmpty prepend="and" property="CPNY_ID">
+		 		H.cpny_id=#CPNY_ID:VARCHAR# 
+		 </isNotEmpty>       
+	</select>
+		<!-- 查询被替换者原来的HRAFFRIM表中的id -->
+	<select id="getHRAffirmNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					             
+			   SELECT 
+  		 		H.HR_AFFIRM_NO
+   				FROM 
+   					HR_AFFIRM H
+   				WHERE 
+   				H.AFFIRMOR_ID=#OLDCHECK_PERSONID:VARCHAR#
+   				AND H.AFFIRM_FLAG=#OLDFLAG#
+				
+		]]>	
+			  
+	</select>
+	<!-- 查询被替换者原来的ESSAFFRIM表中的id -->
+	<select id="getESSAffirmNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					             
+			   SELECT 
+  		 		H.ESS_AFFIRM_NO
+   				FROM 
+   					ESS_AFFIRM H
+   				WHERE 
+   				H.AFFIRMOR_ID=#OLDCHECK_PERSONID:VARCHAR#
+   				AND H.AFFIRM_FLAG=#OLDFLAG#
+				
+		]]>	
+			  
+	</select>
+		<!-- 查询被替换者原来的最终裁决表里的主键no -->
+	<select id="getReplaceFinal" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					             
+			  SELECT S.AFFIRM_RELATION_NO
+				FROM SY_AFFIRM_RELATION_FINAL S
+				WHERE S.AFFIRMOR_ID=#OLDCHECK_PERSONID:VARCHAR#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#
+   						
+		]]>	
+			    
+	</select>
+			<!-- 查询被替换者原来的特殊裁决表里的主键no -->
+	<select id="getReplaceSpecial" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					             
+			  SELECT S.AFFIRM_RELATION_NO
+				FROM sy_affirm_relation_special S
+				WHERE S.AFFIRMOR_ID=#OLDCHECK_PERSONID:VARCHAR#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#
+   						
+		]]>	
+			    
+	</select>
+	<!-- 插入替换日志 -->
+	<insert id="insertAffirmReplace" parameterClass="linkMap">
+		 <selectKey resultClass="int" keyProperty="AFFIRM_REPLACE_NO">  
+            SELECT case when MAX(to_number(AFFIRM_REPLACE_NO))  is null  or MAX(to_number(AFFIRM_REPLACE_NO))='' then 1 else  MAX(to_number(AFFIRM_REPLACE_NO))+1 end from sy_affirm_replace 
+        </selectKey>  
+		<![CDATA[
+			insert into 
+			sy_affirm_replace s 
+			(AFFIRM_REPLACE_NO,
+			replace_type ,
+			oldcheck_personid ,
+			newcheck_personid,
+			CREATE_DATE,
+			CREATE_BY,
+			UPDATE_DATE,
+			UPDATE_BY,
+			ACTIVITY,
+			ORDERNO,
+			CPNY_ID,
+			REPLACE_DEPTID,
+			HR_AFFIRM_NO,
+			ESS_AFFIRM_NO,
+			TABLE_NAME,
+			FINAL_AFFIRM_RELATION_NO,
+			SPECIAL_AFFIRM_RELATION_NO
+			)
+			values(
+			#AFFIRM_REPLACE_NO#,
+			#REPLACE_TYPE#,
+			#OLDCHECK_PERSONID#,
+			#NEWCHECK_PERSONID#,
+			SYSDATE,
+			#UPDT_USER#,
+			SYSDATE,
+			#UPDT_USER#,
+			#ACTIVITY#,
+			'1',
+			#CPNY_ID#,
+			#REPLACE_DEPTID#,
+			#HR_AFFIRM_NO#,
+			#ESS_AFFIRM_NO#,
+			#TABLE_NAME#,
+			#FIANL_NO#,
+			#SPECIAL#
+			)
+		]]>
+	</insert>
+	<!-- 复制最终裁决表的数据到替换数据临时表-->
+	<insert id="insertAffirmReplaceFromFinal" parameterClass="linkMap">
+		<![CDATA[
+			insert into 
+			SY_AFFIRM_RELATION_REPLACE  
+			( REPLACE_NO，
+			  TABLE_NAME,
+			  AFFIRM_RELATION_NO, 
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			)
+			select
+			#REPLACE_NO#,
+			'ZZ',
+			AFFIRM_RELATION_NO, 
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			FROM
+			sy_affirm_relation_final 
+			WHERE  AFFIRMOR_ID =#OLDCHECK_PERSONID#
+		]]>
+	</insert>
+
+	<!-- 复制特殊裁决表的数据到替换数据临时表-->
+	<insert id="insertAffirmReplaceFromSpecial" parameterClass="linkMap">
+		<![CDATA[
+			insert into 
+			SY_AFFIRM_RELATION_REPLACE  
+			( REPLACE_NO，
+			TABLE_NAME,
+			  AFFIRM_RELATION_NO, 
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			)
+			select
+			#REPLACE_NO#,
+			'TS',
+			AFFIRM_RELATION_NO, 
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			FROM
+			sy_affirm_relation_special 
+			WHERE  AFFIRMOR_ID =#OLDCHECK_PERSONID#
+		]]>
+	</insert>
+		<!-- 将临时表数据回退到最终裁决表-->
+	<insert id="insertFinal" parameterClass="linkMap">
+		<![CDATA[
+			insert into 
+			sy_affirm_relation_final  
+			( 
+			  AFFIRM_RELATION_NO,
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			)
+			select
+			  SY_AFFIRM_RELATION_SEQ.NEXTVAL,
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			FROM
+			SY_AFFIRM_RELATION_REPLACE 
+			WHERE   REPLACE_NO=#AFFIRM_REPLACE_NO#
+			AND TABLE_NAME='ZZ'
+		]]>
+	</insert>
+	<!-- 将临时表数据回退到特殊裁决表-->
+	<insert id="insertSpecial" parameterClass="linkMap">
+		<![CDATA[
+			insert into 
+			sy_affirm_relation_special  
+			( 
+			   AFFIRM_RELATION_NO,
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			)
+			select
+			SY_AFFIRM_RELATION_SPECIAL_SEQ.NEXTVAL,
+			  CPNY_ID， 
+			  AFFIRMOR_ID, 
+			  AFFIRM_TYPE_ID, 
+			  AFFIRM_LEVEL, 
+			  AFFIRM_OBJECT, 
+			  AFFIRM_FLAG, 
+			  APPOINT, 
+			  CREATE_DATE, 
+			  CREATED_BY, 
+			  UPDATE_DATE, 
+			  UPDATED_BY, 
+			  ORDERNO, 
+			  ACTIVITY
+			FROM
+			SY_AFFIRM_RELATION_REPLACE 
+			WHERE   REPLACE_NO=#AFFIRM_REPLACE_NO#
+			AND TABLE_NAME='TS'
+		]]>
+	</insert>
+	<!--更新最终裁决表的裁决者-->
+	<update id="UpdateFinalAffirm" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_AFFIRM_RELATION_FINAL T 
+			   SET T.AFFIRMOR_ID = #NEWCHECK_PERSONID#,
+			       T.UPDATE_DATE = SYSDATE
+			 WHERE T.AFFIRM_RELATION_NO IN (SELECT S.AFFIRM_RELATION_NO
+				FROM sy_affirm_relation_final S
+				WHERE S.AFFIRMOR_ID=#OLDCHECK_PERSONID:VARCHAR#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#)	
+		]]>		
+	</update>
+		<!--更新特殊裁决表的裁决者-->
+	<update id="UpdateSpecialAffirm" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_AFFIRM_RELATION_SPECIAL T 
+			   SET T.AFFIRMOR_ID = #NEWCHECK_PERSONID#,
+			   	   T.UPDATE_DATE =SYSDATE
+			 WHERE T.AFFIRM_RELATION_NO IN (SELECT S.AFFIRM_RELATION_NO
+				FROM sy_affirm_relation_special S
+				WHERE S.AFFIRMOR_ID=#OLDCHECK_PERSONID:VARCHAR#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#)	
+		]]>		
+	</update>
+	<!--回退最终裁决表的裁决者-->
+	<update id="UpdateFinalAffirmRollBack" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_AFFIRM_RELATION_FINAL T 
+			   SET T.AFFIRMOR_ID = #OLDCHECK_PERSONID#,
+			       T.UPDATE_DATE = SYSDATE
+			 WHERE T.AFFIRM_RELATION_NO IN (SELECT S.AFFIRM_RELATION_NO
+				FROM SY_AFFIRM_RELATION_REPLACE S 
+				WHERE S.REPLACE_NO=#AFFIRM_REPLACE_NO#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#
+				AND TABLE_NAME='ZZ')	
+		]]>		
+	</update>
+		<!--回退特殊裁决表的裁决者-->
+	<update id="UpdateSpecialAffirmRollBack" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_AFFIRM_RELATION_SPECIAL T 
+			   SET T.AFFIRMOR_ID = #OLDCHECK_PERSONID#,
+			   	   T.UPDATE_DATE =SYSDATE
+			 WHERE T.AFFIRM_RELATION_NO IN(SELECT S.AFFIRM_RELATION_NO
+				FROM SY_AFFIRM_RELATION_REPLACE S 
+				WHERE S.REPLACE_NO=#AFFIRM_REPLACE_NO#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#
+				AND TABLE_NAME='TS')		
+		]]>		
+	</update>
+	<!--更新部门表的部门裁决者-->
+	<update id="UpdateDepartmentAffirm" parameterClass="linkMap">
+		<![CDATA[
+	   
+		   update HR_DEPARTMENT H
+				set H.MANAGER_EMP_ID=#NEWCHECK_PERSONID#,
+					H.UPDATE_DATE=SYSDATE
+				where H.CPNY_ID=#CPNY_ID#
+				AND H.DEPTID in($REPLACE_DEPTID$)
+				
+		]]>		
+	</update>
+    <!--更新部门表-->
+	<update id="UpdateALLDepartmentAffirm" parameterClass="linkMap">
+		<![CDATA[
+	   
+		   update HR_DEPARTMENT H
+				set H.UPDATE_DATE=SYSDATE
+				where H.CPNY_ID=#CPNY_ID#
+		]]>		
+	</update>
+	<!--更新决裁线，执行决裁线生成函数-->
+	<update id="FunctionDepartmentAffirm" parameterClass="linkMap">
+		<![CDATA[
+		     begin
+  					ar_create_shangji(#CPNY_ID#);
+  			end;
+		]]>		
+	</update>
+	
+		<!--更新hr_affirm表的的部门裁决者-->
+	<update id="UpdateHRAffirm" parameterClass="linkMap">
+		<![CDATA[
+	   
+		   		update HR_AFFIRM H1
+				set H1.AFFIRMOR_ID=#NEWCHECK_PERSONID#,
+				H1.AFFIRM_FLAG=#NEWFLAG#
+				where  H1.AFFIRM_FLAG=#OLDFLAG#
+		]]>	
+			<isNotEmpty prepend="and" property="HR_AFFIRM_NO">
+		 		H1.HR_AFFIRM_NO IN ($HR_AFFIRM_NO$)
+		 </isNotEmpty>  	
+	</update>
+	<!--更新essaffirm表的的部门裁决者-->
+	<update id="UpdateESSAffirm" parameterClass="linkMap">
+		<![CDATA[
+	   
+		  		update ESS_AFFIRM H1
+				set H1.AFFIRMOR_ID=#NEWCHECK_PERSONID#,
+				H1.AFFIRM_FLAG=#NEWFLAG#
+				where  H1.APPLY_NO IN (
+					SELECT
+					H2.APPLY_NO
+					FROM
+					ESS_AFFIRM H2
+					WHERE H2.AFFIRMOR_ID=#OLDCHECK_PERSONID#
+				)
+				
+				AND H1.AFFIRM_FLAG=#OLDFLAG#
+		]]>
+		<isNotEmpty prepend="and" property="ESS_AFFIRM_NO">
+		 		H1.ESS_AFFIRM_NO IN ($ESS_AFFIRM_NO$)
+		 </isNotEmpty>  		
+	</update>
+	<!-- 将回退的标识换为0不显示 -->
+	<update id="DeleteAffirmReplace" parameterClass="linkMap">
+		<![CDATA[
+		  	UPDATE
+		  	 sy_affirm_replace S
+		  	 SET S.ACTIVITY='0'
+		  	WHERE AFFIRM_REPLACE_NO=#AFFIRM_REPLACE_NO#
+		]]>		
+	</update>
+		<!-- 删除临时表中的最终裁决特殊裁决的数据 -->
+	<update id="DeleteAffirmReplaceData" parameterClass="linkMap">
+		<![CDATA[
+		  	DELETE
+		  	FROM SY_AFFIRM_RELATION_REPLACE S
+		  	WHERE REPLACE_NO=#AFFIRM_REPLACE_NO#
+		]]>		
+	</update>
+		<!--删除替换日志-->
+	<update id="RealDeleteAffirmReplace" parameterClass="linkMap">
+		<![CDATA[
+		  	DELETE
+		  	FROM sy_affirm_replace
+		  	WHERE AFFIRM_REPLACE_NO=#AFFIRM_REPLACE_NO#
+		]]>		
+	</update>
+	
+			<!--终止删除最终表里的数据-->
+	<update id="DeleteAffirmReplaceForFinal" parameterClass="linkMap">
+		<![CDATA[
+
+		  	DELETE
+		  	FROM SY_AFFIRM_RELATION_FINAL T
+			 WHERE T.AFFIRM_RELATION_NO IN (SELECT S.AFFIRM_RELATION_NO
+				FROM SY_AFFIRM_RELATION_REPLACE S 
+				WHERE S.REPLACE_NO=#AFFIRM_REPLACE_NO#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#
+				AND TABLE_NAME='ZZ')	
+		]]>		
+	</update>
+	
+				<!--终止删除特殊表里的数据-->
+	<update id="DeleteAffirmReplaceForSpecial" parameterClass="linkMap">
+		<![CDATA[
+		  	DELETE
+		  	FROM SY_AFFIRM_RELATION_SPECIAL T
+			 WHERE T.AFFIRM_RELATION_NO IN (SELECT S.AFFIRM_RELATION_NO
+				FROM SY_AFFIRM_RELATION_REPLACE S 
+				WHERE S.REPLACE_NO=#AFFIRM_REPLACE_NO#
+				AND S.CPNY_ID=#CPNY_ID:VARCHAR#
+				AND TABLE_NAME='TS')	
+		]]>		
+	</update>
+	
+	<select id="getAffirmEmpListOld" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT 	HE.EMPID,
+					HE.PERSON_ID,
+					HE.LOCAL_NAME,
+					GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+					GET_AR_STATNO(HE.PERSON_ID,HE.CPNY_ID) STAT_NO,
+					GET_CODE_NAME(HE.EMP_TYPE_CODE,#interLanguage:VARCHAR#) EMP_TYPE_NAME,
+					GET_CODE_NAME(HE.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+					HE.CPNY_ID
+			FROM HR_EMPLOYEE HE ,(SELECT TB.AFFIRMOR_ID FROM  sy_affirm_relation_tb TB GROUP BY TB.AFFIRMOR_ID) T
+			WHERE HE.CPNY_ID = #CPNY_ID#
+			AND HE.PERSON_ID=T.AFFIRMOR_ID
+  		]]>
+
+		<isNotEmpty prepend="AND" property="isEmployeement">
+			<![CDATA[
+				HE.EMP_OFFICE = 15119
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	<select id="getAffirmEmpCntOld" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM HR_EMPLOYEE HE ,(SELECT TB.AFFIRMOR_ID FROM  sy_affirm_relation_tb TB GROUP BY TB.AFFIRMOR_ID) T
+			WHERE HE.CPNY_ID = #CPNY_ID#
+			AND HE.PERSON_ID=T.AFFIRMOR_ID
+  		]]>
+		
+		<isNotEmpty prepend="AND" property="isEmployeement">
+			<![CDATA[
+				HE.EMP_OFFICE = 15119
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	
+	</select>
+	<select id="getAffirmEmpList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+					HE.PERSON_ID,
+					HE.LOCAL_NAME,
+					HDNAME.CONTENT DEPT_NAME
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD,
+				 HR_DEPARTMENT_NAME HDNAME
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	<select id="getAffirmEmpCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+			<![CDATA[
+				SELECT COUNT(*)
+				FROM HR_EMPLOYEE HE,
+					 HR_DEPARTMENT HD,
+					 HR_DEPARTMENT_NAME HDNAME
+				WHERE HE.DEPTNO = HD.DEPTNO 
+				  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+				  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+				  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				  
+			]]>
+			
+			<isNotEmpty prepend="AND" property="KEY">
+				<![CDATA[
+			 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+			 		  EXISTS(
+			 		  	SELECT *
+						  FROM HR_DEPARTMENT
+					     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+						 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+						CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+			 		  )
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+				<![CDATA[
+				     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="EmpOffice">
+				<![CDATA[
+				     HE.emp_office = #EmpOffice:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+					HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+				          FROM HR_JOB_TYPE_SETUP P
+				         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+				           AND CPNY_ID = #interCpnyID:VARCHAR#
+				           )
+			</isNotEmpty>
+		</select>
+	
+</sqlMap>

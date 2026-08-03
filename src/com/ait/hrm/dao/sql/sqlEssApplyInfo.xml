@@ -1,0 +1,2374 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+ <sqlMap namespace="hrm.approve">
+ <!-- 权限设置 -->
+ <sql id="hrAuthority">
+ 
+ 
+ </sql>
+ 
+ <!--申请数据list 通用  -->
+<sql id="someLimitForSearch">
+
+
+	 <isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	          ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	)
+	    ]]>
+		</isNotEmpty>
+<!-- 时间条件 -->
+ <isNotEmpty property="sDate">
+				<isNotEmpty prepend="AND" property="eDate">
+						T.CREATE_DATE between  to_date(#sDate#,'YYYY/MM/DD')  and  to_date(#eDate#,'YYYY/MM/DD')+1
+				</isNotEmpty> 
+ </isNotEmpty>
+ <!-- 状态条件  -->
+	<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				T.ACTIVITY = #ACTIVITY#
+			]]>
+		</isNotEmpty>
+		<!-- 数据类型条件 -->
+	<isNotEmpty prepend="AND" property="ESS_TYPE_CODE">
+			<![CDATA[
+				T.ESS_TYPE_CODE = #ESS_TYPE_CODE#
+			]]>
+		</isNotEmpty>
+		<!-- 根据个人id搜索 -->
+<isNotEmpty prepend="AND" property="PERSON_ID_ID">
+			<![CDATA[
+				HE.PERSON_ID = #PERSON_ID_ID#
+			]]>
+</isNotEmpty>
+<!-- 限制条件  法人 -->
+<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+			EXISTS (SELECT *
+                  FROM 
+                       HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID=T.PERSON_ID
+               AND   HE.CPNY_ID=#interCpnyID#
+                 
+                 ) 
+			]]>
+</isNotEmpty>
+<!-- 部门条件 -->
+<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				(EXISTS (SELECT *
+          FROM HR_DEPARTMENT HD
+           WHERE HD.DEPTNO=HE.DEPTNO
+         START WITH HD.PARENT_DEPT_NO = #DEPTNO#
+        
+        CONNECT BY PRIOR HD.DEPTNO =   HD.PARENT_DEPT_NO)
+      OR HE.DEPTNO=#DEPTNO#)
+			]]>
+</isNotEmpty>
+
+
+</sql>
+	<!-- 申请明细 -->
+	
+	
+		<select id="getPersonalApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+		SELECT 
+		T.PERSON_ID,
+		T.PERSON_NO,
+		PKG_DECRYPT.DECRYPT_DES(T.IDCARD_NO) IDCARD_NO,
+		T.IDCARD_START_DATE,
+		T.ISSUING_AUTHORITY,
+		TO_CHAR(T.DOB,'dd/MM/yyyy') DOB,
+		GET_GLOBAL_NAME(T.SEXCODE,#interLanguage:VARCHAR#) SEXCODE,
+		T.ORIGIN,
+		GET_GLOBAL_NAME(T.NATION_CODE,#interLanguage:VARCHAR#)  NATION_CODE,
+        GET_GLOBAL_NAME(T.NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_CODE,
+        GET_GLOBAL_NAME(T.CV_UPDATE_STATUS,#interLanguage:VARCHAR#) CV_UPDATE_STATUS,
+        T.RELIGION,
+        PKG_DECRYPT.DECRYPT_DES(T.OFFICE_PHONE) OFFICE_PHONE,
+        PKG_DECRYPT.DECRYPT_DES(T.HOME_PHONE) HOME_PHONE,
+        PKG_DECRYPT.DECRYPT_DES(T.CELLPHONE) CELLPHONE,
+        GET_GLOBAL_NAME(T.MARITAL_STATUS_CODE,#interLanguage:VARCHAR#) MARITAL_STATUS_CODE,
+        TO_CHAR(T.WEDDING_DATE,'dd/MM/yyyy') WEDDING_DATE,
+        GET_GLOBAL_NAME(T.POLITICAL_OUTLOOK,#interLanguage:VARCHAR#) POLITICAL_OUTLOOK_NAME,
+       	GET_GLOBAL_NAME(T.EXIST_SINGLE,#interLanguage:VARCHAR#) EXIST_SINGLE,
+        T.SING_ID,
+        GET_GLOBAL_NAME(T.RESIDENTIAL_DISTINCTION,#interLanguage:VARCHAR#) RESIDENTIAL_DISTINCTION,
+		T.REG_PLACE,
+		T.EMAIL_SECOND,
+        T.EMAIL,
+        T.ARMY_OR_NOT,
+        T.OBSTACLE_OR_NOT,
+        T.FILE_LOCATION,
+        to_char(T.FILE_ENTER,'dd/MM/yyyy') FILE_ENTER,
+        to_char(T.FILE_OUT,'dd/MM/yyyy') FILE_OUT,
+       T.PHOTO_PATH,
+       T.CREATE_DATE,
+       T.CREATED_BY,
+       T.UPDATE_DATE,
+       T.UPDATED_BY,
+       T.ORDERNO,
+ 	   GET_LOCAL_NAME_PERSONID(T.PERSON_ID,#interLanguage:VARCHAR#) LOCAL_NAME,
+       T.CREATED_IP,
+       T.UPDATED_IP,
+       T.EXT,
+       T.UPDATE_PERSON_ID,
+       T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+       GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+       HE.EMPID,
+       get_dept_name(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME ,
+       GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#)  APPLY_TYPE,
+        GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE,
+        T.CALLBACK,
+        T.EARROR
+  FROM HR_PERSONAL_INFO_APPLY T,HR_EMPLOYEE HE
+  WHERE T.PERSON_ID=HE.PERSON_ID
+
+		
+   	   	]]>
+  	
+	    <isNotEmpty prepend="AND" property="PERSON_NO">
+			<![CDATA[
+				T.PERSON_NO = #PERSON_NO#
+			]]>
+		</isNotEmpty>
+		
+   	<include refid="someLimitForSearch" />     
+	</select>
+	
+	<select id="getEssAddressApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT 
+T.ADDRESS_NO,
+	 GET_LOCAL_NAME_PERSONID(T.PERSON_ID,#interLanguage:VARCHAR#) LOCAL_NAME,
+       T.PERSON_ID,
+       GET_GLOBAL_NAME(T.ADDRESS_TYPE,#interLanguage:VARCHAR#)  ADDRESS_TYPE,
+       TO_CHAR(T.EFFECTIVE_START_DATE,'DD/MM/YYYY') EFFECTIVE_START_DATE,
+       T.ADDRESS_CONTENT,
+       GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+       GET_GLOBAL_NAME(T.NATIONALITY,#interLanguage:VARCHAR#) NATIONALITY,
+     GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#)  APPLY_TYPE,
+       T.CREATED_BY,
+       T.UPDATE_BY,
+       T.UPDATE_DATE,
+       T.CREATE_DATE,
+      T.UPDATE_ADDRESS_NO,
+       T.CREATED_IP,
+       T.UPDATED_IP,
+      T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+        GET_GLOBAL_NAME(ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE,
+        he.person_id,
+          HE.EMPID,
+           get_dept_name(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME 
+  FROM HR_ADDRESS_MATTERS_APPLY T,HR_EMPLOYEE HE
+  WHERE T.PERSON_ID=HE.PERSON_ID
+		
+   	   	]]>
+   	  
+			<isNotEmpty prepend="AND" property="ADDRESS_NO">
+			<![CDATA[
+				T.ADDRESS_NO = #ADDRESS_NO#
+			]]>
+		</isNotEmpty>
+   	   	<include refid="someLimitForSearch" />    
+	</select>
+	
+	<select id="applyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+
+SELECT    T.FILE_URL,
+		  T.FILE_NAME,
+		  T.FILENOSSTR,
+           T.APPLYNAME,
+           T.APPLY_NOW,
+               T.APPLY_PRO,
+            T.CREATE_DATE,
+               T.CREATED_IP,
+             T.SUBMIT_TYPE,
+              T.APPLY_TYPE_NUM,
+              T.ACTIVITY,
+               T.EMPID,
+               T.CHINESE_PINYIN,
+               T.DEPTNO,
+              T.CPNY_ID,
+               T.ACTIVITY_S,
+               T.ESS_TYPE_CODE_S,
+               T.PERSON_ID,
+               T.CREATE_DATE_S,
+               T.LOCAL_NAME, 
+               T.DEPT_NAME,
+                T.APPLY_TYPE,
+               T.ESS_TYPE_CODE
+  FROM (SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+  			   'PERS' APPLYNAME,
+               T.PERSON_NO APPLY_NOW,
+               
+               T.UPDATE_PERSON_ID APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_PERSONAL_INFO_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+        	   'ADDR' APPLYNAME,
+               TO_CHAR(T.ADDRESS_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_ADDRESS_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_ADDRESS_MATTERS_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+        	   'EMER' APPLYNAME,
+               TO_CHAR(T.EMERGENCY_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_EMERGENCY_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_EMERGENCY_ADDRESS_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+        	   'FAMI' APPLYNAME,
+               TO_CHAR(T.FAMILY_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_FAMILY_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_FAMILY_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+        	   'WORK' APPLYNAME,
+               TO_CHAR(T.WORK_EXPER_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_WORK_EXPER_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_WORK_EXPERIENCE_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+        	   'PROD' APPLYNAME,
+               TO_CHAR(T.PRODUCT_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_PRODUCT_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_PRODUCT_INFO_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        UNION ALL
+        
+        SELECT T.FILE_URL,
+               T.FILE_NAME,
+        	   T.FILENOSSTR,
+        	   'EDUC' APPLYNAME,
+               TO_CHAR(T.EDUC_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_EDUC_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_EDUCATION_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT T.FILE_URL,
+               T.FILE_NAME,
+        	   T.FILENOSSTR,
+        	   'QUAL' APPLYNAME,
+               TO_CHAR(T.QUAL_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_QUAL_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_QUALIFICATION_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        UNION ALL
+        
+        SELECT ' ' FILE_URL,
+               ' ' FILE_NAME,
+        	   'empty' FILENOSSTR,
+        	   'REWR' APPLYNAME,
+               TO_CHAR(T.REWARD_NO) APPLY_NOW,
+               TO_CHAR(T.UPDATE_REWARD_NO) APPLY_PRO,
+               TO_CHAR(T.CREATE_DATE, 'dd/MM/yyyy') CREATE_DATE,
+               T.CREATED_IP,
+               T.ACTIVITY SUBMIT_TYPE,
+               T.APPLY_TYPE APPLY_TYPE_NUM,
+               GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#) ACTIVITY,
+               HE.EMPID,
+               HE.CHINESE_PINYIN,HE.DEPTNO,HE.CPNY_ID,T.ACTIVITY ACTIVITY_S,T.ESS_TYPE_CODE ESS_TYPE_CODE_S,HE.PERSON_ID,T.CREATE_DATE CREATE_DATE_S,HE.LOCAL_NAME,
+               get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+               GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPE,
+               
+               GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE
+          FROM HR_REWARD_APPLY T, HR_EMPLOYEE HE
+         WHERE T.PERSON_ID = HE.PERSON_ID
+        
+        ) T WHERE 1=1 
+
+
+
+		
+   	   	]]>
+   	   
+   	  
+	 <isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	         ( T.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(T.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(T.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(T.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%')
+	    ]]>
+		</isNotEmpty>
+<!-- 时间条件 -->
+ <isNotEmpty property="sDate">
+				<isNotEmpty prepend="AND" property="eDate">
+						T.CREATE_DATE_S between  to_date(#sDate#,'dd/MM/yyyy')  and  to_date(#eDate#,'dd/MM/yyyy')+1
+				</isNotEmpty> 
+ </isNotEmpty>
+ <!-- 状态条件  -->
+	<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				T.ACTIVITY_S = #ACTIVITY#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITYALL">
+			<![CDATA[
+				T.ACTIVITY_S = #ACTIVITYALL#
+			]]>
+		</isNotEmpty>
+		<!-- 数据类型条件 -->
+	<isNotEmpty prepend="AND" property="ESS_TYPE_CODE">
+			<![CDATA[
+				T.ESS_TYPE_CODE_S = #ESS_TYPE_CODE#
+			]]>
+		</isNotEmpty>
+		<!-- 根据个人id搜索 -->
+<isNotEmpty prepend="AND" property="PERSON_ID_ID">
+			<![CDATA[
+				T.PERSON_ID = #PERSON_ID_ID#
+			]]>
+</isNotEmpty>
+<!-- 限制条件  法人 -->
+<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+			EXISTS (SELECT *
+                  FROM 
+                       HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID=T.PERSON_ID
+               AND   HE.CPNY_ID=#interCpnyID#
+                 
+                 ) 
+			]]>
+</isNotEmpty>
+<!-- 部门条件 -->
+<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				(EXISTS (SELECT *
+          FROM HR_DEPARTMENT HD
+           WHERE HD.DEPTNO=T.DEPTNO
+         START WITH HD.PARENT_DEPT_NO = #DEPTNO#
+        
+        CONNECT BY PRIOR HD.DEPTNO =   HD.PARENT_DEPT_NO)
+      OR T.DEPTNO=#DEPTNO#)
+			]]>
+</isNotEmpty>
+<![CDATA[
+		  order by TO_DATE(T.CREATE_DATE,'DD/MM/YYYY') DESC
+		]]>
+	</select>
+	<select id="getEssEmergencyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+		SELECT T.EMERGENCY_NO,
+         T.PERSON_ID,
+         GET_LOCAL_NAME_PERSONID(T.PERSON_ID,#interLanguage:VARCHAR#) LOCAL_NAME,
+         T.EMER_NAME,
+         PKG_DECRYPT.DECRYPT_DES(T.EMER_PHONE) EMER_PHONE,
+         PKG_DECRYPT.DECRYPT_DES(T.EMER_PHONE_SECOND) EMER_PHONE_SECOND,
+         T.EMER_EMAIL,
+         T.MAIN_LIAISON_OFFICE,
+         T.EMER_ADDRESS,
+         GET_GLOBAL_NAME(T.EMER_TYPE_CODE,#interLanguage:VARCHAR#) EMER_TYPE_CODE,
+       GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage:VARCHAR#)  ACTIVITY,
+         T.MOBILE_PHONE,
+         GET_GLOBAL_NAME(T.NATIONALITY,#interLanguage:VARCHAR#) NATIONALITY,
+         T.CREATE_DATE,
+         T.UPDATE_DATE,
+         T.CREATED_BY,
+         T.UPDATED_BY,
+       GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#)  APPLY_TYPE,
+         T.UPDATE_EMERGENCY_NO,
+         T.CREATED_IP,
+         T.UPDATED_IP,
+         PKG_DECRYPT.DECRYPT_DES(T.EMER_CELLPHONE) EMER_CELLPHONE,
+         PKG_DECRYPT.DECRYPT_DES(T.EMER_WORK_PHONE) EMER_WORK_PHONE,
+         HE.EMPID,
+          T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+         GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+          GET_GLOBAL_NAME(ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE,
+          T.CALLBACK,
+          T.EARROR
+    FROM HR_EMERGENCY_ADDRESS_APPLY T,HR_EMPLOYEE HE
+    
+   WHERE  HE.PERSON_ID=T.PERSON_ID
+ 
+			
+   	   	]]>
+		<isNotEmpty prepend="AND" property="EMERGENCY_NO">
+			<![CDATA[
+				T.EMERGENCY_NO = #EMERGENCY_NO#
+			]]>
+		</isNotEmpty>
+		<include refid="someLimitForSearch" />    
+	</select>
+	<select id="getEssHomeRelationApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			
+			
+			 SELECT T.FAMILY_NO,
+            T.PERSON_ID,
+            GET_LOCAL_NAME_PERSONID(T.PERSON_ID,#interLanguage#) LOCAL_NAME,
+            
+GET_GLOBAL_NAME(T.FAM_TYPE_CODE,#interLanguage:VARCHAR#)  FAM_TYPE_CODE,
+           T.FAM_NAME,
+            TO_CHAR(T.FAM_BORNDATE,'dd/MM/yyyy') FAM_BORNDATE,
+            T.FAM_IDCARD,
+           PKG_DECRYPT.DECRYPT_DES(T.FAM_PHONE) FAM_PHONE,
+            T.FAM_COMPANY_NAME,
+            T.LIVE_YN,
+            T.EMERGENCY_CONTACT_YN,
+            T.FAM_PERSON_ID,
+            T.FAM_ADDRESS,
+            T.FAM_YINYANGLI,
+           T.TAX_YN,
+            GET_GLOBAL_NAME(T.GENDER,#interLanguage:VARCHAR#)  GENDER,
+             T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+            T.ADDRESS_POSTAL,
+            T.CREATE_DATE,
+            T.CREATED_BY,
+            T.UPDATE_DATE,
+            T.UPDATED_BY,
+            T.ORDERNO,
+           PKG_DECRYPT.DECRYPT_DES(T.FAM_FAMILY_PHONE) FAM_FAMILY_PHONE,
+           PKG_DECRYPT.DECRYPT_DES(T.WORK_PHONE) WORK_PHONE,
+           GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage#) ACTIVITY,
+            T.FAM_EMAIL,
+			get_global_name(T.FAM_EDUCATION, #interLanguage:VARCHAR#) FAM_EDUCATION,
+            T.ISEMERGENCYADDRESS,
+            GET_GLOBAL_NAME(T.NATIONALITY,#interLanguage#) NATIONALITY,
+            T.MOBILE_PHONE,
+            GET_GLOBAL_NAME(T.WELFARE_TYPE,#interLanguage#) WELFARE_TYPE,
+        GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage#)    APPLY_TYPE,
+            T.UPDATE_FAMILY_NO,
+            T.CREATED_IP,
+            T.EMERGENCY_LIAISON_OFFICE,
+          T.UPDATED_IP,
+             GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage#) ESS_TYPE_CODE,
+             HE.EMPID,
+             GET_DEPT_NAME(HE.DEPTNO,#interLanguage#) DEPT_NAME,
+             T.AGE,
+             T.NOTE,
+             T.OCUPATION,
+             T.FAM_PHONE,
+             T.CALLBACK,
+             T.EARROR
+       FROM HR_FAMILY_APPLY T,HR_EMPLOYEE HE
+     WHERE T.PERSON_ID=HE.PERSON_ID
+   	   	]]>
+			<isNotEmpty prepend="AND" property="FAMILY_NO">
+			<![CDATA[
+				T.FAMILY_NO = #FAMILY_NO#
+			]]>
+		</isNotEmpty>
+		<include refid="someLimitForSearch" />    
+	</select>
+	<select id="getEssWorkApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT T.WORK_EXPER_NO,
+       T.PERSON_ID LOCAL_NAME,
+       T.PERSON_ID,
+       T.CPNY_NAME,
+       T.DEPT_NAME,
+       T.POSITION,
+       T.DUTY,
+       T.START_DATE,
+       T.END_DATE,
+       T.PAYROLL,
+       T.ACTIVITY SUBMIT_TYPE,
+       T.APPLY_TYPE APPLY_TYPE_NUM,
+       GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#) APPLY_TYPES,
+       T.RESIGN_REASON,
+       T.WITNESS,
+      PKG_DECRYPT.DECRYPT_DES(T.TEL) TEL,
+       T.AGE_LIMIT,
+       T.WORK_ADDRESS,
+       T.SENIORITY_RESPONSE,
+       T.CREATE_DATE,
+       T.CREATED_BY,
+       T.UPDATE_DATE,
+       T.UPDATED_BY,
+       T.ORDERNO,
+       T.OVERSEAS,
+     T.ACTIVITY ACTIVITY,
+	get_global_name(T.NATIONALITY, #interLanguage:VARCHAR#) NATIONALITYS,
+	T.NATIONALITY,
+       T.EN_POSITION_NAME,
+      T.OLD_ID,
+       T.PAY_YEAR,
+       T.CREATED_IP,
+       T.UPDATED_IP,
+      T.APPLY_TYPE APPLY_TYPE,
+       T.UPDATE_WORK_EXPER_NO,
+       T.ESS_TYPE_CODE ESS_TYPE_CODE,
+       get_global_name(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODES,
+        T.REMARK,
+        HE.DEPTNO DEPT_NAMES,
+        HE.EMPID,
+        T.CALLBACK,
+        T.EARROR
+  FROM HR_WORK_EXPERIENCE_APPLY T,HR_EMPLOYEE HE
+  WHERE T.PERSON_ID=HE.PERSON_ID
+			
+   	   	]]>
+		
+		<isNotEmpty prepend="AND" property="WORK_EXPER_NO">
+			<![CDATA[
+				T.WORK_EXPER_NO = #WORK_EXPER_NO#
+			]]>
+		</isNotEmpty>
+		
+		<include refid="someLimitForSearch" />    
+	</select>
+	
+	<select id="getEssProductApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.PERSON_ID,
+		GET_LOCAL_NAME_PERSONID(T.PERSON_ID,#interLanguage#) LOCAL_NAME,
+       T.PRODUCT_NO,
+       GET_GLOBAL_NAME(T.PRODUCT_TYPE,#interLanguage#) PRODUCT_TYPE,
+       TO_CHAR(T.START_DATE,'DD/MM/YYYY') START_DATE,
+       TO_CHAR(T.END_DATE,'DD/MM/YYYY') END_DATE,
+     GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage#)  ACTIVITY,
+       T.CREATE_DATE,
+        T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+       T.UPDATE_DATE,
+       T.PERCENT,
+       T.CREATED_BY,
+       T.UPDATED_BY,
+       T.UPDATE_PRODUCT_NO,
+     GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage#)  APPLY_TYPE,
+       T.CREATED_IP,
+       T.UPDATED_IP,
+       T.MAIN_PRODUCT,
+        GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage#) ESS_TYPE_CODE,
+         GET_DEPT_NAME(HE.DEPTNO,#interLanguage#) DEPT_NAME,
+        HE.EMPID
+        
+  FROM HR_PRODUCT_INFO_APPLY T,HR_EMPLOYEE HE
+  WHERE T.PERSON_ID=HE.PERSON_ID
+  
+   	   	]]>
+		
+		<isNotEmpty prepend="AND" property="PRODUCT_NO">
+			<![CDATA[
+				T.PRODUCT_NO = #PRODUCT_NO#
+			]]>
+		</isNotEmpty>
+		<include refid="someLimitForSearch" />    
+	</select>
+	<select id="getEssEducationApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT T.EDUC_NO,
+         T.PERSON_ID,
+         get_local_name_personid(T.PERSON_ID,#interLanguage#) LOCAL_NAME,
+         T.SUBJECT,
+         GET_GLOBAL_NAME(T.DEGREE_CODE,#interLanguage:VARCHAR#) DEGREE_CODE,
+         T.DEGREE_TYPE,
+         T.INSTITUTION_NAME,
+        T.RANK,
+        GET_GLOBAL_NAME(T.DEGREES_CODE,#interLanguage:VARCHAR#) DEGREES_CODE,
+         T.EDUC_CARD_NO,
+          T.ACTIVITY SUBMIT_TYPE,
+          T.APPLY_TYPE APPLY_TYPE_NUM,
+         T.SCHOOL_ADDRESS,
+         T.START_DATE START_DATE,
+         T.END_DATE END_DATE,
+        T.COMPETENT_DEPARTMENT,
+         T.SUBJECT_SECOND,
+         T.PARTICULAR_DEGREE,
+         T.REMARKS,
+        T.SUBJECT_CLASSIFY,
+         T.SUBJECT_CLASSIFY_TWO,
+         T.SITE_PROVINCE,
+         T.SITE_CITY,
+         T.FINAL_DEGREE_WHETHER,
+         T.SCHOOL_TYPE,
+        T.DEGREE_CODE,
+         T.GRADUATION_TYPE,
+         GET_GLOBAL_NAME(T.GRADUATION_TYPE, #interLanguage#) GRADUATION_TYPE_NAME,
+         T.EDU_DEG_NUM,
+         T.OTHER_SCHOOL_NAME,
+         T.GPA,
+         T.CREATE_DATE,
+         T.CREATED_BY,
+         T.UPDATE_DATE,
+        T.UPDATED_BY,
+         T.ORDERNO,
+        GET_ACTIVITY_ESS(T.ACTIVITY, #interLanguage#) ACTIVITY,
+         T.UPDATE_EDUC_NO,
+       GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage#)  APPLY_TYPE,
+         T.UPDATED_IP,
+         T.CREATED_IP,
+         T.FILE_URL,
+         T.FILE_NAME,
+          GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage#) ESS_TYPE_CODE,
+          HE.EMPID,
+          get_dept_name(HE.DEPTNO,#interLanguage#) DEPT_NAME,
+          T.PLACE,
+          T.STUDY_EXPERIENCE,
+          T.SITE_COUNTRY,
+          T.FILENOSSTR,
+          T.CALLBACK,
+          T.EARROR
+    FROM HR_EDUCATION_APPLY T,HR_EMPLOYEE HE
+     WHERE   T.PERSON_ID = HE.PERSON_ID
+  
+   	   	]]>
+		
+			<isNotEmpty prepend="AND" property="EDUC_NO">
+			<![CDATA[
+				T.EDUC_NO = #EDUC_NO#
+			]]>
+		</isNotEmpty>
+		<include refid="someLimitForSearch" />    
+	</select>
+	<select id="getEssQualificationApplyList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT T.QUAL_NO,
+         T.PERSON_ID,
+          get_local_name_personid(T.PERSON_ID,#interLanguage#) LOCAL_NAME,
+         
+         T.QUAL_NAME,
+         TO_CHAR(T.DATE_OBTAINED,'dd/MM/yyyy') DATE_OBTAINED,
+        PKG_DECRYPT.DECRYPT_DES(T.QUAL_CARD_NO) QUAL_CARD_NO,
+          T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+         T.QUAL_INSTITUTE,
+         T.CREATE_DATE,
+         T.CREATED_BY,
+         T.UPDATE_DATE,
+         T.UPDATED_BY,
+         T.ORDERNO,
+       GET_ACTIVITY_ESS(T.ACTIVITY,#interLanguage#)  ACTIVITY,
+         TO_CHAR(T.VALIDITY_DATE,'dd/MM/yyyy') VALIDITY_DATE,
+         T.ACQUISITION_MODES,
+         T.QUAL_LEVEL,
+         T.PAYMENTALLOWANCE_Y_N,
+         T.QUAL_GRADE,
+         T.QUAL_REMARK,
+         T.CREATED_IP,
+         T.UPDATED_IP,
+         T.UPDATE_QUAL_NO,
+         T.FILE_NAME,
+         T.FILE_URL,
+         T.FILENOSSTR,
+       GET_APPLY_TYPE_ESS(T.APPLY_TYPE,#interLanguage#)  APPLY_TYPE,
+          GET_GLOBAL_NAME(T.ESS_TYPE_CODE,#interLanguage#) ESS_TYPE_CODE,
+           HE.EMPID,
+          get_dept_name(HE.DEPTNO,#interLanguage#) DEPT_NAMES,
+          T.CALLBACK,
+          T.EARROR
+       FROM HR_QUALIFICATION_APPLY T,HR_EMPLOYEE HE
+       WHERE T.PERSON_ID=HE.PERSON_ID
+
+   	   	]]>
+		
+			<isNotEmpty prepend="AND" property="QUAL_NO">
+			<![CDATA[
+				T.QUAL_NO = #QUAL_NO#
+			]]>
+		</isNotEmpty>
+			<include refid="someLimitForSearch" />    
+	</select>
+	<select id="getEssRewardList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+		SELECT T.PERSON_ID,
+      get_local_name_personid(T.PERSON_ID, #interLanguage:VARCHAR#) LOCAL_NAME,
+       T.REWARD_NO,
+       GET_GLOBAL_NAME(T.REWARD_TYPE,#interLanguage:VARCHAR#) REWARD_TYPE,
+       TO_CHAR(T.REWARD_DATE,'DD/MM/YYYY') REWARD_DATE,
+       T.REWARD_CNPY,
+       T.REWARD,
+       T.CREATED_BY,
+       T.CREATE_DATE,
+       T.UPDATED_DATE,
+        T.ACTIVITY SUBMIT_TYPE,T.APPLY_TYPE APPLY_TYPE_NUM,
+       T.UPDATED_BY,
+     GET_ACTIVITY_ESS(T.ACTIVITY,  #interLanguage:VARCHAR#)  ACTIVITY,
+       T.CREATED_IP,
+       T.UPDATED_IP,
+       T.UPDATE_REWARD_NO,
+     GET_APPLY_TYPE_ESS(T.APPLY_TYPE, #interLanguage:VARCHAR#)  APPLY_TYPE,
+       T.REMARKS,
+       
+GET_GLOBAL_NAME(T.REWARD_TYPE_CODE,#interLanguage:VARCHAR#) REWARD_TYPE_CODE,
+        GET_GLOBAL_NAME(T.ESS_TYPE_CODE, #interLanguage:VARCHAR#) ESS_TYPE_CODE,
+        get_dept_name(HE.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+        HE.EMPID
+  FROM HR_REWARD_APPLY T,HR_EMPLOYEE HE
+      WHERE HE.PERSON_ID=T.PERSON_ID
+
+			
+   	   	]]>
+		
+		<isNotEmpty prepend="AND" property="REWARD_NO">
+			<![CDATA[
+				T.REWARD_NO = #REWARD_NO#
+			]]>
+		</isNotEmpty>
+		<include refid="someLimitForSearch" />    
+	</select>
+	
+	
+	<!-- 申请明细 -->
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<!-- 申请明细 2object get other By update_some_no-->
+	
+	
+		<select id="getPersonalApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+		
+       SELECT PERSON_ID,
+       	PKG_DECRYPT.DECRYPT_DES(IDCARD_NO) IDCARD_NO,
+       	IDCARD_START_DATE,
+       	ISSUING_AUTHORITY,
+       	GET_GLOBAL_NAME(SEXCODE,#interLanguage:VARCHAR#) SEXCODE,
+        TO_CHAR(DOB,'dd/MM/yyyy') DOB,
+        ORIGIN,
+        GET_GLOBAL_NAME(NATION_CODE,#interLanguage:VARCHAR#) NATION_CODE,
+        GET_GLOBAL_NAME(NATIONALITY_CODE,#interLanguage:VARCHAR#) NATIONALITY_CODE,
+        GET_GLOBAL_NAME(CV_UPDATE_STATUS,#interLanguage:VARCHAR#) CV_UPDATE_STATUS,
+        RELIGION,
+        PKG_DECRYPT.DECRYPT_DES(OFFICE_PHONE) OFFICE_PHONE,
+        PKG_DECRYPT.DECRYPT_DES(HOME_PHONE) HOME_PHONE,
+        PKG_DECRYPT.DECRYPT_DES(CELLPHONE) CELLPHONE,
+        GET_GLOBAL_NAME(MARITAL_STATUS_CODE,#interLanguage:VARCHAR#) MARITAL_STATUS_CODE,
+        TO_CHAR(WEDDING_DATE,'dd/MM/yyyy') WEDDING_DATE,
+        GET_GLOBAL_NAME(POLITICAL_OUTLOOK,#interLanguage:VARCHAR#) POLITICAL_OUTLOOK_NAME,
+        GET_GLOBAL_NAME(EXIST_SINGLE,#interLanguage:VARCHAR#) EXIST_SINGLE,
+        SING_ID,
+        GET_GLOBAL_NAME(RESIDENTIAL_DISTINCTION,#interLanguage:VARCHAR#) RESIDENTIAL_DISTINCTION,
+        REG_PLACE,
+        EMAIL_SECOND,
+        EMAIL,
+        ARMY_OR_NOT,
+        OBSTACLE_OR_NOT,
+        FILE_LOCATION,
+        TO_CHAR(FILE_ENTER,'dd/MM/yyyy') FILE_ENTER,
+        TO_CHAR(FILE_OUT,'dd/MM/yyyy') FILE_OUT,
+       PHOTO_PATH,
+       CREATE_DATE,
+       CREATED_BY,
+       UPDATE_DATE,
+       UPDATED_BY,
+       ORDERNO,
+       ACTIVITY,
+       CREATED_IP,
+       UPDATED_IP,
+       EXT
+  FROM HR_PERSONAL_INFO
+  WHERE PERSON_ID=#PERSON_ID_ID#
+		
+   	   	]]>
+   	   	
+   	  
+   	   	
+	</select>
+	
+	<select id="getEssAddressApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 SELECT ADDRESS_NO,
+       PERSON_ID,
+       
+GET_GLOBAL_NAME(ADDRESS_TYPE,#interLanguage:VARCHAR#) ADDRESS_TYPE,
+       TO_CHAR(EFFECTIVE_START_DATE,'DD/MM/YYYY') EFFECTIVE_START_DATE, 
+       ADDRESS_CONTENT,
+       ACTIVITY,
+       
+GET_GLOBAL_NAME(NATIONALITY,#interLanguage:VARCHAR#)  NATIONALITY,
+       CREATE_DATE,
+       UPDATE_DATE,
+       CREATED_BY,
+       UPDATED_BY,
+       CREATED_IP,
+       UPDATED_IP
+  FROM HR_ADDRESS_MATTERS
+	 WHERE ADDRESS_NO=#ADDRESS_NO_NO#
+		
+   	   	]]>
+   	  
+   	   	
+	</select>
+	<select id="getEssEmergencyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	
+ SELECT EMERGENCY_NO,
+       PERSON_ID,
+       EMER_NAME,
+       PKG_DECRYPT.DECRYPT_DES(EMER_PHONE) EMER_PHONE,
+       PKG_DECRYPT.DECRYPT_DES(EMER_PHONE_SECOND) EMER_PHONE_SECOND,
+       EMER_PHONE_SECOND,
+       EMER_EMAIL,
+       MAIN_LIAISON_OFFICE,
+       EMER_ADDRESS,
+       GET_GLOBAL_NAME(EMER_TYPE_CODE,#interLanguage:VARCHAR#) EMER_TYPE_CODE,
+       ACTIVITY,
+       ISEMERGENCYADDRESS,
+       GET_GLOBAL_NAME(NATIONALITY,#interLanguage:VARCHAR#) NATIONALITY,
+       UPDATE_DATE,
+       CREATE_DATE,
+       UPDATED_BY,
+       CREATED_BY,
+       CREATED_IP,
+       UPDATED_IP,
+       PKG_DECRYPT.DECRYPT_DES(EMER_CELLPHONE) EMER_CELLPHONE,
+       PKG_DECRYPT.DECRYPT_DES(EMER_WORK_PHONE) EMER_WORK_PHONE
+  FROM HR_EMERGENCY_ADDRESS
+ WHERE EMERGENCY_NO=#EMERGENCY_NO_NO#
+			
+   	   	]]>
+   	  
+	</select>
+	<select id="getEssHomeRelationApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			
+		SELECT FAMILY_NO,
+       PERSON_ID,
+       GET_GLOBAL_NAME(FAM_TYPE_CODE,#interLanguage:VARCHAR#) FAM_TYPE_CODE,
+       FAM_NAME,
+       TO_CHAR(FAM_BORNDATE,'DD/MM/YYYY') FAM_BORNDATE,
+       FAM_IDCARD,
+      PKG_DECRYPT.DECRYPT_DES(FAM_PHONE) FAM_PHONE,
+       
+       FAM_COMPANY_NAME,
+       LIVE_YN,
+       EMERGENCY_CONTACT_YN,
+       FAM_PERSON_ID,
+       FAM_ADDRESS,
+       FAM_YINYANGLI,
+       TAX_YN,
+       GET_GLOBAL_NAME(GENDER,#interLanguage:VARCHAR#) GENDER,
+       ADDRESS_POSTAL,
+       CREATE_DATE,
+       CREATED_BY,
+       UPDATE_DATE,
+       UPDATED_BY,
+       ORDERNO,
+       ACTIVITY,
+       FAM_EMAIL,
+	   get_global_name(FAM_EDUCATION, #interLanguage:VARCHAR#) FAM_EDUCATION,
+       ISEMERGENCYADDRESS,
+       GET_GLOBAL_NAME(NATIONALITY,#interLanguage:VARCHAR#) NATIONALITY,
+       GET_GLOBAL_NAME(WELFARE_TYPE,#interLanguage:VARCHAR#) WELFARE_TYPE,
+       CREATED_IP,
+       UPDATED_IP,
+       FAM_ENGLISH_NAME,
+       FAM_KOREAN_NAME,
+       FAM_ANOTHER_NAME,
+       EFFECTIVE_START_DATE,
+       PKG_DECRYPT.DECRYPT_DES(FAM_FAMILY_PHONE) FAM_FAMILY_PHONE,
+       PKG_DECRYPT.DECRYPT_DES(WORK_PHONE) WORK_PHONE,
+       REMARKS,
+       EMERGENCY_LIAISON_OFFICE,
+       AGE,
+       NOTE,
+       OCUPATION
+  FROM HR_FAMILY
+  WHERE FAMILY_NO=#FAMILY_NO_NO#
+		
+   	   	]]>
+   	   	
+	</select>
+	<select id="getEssWorkApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT WORK_EXPER_NO,
+       PERSON_ID,
+       CPNY_NAME,
+       DEPT_NAME,
+       NATIONALITY,
+       get_global_name(NATIONALITY, #interLanguage:VARCHAR#) NATIONALITYS,
+       POSITION,
+       DUTY,
+       OVERSEAS,
+       START_DATE,
+       END_DATE,
+       PAY_YEAR,
+       RESIGN_REASON,
+       WITNESS,
+       PKG_DECRYPT.DECRYPT_DES(CELLPHONE) CELLPHONE,
+       AGE_LIMIT,
+       WORK_ADDRESS,
+       SENIORITY_RESPONSE,
+       CREATE_DATE,
+       CREATED_BY,
+       UPDATE_DATE,
+       UPDATED_BY,
+       ORDERNO,
+       ACTIVITY,
+       REMARK,
+       UPDATED_IP,
+       CREATED_IP,
+       CPNY_ENGLISH_NAME
+  FROM HR_WORK_EXPERIENCE
+  WHERE WORK_EXPER_NO=#WORK_EXPER_NO_NO#
+		
+			
+   	   	]]>
+   	   
+	</select>
+	
+	<select id="getEssProductApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT PERSON_ID,
+       PRODUCT_NO,
+      GET_GLOBAL_NAME( PRODUCT_TYPE,#interLanguage:VARCHAR#) PRODUCT_TYPE,
+       TO_CHAR(START_DATE,'YYYY.MM.DD') START_DATE,
+       TO_CHAR(END_DATE,'YYYY.MM.DD') END_DATE,
+       ACTIVITY,
+       CREATE_DATE,
+       UPDATE_DATE,
+       PERCENT,
+       CREATED_BY,
+       UPDATED_BY,
+       MAIN_PRODUCT
+  FROM HR_PRODUCT_INFO
+  
+  WHERE PRODUCT_NO=#PRODUCT_NO_NO#
+		
+  
+   	   	]]>
+   	   	
+	</select>
+	<select id="getEssEducationApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+  SELECT EDUC_NO,
+       PERSON_ID,
+       GET_GLOBAL_NAME(DEGREE_CODE,#interLanguage:VARCHAR#) DEGREE_CODE,
+       FINAL_DEGREE_WHETHER,
+       GET_GLOBAL_NAME(DEGREES_CODE,#interLanguage:VARCHAR#) DEGREES_CODE,
+       INSTITUTION_NAME,
+       SUBJECT,
+        START_DATE,
+         END_DATE,
+       SCHOOL_LENGTH,
+       GET_GLOBAL_NAME(SCHOOL_LENGTH,#interLanguage:VARCHAR#) SCHOOL_LENGTH_NAME,
+       THESIS_NAME_LOCAL,
+       THESIS_NAME_ENG,
+       SUBJECT_SECOND,
+       EDU_DEG_NUM,
+       SITE_COUNTRY,
+       REMARK,
+       CREATE_DATE,
+       CREATED_BY,
+       CREATED_IP,
+       UPDATE_DATE,
+       UPDATED_BY,
+       UPDATED_IP,
+       ORDERNO,
+       PLACE,
+       STUDY_EXPERIENCE,
+       ACTIVITY
+  FROM HR_EDUCATION
+  WHERE EDUC_NO=#EDUC_NO_NO#
+  
+   	   	]]>
+   	   	
+   	   
+	</select>
+	<select id="getEssQualificationApplyObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT QUAL_NO,
+       PERSON_ID,
+       QUAL_NAME,
+       TO_CHAR(DATE_OBTAINED,'dd/MM/yyyy') DATE_OBTAINED,
+       PKG_DECRYPT.DECRYPT_DES(QUAL_CARD_NO) QUAL_CARD_NO,
+       QUAL_INSTITUTE,
+       CREATE_DATE,
+       CREATED_BY,
+       UPDATE_DATE,
+       UPDATED_BY,
+       ORDERNO,
+       ACTIVITY,
+       TO_CHAR(VALIDITY_DATE,'dd/MM/yyyy') VALIDITY_DATE,
+       ACQUISITION_MODES,
+       QUAL_LEVEL,
+       PAYMENTALLOWANCE_Y_N,
+       QUAL_REMARK,
+       CREATED_IP,
+       UPDATED_IP,
+       QUAL_GRADE
+  FROM HR_QUALIFICATION
+  WHERE QUAL_NO=#QUAL_NO_NO#
+			 
+
+   	   	]]>
+   	   	
+   	   		
+	</select>
+	<select id="getEssRewardObject2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+SELECT PERSON_ID,
+       REWARD_NO,
+       GET_GLOBAL_NAME(REWARD_TYPE,#interLanguage:VARCHAR#) REWARD_TYPE,
+       TO_CHAR(REWARD_DATE,'DD/MM/YYYY') REWARD_DATE,
+       REWARD_CNPY,
+       REWARD,
+       CREATED_BY,
+       CREATE_DATE,
+       UPDATED_DATE,
+       UPDATED_BY,
+       ACTIVITY,
+       CREATED_IP,
+       UPDATED_IP,
+       REMARKS,
+       GET_GLOBAL_NAME(REWARD_TYPE_CODE,#interLanguage:VARCHAR#) REWARD_TYPE_CODE,
+       REWARD_PAY_DATE,
+       PERSONNEL_CARD_INQUIRY
+  FROM HR_REWARD
+  WHERE REWARD_NO=#REWARD_NO_NO#
+
+			
+   	   	]]>
+   	   	
+   	   
+	</select>
+	
+	
+	<!-- 申请明细 2 -->
+
+
+	<select id="getPersonalInfoByPid" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		   SELECT HE.LOCAL_NAME,
+				  HE.EMPID,
+				  GET_GLOBAL_NAME(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NO_NAME,
+				  GET_GLOBAL_NAME(HE.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME
+			 FROM HR_EMPLOYEE HE
+			WHERE HE.PERSON_ID=#PERSON_ID_ID#
+   	   	]]>
+	</select>
+	<!--审批  修改 -->
+	<update id="updateAddressInfo2" parameterClass="linkMap">
+		<![CDATA[
+			
+UPDATE HR_ADDRESS_MATTERS T
+   SET (T.ADDRESS_CONTENT,
+        T.NATIONALITY,
+        T.EFFECTIVE_START_DATE,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP) =
+       (SELECT A.ADDRESS_CONTENT,
+               A.NATIONALITY,
+               A.EFFECTIVE_START_DATE,
+               A.CREATE_DATE,
+               A.CREATED_BY,
+               A.CREATED_IP
+          FROM HR_ADDRESS_MATTERS_APPLY A WHERE A.ADDRESS_NO=#ADDRESS_NO#)
+      WHERE T.ADDRESS_NO=#UPDATE_ADDRESS_NO# 
+ 
+			  ]]>
+	</update>
+	<update id="updateEducationInfo2" parameterClass="linkMap">
+		<![CDATA[
+			     UPDATE HR_EDUCATION T 
+        SET(T.INSTITUTION_NAME,T.PLACE,
+         T.SUBJECT,
+         T.SUBJECT_SECOND,
+         T.START_DATE,
+         T.END_DATE,
+         T.REMARK,
+         T.FINAL_DEGREE_WHETHER,
+         T.SCHOOL_LENGTH,
+         T.EDU_DEG_NUM,
+         T.UPDATE_DATE,
+         T.UPDATED_BY,
+         T.UPDATED_IP,
+         T.ORDERNO,
+         T.ACTIVITY,
+         T.DEGREE_CODE
+         )
+                 = (SELECT A.INSTITUTION_NAME,A.PLACE,
+        A.SUBJECT,
+        A.SUBJECT_SECOND,
+        A.START_DATE,
+        A.END_DATE,
+        A.REMARKS,
+        A.FINAL_DEGREE_WHETHER,
+        A.GRADUATION_TYPE,
+        A.EDU_DEG_NUM,
+         A.CREATE_DATE,
+         A.CREATED_BY,
+         A.CREATED_IP,
+          A.ORDERNO,
+          1,
+          A.DEGREE_CODE
+                  FROM HR_EDUCATION_APPLY A WHERE  A.EDUC_NO = #EDUC_NO# 
+                 ) 
+                  WHERE  T.EDUC_NO=#UPDATE_EDUC_NO#
+			  
+			  
+			  ]]>
+	</update>
+	
+	<!-- 回复信息和内容 -->
+	<update id="callbackEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+			     UPDATE HR_EDUCATION_APPLY T 
+        SET
+         T.CALLBACK=#CALLBACK#,
+         T.EARROR=#EARROR#,
+         T.UPDATE_DATE=sysdate
+
+                  WHERE  T.EDUC_NO=#EDUC_NO#
+			  ]]>
+	</update>
+	
+	<!-- 回复信息和内容 -->
+	<update id="callbackAddressInfo" parameterClass="linkMap">
+		<![CDATA[
+			     UPDATE HR_ADDRESS_MATTERS_APPLY T 
+        SET
+         T.CALLBACK=#CALLBACK#,
+         T.EARROR=#EARROR#,
+         T.UPDATE_DATE=sysdate
+
+                  WHERE  T.ADDRESS_NO=#ADDRESS_NO#
+			  ]]>
+	</update>
+	
+	<insert id="insertEducationInfo" parameterClass="linkMap">
+		<![CDATA[
+			    INSERT INTO SY_EMAIL
+          (SEQ,
+           EMAIL,   
+           EMAIL_TITLE,
+           EMAIL_CONTENT,
+           SEND_FLAG,  
+           MAIL_LOGIN_EMPID,  
+           ACTIVITY,    
+           CREATE_DATE)     
+          SELECT SY_EMAIL_SEQ.NEXTVAL,
+                 HR.EMAIL,
+                 #ESS_TYPE_CODE# || '审批结果',
+                 #CONTENT#,
+                 '1',
+                 EMP.EMPID,
+                 1,
+                 SYSDATE
+            FROM HR_PERSONAL_INFO HR, HR_EMPLOYEE EMP
+           WHERE HR.PERSON_ID = EMP.PERSON_ID
+           AND HR.PERSON_ID=#PERSON_ID#
+			  ]]>
+	</insert>
+	<update id="updateEmergencyInfo2" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_EMERGENCY_ADDRESS T
+   SET (T.EMER_NAME,
+        T.MAIN_LIAISON_OFFICE,
+        T.EMER_TYPE_CODE,
+        T.EMER_PHONE,
+        T.EMER_PHONE_SECOND,
+        T.EMER_CELLPHONE,
+        T.EMER_WORK_PHONE,
+        T.EMER_EMAIL,
+        T.NATIONALITY,
+        T.EMER_ADDRESS,
+        T.ACTIVITY,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP
+        ) =
+       (SELECT A.EMER_NAME,
+               NVL(A.MAIN_LIAISON_OFFICE,'N'),
+               A.EMER_TYPE_CODE,
+               A.EMER_PHONE,
+               A.EMER_PHONE_SECOND,
+               A.EMER_CELLPHONE,
+               A.EMER_WORK_PHONE,
+               A.EMER_EMAIL,
+               A.NATIONALITY,
+               A.EMER_ADDRESS,
+               1,
+               A.CREATE_DATE,
+               A.PERSON_ID,
+               A.CREATED_IP
+          FROM HR_EMERGENCY_ADDRESS_APPLY A
+         WHERE A.EMERGENCY_NO =#EMERGENCY_NO#)
+ WHERE T.EMERGENCY_NO = #UPDATE_EMERGENCY_NO#
+			  ]]>
+	</update>
+	<!-- 回复信息和内容 -->
+	<update id="callbackEmergencyInfo" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_EMERGENCY_ADDRESS_APPLY T
+   SET 
+        T.CALLBACK=#CALLBACK#,
+        T.EARROR=#EARROR#,
+        T.UPDATE_DATE=sysdate
+ WHERE T.EMERGENCY_NO = #EMERGENCY_NO#
+			  ]]>
+	</update>
+	<insert id="insertEmergencyInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_EMAIL
+          (SEQ,
+           EMAIL,   
+           EMAIL_TITLE,
+           EMAIL_CONTENT,
+           SEND_FLAG,  
+           MAIL_LOGIN_EMPID,  
+           ACTIVITY,    
+           CREATE_DATE)     
+          SELECT SY_EMAIL_SEQ.NEXTVAL,
+                 HR.EMAIL,
+                 #ESS_TYPE_CODE# || '审批结果',
+                 #CONTENT#,
+                 '1',
+                 EMP.EMPID,
+                 1,
+                 SYSDATE
+            FROM HR_PERSONAL_INFO HR, HR_EMPLOYEE EMP
+           WHERE HR.PERSON_ID = EMP.PERSON_ID
+           AND HR.PERSON_ID=#PERSON_ID#
+			  ]]>
+	</insert>
+	<update id="updateHomeRelationInfo2" parameterClass="linkMap">
+		<![CDATA[
+			  
+
+UPDATE HR_FAMILY T
+   SET (T.FAM_NAME,
+        T.FAM_BORNDATE,
+        T.FAM_TYPE_CODE,
+        T.GENDER,
+        T.FAM_FAMILY_PHONE,
+        T.FAM_EMAIL,
+        T.NATIONALITY,
+        T.EMERGENCY_LIAISON_OFFICE,
+        T.FAM_ADDRESS,
+        T.FAM_PHONE,
+        T.WORK_PHONE,
+        T.OCUPATION,
+		T.FAM_COMPANY_NAME,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.ORDERNO,
+        T.ACTIVITY,
+        T.CREATED_IP,
+        T.REMARKS
+        ) =
+       (SELECT A.FAM_NAME,
+               A.FAM_BORNDATE,
+               A.FAM_TYPE_CODE,
+               A.GENDER,
+               A.FAM_FAMILY_PHONE,
+               A.FAM_EMAIL,
+               A.NATIONALITY,
+               A.EMERGENCY_LIAISON_OFFICE,
+               A.FAM_ADDRESS,
+               A.FAM_PHONE,
+               A.WORK_PHONE,
+               A.OCUPATION,
+		       A.FAM_COMPANY_NAME,
+               A.CREATE_DATE,
+               A.CREATED_BY,
+               A.ORDERNO,
+               1,
+               A.CREATED_IP,
+               A.NOTE
+          FROM HR_FAMILY_APPLY A WHERE A.FAMILY_NO=#FAMILY_NO#)
+          WHERE T.FAMILY_NO=#UPDATE_FAMILY_NO#
+			  ]]>
+	</update>
+	<!-- 回复信息和内容 -->
+	<update id="callbackHomeRelationInfo" parameterClass="linkMap">
+		<![CDATA[
+UPDATE HR_FAMILY_APPLY T
+   SET 
+        T.CALLBACK=#CALLBACK#,
+        T.EARROR=#EARROR#,
+        T.UPDATE_DATE=sysdate
+          WHERE T.FAMILY_NO=#FAMILY_NO#
+			  ]]>
+	</update>
+		<insert id="insertHomeRelationInfo" parameterClass="linkMap">
+		<![CDATA[
+INSERT INTO SY_EMAIL
+          (SEQ,
+           EMAIL,   
+           EMAIL_TITLE,
+           EMAIL_CONTENT,
+           SEND_FLAG,  
+           MAIL_LOGIN_EMPID,  
+           ACTIVITY,    
+           CREATE_DATE)     
+          SELECT SY_EMAIL_SEQ.NEXTVAL,
+                 HR.EMAIL,
+                 #ESS_TYPE_CODE# || '审批结果',
+                 #CONTENT#,
+                 '1',
+                 EMP.EMPID,
+                 1,
+                 SYSDATE
+            FROM HR_PERSONAL_INFO HR, HR_EMPLOYEE EMP
+           WHERE HR.PERSON_ID = EMP.PERSON_ID
+           AND HR.PERSON_ID=#PERSON_ID#
+			  ]]>
+	</insert>
+	<update id="updatePersonalInfo2" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_PERSONAL_INFO T
+   SET (T.IDCARD_NO,
+        T.IDCARD_START_DATE,
+        T.ISSUING_AUTHORITY,
+        T.CV_UPDATE_STATUS,
+        T.DOB,
+        T.SEXCODE,
+        T.ORIGIN,
+        T.NATION_CODE,
+        T.NATIONALITY_CODE,
+        T.RELIGION,
+        T.CELLPHONE,
+        T.MARITAL_STATUS_CODE,
+        T.WEDDING_DATE,
+        T.POLITICAL_OUTLOOK,
+        T.EXIST_SINGLE,
+        T.SING_ID,
+        T.HOME_PHONE,
+        T.OFFICE_PHONE,
+        T.RESIDENTIAL_DISTINCTION,
+        T.REG_PLACE,
+        T.EMAIL_SECOND,
+        T.EMAIL,
+        T.ARMY_OR_NOT,
+        T.OBSTACLE_OR_NOT,
+        T.FILE_LOCATION,
+        T.FILE_ENTER,
+        T.FILE_OUT
+       ) =
+       ( SELECT 
+        A.IDCARD_NO,
+        A.IDCARD_START_DATE,
+        A.ISSUING_AUTHORITY,
+        A.CV_UPDATE_STATUS,
+        A.DOB,
+        A.SEXCODE,
+        A.ORIGIN,
+        A.NATION_CODE,
+        A.NATIONALITY_CODE,
+        A.RELIGION,
+        A.CELLPHONE,
+        A.MARITAL_STATUS_CODE,
+        A.WEDDING_DATE,
+        A.POLITICAL_OUTLOOK,
+        A.EXIST_SINGLE,
+        A.SING_ID,
+        A.HOME_PHONE,
+        A.OFFICE_PHONE,
+        A.RESIDENTIAL_DISTINCTION,
+        A.REG_PLACE,
+        A.EMAIL_SECOND,
+        A.EMAIL,
+        A.ARMY_OR_NOT,
+        A.OBSTACLE_OR_NOT,
+        A.FILE_LOCATION,
+        A.FILE_ENTER,
+        A.FILE_OUT
+          FROM HR_PERSONAL_INFO_APPLY A
+         WHERE A.PERSON_NO = #PERSON_NO#) WHERE T.PERSON_ID = #PERSON_ID#
+			  ]]>
+	</update>
+	
+	<!-- 回复信息和错误内容 -->
+	<update id="callbackPersonalInfo" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_PERSONAL_INFO_APPLY T
+   SET 
+       T.CALLBACK=#CALLBACK#,
+       T.EARROR=#EARROR#,
+       T.UPDATE_DATE=sysdate
+       WHERE T.PERSON_NO = #PERSON_NO#
+			  ]]>
+	</update>
+	
+	<insert id="insertPersonalInfo" parameterClass="linkMap">
+		<![CDATA[	
+		INSERT INTO SY_EMAIL
+          (SEQ,
+           EMAIL,   
+           EMAIL_TITLE,
+           EMAIL_CONTENT,
+           SEND_FLAG,  
+           MAIL_LOGIN_EMPID,  
+           ACTIVITY,    
+           CREATE_DATE)     
+          SELECT SY_EMAIL_SEQ.NEXTVAL,
+                 HR.EMAIL,
+                 #ESS_TYPE_CODE# || '审批结果',
+                 #CONTENT#,
+                 '1',
+                 EMP.EMPID,
+                 1,
+                 SYSDATE
+            FROM HR_PERSONAL_INFO HR, HR_EMPLOYEE EMP
+           WHERE HR.PERSON_ID = EMP.PERSON_ID
+           AND HR.PERSON_ID=#PERSON_ID#
+			
+	  	 ]]>
+	</insert>
+	
+	
+	
+	<update id="updatePersonalInfoForPic2" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_PERSONAL_INFO T
+   SET (
+        
+        T.PHOTO_PATH,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP
+      ) =
+       ( SELECT 
+               A.PHOTO_PATH,
+               A.create_date,
+               A.created_by,
+               A.created_ip
+          FROM HR_PERSONAL_INFO_APPLY A
+         WHERE A.PERSON_NO = #PERSON_NO#) WHERE T.PERSON_ID = #PERSON_ID#
+			  ]]>
+	</update>
+	<update id="updateProductInfo2" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_PRODUCT_INFO T SET(T.START_DATE,
+ T.END_DATE,T.UPDATE_DATE, T.PERCENT,T.UPDATED_BY
+)=(
+SELECT 
+ A.START_DATE,A.END_DATE,A.CREATE_DATE, A.PERCENT,A.CREATED_BY
+ FROM HR_PRODUCT_INFO_APPLY A WHERE A.PRODUCT_NO=#PRODUCT_NO#
+ 
+)
+WHERE T.PRODUCT_NO=#UPDATE_PRODUCT_NO#
+			  ]]>
+	</update>
+	<update id="updateQualificationInfo2" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_QUALIFICATION T SET
+(T.qual_card_no,
+T.VALIDITY_DATE,
+T.QUAL_INSTITUTE,
+T.UPDATED_IP,
+T.UPDATED_BY,
+T.UPDATE_DATE,
+T.QUAL_NAME,
+T.QUAL_LEVEL,
+T.QUAL_GRADE,
+T.DATE_OBTAINED,
+T.QUAL_REMARK
+)=
+(SELECT 
+A.qual_card_no,
+A.VALIDITY_DATE,
+A.QUAL_INSTITUTE,
+A.CREATE_DATE,
+A.CREATED_BY,
+A.CREATE_DATE,
+A.QUAL_NAME,
+A.QUAL_LEVEL,
+A.QUAL_GRADE,
+A.DATE_OBTAINED,
+A.QUAL_REMARK
+ FROM HR_QUALIFICATION_APPLY A 
+WHERE A.QUAL_NO=#QUAL_NO#
+)
+WHERE T.QUAL_NO=#UPDATE_QUAL_NO#
+			  ]]>
+	</update>
+	
+
+<update id="callbackQualificationInfo" parameterClass="linkMap">
+		<![CDATA[
+UPDATE HR_QUALIFICATION_APPLY T
+   SET T.CALLBACK=#CALLBACK#,
+        T.EARROR=#EARROR#,
+        T.UPDATE_DATE=sysdate
+ WHERE T.QUAL_NO=#QUAL_NO#
+			  ]]>
+	</update>	
+	
+	<update id="insertQualificationInfo" parameterClass="linkMap">
+		<![CDATA[
+INSERT INTO SY_EMAIL
+          (SEQ,
+           EMAIL,   
+           EMAIL_TITLE,
+           EMAIL_CONTENT,
+           SEND_FLAG,  
+           MAIL_LOGIN_EMPID,  
+           ACTIVITY,    
+           CREATE_DATE)     
+          SELECT SY_EMAIL_SEQ.NEXTVAL,
+                 HR.EMAIL,
+                 #ESS_TYPE_CODE# || '审批结果',
+                 #CONTENT#,
+                 '1',
+                 EMP.EMPID,
+                 1,
+                 SYSDATE
+            FROM HR_PERSONAL_INFO HR, HR_EMPLOYEE EMP
+           WHERE HR.PERSON_ID = EMP.PERSON_ID
+           AND HR.PERSON_ID=#PERSON_ID#
+			  ]]>
+	</update>
+	
+	<update id="updateRewardInfo2" parameterClass="linkMap">
+		<![CDATA[
+			
+UPDATE HR_REWARD T
+   SET (T.REWARD_CNPY,
+        T.REWARD,
+        T.UPDATED_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP,
+        T.REMARKS,
+        T.REWARD_TYPE_CODE
+        ) =
+       (SELECT A.REWARD_CNPY,
+        A.REWARD, 
+        A.CREATE_DATE,
+        A.CREATED_BY, 
+         A.CREATED_IP,
+          A.REMARKS,
+        A.REWARD_TYPE_CODE
+        FROM HR_REWARD_APPLY A WHERE A.REWARD_NO=#REWARD_NO#
+        ) WHERE T.REWARD_NO=#UPDATE_REWARD_NO#
+			  ]]>
+	</update>
+	
+	
+	<update id="updateWorkInfo2" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_WORK_EXPERIENCE T
+   SET(T.CPNY_NAME,
+        T.START_DATE,
+        T.END_DATE,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP,
+        T.PAY_YEAR,
+        T.RESIGN_REASON,
+        T.DUTY,
+        T.DEPT_NAME,
+        T.POSITION,
+        T.REMARK
+        ) =
+       (
+       SELECT  
+       A.CPNY_NAME,
+       A.START_DATE,
+       A.END_DATE,
+       A.CREATE_DATE,
+       A.CREATED_BY,
+       A.CREATED_IP,
+       A.PAY_YEAR,
+       A.RESIGN_REASON,
+       A.DUTY,
+       A.DEPT_NAME,
+       A.POSITION,
+       A.REMARK
+       FROM HR_WORK_EXPERIENCE_APPLY A WHERE A.WORK_EXPER_NO=#WORK_EXPER_NO#
+       ) WHERE T.WORK_EXPER_NO=#UPDATE_WORK_EXPER_NO#
+			  ]]>
+	</update>
+	<!-- 回复信息和内容 -->
+	<update id="callbackWorkInfo" parameterClass="linkMap">
+		<![CDATA[		  
+UPDATE HR_WORK_EXPERIENCE_APPLY T
+   SET T.CALLBACK=#CALLBACK#,
+        T.EARROR=#EARROR#,
+        T.UPDATE_DATE=sysdate
+        WHERE T.WORK_EXPER_NO=#WORK_EXPER_NO#
+			  ]]>
+	</update>
+		<insert id="insertWorkInfo" parameterClass="linkMap">
+		<![CDATA[		  
+INSERT INTO SY_EMAIL
+          (SEQ,
+           EMAIL,   
+           EMAIL_TITLE,
+           EMAIL_CONTENT,
+           SEND_FLAG,  
+           MAIL_LOGIN_EMPID,  
+           ACTIVITY,    
+           CREATE_DATE)     
+          SELECT SY_EMAIL_SEQ.NEXTVAL,
+                 HR.EMAIL,
+                 #ESS_TYPE_CODE# || '审批结果',
+                 #CONTENT#,
+                 '1',
+                 EMP.EMPID,
+                 1,
+                 SYSDATE
+            FROM HR_PERSONAL_INFO HR, HR_EMPLOYEE EMP
+           WHERE HR.PERSON_ID = EMP.PERSON_ID
+           AND HR.PERSON_ID=#PERSON_ID#
+			  ]]>
+	</insert>
+	<!-- 审批 insert -->
+	<insert id="updateAddressInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			
+		
+INSERT INTO HR_ADDRESS_MATTERS T(T.ADDRESS_NO,T.PERSON_ID,T.ADDRESS_TYPE,T.EFFECTIVE_START_DATE,
+   
+   T.ADDRESS_CONTENT,
+        T.NATIONALITY,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP,
+        T.ACTIVITY )SELECT HR_ADDRESS_MATTERS_SEQ.NEXTVAL,
+        A.PERSON_ID,
+        A.ADDRESS_TYPE,
+        A.EFFECTIVE_START_DATE,
+        A.ADDRESS_CONTENT,
+               A.NATIONALITY,
+               A.CREATE_DATE,
+               A.CREATED_BY,
+               A.CREATED_IP,1
+          FROM HR_ADDRESS_MATTERS_APPLY A WHERE A.ADDRESS_NO=#ADDRESS_NO#
+	  	 ]]>
+	</insert>
+	<insert id="updateEducationInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			          INSERT INTO HR_EDUCATION T 
+        (T.EDUC_NO,
+        T.PERSON_ID,
+        T.DEGREE_CODE,
+        T.INSTITUTION_NAME,
+        T.SUBJECT,
+        T.SUBJECT_SECOND,
+        T.FINAL_DEGREE_WHETHER,
+        T.SCHOOL_LENGTH,
+        T.EDU_DEG_NUM,
+        T.START_DATE,
+        T.END_DATE,
+        T.PLACE,
+              T.REMARK, 
+              T.CREATE_DATE,
+               T.CREATED_BY,
+                T.CREATED_IP,
+                T.ORDERNO, 
+                T.ACTIVITY)
+        
+        SELECT HR_EDU_SEQ.NEXTVAL,
+                A.PERSON_ID,
+                A.DEGREE_CODE,
+        A.INSTITUTION_NAME,
+        A.SUBJECT,
+        A.SUBJECT_SECOND,
+        A.FINAL_DEGREE_WHETHER,
+        A.GRADUATION_TYPE,
+        A.EDU_DEG_NUM,
+        A.START_DATE,
+        A.END_DATE,
+        A.PLACE,
+         A.REMARKS,
+         A.CREATE_DATE,
+         A.CREATED_BY,
+         A.CREATED_IP, 
+         A.ORDERNO,
+         1
+                  FROM HR_EDUCATION_APPLY A WHERE  A.EDUC_NO = #EDUC_NO#
+	  	 ]]>
+	  	 <selectKey resultClass="string" keyProperty="id" >
+    	SELECT HR_EDU_SEQ.CURRVAL AS ID FROM DUAL
+   		</selectKey>
+	</insert>
+	<insert id="updateEmergencyInfo1" parameterClass="linkMap">
+		<![CDATA[	
+				
+insert into HR_EMERGENCY_ADDRESS T(T.EMERGENCY_NO,T.PERSON_ID,
+         T.EMER_NAME,
+         T.EMER_TYPE_CODE,
+         T.MAIN_LIAISON_OFFICE,
+         T.EMER_PHONE,
+         T.EMER_PHONE_SECOND,
+         T.EMER_WORK_PHONE,
+         T.EMER_CELLPHONE,
+         T.EMER_EMAIL,
+         T.NATIONALITY,
+         T.EMER_ADDRESS,
+         T.ACTIVITY,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP
+)
+SELECT HR_EMERGENCY_ADDRESS_SEQ.NEXTVAL,A.PERSON_ID,A.EMER_NAME,
+               A.EMER_TYPE_CODE,
+               NVL(A.MAIN_LIAISON_OFFICE,'N'),
+               A.EMER_PHONE,
+               A.EMER_PHONE_SECOND,
+               A.EMER_WORK_PHONE,
+               A.EMER_CELLPHONE,
+               A.EMER_EMAIL,
+               A.NATIONALITY,
+               A.EMER_ADDRESS,
+               1,
+               A.CREATE_DATE,
+               A.PERSON_ID,
+               A.CREATED_IP
+          FROM HR_EMERGENCY_ADDRESS_APPLY A
+         WHERE A.EMERGENCY_NO =#EMERGENCY_NO#
+			
+	  	 ]]>
+	</insert>
+	<insert id="updateHomeRelationInfo1" parameterClass="linkMap">
+		<![CDATA[	
+		
+INSERT INTO HR_FAMILY T(
+		T.FAMILY_NO,
+		T.PERSON_ID,
+		T.FAM_NAME,
+		T.FAM_TYPE_CODE,
+		T.FAM_BORNDATE,
+		T.GENDER,
+		T.FAM_FAMILY_PHONE,
+		T.FAM_EMAIL,
+		T.NATIONALITY,
+		T.EMERGENCY_LIAISON_OFFICE,
+		T.FAM_ADDRESS,
+		T.FAM_PHONE,
+		T.WORK_PHONE,
+		T.OCUPATION,
+		T.FAM_COMPANY_NAME,
+        T.CREATE_DATE,
+        T.CREATED_BY,      
+        T.ORDERNO,
+        T.ACTIVITY,
+        T.CREATED_IP,       
+        T.REMARKS
+       
+) SELECT HR_FAMILY_SEQ.NEXTVAL,A.PERSON_ID, A.FAM_NAME,
+			   A.FAM_TYPE_CODE,
+			   A.FAM_BORNDATE,
+			   A.GENDER,
+			   A.FAM_FAMILY_PHONE,
+			   A.FAM_EMAIL,
+			   A.NATIONALITY,
+			   A.EMERGENCY_LIAISON_OFFICE,
+			   A.FAM_ADDRESS,
+			   A.FAM_PHONE,
+			   A.WORK_PHONE,
+			   A.OCUPATION,
+			   A.FAM_COMPANY_NAME,
+			   A.CREATE_DATE,
+               A.CREATED_BY,
+			   A.ORDERNO,
+               1,
+			   A.CREATED_IP,
+			   A.NOTE
+          FROM HR_FAMILY_APPLY A WHERE A.FAMILY_NO=#FAMILY_NO#
+	  	 ]]>
+	</insert>
+	<insert id="updatePersonalInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			
+	  	 ]]>
+	</insert>
+	<insert id="updateProductInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			
+INSERT INTO HR_PRODUCT_INFO T
+  (T.PRODUCT_NO,
+   T.PERSON_ID,
+   T.PRODUCT_TYPE,
+   T.ACTIVITY,
+   T.CREATE_DATE,
+   T.CREATED_BY,
+   T.PERCENT)
+  SELECT HR_PRODUCT_INFO_SEQ.NEXTVAL,
+         A.PERSON_ID,
+         A.PRODUCT_TYPE,
+         1,
+         A.CREATE_DATE,
+         A.CREATED_BY,
+         A.PERCENT
+    FROM HR_PRODUCT_INFO_APPLY A
+   WHERE A.PRODUCT_NO = #PRODUCT_NO#
+			
+	  	 ]]>
+	</insert>
+	<insert id="updateQualificationInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			
+
+INSERT INTO HR_QUALIFICATION T
+  (T.QUAL_NO,
+   T.PERSON_ID,
+   T.QUAL_NAME,
+   T.QUAL_LEVEL,
+   T.QUAL_GRADE,
+   T.DATE_OBTAINED,
+   T.QUAL_CARD_NO,
+   T.VALIDITY_DATE,
+   T.QUAL_INSTITUTE,
+   T.CREATED_IP,
+   T.CREATED_BY,
+   T.CREATE_DATE,
+   T.ACTIVITY,
+   T.QUAL_REMARK)
+  SELECT HR_QUAL_SEQ.NEXTVAL,
+         A.PERSON_ID,
+         A.QUAL_NAME,
+         A.QUAL_LEVEL,
+         A.QUAL_GRADE,
+         A.DATE_OBTAINED,
+         A.QUAL_CARD_NO,
+         A.VALIDITY_DATE,
+         A.QUAL_INSTITUTE,
+         A.CREATE_DATE,
+         A.CREATED_BY,
+         A.CREATE_DATE,
+         1,
+         A.QUAL_REMARK
+    FROM HR_QUALIFICATION_APPLY A
+   WHERE A.QUAL_NO = #QUAL_NO#
+	  	 ]]>
+	<selectKey resultClass="string" keyProperty="id" >
+    	SELECT HR_QUAL_SEQ.CURRVAL AS ID FROM DUAL
+   	</selectKey>
+	</insert>
+	
+	<insert id="updateRewardInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			     
+INSERT INTO  HR_REWARD T(T.REWARD_NO,T.PERSON_ID,T.REWARD_TYPE,T.REWARD_DATE,T.REWARD_CNPY,
+        T.REWARD,
+        T.CREATE_DATE,
+        T.CREATED_BY,
+        T.CREATED_IP,
+        T.REMARKS,
+        T.REWARD_TYPE_CODE,
+        T.ACTIVITY
+        ) SELECT HR_REWARD_SEQ.NEXTVAL,A.PERSON_ID,A.REWARD_TYPE,A.REWARD_DATE, A.REWARD_CNPY,
+        A.REWARD, 
+        A.CREATE_DATE,
+        A.CREATED_BY, 
+         A.CREATED_IP,
+          A.REMARKS,
+       A.REWARD_TYPE_CODE,1
+        FROM HR_REWARD_APPLY A WHERE A.REWARD_NO=#REWARD_NO#
+	  	 ]]>
+	</insert>
+	<insert id="updateWorkInfo1" parameterClass="linkMap">
+		<![CDATA[	
+			
+INSERT INTO  HR_WORK_EXPERIENCE T(T.WORK_EXPER_NO,T.PERSON_ID,T.CPNY_NAME,T.DUTY,T.DEPT_NAME,T.POSITION,
+        T.START_DATE,
+        T.END_DATE,
+        T.PAY_YEAR,
+        T.CREATE_DATE,
+        T.CREATED_BY,
+        T.CREATED_IP,
+        T.ACTIVITY,
+        T.RESIGN_REASON,
+        T.REMARK
+        ) 
+       SELECT  HR_W_EXP_SEQ.NEXTVAL,
+       A.PERSON_ID,
+       A.CPNY_NAME,
+       A.DUTY,
+       A.DEPT_NAME,
+       A.POSITION,
+       A.START_DATE,
+       A.END_DATE,
+       A.PAY_YEAR,
+       A.CREATE_DATE,
+       A.CREATED_BY,
+       A.CREATED_IP,
+       1,
+       A.RESIGN_REASON,
+       A.REMARK
+       FROM HR_WORK_EXPERIENCE_APPLY A WHERE A.WORK_EXPER_NO=#WORK_EXPER_NO#
+	  	 ]]>
+	</insert>
+	
+	<!--审批  删除 -->
+	<update id="updateAddressInfo3" parameterClass="linkMap">
+		<![CDATA[
+			  	          
+UPDATE HR_ADDRESS_MATTERS T
+   SET (
+        T.ACTIVITY,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP) =
+       (SELECT 0,
+               A.CREATE_DATE,
+               A.CREATED_BY,
+               A.CREATED_IP
+          FROM HR_ADDRESS_MATTERS_APPLY A WHERE A.ADDRESS_NO=#ADDRESS_NO#)
+      WHERE T.ADDRESS_NO=#UPDATE_ADDRESS_NO# 
+			  ]]>
+	</update>
+	<update id="updateEducationInfo3" parameterClass="linkMap">
+		<![CDATA[
+			       UPDATE HR_EDUCATION T 
+        SET(T.UPDATE_DATE,
+               T.UPDATED_BY, T.UPDATED_IP,
+                 T.ACTIVITY)
+                 = (SELECT 
+         A.CREATE_DATE,A.CREATED_BY,A.CREATED_IP,0
+                  FROM HR_EDUCATION_APPLY A WHERE  A.EDUC_NO = #EDUC_NO# ) 
+                  WHERE  T.EDUC_NO=#UPDATE_EDUC_NO#
+			  ]]>
+	</update>
+	<update id="updateEmergencyInfo3" parameterClass="linkMap">
+		<![CDATA[
+		 UPDATE HR_EMERGENCY_ADDRESS T
+    SET (T.ACTIVITY, T.UPDATE_DATE, T.UPDATED_BY, T.UPDATED_IP) =
+        (SELECT 0,
+               
+                A.CREATE_DATE,
+                A.PERSON_ID,
+                A.CREATED_IP
+           FROM HR_EMERGENCY_ADDRESS_APPLY A
+          WHERE A.EMERGENCY_NO = #EMERGENCY_NO#)
+  WHERE T.EMERGENCY_NO = #UPDATE_EMERGENCY_NO#
+			  ]]>
+	</update>
+	<update id="updateHomeRelationInfo3" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_FAMILY T
+   SET (
+       T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.ACTIVITY,
+        T.UPDATED_IP
+       ) =
+       (SELECT  A.CREATE_DATE,
+               A.CREATED_BY,
+               0,
+               A.CREATED_IP
+          FROM HR_FAMILY_APPLY A WHERE A.FAMILY_NO=#FAMILY_NO#)
+          WHERE T.FAMILY_NO=#UPDATE_FAMILY_NO#
+			  ]]>
+	</update>
+	<update id="updatePersonalInfo3" parameterClass="linkMap">
+		<![CDATA[
+	
+			  ]]>
+	</update>
+	<update id="updateProductInfo3" parameterClass="linkMap">
+		<![CDATA[
+			   
+UPDATE HR_PRODUCT_INFO T SET(
+ T.ACTIVITY,T.UPDATE_DATE,T.UPDATED_BY
+)=(
+SELECT 
+ 0,A.CREATE_DATE,A.CREATED_BY
+ FROM HR_PRODUCT_INFO_APPLY A WHERE A.PRODUCT_NO=#PRODUCT_NO#
+ 
+)
+WHERE T.PRODUCT_NO=#UPDATE_PRODUCT_NO#
+			  ]]>
+	</update>
+	<update id="updateQualificationInfo3" parameterClass="linkMap">
+		<![CDATA[
+			  
+UPDATE HR_QUALIFICATION T SET(T.ACTIVITY,T.UPDATED_IP,T.UPDATED_BY,T.UPDATE_DATE)=
+(SELECT 0,A.CREATE_DATE,A.CREATED_BY,A.CREATE_DATE FROM HR_QUALIFICATION_APPLY A 
+WHERE A.QUAL_NO=#QUAL_NO#
+)
+WHERE T.QUAL_NO=#UPDATE_QUAL_NO#
+			  ]]>
+	</update>
+	<update id="updateRewardInfo3" parameterClass="linkMap">
+		<![CDATA[
+			         
+UPDATE HR_REWARD T
+   SET (T.ACTIVITY,
+        T.UPDATED_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP
+       
+        ) =
+       (SELECT 0,
+        A.CREATE_DATE,
+        A.CREATED_BY, 
+         A.CREATED_IP
+          
+        FROM HR_REWARD_APPLY A WHERE A.REWARD_NO=#REWARD_NO#
+        ) WHERE T.REWARD_NO=#UPDATE_REWARD_NO#
+			  ]]>
+	</update>
+	<update id="updateWorkInfo3" parameterClass="linkMap">
+		<![CDATA[
+			  		 
+UPDATE HR_WORK_EXPERIENCE T
+   SET(T.ACTIVITY,
+        T.UPDATE_DATE,
+        T.UPDATED_BY,
+        T.UPDATED_IP
+        
+        ) =
+       (
+       SELECT  
+      0,
+       A.CREATE_DATE,
+       A.CREATED_BY,
+       A.CREATED_IP
+       FROM HR_WORK_EXPERIENCE_APPLY A WHERE A.WORK_EXPER_NO=#WORK_EXPER_NO#
+       ) WHERE T.WORK_EXPER_NO=#UPDATE_WORK_EXPER_NO#
+			  ]]>
+	</update>
+	<!--审批  修改之前状态 -->
+	<update id="updateAddressInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_ADDRESS_MATTERS_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.ADDRESS_NO=#ADDRESS_NO#
+			  ]]>
+	</update>
+	<update id="updateEducationInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_EDUCATION_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.EDUC_NO=#EDUC_NO#
+			  ]]>
+	</update>
+	<update id="updateEmergencyInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_EMERGENCY_ADDRESS_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.EMERGENCY_NO=#EMERGENCY_NO#
+			  ]]>
+	</update>
+	<update id="updateHomeRelationInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_FAMILY_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.FAMILY_NO=#FAMILY_NO#
+			  ]]>
+	</update>
+	<update id="updatePersonalInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_PERSONAL_INFO_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.PERSON_NO=#PERSON_NO#
+			  ]]>
+	</update>
+	<update id="updateProductInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_PRODUCT_INFO_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.PRODUCT_NO=#PRODUCT_NO#
+			  ]]>
+	</update>
+	<update id="updateQualificationInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_QUALIFICATION_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.QUAL_NO=#QUAL_NO#
+			  ]]>
+	</update>
+	<update id="updateRewardInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_REWARD_APPLY T SET 
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.REWARD_NO=#REWARD_NO#
+			  ]]>
+	</update>
+	<update id="updateWorkInfoApply" parameterClass="linkMap">
+		<![CDATA[
+			  UPDATE HR_WORK_EXPERIENCE_APPLY T SET
+   T.ACTIVITY=#ACTIVITY_NUM#
+
+WHERE T.WORK_EXPER_NO=#WORK_EXPER_NO#
+			  ]]>
+	</update>
+	
+	
+	<select id="getApplyNumber" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+     SELECT sum(t.numb) NUMB
+  FROM (select count(0) numb
+          FROM HR_PERSONAL_INFO_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_ADDRESS_MATTERS_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_EMERGENCY_ADDRESS_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_FAMILY_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_WORK_EXPERIENCE_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+        
+          FROM HR_PRODUCT_INFO_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_EDUCATION_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_QUALIFICATION_APPLY T
+          where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        UNION ALL
+        
+        SELECT count(0) numb
+          FROM HR_REWARD_APPLY T 
+         where EXISTS (SELECT 1
+                  FROM HR_EMPLOYEE HE
+                 WHERE HE.PERSON_ID = T.PERSON_ID
+                   AND HE.CPNY_ID = #interCpnyID# 
+                )
+                AND T.ACTIVITY=1
+        
+        ) T
+
+
+		
+   	   	]]>
+   	   
+   	  
+     
+   	   	
+	</select>
+	<select id="getPersonalPhotoNullNumber" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT COUNT(0) NUMB
+			    FROM   HR_PERSONAL_INFO HR, HR_EMPLOYEE HE
+			   WHERE HE.PERSON_ID = HR.PERSON_ID
+				 AND HE.CPNY_ID=#interCpnyID#
+				 AND HE.EMPID NOT LIKE '11111%'
+				 AND HR.PHOTO_PATH IS NULL
+				 AND HE.EMP_OFFICE='15119'
+   	   	]]>
+	</select>
+	
+
+</sqlMap>

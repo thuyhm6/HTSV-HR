@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="is.accumulationfundmanage">
+	<!--公积金[对象增加list] -->
+	<select id="getTargetAddList" parameterClass="linkMap"
+		resultClass="linkMap">
+		SELECT T.PA_BENHS_MANAGE_ADD_SEQ,
+		E.DEPTNO,
+		E.EMPID,
+		D.CONTENT,
+		T.PERSON_ID,
+		E.Local_Name,
+		P.SEXCODE,
+		C3.CONTENT AS SEXNAME,
+		P.IDCARD_NO,
+		P.REG_TYPE_CODE,
+		C.CONTENT AS REG_TYPE_CODE_NAME,
+		E.STATUS_CODE,
+		C2.CONTENT AS STATUS_CODE_NAME,
+		to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED1,
+		to_char(E.Before_End_Probation_Date,'yyyy-mm-dd') AS DATE_STARTED,
+		to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		T.SOCIAL_NO,
+		T.JOIN_VALUE,
+		T.REFER_VALUE,
+		T.ENDOWMENT_BASE,
+		T.START_DATE,
+		SUBSTR(T.START_DATE,1,4) AS START_YEAR,
+		SUBSTR(T.START_DATE,5,6) AS
+		START_MONTH,
+		T.BASELINE,
+		T.DATE_TYPE,
+		T.ERROR_REMARK
+		FROM
+		PA_BENHS_MANAGE_ADD T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT_NAME
+		D,
+		sy_global_name C,
+		sy_global_name C2,
+		sy_global_name C3
+		WHERE T.PERSON_ID = E.PERSON_ID
+		AND E.PERSON_ID = P.Person_Id(+)
+	    AND E.DEPTNO = D.DEPTNO
+		AND P.REG_TYPE_CODE = C.NO(+)
+		AND E.STATUS_CODE = C2.NO(+)
+		AND P.SEXCODE= C3.NO(+)
+                and c2.Language = 'zh'
+                and c3.Language = 'zh'
+                and D.Language = 'zh'
+	</select>
+	<!--对象减少List -->
+	<select id="getviewCPFStopInsure" parameterClass="linkMap"
+		resultClass="linkMap">
+		SELECT T.PA_BENHS_MANAGE_DEL_SEQ,
+		E.DEPTNO,
+		E.EMPID,
+		D.CONTENT,
+		T.PERSON_ID,
+		E.Local_Name,
+		P.SEXCODE,
+		C3.CONTENT AS SEXNAME,
+		P.IDCARD_NO,
+		P.REG_TYPE_CODE,
+		C.CONTENT AS REG_TYPE_CODE_NAME,
+		E.STATUS_CODE,
+		C2.CONTENT AS STATUS_CODE_NAME,
+		to_char(E.DATE_STARTED,
+		'yyyy-mm-dd') AS DATE_STARTED1,
+		to_char(E.Before_End_Probation_Date,'yyyy-mm-dd') AS DATE_STARTED,
+		to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		T.SOCIAL_NO,
+		T.JOIN_VALUE,
+		T.REFER_VALUE,
+		T.ENDOWMENT_BASE,
+		T.END_DATE,
+		SUBSTR(T.END_DATE,1,4) AS START_YEAR,
+		SUBSTR(T.END_DATE,5,6) AS
+		START_MONTH,
+		T.DATE_TYPE,
+		T.ERROR_REMARK
+		FROM
+		PA_BENHS_MANAGE_DEL T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT_NAME
+		D,
+		sy_global_name C,
+		sy_global_name C2,
+		sy_global_name C3
+		WHERE T.PERSON_ID = E.PERSON_ID
+		AND E.PERSON_ID = P.Person_Id(+)
+	        AND E.DEPTNO = D.DEPTNO
+		AND P.REG_TYPE_CODE = C.NO(+)
+		AND E.STATUS_CODE = C2.NO(+)
+		AND P.SEXCODE= C3.NO(+)
+                and c2.Language = 'zh'
+                and c3.Language = 'zh'
+                and d.Language = 'zh'
+	</select>
+	
+	<!-- 工资项目最大月 -->
+	<select id="getMaxMonthPaParamItem" resultClass="string">
+		SELECT MAX(PA_MONTH_STR) FROM PA_PARAM_ITEM1
+	</select>
+	<procedure id="callPaCheckCalBase1" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_CHECK_CAL_BASE(#paMonth#,'GET_BASEHS','基本级',#news,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<procedure id="callPaCheckCalBase2" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_CHECK_CAL_BASE(#paMonth#,'GET_EXCUTEHS','执行津贴',#news,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<procedure id="callPaCheckCalBase3" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_CHECK_CAL_BASE(#paMonth#,'GET_POSTHS','岗位津贴',#news,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<procedure id="callPaCheckCalBase4" parameterClass="linkMap">
+		<![CDATA[
+			{call incentive_allowance_calc(#paMonth#) }
+		]]>
+	</procedure>
+	<procedure id="callPaCheckCalBase5" parameterClass="linkMap">
+		<![CDATA[
+			{call adjust_allowance_calc(#paMonth#) }
+		]]>
+	</procedure>
+	
+	<update id="allowBenshObjectManageNumUpdate" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BENHS_MANAGE_ADD
+			      SET ALLOW_UPDATE = 'Y'
+				WHERE PA_BENHS_MANAGE_ADD_SEQ in ( $ids$ )
+			  ]]>
+	</update>
+	<select id="getAllowPaBenJoinInsureUpdate" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		SELECT GET_DEPT_NAME(D.DEPTNO,'zh')
+		DEPTNAME,
+		e.Person_Id,
+		e.empid EMPID,
+		E.Local_Name CHINESENAME,
+		P.IDCARD_NO,
+		GET_GLOBAL_NAME(P.REG_TYPE_CODE,'zh') AS
+		REG_TYPE_CODE_NAME,
+		C1.Content AS POST_COEF_NAME,
+		C2.Content AS
+		STATUS_CODE_NAME,
+		to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS
+		DATE_STARTED1,
+		to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED,
+		to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		T.SOCIAL_NO,
+		T.BASELINE,
+		T.ENDOWMENT_BASE,
+		T.IMP_TYPE,
+		T.DATE_TYPE,
+		T.ERROR_REMARK
+		FROM
+		PA_BENHS_MANAGE_ADD T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT D,
+		sy_global_name C1,
+		sy_global_name C2
+		WHERE T.Person_Id = E.Person_Id
+		AND
+		E.Person_Id = P.Person_Id(+)
+		AND E.DEPTNO = D.DEPTNO
+		AND E.POST_NO =
+		C1.NO(+)
+		AND E.STATUS_CODE = C2.NO(+)
+		AND T.ALLOW_UPDATE = 'Y'
+		and
+		c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		ORDER BY E.DEPTNO, T.Person_Id ASC
+	</select>
+<!--      对象添加   修改 -->
+	<update id="updateBenshObjectManage" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BENHS_MANAGE_ADD
+			      SET ENDOWMENT_BASE = #ENDOWMENT_BASE#,
+			      	  ALLOW_UPDATE = ''
+				WHERE PERSON_ID = #PERSON_ID#
+			  ]]>
+	</update>
+	
+	
+	
+	
+	
+	<update id="allowStopBenshObjectManageNumUpdate" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BENHS_MANAGE_DEL
+			      SET ALLOW_UPDATE = 'Y'
+				WHERE PA_BENHS_MANAGE_DEL_SEQ in ( $ids$ )
+			  ]]>
+	</update>
+	<select id="getAllowPaBenStopInsureUpdate" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		SELECT GET_DEPT_NAME(D.DEPTNO,'zh')
+		DEPTNAME,
+		e.Person_Id,
+		e.empid EMPID,
+		E.Local_Name CHINESENAME,
+		P.IDCARD_NO,
+		GET_GLOBAL_NAME(P.REG_TYPE_CODE,'zh') AS
+		REG_TYPE_CODE_NAME,
+		C1.Content AS POST_COEF_NAME,
+		C2.Content AS
+		STATUS_CODE_NAME,
+		to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS
+		DATE_STARTED1,
+		to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED,
+		to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		T.SOCIAL_NO,
+		T.ENDOWMENT_BASE,
+		T.IMP_TYPE,
+		T.DATE_TYPE,
+		T.ERROR_REMARK
+		FROM
+		PA_BENHS_MANAGE_DEL T,
+		HR_EMPLOYEE E,
+		HR_PERSONAL_INFO P,
+		HR_DEPARTMENT D,
+		sy_global_name C1,
+		sy_global_name C2
+		WHERE T.Person_Id = E.Person_Id
+		AND
+		E.Person_Id = P.Person_Id(+)
+		AND E.DEPTNO = D.DEPTNO
+		AND E.POST_NO =
+		C1.NO(+)
+		AND E.STATUS_CODE = C2.NO(+)
+		AND T.ALLOW_UPDATE = 'Y'
+		and
+		c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		ORDER BY E.DEPTNO, T.Person_Id ASC
+	</select>
+<!--      对象减少   修改 -->
+	<update id="updateStopBenshObjectManage" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BENHS_MANAGE_DEL
+			      SET ENDOWMENT_BASE = #ENDOWMENT_BASE#,
+			      	  ALLOW_UPDATE = ''
+				WHERE PERSON_ID = #PERSON_ID#
+			  ]]>
+	</update>
+	
+	
+	
+	<!--点击修改出现可修改文本(对象增加不修改而返回) -->
+	<update id="AddBenshObjectManageNotUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BENHS_MANAGE_ADD
+			      SET ALLOW_UPDATE = ''
+			     WHERE ALLOW_UPDATE = 'Y'
+			  ]]>
+	</update>
+	
+	<!--点击修改出现可修改文本(对象减少不修改而返回) -->
+	<update id="StopBenshObjectManageNotUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BENHS_MANAGE_DEL
+			      SET ALLOW_UPDATE = ''
+			     WHERE ALLOW_UPDATE = 'Y'
+			  ]]>
+	</update>
+	
+	
+	<!-- 公积金（对象增加）[删除] -->
+	<delete id="deleteBenshObjectManageAdd" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BENHS_MANAGE_ADD T WHERE T.PA_BENHS_MANAGE_ADD_SEQ=#id# 
+			  ]]>
+        </delete>
+        
+        <!-- 公积金（对象减少）[删除] -->
+	<delete id="deleteBenshObjectManageDel" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BENHS_MANAGE_DEL T WHERE T.PA_BENHS_MANAGE_DEL_SEQ=#id# 
+			  ]]>
+        </delete>
+        
+        
+        
+        <!--清空basImp表 -->
+	<delete id="deleteManageAddImp">
+		<![CDATA[
+				DELETE FROM PA_BENHS_MANAGE_ADD_IMP
+			  ]]>
+	</delete>
+	
+	<!-- 查询所有的历史表数据 -->
+	<select id="getManageAddImplList"  resultClass="linkMap">
+		SELECT T.PERSON_ID,
+	       T.START_DATE,
+	       T.ENDOWMENT_BASE 
+	  FROM PA_BENHS_MANAGE_ADD_IMP T
+	</select>
+	
+	<update id="updateManageAdd" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_BENHS_MANAGE_ADD T
+			   SET T.START_DATE = #START_DATE#,T.ENDOWMENT_BASE = #ENDOWMENT_BASE#
+			 WHERE T.PERSON_ID = #PERSON_ID#
+		]]>
+	</update>
+	
+	<insert id="insertManageAdd" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BENHS_MANAGE_ADD(
+			       PA_BENHS_MANAGE_ADD_SEQ,
+			       PERSON_ID,
+			       START_DATE,
+			       ENDOWMENT_BASE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       ACTIVITY,
+			       JOIN_VALUE,
+			       MOVE_FLAG) 
+			VALUES(
+			       PA_BENHS_MANAGE_ADD_SEQ.NEXTVAL,
+			       #PERSON_ID:VARCHAR#,
+			       #START_DATE:VARCHAR#,
+			       #ENDOWMENT_BASE:NUMBER#,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #ACTIVITY:NUMBER#,
+			       #JOIN_VALUE:NUMBER#,
+			       #MOVE_FLAG:NUMBER#
+			)
+		]]>
+	</insert>
+	
+		
+	<select id="checkManageAdd" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT T.PA_BENHS_MANAGE_ADD_SEQ
+			  FROM PA_BENHS_MANAGE_ADD T
+			 WHERE T.PERSON_ID = #PERSON_ID#
+			   AND T.START_DATE = #START_DATE#
+		]]>
+	</select>
+	
+	
+	 <!--清空basImp表 -->
+	<delete id="deleteManageDelImp">
+		<![CDATA[
+				DELETE FROM PA_BENHS_MANAGE_DEL_IMP
+			  ]]>
+	</delete>
+	
+	<!-- 查询所有的历史表数据 -->
+	<select id="getManageDelImplList"  resultClass="linkMap">
+		SELECT T.PERSON_ID,
+	       T.END_DATE,
+	       T.ENDOWMENT_BASE 
+	  FROM PA_BENHS_MANAGE_DEL_IMP T
+	</select>
+	
+	<update id="updateManageDel" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_BENHS_MANAGE_DEL T
+			   SET T.END_DATE = #END_DATE#,T.ENDOWMENT_BASE = #ENDOWMENT_BASE#
+			 WHERE T.PERSON_ID = #PERSON_ID#
+		]]>
+	</update>
+	
+	<insert id="insertManageDel" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BENHS_MANAGE_DEL(
+			       PA_BENHS_MANAGE_DEL_SEQ,
+			       PERSON_ID,
+			       END_DATE,
+			       ENDOWMENT_BASE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       ACTIVITY,
+			       JOIN_VALUE
+			          ) 
+			VALUES(
+			       PA_BENHS_MANAGE_DEL_SEQ.NEXTVAL,
+			       #PERSON_ID:VARCHAR#,
+			       #END_DATE:VARCHAR#,
+			       #ENDOWMENT_BASE:NUMBER#,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #ACTIVITY:NUMBER#,
+			       #JOIN_VALUE:NUMBER#
+			)
+		]]>
+	</insert>
+	
+		
+	<select id="checkManageDel" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT T.PA_BENHS_MANAGE_DEL_SEQ
+			  FROM PA_BENHS_MANAGE_DEL T
+			 WHERE T.PERSON_ID = #PERSON_ID#
+			   AND T.END_DATE = #END_DATE#
+		]]>
+	</select>
+	
+	
+	 <!--清空Imp表 -->
+	<delete id="deleteManageImp">
+		<![CDATA[
+				DELETE FROM PA_BENHS_MANAGE_IMP
+			  ]]>
+	</delete>
+	
+	<!-- 查询所有的历史表数据 -->
+	<select id="getManageImplList"  resultClass="linkMap">
+		SELECT T.PERSON_ID,
+	       T.SOCIAL_NO,
+	       T.ENDOWMENT_BASE 
+	  FROM PA_BENHS_MANAGE_IMP T
+	</select>
+	
+	<update id="updateManage" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_BENHS_MANAGE T
+			   SET T.SOCIAL_NO = #SOCIAL_NO#,T.ENDOWMENT_BASE = #ENDOWMENT_BASE#
+			 WHERE T.PERSON_ID = #PERSON_ID#
+		]]>
+	</update>
+	
+	<insert id="insertManage" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BENHS_MANAGE(
+			       PA_BENHS_MANAGE_SEQ,
+			       PERSON_ID,
+			       SOCIAL_NO,
+			       ENDOWMENT_BASE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       ACTIVITY,
+			       JOIN_VALUE
+			          ) 
+			VALUES(
+			       PA_BENHS_MANAGE_SEQ.NEXTVAL,
+			       #PERSON_ID:VARCHAR#,
+			       #SOCIAL_NO:NUMBER#,
+			       #ENDOWMENT_BASE:NUMBER#,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #ACTIVITY:NUMBER#,
+			       #JOIN_VALUE:NUMBER#
+			)
+		]]>
+	</insert>
+	
+		
+	<select id="checkManage" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT T.PA_BENHS_MANAGE_SEQ
+			  FROM PA_BENHS_MANAGE T
+			 WHERE T.PERSON_ID = #PERSON_ID#
+			   AND T.SOCIAL_NO = #SOCIAL_NO#
+		]]>
+	</select>
+
+
+	<select id="findPIdByParam" resultClass="linkMap">
+		SELECT T.PERSON_ID
+		FROM
+		HR_EMPLOYEE T
+		WHERE
+		T.CPNY_ID = #CPNY_ID#
+		AND T.EMPID = #EMPID#
+	</select>
+
+
+
+	<select id="getviewBenshObjectManage" parameterClass="linkMap"
+	resultClass="linkMap">
+	SELECT M.PA_BENHS_MANAGE_SEQ,
+	D.CONTENT,
+	E.EMPID,
+	M.PERSON_ID,
+	E.LOCAL_NAME,
+	C.CONTENT AS SEXNAME,
+	C1.CONTENT AS REG_TYPE_CODE_NAME,
+	C2.CONTENT AS STATUS_CODE_NAME,
+	P.IDCARD_NO,
+	TO_CHAR(M.CREATE_DATE,'YYYYMM') AS JOIN_MONTH,
+	to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED1,
+	to_char(E.Before_End_Probation_Date,'yyyy-mm-dd') AS DATE_STARTED,
+	to_char(E.DATE_LEFT,'yyyy-mm-dd') AS DATE_LEFT,
+	CASE
+	WHEN M.SOCIAL_STATUS = 'JOIN' THEN
+	'新增加'
+	WHEN M.SOCIAL_STATUS = 'STOP' THEN
+	'停止缴纳'
+	WHEN M.SOCIAL_STATUS = 'LAST' THEN
+	'缴纳'
+	END SOCIAL_STATUS,
+	M.SOCIAL_NO,
+	M.START_DATE,
+	M.END_DATE,
+	M.JOIN_VALUE,
+	M.AVG_SALARY,
+	M.ENDOWMENT_BASE,
+	M.MEDICARE_BASE,
+	M.BASELINE,
+	M.DATE_TYPE,
+	M.ERROR_REMARK
+	FROM HR_EMPLOYEE E,
+	PA_BENHS_MANAGE M,
+	HR_PERSONAL_INFO P,
+	HR_DEPARTMENT_NAME D,
+	sy_global_name C,
+	sy_global_name C1,
+	sy_global_name C2
+	WHERE E.PERSON_ID = M.PERSON_ID
+	AND M.PERSON_ID = P.PERSON_ID(+)
+	AND E.DEPTNO = D.DEPTNO
+	AND P.SEXCODE = C.NO(+)
+	AND P.REG_TYPE_CODE = C1.NO(+)
+	AND E.STATUS_CODE = C2.NO(+)
+	and c.Language = 'zh'
+	and c2.Language = 'zh'
+	and d.Language = 'zh'
+	<isNotEmpty prepend="AND" property="yearMonth">
+		TO_CHAR(M.CREATE_DATE,'YYYYMM') = #yearMonth#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="startYearMonth">
+		M.START_DATE = #startYearMonth#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="endYearMonth">
+		M.END_DATE = #endYearMonth#
+	</isNotEmpty>
+	<isNotEmpty property="socialStatus">
+		<isEqual compareValue="FUCK" prepend="AND" property="socialStatus">
+			M.SOCIAL_STATUS IN ('JOIN','LAST')
+		</isEqual>
+		<isNotEqual compareValue="FUCK" prepend="AND" property="socialStatus">
+			M.SOCIAL_STATUS = #socialStatus#
+		</isNotEqual>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="deptNO">
+		E.DEPTNO in (select t.deptno
+		from hr_department t
+		start with t.deptno =#deptNO# connect by prior t.deptid=t.parent_dept_no)
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="postCoefCode">
+		E.POST_COEF =
+		#postCoefCode#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="empStatus">
+		E.STATUS_CODE = #empStatus#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="regTypeCode">
+		P.REG_TYPE_CODE = #regTypeCode#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="personID">
+		M.PERSONID = #personID#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="empName">
+		E.CHINESENAME LIKE '%' || #empName# || '%'
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="cardID">
+		P.IDCARD_NO = #cardID#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="socialNo">
+		M.SOCIAL_NO = #socialNo#
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="socialNoNull">
+		M.SOCIAL_NO IS NULL
+	</isNotEmpty>
+	</select>
+</sqlMap>

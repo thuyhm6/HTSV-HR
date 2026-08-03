@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.absenteeism">
+	<select id="getLeaveAffirmInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       HE.DEPTNO,
+			       GET_GLOBAL_NAME(HE.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT,
+			       ESS.APPLY_NO,
+			       TO_CHAR(ESS.APPLY_TIME, 'YYYY-MM-DD') APPLY_LEAVE_DATE,
+			       TO_CHAR( ESS.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI') LEAVE_FROM_TIME,
+			       TO_CHAR( ESS.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI') LEAVE_TO_TIME,
+			       ESS.LEAVE_TYPE_CODE,
+			       ESS.SUB_LEAVE_TYPE_CODE,
+			       GET_GLOBAL_NAME(ESS.LEAVE_TYPE_CODE, #interLanguage:VARCHAR#) LEAVE_TYPE_NAME,
+			       GET_GLOBAL_NAME(ESS.SUB_LEAVE_TYPE_CODE, #interLanguage:VARCHAR#) SUB_LEAVE_TYPE_NAME,
+			       SUBSTR(ESS.REMARK, 0, 8) REMARK,
+			       ESS.REMARK REMARK_DETAIL,
+			       ESS.CURRENT_AFFIRM_ID,
+			       ESS.ACTIVITY,
+			       ESS.AFFIRM_FLAG,
+			       ESS.FILE_URL,
+			       ESS.FILE_NAME,
+			       ESS.APPLY_LENGTH/8 || '天' APPLY_LENGTH,
+				   ESS.LEAVE_REASON,
+				   ESS.BATCH_APPLY_NO,
+				   ESS.UNDO_APPLY_NO,
+				   F_GET_APPLY_DEPTNAME(ESS.APPLY_NO, #interLanguage:VARCHAR#, ESS.APPLY_TYPE,ESS.UNDO_APPLY_NO) BATCH_APPLY_DEPT_NAME,
+				   nvl((SELECT 1 FROM ESS_LEAVE_APPLY_TB where UNDO_APPLY_NO = ESS.APPLY_NO AND AFFIRM_FLAG <> 2 ),0) CAL_FLAG
+			  FROM HR_EMPLOYEE HE, ESS_LEAVE_APPLY_TB ESS
+			 WHERE HE.PERSON_ID = ESS.PERSON_ID
+		]]>
+		 <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+				TO_CHAR(ESS.APPLY_TIME,'YYYY-MM-DD') = #APPLY_TIME:VARCHAR#	 	     
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_APPLY_NO">
+			<![CDATA[
+				ESS.BATCH_APPLY_NO like '%' || trim(#BATCH_APPLY_NO:VARCHAR#) || '%'
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			<![CDATA[
+				ESS.APPLY_TYPE = #APPLY_TYPE:VARCHAR#	 	     
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#	 	     
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				ESS.APPLY_NO = #APPLY_NO:VARCHAR#	 	     
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+				ESS.LEAVE_TO_TIME >= TO_DATE(#FROM_DATE:VARCHAR#, 'YYYY-MM-DD') 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+				ESS.LEAVE_FROM_TIME <= TO_DATE(#TO_DATE:VARCHAR#, 'YYYY-MM-DD')  + 1
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				EXISTS (
+					SELECT 1 
+					FROM HR_EMPLOYEE HR
+					WHERE HR.PERSON_ID =  ESS.PERSON_ID
+					AND ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+				)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<!-- 未提交 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="-1">
+				<![CDATA[
+					ESS.AFFIRM_FLAG = -1
+			    ]]>
+			</isEqual>
+			<!-- 未决裁 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="0">
+				<![CDATA[
+					ESS.AFFIRM_FLAG = 0
+			    ]]>
+			</isEqual>
+			<!-- 已通过 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="1">
+				<![CDATA[
+					ESS.AFFIRM_FLAG = 1
+			    ]]>
+			</isEqual>
+			<!-- 已否决 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="2">
+				<![CDATA[
+					ESS.AFFIRM_FLAG = 2
+			    ]]>
+			</isEqual>
+			<!-- 已取消 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="3">
+				<![CDATA[
+					ESS.AFFIRM_FLAG = 3
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="authority">
+			<![CDATA[
+				ESS.PERSON_ID = #PERSON_ID:VARCHAR#	 	     
+		    ]]>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="authority">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT 1
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#
+					   AND ROWNUM = 1)
+		 		  OR HE.PERSON_ID = #PERSON_ID:VARCHAR# )
+		 		  AND  ( EXISTS(
+		 		  	SELECT 1
+					  FROM AR_SUPERVISOR_EMPTYPE_INFO
+					 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HE.EMP_TYPE_CODE
+					   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #PERSON_ID:VARCHAR#
+					   AND ROWNUM = 1  )
+                   OR  HE.PERSON_ID = #PERSON_ID:VARCHAR# )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="authority">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+			      EXISTS (
+						  SELECT 1
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=HE.DEPTNO
+	                 	START WITH B1.DEPTNO = #DEPTNO:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				 ORDER BY ESS.CREATE_DATE DESC
+			]]>
+		</isEmpty>
+	</select>
+</sqlMap>

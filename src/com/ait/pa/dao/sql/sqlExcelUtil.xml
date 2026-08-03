@@ -1,0 +1,1775 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.excelUtil">
+	<!-- 明细维护的搜索条件 -->
+	<sql id="searchArDetail">
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			     (   AR_DETAIL.PERSON_ID LIKE '%' || #condition:VARCHAR# || '%'
+			          OR HR_EMPLOYEE.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%'
+			     )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=HR_EMPLOYEE.DEPTNO
+	                 	START WITH B1.DEPTNO = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="sDate">
+			<![CDATA[
+			    TO_DATE(AR_DATE_STR, 'YYYY-MM-DD') > TO_DATE(#sDate:VARCHAR#,'YYYY-MM-DD')
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="eDate">
+			<![CDATA[
+			      TO_DATE(AR_DATE_STR, 'YYYY-MM-DD')< TO_DATE(#eDate:VARCHAR#,'YYYY-MM-DD')
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[
+			     AR_ITEM.ITEM_NO = #itemNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PK_NO"> 
+			<![CDATA[
+				AR_DETAIL.PK_NO = #PK_NO:VARCHAR#
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+				AR_DETAIL.AR_DATE_STR = #AR_DATE_STR:VARCHAR#
+			 ]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			 <![CDATA[
+				AR_DETAIL.PERSON_ID = #PERSON_ID:VARCHAR#
+			 ]]>
+		 </isNotEmpty>
+		<isNotEmpty prepend="AND" property="status">
+			<![CDATA[
+			     AR_DETAIL.LOCK_YN = #status:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	<select id="getCodeNoByName" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 $sqlI18nContent$
+		]]>
+	</select>
+	
+	<select id="queryAgreeno" parameterClass="linkMap" resultClass="String" remapResults="true">
+		<![CDATA[
+			 select edu_train_agree_seq.nextval from dual
+		]]>
+	</select>
+	<insert id="insertEduTrainAgreement" parameterClass="linkMap" >
+      <![CDATA[ 
+        insert into edu_train_agreement
+        (agree_no,
+         person_id,
+         local_name,
+         empid,
+         agree_id,
+         agree_name,
+         ser_start_date,
+         ser_end_date,
+         total_fee,
+         exchange_rate,
+         hq_free,
+         cgfy_free,
+         jp_free,
+         zfbz_free,
+         cgbz_free,
+         cgbz_free_fact,
+         sybx_free,
+         yx_pay,
+         jt_free,
+         tx_free,
+         fact_pay,
+         study_start_date,
+         study_end_date,
+         study_day,
+         service_year,
+         con_start_date,
+         con_end_date,
+         remark,
+         activity,
+         create_date,
+         created_by,
+         created_ip,
+         update_date,
+         updated_by,
+         updated_ip,
+         cpny_id,
+         left_date,
+         agree_start_date,
+         agree_end_date) 
+       (select edu_train_agree_seq.nextval,
+         (select  person_id from hr_employee h where h.empid= edu_train_agreement_temp.empid),
+         local_name,
+         empid,
+         agree_id,
+         agree_name,
+         ser_start_date,
+         ser_end_date,
+         total_fee,
+         exchange_rate,
+         hq_free,
+         cgfy_free,
+         jp_free,
+         zfbz_free,
+         cgbz_free,
+         cgbz_free_fact,
+         sybx_free,
+         yx_pay,
+         jt_free,
+         tx_free,
+         fact_pay,
+         study_start_date,
+         study_end_date,
+         study_day,
+         service_year,
+         con_start_date,
+         con_end_date,
+         remark,
+         1,
+         create_date,
+         created_by,
+         created_ip,
+         update_date,
+         updated_by,
+         updated_ip,
+         cpny_id,
+         left_date,
+         agree_start_date,
+         agree_end_date from edu_train_agreement_temp)
+           ]]>
+      </insert>
+      
+      <update id="insertOTLimit" parameterClass="linkMap" >
+      <![CDATA[ 
+           UPDATE HR_EMPLOYEE HR SET 
+             HR.UPDATED_OT_LIMIT_BY = #UPLOAD_BY:VARCHAR#,
+             HR.UPDATE_OT_LIMIT_DATE = SYSDATE,
+             HR.OT_LIMIT = (SELECT DISTINCT OT.LOCK_YN FROM ESS_OVERTIME_LIMIT_APPLY_TEMP OT
+                              WHERE HR.PERSON_ID = OT.PERSON_ID
+                              AND OT.UPLOAD_BY = #UPLOAD_BY:VARCHAR#),
+             HR.OT_LIMIT_100 = (SELECT DISTINCT OT.LOCK_YN_100 FROM ESS_OVERTIME_LIMIT_APPLY_TEMP OT
+                              WHERE HR.PERSON_ID = OT.PERSON_ID
+                              AND OT.UPLOAD_BY = #UPLOAD_BY:VARCHAR#)
+             WHERE EXISTS (SELECT 1 FROM ESS_OVERTIME_LIMIT_APPLY_TEMP OT
+                              WHERE HR.PERSON_ID = OT.PERSON_ID
+                              AND OT.UPLOAD_BY = #UPLOAD_BY:VARCHAR#)
+			    
+           ]]>
+      </update>
+      <update id="insertTrainResult" parameterClass="linkMap" >
+      <![CDATA[ 
+		      UPDATE EDU_TRAIN_RESULT T1
+		   SET T1.DIFFICULTY =
+		       (SELECT TEMP.DIFFICULTY
+		          FROM EDU_TRAIN_RESULT_TEMP TEMP
+		         WHERE TEMP.STU_EMPID = T1.STU_EMPID 
+		           AND TEMP.BASIC_NO = T1.BASIC_NO),
+		       T1.CONTENT_RICH =
+		       (SELECT TEMP.CONTENT_RICH
+		          FROM EDU_TRAIN_RESULT_TEMP TEMP
+		         WHERE TEMP.STU_EMPID = T1.STU_EMPID 
+		           AND TEMP.BASIC_NO = T1.BASIC_NO),
+		       T1.PRACTICABILITY =
+		       (SELECT TEMP.PRACTICABILITY
+		          FROM EDU_TRAIN_RESULT_TEMP TEMP
+		         WHERE TEMP.STU_EMPID = T1.STU_EMPID 
+		           AND TEMP.BASIC_NO = T1.BASIC_NO),
+		        T1.TIME_MODERATE =
+		       (SELECT TEMP.TIME_MODERATE
+		          FROM EDU_TRAIN_RESULT_TEMP TEMP
+		         WHERE TEMP.STU_EMPID = T1.STU_EMPID 
+		           AND TEMP.BASIC_NO = T1.BASIC_NO)
+		    where exists(SELECT 1
+		          FROM EDU_TRAIN_RESULT_TEMP TEMP
+		         WHERE TEMP.STU_EMPID = T1.STU_EMPID 
+		           AND TEMP.BASIC_NO = T1.BASIC_NO)
+			    
+           ]]>
+      </update>
+      <update id="insertTeacherEvaluate" parameterClass="linkMap" >
+      <![CDATA[ 
+		     UPDATE EDU_TEACHER_CHECK T1
+       SET T1.GROOMING =
+           (SELECT TEMP.GROOMING
+              FROM EDU_TEACHER_CHECK_TEMP TEMP
+             WHERE TEMP.TEA_EMPID = T1.TEA_EMPID 
+               AND TEMP.BASIC_NO = T1.BASIC_NO
+               AND TEMP.STU_EMPID = T1.STU_EMPID)
+        where exists(SELECT 1
+              FROM EDU_TEACHER_CHECK_TEMP TEMP
+             WHERE TEMP.TEA_EMPID = T1.TEA_EMPID 
+               AND TEMP.BASIC_NO = T1.BASIC_NO
+               AND TEMP.STU_EMPID = T1.STU_EMPID)
+			    
+           ]]>
+      </update>
+      <update id="insertVacPlan" parameterClass="linkMap" >
+      <![CDATA[ 
+			      UPDATE AR_VAC_EMP VAC
+			   SET VAC.JAN_VAC_CNT =
+			       (SELECT TEMP.JAN_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			       VAC.FEB_VAC_CNT =
+			        (SELECT TEMP.FEB_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.MAR_VAC_CNT = 
+			       (SELECT TEMP.MAR_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.APR_VAC_CNT = 
+			       (SELECT TEMP.APR_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.MAY_VAC_CNT = 
+			       (SELECT TEMP.MAY_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			         VAC.JUN_VAC_CNT= 
+			       (SELECT TEMP.JUN_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			         VAC.JUL_VAC_CNT= 
+			        (SELECT TEMP.JUL_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.AUG_VAC_CNT= 
+			        (SELECT TEMP.AUG_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			         VAC.SEP_VAC_CNT= 
+			        (SELECT TEMP.SEP_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.OCT_VAC_CNT= 
+			        (SELECT TEMP.OCT_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.NOV_VAC_CNT= 
+			        (SELECT TEMP.NOV_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#),
+			        VAC.DEC_VAC_CNT= 
+			        (SELECT TEMP.DEC_VAC_CNT
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID
+			           AND TEMP.UPLOAD_BY = #PERSON_ID#)
+			    where exists(SELECT 1
+			          FROM AR_VAC_EMP_PLAN TEMP
+			         WHERE TEMP.PERSON_ID = VAC.PERSON_ID 
+			           AND TEMP.VAC_ID = VAC.VAC_ID)
+			     AND VAC.CPNY_ID='TSTO'
+			    
+           ]]>
+      </update>
+	<select id="getContentNoByFiled" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 $sqlContent$
+		]]>
+	</select>
+	
+	<insert id="insertIsParamDataOther" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	
+	<insert id="insertExcelDataOtApply" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	
+	<delete id="deleteTempDataOtApplyImport" parameterClass="linkMap">
+	    <![CDATA[
+			DELETE FROM ESS_APPLY_OT_TEMP 
+	         WHERE 1 = 1
+	           AND UPLOAD_BY = #UPLOAD_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteEduTrainSyllabus" parameterClass="linkMap">
+	    <![CDATA[
+			delete from edu_train_syllabus 
+			where plan_no=#PLAN_NO:NUMBER#
+			  and activity=1
+		]]>
+	</delete>
+	
+	<delete id="deleteTempDataPaForLeftApplyImport" parameterClass="linkMap">
+	    <![CDATA[
+			DELETE FROM PA_LEFTMEN_ADDING_TEMP 
+	         WHERE 1 = 1
+	           AND CREATED_BY = #CREATED_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteTempDataInsObjectImport" parameterClass="linkMap">
+	    <![CDATA[
+			DELETE FROM IS_CALC_OBJECT_TEMP 
+	         WHERE 1 = 1
+	           AND CREATED_BY = #CREATED_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteTempDataFundObjectImport" parameterClass="linkMap">
+	    <![CDATA[
+			DELETE FROM IS_CALC_OBJECT_FUND_TEMP 
+	         WHERE 1 = 1
+	           AND CREATED_BY = #CREATED_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<update id="updateImportData" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	UPDATE $tableName$  SET (
+				 $aliasNameKeyContent$
+			) = (
+				 $aliasValueContent$
+			) WHERE
+				 $whereValueContent$
+       ]]>
+	</update>
+	
+	<update id="updateEduFreeEmployee" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	update edu_free_employee e set e.eva_result=(select t.test_score from edu_free_employee_temp t 
+			where t.basic_no=e.basic_no and t.empid=e.empid)
+			where e.empid in (select t.empid from edu_free_employee_temp t 
+			where t.basic_no=e.basic_no and t.empid=e.empid) and e.basic_no in (select t.basic_no from edu_free_employee_temp t 
+			where t.basic_no=e.basic_no and t.empid=e.empid)
+       ]]>
+	</update>
+	
+	<update id="updateEduTrainSyllabus" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	insert into edu_train_syllabus s 
+			(s.syll_no,s.plan_no,s.course_name_code,s.course_date,s.course_start_date,s.course_end_date,s.detail_address,
+			s.create_date,s.created_by,s.created_ip,s.cpny_id)(select edu_train_syll_seq.nextval,t.plan_no,
+			t.course_name_code,t.course_date,to_date(to_char(t.course_date,'yyyy-mm-dd')||' '||t.course_start_date,'yyyy-mm-dd HH24:MI:SS'),
+			to_date(to_char(t.course_date,'yyyy-mm-dd')||' '||t.course_end_date,'yyyy-mm-dd HH24:MI:SS'),t.detail_address,
+			t.create_date,t.created_by,t.created_ip,t.cpny_id
+			from edu_train_syllabus_temp t)
+       ]]>
+	</update>
+	
+	<select id="checkAddItemDataInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM $TABLE_NAME$ T
+			 WHERE T.PARAM_NO = $PARAM_NO$	 
+			  AND  T.PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			  AND  ROWNUM = 1
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_SUPERVISIOR_ID">
+			<![CDATA[
+		 		  T.PERSON_ID IN (SELECT HE.PERSON_ID FROM HR_EMPLOYEE HE,PA_SUPERVISOR_INFO PS 
+		 		  WHERE HE.DEPTNO = PS.DEPTNO 
+		 		  AND PS.PERSON_ID = #PA_SUPERVISIOR_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA_APPLY">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA">
+			<isNotEmpty prepend="AND" property="START_DATE">
+				<![CDATA[
+				 		  T.START_DATE < TO_DATE((SUBSTR(#START_DATE:VARCHAR#,7,4)||'-'||SUBSTR(#START_DATE:VARCHAR#,4,2)||'-'||SUBSTR(#START_DATE:VARCHAR#,1,2)),'YYYY-MM-DD')
+				 ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA">
+				<![CDATA[
+				 		  ORDER BY START_DATE DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA">
+				<![CDATA[
+				 		  ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA_APPLY">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+	</select>
+				
+	<select id="checkAddItemDataInfoMonth" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM $TABLE_NAME$ T
+			 WHERE T.PARAM_NO = $PARAM_NO$
+			  AND  T.PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			  AND  ROWNUM = 1
+		]]>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_SUPERVISIOR_ID">
+			<![CDATA[
+		 		  T.PERSON_ID IN (SELECT HE.PERSON_ID FROM HR_EMPLOYEE HE,PA_SUPERVISOR_INFO PS 
+		 		  WHERE HE.DEPTNO = PS.DEPTNO 
+		 		  AND PS.PERSON_ID = #PA_SUPERVISIOR_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >= TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA_APPLY">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >= TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >=  TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >= TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA">
+			<isNotEmpty prepend="AND" property="START_DATE">
+				<![CDATA[
+				 		  T.START_DATE >=  TO_DATE((SUBSTR(#START_DATE:VARCHAR#,7,4)||'-'||SUBSTR(#START_DATE:VARCHAR#,4,2)||'-'||SUBSTR(#START_DATE:VARCHAR#,1,2)),'YYYY-MM-DD')
+				 ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA">
+				<![CDATA[
+				 		  ORDER BY START_DATE DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA">
+				<![CDATA[
+				 		  ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA_APPLY">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+	</select>
+	
+	<update id="updateItemDataInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+
+			UPDATE $TABLE_NAME$ SET
+					END_MONTH = CASE
+			                     WHEN END_MONTH <
+			                          TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM') THEN
+			                      END_MONTH
+			                     ELSE
+			                      TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM')
+			                   END,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #PA_SUPERVISIOR_ID:VARCHAR#
+		    WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM $TABLE_NAME$
+                          WHERE PARAM_NO = $PARAM_NO$
+                            AND PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#))
+                  WHERE RN = 1)			 	
+			  	
+		]]>
+	</update>
+	
+	<update id="updatePaBasicItemDataInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE $TABLE_NAME$ SET
+					END_DATE = CASE
+			                     WHEN END_DATE <
+									TO_DATE((SUBSTR(#START_DATE:VARCHAR#,7,4)||'-'||SUBSTR(#START_DATE:VARCHAR#,4,2)||'-'||SUBSTR(#START_DATE:VARCHAR#,1,2)),'YYYY-MM-DD')-1
+								 THEN
+			                      END_DATE
+			                     ELSE
+									TO_DATE((SUBSTR(#START_DATE:VARCHAR#,7,4)||'-'||SUBSTR(#START_DATE:VARCHAR#,4,2)||'-'||SUBSTR(#START_DATE:VARCHAR#,1,2)),'YYYY-MM-DD')-1
+			                   END,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					ACTIVITY = 0		
+			WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_DATE DESC) RN
+                           FROM $TABLE_NAME$
+                          WHERE PARAM_NO = $PARAM_NO$
+                            AND PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#))
+                  WHERE RN = 1)	
+					
+		]]>
+	</update>
+	
+	<select id="checkAddItemDataOtherInfo" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM $TABLE_NAME$ T
+			 WHERE T.PARAM_NO = #PARAM_NO:NUMERIC#	 
+			  AND  T.FIELD1_VALUE = ($FIELD1_VALUE$)
+			  AND  ROWNUM = 1
+		]]>
+		
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  T.FIELD2_VALUE = ($FIELD2_VALUE$)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  T.FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') < TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_DATE">
+				<![CDATA[
+				 	T.START_DATE < TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+				 ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA">
+				<![CDATA[
+				 		  ORDER BY START_DATE DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA">
+				<![CDATA[
+				 		  ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+	</select>
+	<select id="checkAddPaEccInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 SELECT COUNT(*)
+	          FROM T_PA_ECC_RESULT T
+	         WHERE T.EMPID = #EMPID#
+	           AND T.CPNY_ID = #CPNY_ID#
+		]]>
+		<isNotEmpty prepend="and" property="PA_MONTH">
+			<![CDATA[
+				T.PA_MONTH = #PA_MONTH#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="batches">
+			<![CDATA[
+				T.BATCHES = #batches#
+			]]>
+		</isNotEmpty>
+	</select>
+	<insert id="insertPaEccInfo" parameterClass="linkMap">
+		<![CDATA[
+				INSERT INTO PA_ECC_HISTORY (
+				 $aliasNameKeyContent$
+				)VALUES(
+					$aliasValueContent$
+				)    
+		]]>
+	</insert>
+	<select id="checkAddItemDataOtherInfoMonth" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM $TABLE_NAME$ T
+			 WHERE T.PARAM_NO = #PARAM_NO:NUMERIC#	 
+			  AND  T.FIELD1_VALUE = ($FIELD1_VALUE$)
+			  AND  ROWNUM = 1 
+		]]>
+		
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  T.FIELD2_VALUE = ($FIELD2_VALUE$)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  T.FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >= TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >= TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_MONTH">
+				<![CDATA[
+			 		  TO_NUMBER(T.START_MONTH,'999999') >= TO_NUMBER(#START_MONTH:VARCHAR#,'999999')
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA_OTHER">
+			<isNotEmpty prepend="AND" property="START_DATE">
+				<![CDATA[
+				 	T.START_DATE >= TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')
+				 ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_BASIC_DATA">
+				<![CDATA[
+				 		  ORDER BY START_DATE DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="PA_PARAM_DATA">
+				<![CDATA[
+				 		  ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="BN_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+		<isEqual property="TABLE_NAME" compareValue="IS_PARAM_DATA">
+				<![CDATA[
+				 		   ORDER BY START_MONTH DESC
+				 ]]>
+		</isEqual>
+	</select>
+	
+	<update id="updateItemDataOtherInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+
+			UPDATE $TABLE_NAME$ SET
+					END_MONTH = TO_CHAR(TO_DATE((substr(#START_MONTH:VARCHAR#,1,4)||'-'||substr(#START_MONTH:VARCHAR#,5,6)||'-01'),'YYYY-MM-DD')-1,'YYYYMM'),
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+		    WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_MONTH DESC) RN
+                           FROM $TABLE_NAME$
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                           AND FIELD1_VALUE = ($FIELD1_VALUE$)
+						   AND CPNY_ID = #CPNY_ID:VARCHAR#
+                  		 
+		]]>
+		
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE = ($FIELD2_VALUE$)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+				<![CDATA[
+					)
+	                  WHERE RN = 1)	
+				]]>
+	</update>
+	
+	<update id="updatePaBasicItemDataOtherInfoMonth" parameterClass="linkMap">
+		<![CDATA[
+		
+			UPDATE PA_BASIC_DATA_OTHER SET
+					END_DATE = TO_DATE(#START_DATE:VARCHAR#,'YYYY-MM-DD')-1,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+					ACTIVITY = 0
+			 WHERE ROWID IN (SELECT ROWID
+                   FROM (SELECT ROWID,
+                                ROW_NUMBER() OVER(ORDER BY START_DATE DESC) RN
+                           FROM $TABLE_NAME$
+                          WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+                           AND FIELD1_VALUE = ($FIELD1_VALUE$)
+						   AND CPNY_ID = #CPNY_ID:VARCHAR#			
+		]]>
+		<isNotEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE = ($FIELD2_VALUE$)
+		    ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="FIELD2_VALUE">
+			<![CDATA[
+		 		  FIELD2_VALUE IS NULL
+		    ]]>
+		</isEmpty>
+				<![CDATA[
+					)
+	                  WHERE RN = 1)	
+				]]>
+	</update>
+	
+	<select id="getExcelExportDataList"
+		parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			$sqlContent$
+		]]>
+		
+		<isNotEmpty prepend="where" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				 <![CDATA[
+				   		t.DEPTNO IN  
+		         ]]>
+	             <include refid="sys.include.getDataPermission"/>
+	             <![CDATA[ or t.PERSON_ID = #ADMIN_ID:VARCHAR# ]]>
+	         </isNotEqual>
+	           <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( t.PERSON_ID = #supervisorPersonId:VARCHAR# OR t.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	         <isEqual prepend="" property="specialParam" compareValue="general">
+				  t.PERSON_ID = #ADMIN_ID:VARCHAR#
+	         </isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="where" property="PA_ADMIN_ID">
+					<![CDATA[
+				 		  EXISTS(
+				 		  	SELECT *
+							  FROM PA_SUPERVISOR_INFO
+							 WHERE PA_SUPERVISOR_INFO.DEPTNO = t.DEPTNO
+							   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+				 		  )
+				    ]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="" property="exportExcelYn">
+			<include refid="searchArDetail"/>
+			<![CDATA[
+				ORDER BY AR_DETAIL.AR_DATE_STR, AR_DETAIL.PERSON_ID, AR_DETAIL.ITEM_NO
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="trainAgreementTemp" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select agree_no,
+		       person_id,
+		       local_name,
+		       empid,
+		       agree_id,
+		       agree_name,
+		       ser_start_date,
+		       ser_end_date,
+		       total_fee,
+		       exchange_rate,
+		       hq_free,
+		       cgfy_free,
+		       jp_free,
+		       zfbz_free,
+		       cgbz_free,
+		       cgbz_free_fact,
+		       sybx_free,
+		       yx_pay,
+		       jt_free,
+		       tx_free,
+		       fact_pay,
+		       study_start_date,
+		       study_end_date,
+		       study_day,
+		       service_year,
+		       con_start_date,
+		       con_end_date,
+		       remark,
+		       activity,
+		       create_date,
+		       created_by,
+		       created_ip,
+		       update_date,
+		       updated_by,
+		       updated_ip,
+		       cpny_id,
+		       left_date,
+		       agree_start_date,
+		       agree_end_date,
+		       line_id,
+		       upload_by,
+		       upload_date
+		  from edu_train_agreement_temp
+		]]>
+		</select>		
+	<select id="getPaHistoryDataList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			$sqlContent$
+		]]>
+		<isNotEmpty prepend="AND" property="PA_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_INFO
+					 WHERE PA_SUPERVISOR_INFO.DEPTNO = t.DEPTNO
+					   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( T.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(T.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR T.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		T.PA_MONTH = #PA_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_BEGIN_MONTH">
+			<![CDATA[
+		 		T.PA_MONTH >= #PA_BEGIN_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_BEGIN_GIVE_DATE">
+			<![CDATA[
+				T.GIVE_DATE >= TO_DATE(#PA_BEGIN_GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_END_MONTH">
+			<![CDATA[
+		 		T.PA_MONTH <= #PA_END_MONTH:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_END_GIVE_DATE">
+			<![CDATA[
+				T.GIVE_DATE <= TO_DATE(#PA_END_GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+			]]>
+		</isNotEmpty>
+		<!--  
+		<isEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+		 		T.PA_MONTH = '201207'
+		    ]]>
+		</isEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (SELECT *
+		          FROM (SELECT HH.DEPTNO
+		                  FROM HR_DEPARTMENT HH
+		                 START WITH HH.DEPTNO = 'C0168'
+		                CONNECT BY PRIOR HH.DEPTNO = HH.PARENT_DEPT_NO) DD
+		         WHERE DD.DEPTNO = T.DEPTNO)
+        	 ]]>
+		</isEmpty>
+		-->
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (SELECT *
+		          FROM (SELECT HH.DEPTNO
+		                  FROM HR_DEPARTMENT HH
+		                 START WITH HH.DEPTNO = #DEPTNO:VARCHAR#
+		                CONNECT BY PRIOR HH.DEPTNO = HH.PARENT_DEPT_NO) DD
+		         WHERE DD.DEPTNO = T.DEPTNO)
+        	 ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA_MONTH DESC,EMPID
+		]]>
+	</select>			
+			
+	<select id="getArItemID" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			 SELECT AR_STA_ITEM.STA_ITEM_ID
+				  FROM AR_STA_ITEM, AR_STA_ITEM_PARAM
+				 WHERE AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
+				   AND AR_STA_ITEM_PARAM.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND AR_STA_ITEM.ITEM_NO IN (SELECT NO
+                                 FROM SY_GLOBAL_NAME
+                                WHERE CONTENT = #CONTENT:VARCHAR#
+                                  AND LANGUAGE = #LANGUAGE:VARCHAR#)
+   					AND ROWNUM = 1
+		]]>
+	</select>
+	
+	<select id="checkPaProgressLock" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+				 FROM PA_PROGRESS
+				 WHERE PA_MONTH_STR = #AR_MONTH:VARCHAR#
+				   AND CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND ATT_MO_LOCK_FLAG = 1
+				   AND EXISTS(
+				   		SELECT * 
+				   			FROM HR_EMPLOYEE HE
+				   			WHERE HE.EMPID = #EMPID:VARCHAR#
+				   			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				   			  AND GET_AR_STATNO(HE.PERSON_ID,HE.CPNY_ID) = PA_PROGRESS.STAT_NO)
+		]]>
+	</select>
+	
+	<delete id="deleteSummaryInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $AR_SUMMARY_TABLE$ 
+				WHERE AR_MONTH = #AR_MONTH:VARCHAR#
+				  AND PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE 
+				  						WHERE EMPID = #EMPID:VARCHAR#
+				  						  AND CPNY_ID = #CPNY_ID:VARCHAR#)
+		]]>
+	</delete>
+	
+	<delete id="deleteScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $AR_SCHEDULE_TABLE$ 
+				WHERE TO_DATE(AR_DATE_STR,'YYYY-MM-DD') = TO_DATE(#AR_DATE_STR:VARCHAR#,'YYYY-MM-DD')
+				  AND PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE 
+				  						WHERE EMPID = #EMPID:VARCHAR#
+				  						  AND CPNY_ID = #CPNY_ID:VARCHAR#)
+		]]>
+	</delete>
+	
+	<select id="checkPersonalInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM HR_EMPLOYEE
+			 WHERE EMPID = #EMPID:VARCHAR#
+			   AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[			   
+				EXISTS
+					 (SELECT *
+				          FROM AR_SUPERVISOR_INFO
+				         WHERE AR_SUPERVISOR_INFO.DEPTNO = HR_EMPLOYEE.DEPTNO
+				           AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="checkSpecialEmpImportCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL
+			 WHERE PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR#)
+			   AND PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND SEND_TYPE = 'F'
+		]]>
+	</select>
+	
+	<select id="exportPersonalList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT DISTINCT
+			 		HR.EMPID,
+			        HR.LOCAL_NAME,
+			        GET_DEPT_NAME(HR.DEPTNO ,'zh') DEPTNAME,
+			        '' AS KONGGE
+			  FROM HR_EMP_HISTORY_STATUS HR
+			 WHERE HR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND HR.AR_MONTH = '$shiftYear$$shiftMonth$'
+			   AND EXISTS (SELECT 1
+			          FROM AR_SUPERVISOR_INFO T
+			         WHERE T.DEPTNO = HR.DEPTNO
+			           AND T.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		]]>
+		<isNotEmpty prepend="AND" property="dynamicGroup">
+			<![CDATA[
+			     HR.PERSON_ID in (
+			      		select  ar_emp_group.person_id
+					    from ar_emp_group,ar_dynamic_group  
+					    where ar_emp_group.group_no = ar_dynamic_group.group_no
+					    AND ar_dynamic_group.group_no=#dynamicGroup:VARCHAR#
+			      )
+		    ]]>
+		</isNotEmpty>
+       <isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   HR.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR HR.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%')	
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptNO">
+			<![CDATA[
+		       EXISTS (
+					  SELECT     1
+                     	FROM HR_DEPARTMENT B1
+                     	WHERE B1.DEPTNO=HR.DEPTNO
+                 	START WITH B1.DEPTNO = #deptNO:VARCHAR#
+                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<delete id="deleteCordInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $AR_MAC_RECORDS$ 
+				WHERE PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+				  AND R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	</delete>
+	
+	<select id="getDeptNo" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			 SELECT DEPTNO 
+				 FROM HR_EMPLOYEE
+				 WHERE EMPID = #EMPID:VARCHAR#
+				   AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getColumnCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+				 FROM USER_TAB_COLUMNS 
+				 WHERE TABLE_NAME = #AR_SUMMARY_TABLE:VARCHAR#
+				   AND COLUMN_NAME = #COLUMN_NAME:VARCHAR#
+		]]>
+	</select>
+	
+	<delete id="deleteCordInfoByCardNo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $AR_MAC_RECORDS$ 
+				WHERE PERSON_ID = (SELECT PERSON_ID FROM AR_CARD_ASSOCIATE 
+									WHERE CARD_NO = #CARD_NO:VARCHAR# 
+									  AND CPNY_ID = #CPNY_ID:VARCHAR#
+									  AND ROWNUM = 1)
+				  AND R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	</delete>
+	
+	<delete id="deleteCordInfoByCardNo2" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $AR_MAC_RECORDS$ 
+				WHERE PERSON_ID = (SELECT PERSON_ID FROM AR_CARD_ASSOCIATE 
+									WHERE CARD_NO = #CARD_NO:VARCHAR# 
+									  AND CPNY_ID = #CPNY_ID:VARCHAR#
+									  AND (SYSDATE >= NVL(DATE_START,TO_DATE('1900-12-31','YYYY-MM-DD'))   
+             								AND SYSDATE <= NVL(DATE_END,TO_DATE('9999-12-31','YYYY-MM-DD')))
+									  AND ROWNUM = 1)
+				  AND R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	</delete>
+	
+	<select id="checkCardNo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM AR_CARD_ASSOCIATE AR, HR_EMPLOYEE HE
+			 WHERE AR.PERSON_ID = HE.PERSON_ID
+			   AND AR.CARD_NO = #CARD_NO:VARCHAR#
+			   AND AR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND EXISTS
+					 (SELECT *
+				          FROM AR_SUPERVISOR_INFO
+				         WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+				           AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		]]>
+	</select>
+	
+	<select id="checkCardNo3" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM AR_CARD_ASSOCIATE AR, HR_EMPLOYEE HE
+			 WHERE AR.PERSON_ID = HE.PERSON_ID
+			   AND AR.CARD_NO = #CARD_NO:VARCHAR#
+			   AND AR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND (SYSDATE >= NVL(AR.DATE_START,TO_DATE('1900-12-31','YYYY-MM-DD'))   
+             			AND SYSDATE <= NVL(AR.DATE_END,TO_DATE('9999-12-31','YYYY-MM-DD')))
+			   AND EXISTS
+					 (SELECT *
+				          FROM AR_SUPERVISOR_INFO
+				         WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+				           AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		]]>
+	</select>
+	
+	<select id="checkCardNo2" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT COUNT(*)
+			  FROM AR_DINING_CARD_ASSOCIATE AR, HR_EMPLOYEE HE
+			 WHERE AR.PERSON_ID = HE.PERSON_ID
+			   AND AR.CARD_NO = #CARD_NO:VARCHAR#
+			   AND AR.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND EXISTS
+					 (SELECT *
+				          FROM AR_SUPERVISOR_INFO
+				         WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+				           AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		]]>
+	</select>
+	
+		<select id="checkPaiQianDiGuanLiInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+					select count(*) cnt
+					  from sy_dispatch p
+					 where p.pqd_faren = #fr#
+					   and p.pqd_chengshidengji = #csdj#
+					   and p.pqd_shengfen = #sf#
+					   and p.pqd_chengshimingcheng = #csmc#
+					   and p.pqd_diqumingcheng = #dqmc#
+		]]>
+	</select>
+	
+	<select id="checkPaiQianDiGuanLiFrInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+					select count(*) cnt
+						  from hr_company g
+						 where  g.cpny_id = #fr#
+		]]>
+	</select>
+	
+	<select id="checkPaiQianDiGuanLiCsdjInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+					select count(*) cnt
+						  from hr_company g
+						 where  g.cpny_id = #csdj#
+		]]>
+	</select>
+	
+	<select id="checkPaiQianDiGuanLiSfInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+					select count(*) cnt
+						  from hr_company g
+						 where  g.cpny_id = #sf#
+		]]>
+	</select>
+	
+	<select id="checkPaiQianDiGuanLiCsmcInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+					select count(*) cnt
+						  from hr_company g
+						 where  g.cpny_id = #csmc#
+		]]>
+	</select>
+	
+	<select id="checkPaiQianDiGuanLiDqmcInfo" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+					select count(*) cnt
+						  from hr_company g
+						 where  g.cpny_id = #dqmc#
+		]]>
+	</select>
+	
+	<delete id="deletePaiQianDiGuanLiInfo" parameterClass="linkMap">
+		<![CDATA[
+					delete sy_dispatch p
+					 where p.pqd_faren = #fr#
+					   and p.pqd_chengshidengji = #csdj#
+					   and p.pqd_shengfen = #sf#
+					   and p.pqd_chengshimingcheng = #csmc#
+					   and p.pqd_diqumingcheng = #dqmc#
+		]]>
+	</delete>
+	
+	<delete id="deleteArMacRecordsInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $AR_MAC_RECORDS$ 
+				WHERE PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE 
+									WHERE EMPID = #EMPID:VARCHAR# 
+									  AND CPNY_ID = #CPNY_ID:VARCHAR#)
+				  AND R_TIME = TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	</delete>
+	
+	<delete id="deleteSapSpecialCaseAndWaitEmp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL 
+				WHERE (PERSON_ID = (SELECT PERSON_ID 
+				                      FROM HR_EMPLOYEE 
+				                     WHERE EMPID = #EMPID:VARCHAR#
+					                   AND CPNY_ID = 'C01')
+				       OR SEND_TYPE = 'F')
+				  AND PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+	</delete>
+		
+	<insert id="insertSelectedOptionsByExprotExcel" parameterClass="linkMap">
+		<selectKey keyProperty="ID" resultClass="int">
+	  		SELECT PA_SALARYCALCULATERESULT_SEQ.NEXTVAL FROM DUAL
+	 	</selectKey>
+		<![CDATA[
+			INSERT INTO PA_SALARYCALCULATERESULT (
+			       ID,
+			       PERSON_ID,
+			       CPNY_ID,
+			       USERNAME,
+			       ITEM_ID,
+			       CREATE_DATE,
+			       CREATE_BY,
+			       FUNCTIONFLAG,
+			       DATA_TYPE,
+			       ORDERNO,
+			       RESULT_DISTINGUISH)
+			VALUES
+				(  #ID#,
+				   #PERSON_ID:VARCHAR2#,
+				   #CPNY_ID:VARCHAR2#,
+				   #USERNAME:VARCHAR2#,
+				   #ITEM_ID:VARCHAR2#,
+				   SYSDATE,
+				   #PERSON_ID:VARCHAR2#,
+				   #FUNCTIONFLAG#,
+				   #DATA_TYPE:VARCHAR#,
+				   #ORDERNO:VARCHAR#,
+				   #DISTINGUISH:VARCHAR#
+				)
+		]]>
+	</insert>
+	
+	<select id="getExcelExportTypeList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 	
+	             	S1.CONTENT CONTENT
+	        FROM 	SY_CODE        T,
+	             	SY_CODE_PARAM  SP,
+	             	SY_GLOBAL_NAME S1
+	       WHERE 	T.PARENT_CODE_NO = #PARENT_CODE_NO:VARCHAR#
+	         AND 	T.CODE_NO = SP.CODE_NO
+	         AND 	SP.CPNY_ID = #CPNY_ID:VARCHAR#
+	         AND 	T.CODE_NO = S1.NO(+)
+	         AND 	S1.LANGUAGE(+)=#interLanguage:VARCHAR#
+	         AND 	T.ACTIVITY = 1
+		]]>
+	</select>
+	
+	<select id="preHasRecordForPunishment" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT 
+			 		COUNT(*)
+			 FROM 	$TABLE_NAME$ T
+			 WHERE 
+			 		T.PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			 AND	DATE_PUNISHED = TO_DATE(#DATE_PUNISHED:VARCHAR#,'YYYY-MM-DD')
+			 AND  	ROWNUM = 1
+			 AND	T.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="preHasRecordForReward" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT 
+			 		COUNT(*)
+			 FROM 	$TABLE_NAME$ T
+			 WHERE 
+			 		T.PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			 AND	REWARD_DATE = TO_DATE(#REWARD_DATE:VARCHAR#,'YYYY-MM-DD')
+			 AND  	ROWNUM = 1
+			 AND	T.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getCurrentEmpInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+					E.POSITION_NO,
+					E.POST_NO,
+					E.DEPTNO
+			FROM 	
+					HR_EMPLOYEE E
+			WHERE 	
+					E.PERSON_ID=(SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+		]]>
+	</select>
+	
+	<insert id="insertExcelDataForTransferOrder" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	
+	<insert id="insertPaiQianDiExcelDataForTransferOrder" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	
+	<insert id="insertZuiDiGongZiBiaoZhunFeiCuXiaoYuanExcelDataForTransferOrder" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	
+	<select id="getImportTransferOrderTypeConfigList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT 
+				T.INSIDE_TRANS    INSIDE_TRANS,
+				T.PARENT_TABLE_NAME PARENT_TABLE_NAME
+		  FROM 
+		  		HR_TRANS_CONFIG H, HR_TRANS_CONFIG_PARAM T
+		 WHERE 
+		 		H.TRANS_CODE = #TRANS_CODE:VARCHAR#
+		   AND  H.DISTINCT_FIELD = T.DISTINCT_FIELD
+		   AND  H.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>	
+		<isNotEmpty prepend="AND" property="TRANS_SEARCH_FLAG">	
+			H.TRANS_SEARCH_FLAG=#TRANS_SEARCH_FLAG:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TRANS_CONFIG_FLAG">	
+			H.TRANS_CONFIG_FLAG=#TRANS_CONFIG_FLAG:VARCHAR#
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="NOT_DISTINCT">	
+			H.DISTINCT_FIELD NOT IN ($NOT_DISTINCT$)
+		</isNotEmpty>
+		ORDER BY T.ORDERNO ASC 
+	</select>
+	
+	<select id="getImportExcelTransferOrderType" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			$sqlContent$
+		]]>
+	</select>
+	
+	<select id="preHasRecordInCurrentType" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			 SELECT 
+			 		COUNT(*)
+			 FROM 	$TABLE_NAME$ T
+			 WHERE 
+			 		T.PERSON_ID = (SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #EMPID:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#)
+			 AND	T.TRANS_NO=#TRANS_NO:VARCHAR#
+			 AND  	ROWNUM = 1
+		]]>
+	</select>
+	
+	<select id="getTransferOrderTypeByParams" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T2.INSIDE_TRANS
+			  FROM HR_TRANS_CONFIG T1, HR_TRANS_CONFIG_PARAM T2
+			 WHERE T1.DISTINCT_FIELD = T2.DISTINCT_FIELD(+)
+			   AND T1.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND (T1.TRANS_CONFIG_FLAG <>'2') 
+			   AND (T1.TRANS_SEARCH_FLAG IN('0','1'))
+			   AND T1.TRANS_CODE = #TRANS_CODE:VARCHAR#
+			   AND T1.PARENT_TABLE_NAME <>'0'
+			   AND T1.DISTINCT_FIELD NOT IN
+					('PARTTIME_DEPT',
+					 'PARTTIME_POST_GRADE_NO',
+					 'PARTTIME_POST_NO',
+					 'PARTTIME_DUTY',
+					 'PARTTIME_POSITION_NO',
+					 'REPLACE_DEPT',
+					 'REPLACE_POST_GRADE_NO',
+					 'REPLACE_POST_NO',
+					 'REPLACE_DUTY',
+					 'REPLACE_POSITION_NO',
+					 'CUR_DEPTNO',
+					 'CUR_GRADE_LEVEL',
+					 'CUR_DUTY_NO',
+					 'CUR_POST_GRADE_NO',
+					 'CUR_POST_NO',
+					 'CUR_POSITION_NO')
+		]]>
+	</select>
+	
+	<select id="checkEccImportHasEmp" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT T.EMPID
+			  FROM HR_EMPLOYEE T
+			 WHERE T.EMPID = #EMPID#
+			   AND T.CPNY_ID = #CPNY_ID#
+		]]>
+	</select>
+	<update id="updatePaEccInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE T_PA_ECC_RESULT T
+			   SET T.NOTICE_AMT = #NOTICE_AMT#,
+			       T.ECC_AMT = #ECC_AMT#
+			 WHERE T.CPNY_ID = #CPNY_ID#
+			   AND T.PA_MONTH = #PA_MONTH#
+			   AND T.EMPID = #EMPID#
+		]]>
+	</update>
+	
+	
+	
+	 <insert id="insertHrLaborUnion" parameterClass="linkMap">
+		<![CDATA[
+				INSERT INTO HR_LABOR_UNION T(
+				  T.EMPID,
+				  T.NAME,
+				  T.START_DATE,
+				  T.END_DATE
+				)VALUES(
+				  #EMPID:VARCHAR#,
+				  #NAME:VARCHAR#,
+				  #START_DATE:VARCHAR#,
+				  #END_DATE:VARCHAR#
+				)    
+		]]>
+	</insert>
+	<delete id="deleteImportTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $TABLE_NAME$
+ 			 WHERE UPLOAD_BY = #PERSONID#
+		]]>
+	</delete>
+	<update id="updateImportTemp" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE  $TABLE_NAME$ SET ACTIVITY = #ACTIVITY#
+ 			 WHERE PERSON_ID = #PERSON_ID#
+ 			   AND START_DATE = #START_DATE#
+ 			   AND END_DATE = #END_DATE#
+ 			   AND CPNY_ID='SST'
+		]]>
+	</update>
+	<select id="selectPersonidCount" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[	
+	   		
+			     SELECT COUNT(*) 
+              FROM AR_EXCEPTION_AFFIRM 
+              where START_DATE = #START_DATE#
+              AND   END_DATE = #END_DATE#
+              AND   ACTIVITY = #ACTIVITY#
+              AND   CPNY_ID='SST'
+		]]>
+	</select>
+	<delete id="deletePaiQianDiImportTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $TABLE_NAME$
+ 			 WHERE created_by = #PERSONID#
+		]]>
+	</delete>
+	
+		<delete id="deleteZuiDiGongZiBiaoZhunFeiCuXiaoYuanImportTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM $TABLE_NAME$
+ 			 WHERE created_by = #PERSONID#
+		]]>
+	</delete>
+	
+	<!-- 教育实绩数据导入  临时表数据清理  -->
+	<delete id="deleteImportPromotoGradeTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM EDU_PR_EVAL_EXCEL_IMP 
+ 			 WHERE UPDT_USER = #UPDT_USER#
+		]]>
+	</delete>
+	 <insert id="insertEssLeaveApplyTbTemp" parameterClass="linkMap">
+		<![CDATA[
+				INSERT INTO ESS_LEAVE_APPLY_TB_TEMP T(
+				  T.PERSON_ID,
+				  T.APPLY_TIME,
+				  T.LEAVE_FROM_TIME,
+				  T.LEAVE_TO_TIME,
+				  T.LEAVE_REASON,
+				  T.CREATE_DATE,
+				  T.CREATED_BY,
+				  T.LEAVE_TYPE_NO,
+				  T.LEAVE_TYPE_CODE,
+				  T.APPLY_PERSON
+				)VALUES(
+				  #PERSON_ID:VARCHAR#,
+				  TO_DATE(#APPLY_TIME:VARCHAR#,'YYYY-MM-DD'),
+				  TO_DATE(#LEAVE_FROM_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+				  TO_DATE(#LEAVE_TO_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+				  #LEAVE_REASON:VARCHAR#,
+				  SYSDATE,
+				  #CREATED_BY:VARCHAR#,
+				  #LEAVE_TYPE_NO:VARCHAR#,
+				  #LEAVE_TYPE_CODE:VARCHAR#,
+				  #APPLY_PERSON:VARCHAR#
+				)    
+		]]>
+	</insert>
+	
+	<delete id="deleteTempDataIsParamImport" parameterClass="linkMap">
+	    <![CDATA[
+			DELETE FROM IS_SETUP_INFO_TEMP 
+	         WHERE 1 = 1
+	           AND UPLOAD_BY = #UPLOAD_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<insert id="insertExcelDataIsParam" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	<delete id="deleteIsParamDateInfo" parameterClass="linkMap">
+			<![CDATA[ 
+			      	DELETE FROM IS_PARAM_DATA T WHERE T.PARAM_NO=#PARAM_NO:VARCHAR#  AND T.PERSON_ID=#PERSON_ID:VARCHAR#
+		       ]]>
+	
+	</delete>
+	
+	<insert id="insertParamTemp" parameterClass="java.util.Map">
+		INSERT INTO TMPPROC_$TEMP_ID$ (
+			 PARAM_NO
+			,PERSON_ID
+			,RETURN_VALUE
+			,CPNY_ID
+			,START_MONTH
+			,END_MONTH
+			,REMARK
+		) VALUES (
+			 #CELL0#
+			,#CELL1#
+			,#CELL5#
+			,#CPNY_ID#
+			,#CELL3#
+			,#CELL4#
+			,#CELL6#
+		)
+	</insert>
+	
+	<insert id="insertPaAccountTemp" parameterClass="java.util.Map">
+	<![CDATA[ 
+		INSERT INTO PA_ACCOUNT_TEMP (
+			 EMPID
+			,CHINESE_NAME
+			,CALC_FLAG
+			,CPNY_ID
+			,UPLOAD_BY
+			,UPLOAD_DATE
+			,LINE_ID
+			,UPDATE_REMARK
+		) VALUES (
+			 #CELL0#
+			,#CELL1#
+			,#CELL2#
+			,#CPNY_ID#
+			,#UPLOAD_BY#
+			,sysdate
+			,#LINE_ID#
+			,#CELL3#
+		)
+		]]>
+	</insert>
+	
+		<delete id="deleteEmpCalendar" parameterClass="linkMap">
+	    <![CDATA[
+			DELETE FROM AR_SCHEDULE_HTSV T WHERE EXISTS (SELECT 1 FROM AR_SCHEDULE_TEMP TEMP 
+			    WHERE T.PERSON_ID = GET_PERSON_ID(TEMP.EMPLOYEE_ID) AND T.AR_DATE_STR = TEMP.AR_DATE_STR AND TEMP.UPLOAD_BY = #UPLOAD_BY:VARCHAR#)
+		]]>
+	</delete>
+	
+	<insert id="insertEmpCalendar" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO AR_SCHEDULE_HTSV
+			  (PK_NO,
+			   PERSON_ID,
+			   TYPEID,
+			   SHIFT_NO,
+			   AR_DATE_STR,
+			   LOCK_YN,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   CREATED_IP)
+			
+			  (SELECT Ar_Schedule_Seq.NEXTVAL,
+			   GET_PERSON_ID(TEMP.EMPLOYEE_ID),
+			   TEMP.DATE_TYPE,
+			   TEMP.SHIFT_NO,
+			   TEMP.AR_DATE_STR,
+			   'N',
+			   SYSDATE,
+			   TEMP.UPLOAD_BY,
+			   TEMP.CREATED_IP FROM AR_SCHEDULE_TEMP TEMP
+			    WHERE TEMP.UPLOAD_BY = #UPLOAD_BY:VARCHAR#)    
+       ]]>
+	</insert>
+	
+	<procedure id="changeParamDataBatch" parameterClass="java.util.Map">
+		{ CALL ZZ_EXCELBATCH(#PROC_CODE#,'TMPPROC_$TEMP_ID$', #LANGUAGE#, #CREATE_BY#) }
+	</procedure>
+	
+	<statement id="createTempTable" parameterClass="java.util.Map">
+		CREATE TABLE TMPPROC_$TEMP_ID$
+		AS SELECT * FROM $TEMP_TABLE_NAME$ WHERE 1=2
+	</statement>
+	
+	<statement id="dropTempTable" parameterClass="java.util.Map">
+		DROP TABLE TMPPROC_$TEMP_ID$
+	</statement>
+</sqlMap>

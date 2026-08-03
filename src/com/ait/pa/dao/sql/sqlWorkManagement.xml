@@ -1,0 +1,1324 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.workManagement">
+	<!-- 																工资支付计划 开始																						-->
+	<select id="getPayScheduleAllList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+			    PAY_SCHEDULE_NO,
+				TO_CHAR(PAY_DATE,'DD-MM-YYYY')PAY_DATE,
+				get_global_name(SALARY_DISTIN_NO,#interLanguage:VARCHAR#)SALARY_DISTIN,
+				SALARY_DISTIN_NO,
+				TO_CHAR(HR_START_DATE,'DD-MM-YYYY')HR_START_DATE,
+				TO_CHAR(HR_END_DATE,'DD-MM-YYYY')HR_END_DATE,
+				TO_CHAR(AR_START_DATE,'DD-MM-YYYY')AR_START_DATE,
+				TO_CHAR(AR_END_DATE,'DD-MM-YYYY')AR_END_DATE,
+				TO_CHAR(PA_OPEN_DATE,'DD-MM-YYYY')PA_OPEN_DATE,
+				TO_CHAR(PA_TRANS_DATE,'DD-MM-YYYY')PA_TRANS_DATE,
+				PA_LOCK_FLAG,
+				CASE WHEN TO_CHAR(SYSDATE,'YYYY-MM-DD') > TO_CHAR(PA_OPEN_DATE,'YYYY-MM-DD') THEN 0 ELSE 1 END AS ISCANRELIEVE,
+				TO_CHAR(CONFIRM_DATE,'DD-MM-YYYY HH24:MI')CONFIRM_DATE,
+				get_emp_local_name(CONFIRM_BY,#interCpnyID:VARCHAR#)CONFIRM_BY,
+				CONFIRM_IP,
+				TO_CHAR(RELIEVE_DATE,'DD-MM-YYYY HH24:MI')RELIEVE_DATE,
+				get_emp_local_name(RELIEVE_BY,#interCpnyID:VARCHAR#)RELIEVE_BY,
+				RELIEVE_IP,
+				TO_CHAR(CREATE_DATE,'DD-MM-YYYY HH24:MI')CREATE_DATE,
+				get_emp_local_name(CREATED_BY,#interCpnyID:VARCHAR#)CREATED_BY,
+				CREATED_IP,
+				TO_CHAR(UPDATE_DATE,'DD-MM-YYYY HH24:MI')UPDATE_DATE,
+				get_emp_local_name(UPDATED_BY,#interCpnyID:VARCHAR#)UPDATED_BY,
+				UPDATED_IP,
+				ACTIVITY
+				FROM PA_PAY_SCHEDULE PPS
+				WHERE CPNY_ID = #interCpnyID:VARCHAR#
+				AND PPS.ACTIVITY = 1
+			  	ORDER BY PPS.PAY_DATE DESC
+		]]>
+	</select>
+	<select id="getPayScheduleList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+			    PAY_SCHEDULE_NO,
+				TO_CHAR(PAY_DATE,'DD-MM-YYYY')PAY_DATE,
+				get_global_name(SALARY_DISTIN_NO,#interLanguage:VARCHAR#)SALARY_DISTIN,
+				SALARY_DISTIN_NO,
+				TO_CHAR(HR_START_DATE,'DD-MM-YYYY')HR_START_DATE,
+				TO_CHAR(HR_END_DATE,'DD-MM-YYYY')HR_END_DATE,
+				TO_CHAR(AR_START_DATE,'DD-MM-YYYY')AR_START_DATE,
+				TO_CHAR(AR_END_DATE,'DD-MM-YYYY')AR_END_DATE,
+				TO_CHAR(PA_OPEN_DATE,'DD-MM-YYYY')PA_OPEN_DATE,
+				TO_CHAR(PA_TRANS_DATE,'DD-MM-YYYY')PA_TRANS_DATE,
+				EMP_OPINION,
+				PA_LOCK_FLAG,
+				CASE WHEN TO_CHAR(SYSDATE,'YYYY-MM-DD') > TO_CHAR(PA_OPEN_DATE,'YYYY-MM-DD') THEN 0 ELSE 1 END AS ISCANRELIEVE,
+				TO_CHAR(CONFIRM_DATE,'DD-MM-YYYY HH24:MI')CONFIRM_DATE,
+				get_emp_local_name(CONFIRM_BY,#interCpnyID:VARCHAR#)CONFIRM_BY,
+				CONFIRM_IP,
+				TO_CHAR(RELIEVE_DATE,'DD-MM-YYYY HH24:MI')RELIEVE_DATE,
+				get_emp_local_name(RELIEVE_BY,#interCpnyID:VARCHAR#)RELIEVE_BY,
+				RELIEVE_IP,
+				TO_CHAR(CREATE_DATE,'DD-MM-YYYY HH24:MI')CREATE_DATE,
+				get_emp_local_name(CREATED_BY,#interCpnyID:VARCHAR#)CREATED_BY,
+				CREATED_IP,
+				TO_CHAR(UPDATE_DATE,'DD-MM-YYYY HH24:MI')UPDATE_DATE,
+				get_emp_local_name(UPDATED_BY,#interCpnyID:VARCHAR#)UPDATED_BY,
+				UPDATED_IP,
+				ACTIVITY
+				FROM PA_PAY_SCHEDULE PPS
+				WHERE CPNY_ID = #interCpnyID:VARCHAR#
+				AND PPS.ACTIVITY = 1
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="START_PAY_DATE">
+			<![CDATA[
+		 		  PPS.PAY_DATE >= TO_DATE(#START_PAY_DATE:VARCHAR#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="END_PAY_DATE">
+			<![CDATA[
+		 		  PPS.PAY_DATE <= TO_DATE(#END_PAY_DATE:VARCHAR#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SALARY_DISTIN_NO">
+			<![CDATA[
+		 		  PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PAY_SCHEDULE_NO">
+			<![CDATA[
+		 		  PPS.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY PPS.PAY_DATE DESC
+		]]>
+	</select>
+
+	<select id="getPayScheduleCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT
+				COUNT(PAY_SCHEDULE_NO)
+				FROM PA_PAY_SCHEDULE PPS
+				WHERE CPNY_ID = #interCpnyID:VARCHAR#
+				AND PPS.ACTIVITY = 1
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="START_PAY_DATE">
+			<![CDATA[
+		 		  PPS.PAY_DATE >= TO_DATE(#START_PAY_DATE:VARCHAR#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="END_PAY_DATE">
+			<![CDATA[
+		 		  PPS.PAY_DATE <= TO_DATE(#END_PAY_DATE:VARCHAR#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SALARY_DISTIN_NO">
+			<![CDATA[
+		 		  PPS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="addPaPayScheduleInfo" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_PAY_SCHEDULE(
+			       PAY_SCHEDULE_NO,
+				   PAY_DATE,
+				   SALARY_DISTIN_NO,
+				   HR_START_DATE,
+				   HR_END_DATE,
+				   AR_START_DATE,
+				   AR_END_DATE,
+				   PA_OPEN_DATE,
+				   PA_TRANS_DATE,
+				   EMP_OPINION,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   ACTIVITY )
+				VALUES(
+				   PA_PAY_SCHEDULE_SEQ.NEXTVAL,
+				   TO_DATE(#PAY_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   #SALARY_DISTIN_NO:NUMERIC#,
+				   TO_DATE(#AR_START_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   TO_DATE(#AR_END_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   TO_DATE(#AR_START_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   TO_DATE(#AR_END_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   TO_DATE(#PA_OPEN_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   TO_DATE(#PA_TRANS_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   #EMP_OPINION:VARCHAR#,
+				   #interCpnyID:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1
+				 )
+		]]>
+	</insert>
+	<update id="updatePaPayScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PAY_SCHEDULE SET
+				PAY_DATE = TO_DATE(#PAY_DATE:VARCHAR#,'DD-MM-YYYY'),
+				SALARY_DISTIN_NO = #SALARY_DISTIN_NO:NUMERIC#,
+				HR_START_DATE = TO_DATE(#HR_START_DATE:VARCHAR#,'DD-MM-YYYY'),
+				HR_END_DATE = TO_DATE(#HR_END_DATE:VARCHAR#,'DD-MM-YYYY'),
+				AR_START_DATE = TO_DATE(#AR_START_DATE:VARCHAR#,'DD-MM-YYYY'),
+				AR_END_DATE = TO_DATE(#AR_END_DATE:VARCHAR#,'DD-MM-YYYY'),
+				PA_OPEN_DATE = TO_DATE(#PA_OPEN_DATE:VARCHAR#,'DD-MM-YYYY'),
+				PA_TRANS_DATE = TO_DATE(#PA_TRANS_DATE:VARCHAR#,'DD-MM-YYYY'),
+				EMP_OPINION = #EMP_OPINION:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_SCHEDULE_NO =  #PAY_SCHEDULE_NO:NUMERIC#
+		]]>
+	</update>
+	<update id="confirmOrRelievePaySchedule" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PAY_SCHEDULE SET
+				PA_LOCK_FLAG = #PA_LOCK_FLAG:NUMERIC#,
+		]]>
+		<isEqual property="PA_LOCK_FLAG" compareValue="1">
+			<![CDATA[
+				CONFIRM_DATE = SYSDATE,
+				CONFIRM_BY = #adminID:VARCHAR#,
+				CONFIRM_IP = #adminIP:VARCHAR#,
+		    ]]>
+		</isEqual>
+		<isEqual property="PA_LOCK_FLAG" compareValue="0">
+			<![CDATA[
+				RELIEVE_DATE = SYSDATE,
+				RELIEVE_BY = #adminID:VARCHAR#,
+				RELIEVE_IP = #adminIP:VARCHAR#,
+		    ]]>
+		</isEqual>
+		<![CDATA[
+			UPDATE_DATE = SYSDATE,
+			UPDATED_BY = #adminID:VARCHAR#,
+			UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_SCHEDULE_NO =  #PAY_SCHEDULE_NO:NUMERIC#
+		]]>
+	</update>
+	<update id="doDeletePayScheduleInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PAY_SCHEDULE SET
+				ACTIVITY = 0,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_SCHEDULE_NO =  #PAY_SCHEDULE_NO:NUMERIC#
+		]]>
+	</update>
+	<select id="getPayScheduleAllWithPaConfirmList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+			    PPS.PAY_SCHEDULE_NO,
+				TO_CHAR(PPS.PAY_DATE,'YYYY-MM-DD')PAY_DATE,
+				get_global_name(PPS.SALARY_DISTIN_NO,#interLanguage:VARCHAR#)SALARY_DISTIN,
+				PWF.PA_CONFIRM_FLAG
+				FROM PA_PAY_SCHEDULE PPS,PA_WORK_FLOW PWF
+				WHERE PPS.CPNY_ID = #interCpnyID:VARCHAR#
+				AND PPS.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+				AND PPS.ACTIVITY = 1
+			  	ORDER BY PPS.PAY_DATE DESC
+		]]>
+	</select>
+	<!-- 																工资支付计划 结束																						-->
+	<!-- 																工资对象基准 开始																						-->
+	<select id="getPayObjStdList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+			    PAY_OBJ_STD_NO,
+			    SALARY_DISTIN_NO,
+				get_global_name(SALARY_DISTIN_NO,#interLanguage:VARCHAR#)SALARY_DISTIN,
+			    EMP_TYPE_CODE,
+				get_global_name(EMP_TYPE_CODE,#interLanguage:VARCHAR#)EMP_TYPE,
+				MONTH_TYPE,
+				DAY_STR,
+				TO_CHAR(START_DATE,'DD-MM-YYYY')START_DATE,
+				TO_CHAR(END_DATE,'DD-MM-YYYY')END_DATE,
+				TO_CHAR(CREATE_DATE,'DD-MM-YYYY HH24:MI')CREATE_DATE,
+				get_emp_local_name(CREATED_BY,#interCpnyID:VARCHAR#)CREATED_BY,
+				CREATED_IP,
+				TO_CHAR(UPDATE_DATE,'DD-MM-YYYY HH24:MI')UPDATE_DATE,
+				get_emp_local_name(UPDATED_BY,#interCpnyID:VARCHAR#)UPDATED_BY,
+				UPDATED_IP,
+				ACTIVITY
+				FROM PAY_OBJECT_STANDARD POS
+				WHERE POS.CPNY_ID = #interCpnyID:VARCHAR#
+				AND POS.ACTIVITY = 1
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="SALARY_DISTIN_NO">
+			<![CDATA[
+		 		  POS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PAY_OBJ_STD_NO">
+			<![CDATA[
+		 		  POS.PAY_OBJ_STD_NO = #PAY_OBJ_STD_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<select id="getPayObjStdCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT
+				COUNT(PAY_OBJ_STD_NO)
+				FROM PAY_OBJECT_STANDARD POS
+				WHERE POS.CPNY_ID = #interCpnyID:VARCHAR#
+				AND POS.ACTIVITY = 1
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="SALARY_DISTIN_NO">
+			<![CDATA[
+		 		  POS.SALARY_DISTIN_NO = #SALARY_DISTIN_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PAY_OBJ_STD_NO">
+			<![CDATA[
+		 		  POS.PAY_OBJ_STD_NO = #PAY_OBJ_STD_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	<insert id="addPayObjStdInfo" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PAY_OBJECT_STANDARD(
+			       PAY_OBJ_STD_NO,
+				   SALARY_DISTIN_NO,
+				   EMP_TYPE_CODE,
+				   MONTH_TYPE,
+				   DAY_STR,
+				   START_DATE,
+				   END_DATE,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   ACTIVITY )
+				VALUES(
+				   PA_PAY_SCHEDULE_SEQ.NEXTVAL,
+				   #SALARY_DISTIN_NO:NUMERIC#,
+				   #EMP_TYPE_CODE:NUMERIC#,
+				   #MONTH_TYPE:VARCHAR#,
+				   #DAY_STR:VARCHAR#,
+				   TO_DATE(#START_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   TO_DATE(#END_DATE:VARCHAR#,'DD-MM-YYYY'),
+				   #interCpnyID:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1
+				 )
+		]]>
+	</insert>
+	<update id="updatePayObjStdInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PAY_OBJECT_STANDARD SET
+				SALARY_DISTIN_NO = #SALARY_DISTIN_NO:NUMERIC#,
+				EMP_TYPE_CODE = #EMP_TYPE_CODE:NUMERIC#,
+				MONTH_TYPE = #MONTH_TYPE:VARCHAR#,
+				DAY_STR = #DAY_STR:VARCHAR#,
+				START_DATE = TO_DATE(#START_DATE:VARCHAR#,'DD-MM-YYYY'),
+				END_DATE = TO_DATE(#END_DATE:VARCHAR#,'DD-MM-YYYY'),
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_OBJ_STD_NO =  #PAY_OBJ_STD_NO:NUMERIC#
+		]]>
+	</update>
+	<update id="doDeletePayObjStdInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PAY_OBJECT_STANDARD SET
+				ACTIVITY = 0,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_OBJ_STD_NO =  #PAY_OBJ_STD_NO:NUMERIC#
+		]]>
+	</update>
+	<!-- 																工资对象基准 结束																						-->
+	<!-- 																工资工作流程 开始																						-->
+	<insert id="addPaWorkFlowInfo" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_WORK_FLOW(
+			       PA_WORK_FLOW_NO,
+				   PAY_SCHEDULE_NO,
+				   CPNY_ID,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   ACTIVITY )
+				VALUES(
+				   PA_WORK_FLOW_SEQ.NEXTVAL,
+				   PA_PAY_SCHEDULE_SEQ.CURRVAL,
+				   #interCpnyID:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1
+				 )
+		]]>
+	</insert>
+	<select id="getPaWorkFlowInfoByScheduleNo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT
+			    PWF.PA_WORK_FLOW_NO,
+			    PPS.PAY_SCHEDULE_NO,
+				TO_CHAR(PPS.HR_START_DATE,'DD-MM-YYYY')HR_START_DATE,
+				TO_CHAR(PPS.HR_END_DATE,'DD-MM-YYYY')HR_END_DATE,
+				TO_CHAR(PPS.AR_START_DATE,'DD-MM-YYYY')AR_START_DATE,
+				TO_CHAR(PPS.AR_END_DATE,'DD-MM-YYYY')AR_END_DATE,
+				OBJ_CREATE_FLAG,
+				AR_MONTH_CAL_FLAG,
+				PA_CAL_FLAG,
+				PA_CONFIRM_FLAG,
+				PA_OPEN_FLAG,
+				PPS.AR_LOCK_FLAG
+				FROM PA_PAY_SCHEDULE PPS,PA_WORK_FLOW PWF
+				WHERE PPS.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+				AND PPS.CPNY_ID = #interCpnyID:VARCHAR#
+				AND PPS.ACTIVITY = 1
+				AND PPS.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+			  
+		]]>
+	</select>
+	
+	<select id="getPayObjNumByScheduleNo" parameterClass="string"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(PAY_SCHEDULE_NO)PAY_OBJ_NUM
+				FROM PA_PAY_OBJECT PPO
+				WHERE PPO.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+				AND PPO.ACTIVITY = 1 AND PPO.INCLUDE_TYPE = 1
+		]]>
+	</select>
+	
+	<select id="getPaWorkFlowOperationRecordList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT CASE
+	                 WHEN FLOW_STEP = 1 THEN
+	                  '对象者生成'
+	                 WHEN FLOW_STEP = 2 THEN
+	                  '勤态汇总'
+	                 WHEN FLOW_STEP = 3 THEN
+	                  '工资计算'
+	                 WHEN FLOW_STEP = 4 THEN
+	                  '工资锁定'
+	                 WHEN FLOW_STEP = 5 THEN
+	                  '工资开放'
+	                 WHEN FLOW_STEP = 6 THEN
+	                  '工资取消锁定'
+	                 ELSE
+	                  '工资取消开放'
+	               END WORK_NAME,
+	               FLOW_STEP,
+	               TO_CHAR(PWFR.CREATE_DATE,'DD/MM/YYYY HH24:MI')CREATE_DATE,
+	               get_emp_local_name(PWFR.CREATED_BY,#interCpnyID:VARCHAR#)||' '||PWFR.CREATED_IP CREATED_BY
+	          FROM PA_WORK_FLOW PWF, PA_WORK_FLOW_RECORDS PWFR
+	         WHERE PWF.PA_WORK_FLOW_NO = PWFR.PA_WORK_FLOW_NO
+	           AND PWF.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+	           AND PWFR.FLOW_STEP IN ( $FLOW_STEP$ )
+	           ORDER BY PWFR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getPaWorkFlowOperationRecordListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(PWFR.PA_WORK_FLOW_RECORDS_NO)
+	          FROM PA_WORK_FLOW PWF, PA_WORK_FLOW_RECORDS PWFR
+	         WHERE PWF.PA_WORK_FLOW_NO = PWFR.PA_WORK_FLOW_NO
+	           AND PWF.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+	           AND PWFR.FLOW_STEP IN ( $FLOW_STEP$ )
+		]]>
+	</select>
+	
+	<procedure id="execPaWorkFlow" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE(
+						#PAY_SCHEDULE_NO:NUMERIC#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#type:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<!-- 																工资工作流程 结束																						-->
+	<!-- 																工资对象调整 开始																					    -->
+	<select id="getPaPayObjList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PPO.PAY_SCHEDULE_NO,
+				       PPO.EMPID,
+				       PPO.PERSON_ID,
+				       HRE.LOCAL_NAME EMPNAME,
+				       get_dept_name(PPO.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+				       PPO.INCLUDE_TYPE,
+				       PPO.WAGE_TYPE,
+				       HRE.WAGE_TYPE WAGE_TYPE_EMP,
+				       get_emp_local_name(PPO.CREATED_BY,#interCpnyID:VARCHAR#) || ' ' || PPO.CREATED_IP AS CREATED_BY,
+				       TO_CHAR(PPO.CREATE_DATE,'DD-MM-YYYY HH24:MI')CREATE_DATE,
+				       get_emp_local_name(PPO.UPDATED_BY,#interCpnyID:VARCHAR#) || ' ' || PPO.UPDATED_IP AS UPDATED_BY,
+				       TO_CHAR(PPO.UPDATE_DATE,'DD-MM-YYYY HH24:MI')UPDATE_DATE
+				FROM PA_PAY_OBJECT PPO,HR_EMPLOYEE HRE
+				WHERE PPO.PERSON_ID = HRE.PERSON_ID
+				AND PPO.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+				AND PPO.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( PPO.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="INCLUDE_TYPE">
+			<![CDATA[
+		 		  PPO.INCLUDE_TYPE = #INCLUDE_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="WAGE_TYPE">
+			<![CDATA[
+		 		  PPO.WAGE_TYPE = #WAGE_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATE_TYPE">
+			<![CDATA[
+		 		  PPO.CREATE_TYPE = #CREATE_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+            <![CDATA[
+                  HRE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+            ]]>
+        </isNotEmpty>
+		<![CDATA[
+			  ORDER BY PPO.EMPID
+		]]>
+	</select>
+	<select id="getPaPayObjCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(PPO.PAY_SCHEDULE_NO)
+				FROM PA_PAY_OBJECT PPO,HR_EMPLOYEE HRE
+				WHERE PPO.PERSON_ID = HRE.PERSON_ID
+				AND PPO.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+				AND PPO.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( PPO.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="INCLUDE_TYPE">
+			<![CDATA[
+		 		  PPO.INCLUDE_TYPE = #INCLUDE_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATE_TYPE">
+			<![CDATA[
+		 		  PPO.CREATE_TYPE = #CREATE_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+            <![CDATA[
+                  HRE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+            ]]>
+        </isNotEmpty>
+	</select>
+	<insert id="addPaPayObjInfo" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_PAY_OBJECT(
+				   PAY_SCHEDULE_NO,
+				   EMPID,
+				   PERSON_ID,
+				   DEPTNO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   ACTIVITY,
+				   CREATE_TYPE,
+				   INCLUDE_TYPE )
+				VALUES(
+				   #PAY_SCHEDULE_NO:NUMERIC#,
+				   #EMPID:VARCHAR#,
+				   #PERSON_ID:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1,
+				   1,
+				   1
+				 )
+		]]>
+	</insert>
+	<update id="updatePaPayObjInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PAY_OBJECT SET
+				INCLUDE_TYPE = #INCLUDE_TYPE:NUMERIC#,
+				CREATE_TYPE = 1,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_SCHEDULE_NO =  #PAY_SCHEDULE_NO:NUMERIC#
+			AND PERSON_ID = #PERSON_ID:VARCHAR#
+			AND ACTIVITY = 1
+		]]>
+	</update>
+	<update id="doDeletePaPayObjInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_PAY_OBJECT SET
+				ACTIVITY = 0,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PAY_SCHEDULE_NO =  #PAY_SCHEDULE_NO:NUMERIC#
+			AND PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	<select id="getEmpListForPop" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT HE.EMPID,
+		          HE.PERSON_ID,
+		          HE.DEPTNO,
+		          HE.LOCAL_NAME,
+		          GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+		          HE.MAIN_BUSINESS,
+		          GET_GLOBAL_NAME(HE.MAIN_BUSINESS,#interLanguage:VARCHAR#) MAIN_BUSINESS_NAME,
+		          GET_CODE_NAME(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+		          GET_CODE_NAME(HE.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME
+		      FROM HR_EMPLOYEE HE,SY_CODE SC
+		      WHERE  HE.CPNY_ID = #interCpnyID:VARCHAR#
+		      AND HE.POST_GRADE_NO = SC.CODE_NO(+)
+		      AND HE.EMPID NOT LIKE '111111%'
+  		]]>
+		
+	      <isNotEmpty>
+	        <isEqual prepend="" property="limit" compareValue="manager">
+			<![CDATA[
+				  EXISTS
+					 (SELECT B1.DEPTNO
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = HE.DEPTNO
+					         START WITH B1.DEPTNO in
+					                    (SELECT HRD.DEPTID
+					                       FROM HR_DEPARTMENT HRD
+					                      WHERE HRD.MANAGER_EMP_ID = #ADMINID:VARCHAR#)
+					        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+					        UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #ADMINID:VARCHAR#)  
+		    ]]>
+		</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_SCHEDULE_NO">
+			<![CDATA[
+			     HE.PERSON_ID not in(
+			     select ppo.PERSON_ID from PA_PAY_OBJECT ppo
+			     where ppo.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+			     and ppo.ACTIVITY = 1
+			     )
+		    ]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="searchForFlag" compareValue="searchForPaEmpAccount">
+			<![CDATA[
+				HE.PERSON_ID not in(
+		     SELECT PEA.PERSON_ID
+					FROM PA_EMP_ACCOUNT PEA
+					WHERE PEA.ACTIVITY = 1
+		     )
+		    ]]>
+		</isEqual>
+		<![CDATA[
+			  ORDER BY HE.DEPTNO,SC.ORDERNO,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getEmpSHListForPop" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT HE.EMPID,
+		          HE.PERSON_ID,
+		          HE.DEPTNO,
+		          HE.LOCAL_NAME,
+		          GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+		          HE.MAIN_BUSINESS,
+		          GET_CODE_NAME(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+		          GET_CODE_NAME(HE.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME
+		      FROM HR_EMPLOYEE HE,SY_CODE SC
+		      WHERE  HE.CPNY_ID = #interCpnyID:VARCHAR#
+		      AND HE.POST_GRADE_NO = SC.CODE_NO(+)
+		      AND HE.EMPID NOT LIKE '111111%'
+  		]]>
+		
+	      <isNotEmpty>
+	        <isEqual prepend="" property="limit" compareValue="manager">
+			<![CDATA[
+				  EXISTS
+					 (SELECT B1.DEPTNO
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = HE.DEPTNO
+					         START WITH B1.DEPTNO in
+					                    (SELECT HRD.DEPTID
+					                       FROM HR_DEPARTMENT HRD
+					                      WHERE HRD.MANAGER_EMP_ID = #ADMINID:VARCHAR#)
+					        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+					        UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #ADMINID:VARCHAR#)  
+		    ]]>
+		</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_SCHEDULE_NO">
+			<![CDATA[
+			     HE.PERSON_ID not in(
+			     select ppo.PERSON_ID from PA_PAY_OBJECT ppo
+			     where ppo.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+			     and ppo.ACTIVITY = 1
+			     )
+		    ]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="searchForFlag" compareValue="searchForPaEmpAccount">
+			<![CDATA[
+				HE.PERSON_ID not in(
+		     SELECT PEA.PERSON_ID
+					FROM PA_EMP_ACCOUNT PEA
+					WHERE PEA.ACTIVITY = 1
+		     )
+		    ]]>
+		</isEqual>
+		<![CDATA[
+			  ORDER BY HE.DEPTNO,SC.ORDERNO,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getEmpListForPopCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+				SELECT COUNT(HE.EMPID)
+		      FROM HR_EMPLOYEE HE 
+		      WHERE  HE.CPNY_ID = #interCpnyID:VARCHAR#
+  		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_SCHEDULE_NO">
+			<![CDATA[
+			     HE.PERSON_ID not in(
+			     select ppo.PERSON_ID from PA_PAY_OBJECT ppo
+			     where ppo.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:NUMERIC#
+			     and ppo.ACTIVITY = 1
+			     )
+		    ]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="searchForFlag" compareValue="searchForPaEmpAccount">
+			<![CDATA[
+				HE.PERSON_ID not in(
+		     SELECT PEA.PERSON_ID
+					FROM PA_EMP_ACCOUNT PEA
+					WHERE PEA.ACTIVITY = 1
+		     )
+		    ]]>
+		</isEqual>
+	</select>
+	<!-- 																工资对象调整 结束																						-->
+	<!-- 																工资账户信息 开始																					    -->
+	<select id="getPaEmpAccountList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  PEA.PA_EMP_ACCOUNT_NO,
+					   HRE.LOCAL_NAME,
+				       HRE.EMPID,
+				       HRE.PERSON_ID,
+				       get_dept_name(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+				       get_global_name(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POST_GRADE,
+				       TO_CHAR(HRE.DATE_STARTED,'DD/MM/YYYY')DATE_STARTED,
+				       PEA.ACCOUNT_TYPE,
+				       GET_GLOBAL_NAME(PEA.ACCOUNT_TYPE,#interLanguage:VARCHAR#) ACCOUNT_TYPE_NAME,
+				       PEA.ACCOUNT_ADDRESS,
+				       PKG_DECRYPT.DECRYPT_DES(PEA.ACCOUNT_NO) ACCOUNT_NO,
+				       PEA.ACCOUNT_NAME,
+				       PKG_DECRYPT.DECRYPT_DES(PEA.SECURITY_NO) SECURITY_NO,
+				       PKG_DECRYPT.DECRYPT_DES(PEA.FUND_NO) FUND_NO,
+				       PKG_DECRYPT.DECRYPT_DES(PEA.TAX_NO) TAX_NO,
+				       PEA.SECURITY_PAY_DATE,
+				       PEA.FUND_PAY_DATE,
+				       get_emp_local_name(PEA.CREATED_BY,#interCpnyID:VARCHAR#)||' '||PEA.CREATED_IP CREATED_BY,
+				       TO_CHAR(PEA.CREATE_DATE,'DD/MM/YYYY')CREATE_DATE,
+				       get_emp_local_name(PEA.UPDATED_BY,#interCpnyID:VARCHAR#)||' '||PEA.UPDATED_IP UPDATED_BY,
+				       TO_CHAR(PEA.UPDATE_DATE,'DD/MM/YYYY')UPDATE_DATE
+				FROM PA_EMP_ACCOUNT PEA,HR_EMPLOYEE HRE
+				WHERE PEA.PERSON_ID = HRE.PERSON_ID
+				AND PEA.ACTIVITY = 1
+				AND HRE.CPNY_ID = #interCpnyID:VARCHAR#
+				AND HRE.PERSON_ID NOT LIKE '1111111%'
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACCOUNT_TYPE">
+			<![CDATA[
+			     PEA.ACCOUNT_TYPE = #ACCOUNT_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+			     HRE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE_STARTED">
+			<![CDATA[
+			     HRE.DATE_STARTED >= TO_DATE(#START_DATE_STARTED:VARCHAR#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE_STARTED">
+			<![CDATA[
+			     HRE.DATE_STARTED <= TO_DATE(#END_DATE_STARTED:VARCHAR#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISOR_INFO">
+			<![CDATA[
+		 		  EXISTS(
+		              SELECT *
+		                FROM PA_SUPERVISOR_INFO
+		               WHERE PA_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+		                 AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_SUPERVISOR_INFO:VARCHAR#
+		               )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+			     HRE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_EMP_ACCOUNT_NO">
+			<![CDATA[
+			     PEA.PA_EMP_ACCOUNT_NO = #PA_EMP_ACCOUNT_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="search_nullACCOUNT_NO">
+			<![CDATA[
+			     (PEA.ACCOUNT_NO is null or PEA.ACCOUNT_NO = '无' or PEA.ACCOUNT_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_nullSECURITY_NO">
+			<![CDATA[
+			     (PEA.SECURITY_NO is null or PEA.SECURITY_NO = '无' or PEA.SECURITY_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_nullFUND_NO">
+			<![CDATA[
+			     (PEA.FUND_NO is null or PEA.FUND_NO = '无' or PEA.FUND_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_nullTAX_NO">
+			<![CDATA[
+			     (PEA.TAX_NO is null or PEA.TAX_NO = '无' or PEA.TAX_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_null_NO">
+			<![CDATA[
+			     (PEA.ACCOUNT_NO is null or PEA.ACCOUNT_NO = '无' or PEA.ACCOUNT_NO = '' 
+			     or PEA.SECURITY_NO is null or PEA.SECURITY_NO = '无' or PEA.SECURITY_NO = ''
+			     or PEA.TAX_NO is null or PEA.TAX_NO = '无' or PEA.TAX_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY HRE.EMPID
+		]]>
+	</select>
+	<select id="getPaEmpAccountTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT PA.DEPTNO,
+			 		GET_DEPT_NAME(PA.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+					PA.EMPID,
+					PA.LOCAL_NAME,
+					GET_GLOBAL_NAME(ACCOUNT_TYPE,#interLanguage:VARCHAR#)ACCOUNT_TYPE,
+					ACCOUNT_NO,
+					ACCOUNT_NAME,
+					GET_UPDATED_INFO(UPLOAD_BY) UPLOAD_BY,
+					TO_CHAR(UPLOAD_DATE,'YYYY.MM.DD HH24:MI') UPLOAD_DATE,
+					PA.LINE_ID,
+					PA.UPLOAD_ERROR_MSG,
+					PA.RESULT_FLAG,
+					FUND_NO,
+					SECURITY_NO,
+					TAX_NO,
+					SECURITY_PAY_DATE,
+					FUND_PAY_DATE,
+					ACCOUNT_ADDRESS
+			FROM PA_EMP_ACCOUNT_EXCEL_TEMP PA
+			WHERE UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY LINE_ID
+		]]>
+	</select>
+	
+	
+	
+	
+	<select id="getPaEmpAccountTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from PA_EMP_ACCOUNT_EXCEL_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	
+	<select id="getPaEmpAccountTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from PA_EMP_ACCOUNT_EXCEL_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPaEmpAccountListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(PEA.PA_EMP_ACCOUNT_NO)
+				FROM PA_EMP_ACCOUNT PEA,HR_EMPLOYEE HRE
+				WHERE PEA.PERSON_ID = HRE.PERSON_ID
+				AND PEA.ACTIVITY = 1
+				AND HRE.CPNY_ID = #interCpnyID:VARCHAR#
+				AND HRE.PERSON_ID NOT LIKE '1111111%'
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACCOUNT_TYPE">
+			<![CDATA[
+			     PEA.ACCOUNT_TYPE = #ACCOUNT_TYPE:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+			<![CDATA[
+			     HRE.EMP_TYPE_CODE = #EMP_TYPE_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE_STARTED">
+			<![CDATA[
+			     HRE.DATE_STARTED >= TO_DATE(#START_DATE_STARTED#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE_STARTED">
+			<![CDATA[
+			     HRE.DATE_STARTED <= TO_DATE(#END_DATE_STARTED#,'DD-MM-YYYY')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISOR_INFO">
+			<![CDATA[
+		 		  EXISTS(
+		              SELECT *
+		                FROM PA_SUPERVISOR_INFO
+		               WHERE PA_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+		                 AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_SUPERVISOR_INFO:VARCHAR#
+		               )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE">
+			<![CDATA[
+			     HRE.EMP_OFFICE = #EMP_OFFICE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		
+		<isNotEmpty prepend="AND" property="search_nullACCOUNT_NO">
+			<![CDATA[
+			     (PEA.ACCOUNT_NO is null or PEA.ACCOUNT_NO = '无' or PEA.ACCOUNT_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_nullSECURITY_NO">
+			<![CDATA[
+			     (PEA.SECURITY_NO is null or PEA.SECURITY_NO = '无' or PEA.SECURITY_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_nullFUND_NO">
+			<![CDATA[
+			     (PEA.FUND_NO is null or PEA.FUND_NO = '无' or PEA.FUND_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_nullTAX_NO">
+			<![CDATA[
+			     (PEA.TAX_NO is null or PEA.TAX_NO = '无' or PEA.TAX_NO = '')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="search_null_NO">
+			<![CDATA[
+			     (PEA.ACCOUNT_NO is null or PEA.ACCOUNT_NO = '无' or PEA.ACCOUNT_NO = '' 
+			     or PEA.SECURITY_NO is null or PEA.SECURITY_NO = '无' or PEA.SECURITY_NO = ''
+			     or PEA.TAX_NO is null or PEA.TAX_NO = '无' or PEA.TAX_NO = '')
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="addPaEmpAccountInfo" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_EMP_ACCOUNT(
+			       PA_EMP_ACCOUNT_NO,
+				   PERSON_ID,
+				   ACCOUNT_TYPE,
+				   ACCOUNT_NO,
+				   ACCOUNT_NAME,
+				   SECURITY_NO,
+				   TAX_NO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   ACTIVITY )
+				VALUES(
+				   PA_EMP_ACCOUNT_SEQ.NEXTVAL,
+				   #PERSON_ID:VARCHAR#,
+				   #ACCOUNT_TYPE:NUMERIC#,
+				   PKG_DECRYPT.ENCRYPT_DES(#ACCOUNT_NO:VARCHAR#),
+				   #ACCOUNT_NAME:VARCHAR#,
+				   PKG_DECRYPT.ENCRYPT_DES(#SECURITY_NO:VARCAHR#),
+				   PKG_DECRYPT.ENCRYPT_DES(#TAX_NO:VARCAHR#),
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1
+				 )
+		]]>
+	</insert>
+	<update id="updatePaEmpAccountInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_EMP_ACCOUNT SET
+				ACCOUNT_TYPE = #ACCOUNT_TYPE:NUMERIC#,
+				ACCOUNT_NO = PKG_DECRYPT.ENCRYPT_DES(#ACCOUNT_NO:VARCHAR#),
+				ACCOUNT_NAME = #ACCOUNT_NAME:VARCHAR#,
+				SECURITY_NO = PKG_DECRYPT.ENCRYPT_DES(#SECURITY_NO:VARCHAR#),
+				TAX_NO = PKG_DECRYPT.ENCRYPT_DES(#TAX_NO:VARCHAR#),
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PA_EMP_ACCOUNT_NO =  #PA_EMP_ACCOUNT_NO:NUMERIC#
+		]]>
+	</update>
+	<update id="doDeletePaEmpAccountInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_EMP_ACCOUNT SET
+				ACTIVITY = 0,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE PA_EMP_ACCOUNT_NO =  #PA_EMP_ACCOUNT_NO:NUMERIC#
+		]]>
+	</update>
+	<!-- 																工资账户信息 结束																						-->
+	<!-- 																考勤总计管理 开始																						-->
+	<select id="getPaArSummaryForManageList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT ASM_DATA.AR_SUMMARY_MANAGE_NO,
+			           HRE.LOCAL_NAME,
+			           HRE.EMPID,
+			           GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+			           GET_GLOBAL_NAME(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POST_GRADE,
+			           TO_CHAR(HRE.DATE_STARTED,'DD.MM.YYYY')DATE_STARTED,
+			           GET_GLOBAL_NAME(ASM_DATA.ITEM_NO,#interLanguage:VARCHAR#) ITEM_NAME,
+			           TO_CHAR(PPS.AR_START_DATE,'DD.MM.YYYY')AR_START_DATE,
+			           ASM_DATA.CAL_VALUE,
+			           ASM_DATA.FINAL_VALUE,
+			           ASM_DATA.REMARK,
+			           GET_EMP_LOCAL_NAME(ASM_DATA.UPDATED_BY,#interCpnyID:VARCHAR#)||' '||ASM_DATA.UPDATED_IP UPDATED_BY,
+			           TO_CHAR(ASM_DATA.UPDATE_DATE,'DD.MM.YYYY HH24:MI')UPDATE_DATE
+			FROM AR_SUMMARY_MANAGE_HTSV ASM_DATA,HR_EMPLOYEE HRE,PA_PAY_SCHEDULE PPS
+			WHERE ASM_DATA.PERSON_ID = HRE.PERSON_ID
+			AND ASM_DATA.PAY_SCHEDULE_NO = PPS.PAY_SCHEDULE_NO
+			AND ASM_DATA.PAY_SCHEDULE_NO = #PAY_SCHEDULE_NO:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AR_SUMMARY_ITEM">
+			<![CDATA[
+		 		  ASM_DATA.ITEM_NO IN ($AR_SUMMARY_ITEM$)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="isSpecialFlag">
+			<![CDATA[
+		 		  ASM_DATA.FINAL_VALUE IS NOT NULL
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HRE.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#)
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HRE.EMPID,ASM_DATA.AR_SUMMARY_MANAGE_NO
+		]]>
+	</select>
+	<update id="updatePaArSummaryForManageInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_SUMMARY_MANAGE_HTSV SET
+				FINAL_VALUE = #FINAL_VALUE:NUMERIC#,
+				REMARK = #REMARK:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE AR_SUMMARY_MANAGE_NO =  #AR_SUMMARY_MANAGE_NO:NUMERIC#
+		]]>
+	</update>
+	<select id="getSelectCodeMultiArSummaryList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.ITEM_NO DEPTNO,REPLACE(REPLACE(REPLACE(GET_GLOBAL_NAME(A.ITEM_NO,#interLanguage#),'(',''),')',''),'.','_') DEPTNAME
+			      FROM AR_STA_ITEM A, AR_STA_ITEM_PARAM B
+			     WHERE A.ITEM_NO = B.ITEM_NO
+			       AND B.CPNY_ID = #CPNY_ID:VARCHAR#
+			       AND B.MANAGE_FLAG = 1
+			     ORDER BY CAL_ORDER
+		]]>
+	</select>
+	
+	<select id="getSelectCodeMultiArDetailList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT B.ITEM_NO DEPTNO,
+			       REPLACE(REPLACE(REPLACE(GET_GLOBAL_NAME(A.ITEM_NO, #interLanguage#), '(', ''),')',''),'.','_') DEPTNAME
+			  FROM AR_ITEM A, AR_ITEM_PARAM B, AR_DYNAMIC_GROUP AR_GROUP
+			 WHERE B.GROUP_NO = AR_GROUP.GROUP_NO(+)
+			   AND B.ITEM_NO = A.ITEM_NO
+			   AND B.GROUP_NO = 'constant'
+			   AND B.CPNY_ID = #CPNY_ID#
+			   AND B.ACTIVITY = 1
+			   AND B.ITEM_NO NOT IN ('90000295',
+			                         '90000296',
+			                         '90000297',
+			                         '90000298',
+			                         '90000299',
+			                         '90000300',
+			                         '90000301')
+		  ORDER BY A.ORDERNO
+		]]>
+	</select>
+	<!-- 																考勤总计管理 结束																						-->
+	<!-- 										PA_WORKER_SALARY_TABLE																-->
+	
+	<select id="paWorkerSalaryTableList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+				   DIVISION,
+				   BASIC,
+				   FULL_ATTEND,
+				   TRANSPORTATION,
+				   LONG_ATTENDANCE,
+				   START_MONTH,
+				   END_MONTH
+			      FROM PA_WORKER_SALARY_TABLE P
+			     WHERE P.ACTIVITY = #ACTIVITY:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+			TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM') >= TO_DATE(P.START_MONTH, 'MMYYYY')
+			AND  TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM') <= TO_DATE(NVL(P.END_MONTH,'129999'), 'MMYYYY')
+             ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY DIVISION asc
+		]]>
+	</select>
+	
+	<insert id="addPaWorkerSalaryTable" parameterClass="linkMap"> 
+		<![CDATA[
+			INSERT INTO PA_WORKER_SALARY_TABLE(
+			       SEQ,
+				   DIVISION,
+				   BASIC,
+				   FULL_ATTEND,
+				   TRANSPORTATION,
+				   LONG_ATTENDANCE,
+				   START_MONTH,
+				   END_MONTH,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   ACTIVITY )
+				VALUES(
+				   PA_WORKER_SALARY_TABLE_SEQ.NEXTVAL,
+				   #DIVISION:NUMERIC#,
+				   #BASIC:NUMERIC#,
+				   #FULL_ATTEND:NUMERIC#,
+				   #TRANSPORTATION:NUMERIC#,
+				   #LONG_ATTENDANCE:NUMERIC#,
+				   #START_MONTH:VARCHAR#,
+				   #END_MONTH:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   1
+				 )
+		]]>
+	</insert>
+	
+	<update id="updatePaWorkerSalaryTable" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_WORKER_SALARY_TABLE SET
+				BASIC = #BASIC:NUMERIC#,
+				FULL_ATTEND = #FULL_ATTEND:NUMERIC#,
+				TRANSPORTATION = #TRANSPORTATION:NUMERIC#,
+				LONG_ATTENDANCE = #LONG_ATTENDANCE:NUMERIC#,
+				START_MONTH = #START_MONTH:VARCHAR#,
+				END_MONTH = #END_MONTH:VARCHAR#,
+				UPDATE_DATE = SYSDATE,
+				UPDATED_BY = #adminID:VARCHAR#,
+				UPDATED_IP = #adminIP:VARCHAR#
+			WHERE SEQ =  #SEQ:NUMERIC#
+		]]>
+	</update>
+	
+	<update id="updatePaWorkerSalaryTableAll" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_WORKER_SALARY_TABLE SET ACTIVITY = 0
+		]]>
+	</update>
+	
+</sqlMap>

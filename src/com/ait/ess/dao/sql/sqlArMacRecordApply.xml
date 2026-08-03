@@ -1,0 +1,1377 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.macRecordApply">
+	<sql id="seachEssMacRecordAffirmList">
+		 
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG" >
+			<![CDATA[
+	           	 AP.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR# 
+			 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+			        AP.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+					( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )					
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				 APPLY_DATE >= #START_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 APPLY_DATE <= #END_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="authority">
+			<![CDATA[
+				AP.PERSON_ID = #PERSON_ID:VARCHAR#	 	     
+		    ]]>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="authority">
+			<isNotEmpty prepend="" property="FLAG">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT 1
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID:VARCHAR#
+					   AND ROWNUM =1)
+		 		  OR H.PERSON_ID = #PERSON_ID:VARCHAR# )
+		 		  AND  ( EXISTS(
+		 		  	SELECT 1
+					  FROM AR_SUPERVISOR_EMPTYPE_INFO
+					 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = H.EMP_TYPE_CODE
+					   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #PERSON_ID:VARCHAR#
+					   AND ROWNUM =1)
+                   OR  H.PERSON_ID = #PERSON_ID:VARCHAR# )
+		    ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="" property="authority">
+		    <!-- 部门查询条件  -->
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+						 EXISTS (SELECT *
+						          FROM HR_DEPARTMENT B1
+						         WHERE B1.DEPTNO = H.DEPTNO
+						         START WITH B1.DEPTNO = #DEPT_NO#
+						       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		        ]]>   
+			</isNotEmpty>
+		</isNotEmpty>
+	</sql>
+	
+	<sql id="searchPersonCondition">
+	    <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+					 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = H.DEPTNO
+					         START WITH B1.DEPTNO = #DEPT_NO#
+					       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 部门查询条件 end -->
+		<!-- 过滤权限 start -->
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR H.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	    <!-- 过滤权限 end -->		
+			
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 	          ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' ) ) 
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getArMacRecordApplySeq" parameterClass="linkMap" resultClass="int">
+	    <![CDATA[				     
+			SELECT AR_MAC_RECORDS_APPLY_SEQ.NEXTVAL FROM DUAL
+	    ]]>
+	</select>
+	
+	<select id="isExistArRecordApplyCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+		<![CDATA[
+		SELECT SUM(CNT) FROM (
+			SELECT COUNT(1) CNT
+			  FROM AR_MAC_RECORDS_APPLY AP
+			 WHERE AFFIRM_FLAG NOT IN ( '2','3')
+		 	   AND CPNY_ID = #CPNY_ID:VARCHAR#
+		 	   AND PERSON_ID = #PERSON_ID:VARCHAR#
+		 	   AND APPLY_DATE = #APPLY_DATE:VARCHAR#
+		 	   AND R_TIME = to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		 	   AND DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+		 	UNION ALL
+			SELECT COUNT(1) CNT
+			  FROM AR_MAC_RECORDS_APPLY AP,
+			       AR_MAC_RECORDS_APPLY_BATCH BAT
+			 WHERE AP.RECORD_NO = BAT.BATCH_RECORD_NO
+			   AND AP.AFFIRM_FLAG NOT IN ( '2','3')
+		 	   AND BAT.CPNY_ID = #CPNY_ID:VARCHAR#
+		 	   AND BAT.PERSON_ID = #PERSON_ID:VARCHAR#
+		 	   AND BAT.APPLY_DATE = #APPLY_DATE:VARCHAR#
+		 	   AND BAT.R_TIME = to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		 	   AND BAT.DOOR_TYPE = #DOOR_TYPE:VARCHAR#)
+		    ]]>
+ 	</select>
+ 	
+ 	
+	<select id="isExistArRecordApplyLeaveCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+		<![CDATA[
+		SELECT SUM(CNT) FROM (
+			      SELECT COUNT(1) CNT
+			        FROM ESS_LEAVE_APPLY_TB AP
+			       WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+			          AND AP.LEAVE_FROM_TIME <= to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+			          AND AP.LEAVE_TO_TIME >=  to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+			          AND AFFIRM_FLAG = 1
+			          AND AP.APPLY_TYPE = 'PERSON'
+			          AND AP.LEAVE_TYPE_CODE IN (124851,4084,218108)
+			       UNION ALL
+			      SELECT COUNT(1) CNT
+			        FROM ESS_LEAVE_APPLY_TB AP,
+			             ESS_LEAVE_APPLY_TB_BATCH BAT
+			       WHERE AP.APPLY_NO = BAT.APPLY_NO
+			         AND AP.AFFIRM_FLAG = 1
+			         AND BAT.ACTIVITY <> 3
+			         AND AP.APPLY_TYPE = 'BATCH'
+			         AND BAT.PERSON_ID = #PERSON_ID:VARCHAR#
+			          AND BAT.LEAVE_FROM_TIME <= to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+			          AND BAT.LEAVE_TO_TIME >=  to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+			          AND BAT.LEAVE_TYPE_CODE IN (124851,4084,218108)
+			         )
+		    ]]>
+ 	</select>
+ 	
+	<select id="getExistArRecordApplyCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_MAC_RECORDS_APPLY AP
+			 WHERE AFFIRM_FLAG <> '2'  
+	 	]]>
+	 	<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 	     CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	     PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_DATE">
+			<![CDATA[
+		 	     APPLY_DATE = #APPLY_DATE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="R_TIME">
+			<![CDATA[
+		 	     R_TIME = to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS')
+		    ]]>
+		</isNotEmpty>
+	 	<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+		 	     DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+ 	</select>
+	
+	<!-- 进出门刷卡申请 -->
+	<insert id="insertArMacRecordApply" parameterClass = "linkMap" >
+	<![CDATA[
+		INSERT INTO AR_MAC_RECORDS_APPLY
+		       (RECORD_NO,
+		        CPNY_ID,
+		        PERSON_ID,
+		        DOOR_TYPE,
+		        
+		        R_TIME,
+		        APPLY_DATE,
+		        REMARK,
+		        
+		        CREATE_DATE,
+		        CREATED_BY,
+		        ACTIVITY,
+		        AFFIRM_FLAG,
+		        ORDERNO,
+		        CURRENT_AFFIRM_ID,
+		        BATCH_YN,
+		        LASTMONTH_YN,
+		        RECORD_TYPE
+		        )
+		      VALUES
+		       (
+		        #RECORD_NO_SEQ:VARCHAR#,
+		        #CPNY_ID:VARCHAR#,
+		        #PERSON_ID:VARCHAR#,
+		        #DOOR_TYPE:VARCHAR#,
+		        
+		        TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+		        #APPLY_DATE:VARCHAR#,
+		        #REMARK:VARCHAR#,
+		        
+		        SYSDATE,
+		        #CREATED_BY:VARCHAR#,
+		        #ACTIVITY:VARCHA#,
+		        #AFFIRM_FLAG:VARCHAR#,
+		        (SELECT NVL(MAX(ORDERNO),0) + 1 FROM AR_MAC_RECORDS_APPLY),
+		        #CURRENT_AFFIRM_ID:VARCHAR#,
+		        'N',
+		        AR_LASTMONTH_YN(#PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#,#APPLY_DATE:VARCHAR#),
+		        #RECORD_TYPE:VARCHAR#
+		      )
+		]]>		
+	</insert>
+	
+	<!-- 申请加决裁者 -->
+	<insert id="insertApplyReviewer" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY,
+				APPLY_TYPE
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #APPLY_NO_SEQ#,
+				0, 
+				#AffirmLevel#, 
+				#AffirmorId#, 
+				SYSDATE, 
+				#CREATED_BY#, 
+				0,
+				#APPLY_TYPE_NO:VARCHAR#
+				)
+	    ]]>
+	</insert>
+	<select id="getArMacRecordAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT 
+			       SUBSTR(H.CPNY_ID, 4,2) || '-' || to_char(to_date(AP.Apply_Date,'YYYY-MM-DD'),'YYYYMMDD') || '-L-' || AP.RECORD_NO NO,
+			       H.EMPID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.ENGLISH_NAME,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.JOIN_COMPANY_DATE,
+			       H.WORK_AREA,
+			       H.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       H.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       H.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       AP.RECORD_NO,
+			       AP.PERSON_ID,
+			       AP.APPLY_DATE,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd') R_TIME_LD,
+			       TO_CHAR(AP.R_TIME, 'HH24:MI:SS') R_TIME_LT,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd HH24:MI:SS') R_TIME,
+			       AP.REMARK,
+			       SUBSTR(AP.REMARK, 0, 10) || '...' INTRO,
+			       AP.DOOR_TYPE,
+			       AP.CURRENT_AFFIRM_ID,
+			       TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       get_hr_emp_name(AP.CREATED_BY) CREATED_BY,
+			       AP.UPDATE_DATE,
+			       AP.AFFIRM_FLAG AFFIRM_STATUS,
+		       (SELECT COUNT(0)
+		          FROM ESS_AFFIRM EA
+		         WHERE EA.APPLY_NO = AP.RECORD_NO
+		           AND EA.AFFIRM_FLAG <> 0) AFFIRM_COUNT,
+			       EA.ESS_AFFIRM_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY,
+			       AP.BATCH_YN,
+			       AP.BATCH_RECORD_NO
+			  FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POSITION,
+			       HR_DEPARTMENT_NAME   HDN,
+			       ESS_AFFIRM           EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND H.DEPTNO = HDN.DEPTNO(+)
+			   AND AP.RECORD_NO = EA.APPLY_NO
+			   AND H.POST_NO = POST.NO(+)
+			   AND H.POSITION_NO = POSITION.NO(+)
+			   AND HDN.LANGUAGE (+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE (+) = #interLanguage:VARCHAR#  
+			   AND EA.AFFIRMOR_ID = #ADMIN_ID:VARCHAR# 
+			   AND EA.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR# 
+			   AND AP.AFFIRM_FLAG <> -1
+		]]>
+		<isEqual prepend="AND" compareValue="10" property="AFFIRM_FLAG">
+			<![CDATA[
+	 			AP.CURRENT_AFFIRM_ID = #ADMIN_ID# 
+			]]>
+	 	</isEqual>
+		<isEqual prepend="AND" compareValue="11" property="AFFIRM_FLAG">
+			<![CDATA[
+	                   EXISTS (
+	                       SELECT 1 FROM ESS_AFFIRM 
+	                       WHERE APPLY_NO = AP.RECORD_NO
+	                       AND   APPLY_TYPE = '218294'
+	                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+	                       AND   AFFIRM_FLAG = 0
+	                       AND AP.CURRENT_AFFIRM_ID <> #ADMIN_ID# 
+	                   )
+			]]>
+	 	</isEqual>
+	    <isEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.CURRENT_AFFIRM_ID = #ADMIN_ID#
+	 		]]>
+		</isEmpty>
+	    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<isNotEqual prepend="" compareValue="-5" property="AFFIRM_FLAG">
+				<isNotEqual prepend="" compareValue="10" property="AFFIRM_FLAG">
+					<isNotEqual prepend="" compareValue="11" property="AFFIRM_FLAG">
+						<![CDATA[
+							AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+				 		]]>
+		 			</isNotEqual>
+	 			</isNotEqual>
+	 		</isNotEqual>
+		</isNotEmpty>
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_FLAG">
+			<![CDATA[
+				AP.BATCH_YN = #APPLY_TYPE_FLAG#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+			        AP.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+					( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )					
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				 APPLY_DATE >= #START_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 APPLY_DATE <= #END_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		    <!-- 部门查询条件  -->
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+						 EXISTS (SELECT *
+						          FROM HR_DEPARTMENT B1
+						         WHERE B1.DEPTNO = H.DEPTNO
+						         START WITH B1.DEPTNO = #DEPT_NO#
+						       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		        ]]>   
+			</isNotEmpty>
+			<![CDATA[
+				ORDER BY AP.CREATE_DATE DESC
+		     ]]>
+	</select>
+	
+	<select id="getArMacRecordAffirmListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(0)
+			  FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POSITION,
+			       HR_DEPARTMENT_NAME   HDN,
+			       ESS_AFFIRM           EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND H.DEPTNO = HDN.DEPTNO(+)
+			   AND AP.RECORD_NO = EA.APPLY_NO
+			   AND H.POST_NO = POST.NO(+)
+			   AND H.POSITION_NO = POSITION.NO(+)
+			   AND HDN.LANGUAGE (+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE (+) = #interLanguage:VARCHAR#  
+			   AND EA.AFFIRMOR_ID = #ADMIN_ID:VARCHAR# 
+			   AND EA.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR# 
+			   AND AP.AFFIRM_FLAG <> -1
+			]]>
+		<isEqual prepend="AND" compareValue="10" property="AFFIRM_FLAG">
+			<![CDATA[
+	 			AP.CURRENT_AFFIRM_ID = #ADMIN_ID# 
+			]]>
+	 	</isEqual>
+		<isEqual prepend="AND" compareValue="11" property="AFFIRM_FLAG">
+			<![CDATA[
+	                   EXISTS (
+	                       SELECT 1 FROM ESS_AFFIRM 
+	                       WHERE APPLY_NO = AP.RECORD_NO
+	                       AND   APPLY_TYPE = '218294'
+	                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+	                       AND   AFFIRM_FLAG = 0
+	                       AND AP.CURRENT_AFFIRM_ID <> #ADMIN_ID# 
+	                   )
+			]]>
+	 	</isEqual>
+	    <isEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.CURRENT_AFFIRM_ID = #ADMIN_ID#
+	 		]]>
+		</isEmpty>
+	    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<isNotEqual prepend="" compareValue="-5" property="AFFIRM_FLAG">
+				<isNotEqual prepend="" compareValue="10" property="AFFIRM_FLAG">
+					<isNotEqual prepend="" compareValue="11" property="AFFIRM_FLAG">
+						<![CDATA[
+							AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+				 		]]>
+		 			</isNotEqual>
+	 			</isNotEqual>
+	 		</isNotEqual>
+		</isNotEmpty>
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_FLAG">
+			<![CDATA[
+				AP.BATCH_YN = #APPLY_TYPE_FLAG#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+			        AP.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+					( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )					
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				 APPLY_DATE >= #START_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 APPLY_DATE <= #END_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		    <!-- 部门查询条件  -->
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+						 EXISTS (SELECT *
+						          FROM HR_DEPARTMENT B1
+						         WHERE B1.DEPTNO = H.DEPTNO
+						         START WITH B1.DEPTNO = #DEPT_NO#
+						       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		        ]]>   
+			</isNotEmpty>
+	</select>
+	
+	
+	
+	<select id="getArMacRecordAffirmViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       AP.BATCH_YN,
+			       H.DEPTNO,
+			       get_dept_name(H.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       AP.RECORD_NO, 
+			       AP.RECORD_NO APPLY_NO,
+			       AP.PERSON_ID,
+			       AP.APPLY_DATE,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd') R_TIME_LD,
+			       TO_CHAR(AP.R_TIME, 'HH24:MI:SS') R_TIME_LT,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd HH24:MI:SS') R_TIME,
+			       AP.REMARK,
+			       SUBSTR(AP.REMARK, 0, 10) || '...' INTRO,
+			       AP.DOOR_TYPE,
+			       AP.CURRENT_AFFIRM_ID,
+			       TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       AP.UPDATE_DATE,
+			       AP.AFFIRM_FLAG, 
+			       AR_LASTMONTH_YN(AP.PERSON_ID,AP.CPNY_ID,AP.APPLY_DATE) LASTMONTH_YN,
+		       F_GET_MAC_DEPTNAME(AP.RECORD_NO,#interLanguage:VARCHAR#,AP.BATCH_YN) BATCH_APPLY_DEPT_NAME,
+		       AP.BATCH_RECORD_NO
+			  FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+		]]>
+		 <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="batchFlag">
+			<![CDATA[
+				AP.BATCH_YN = #batchFlag#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				H.CPNY_ID = #interCpnyID:VARCHAR#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				AP.RECORD_NO = #APPLY_NO#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+				AP.APPLY_DATE = #APPLY_TIME#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_APPLY_NO">
+			<![CDATA[
+				AP.BATCH_RECORD_NO like '%' || #BATCH_APPLY_NO# || '%'
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+				AP.RECORD_NO = #RECORD_NO#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     H.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     H.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			<![CDATA[
+				H.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		    ]]>
+		</isNotEmpty>
+		<include refid="seachEssMacRecordAffirmList" />
+			<![CDATA[
+				ORDER BY AP.CREATE_DATE DESC
+		     ]]>
+	</select>
+	
+	<select id="getArMacRecordAffirmViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(0)
+			 FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+		       
+			]]>
+		 <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+	 		]]>
+		</isNotEmpty>
+		 <isNotEmpty prepend="AND" property="batchFlag">
+			<![CDATA[
+				AP.BATCH_YN = #batchFlag#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				AP.RECORD_NO = #APPLY_NO#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TIME">
+			<![CDATA[
+				AP.APPLY_DATE = #APPLY_TIME#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BATCH_APPLY_NO">
+			<![CDATA[
+				AP.BATCH_RECORD_NO like '%' || #BATCH_APPLY_NO# || '%'
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     H.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     H.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				H.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<include refid="seachEssMacRecordAffirmList" />
+	</select>
+	
+	
+	
+	<!-- 修改刷卡申请 如果不是流程的最后一步,通过后续修改AR_MAC_RECORDS_APPLY.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+	<update id="updateArMacRecordByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE AR_MAC_RECORDS_APPLY  OT
+				   SET 
+				       OT.AFFIRM_FLAG  = #AFFIRM_READ_FLAG#,
+				       OT.ACTIVITY     = #ACTIVITY#,
+				       OT.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       OT.UPDATE_DATE = SYSDATE,
+				       OT.UPDATED_BY  = #UPDATED_BY#
+				 WHERE OT.RECORD_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	
+	<!-- 取消APPLY_NO通过主键 -->
+	<update id="cancelArMacRecordByApplyNo" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE AR_MAC_RECORDS_APPLY  OT
+			   SET AFFIRM_FLAG = 3,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY  = #ADMIN_ID:VARCHAR#
+			WHERE OT.RECORD_NO = #APPLY_NO:VARCHAR#
+		]]>
+	</update>
+	<select id="getArMacRecordApplyInfoByApplyNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT APP.RECORD_NO,
+				   APP.RECORD_NO APPLY_NO,
+			       APP.CPNY_ID,
+			       APP.PERSON_ID,
+			       APP.DOOR_TYPE,
+			       APP.APPLY_DATE,
+			       APP.APPLY_DATE AR_FROM_TIME,
+			       APP.APPLY_DATE AR_TO_TIME,
+			       TO_CHAR(APP.R_TIME, 'YYYY-MM-DD HH24:MI:SS') R_TIME,
+			       APP.REMARK,
+			       APP.ACTIVITY,
+			       APP.BATCH_YN,
+			       APP.BATCH_RECORD_NO,
+			       APP.CREATED_BY ADMIN_ID,
+			       APP.LASTMONTH_YN
+			  FROM AR_MAC_RECORDS_APPLY APP
+			 WHERE APP.RECORD_NO = #APPLY_NO:VARCHAR#  		   
+    	]]>	
+	</select>
+	
+	<select id="getArMacRecordApplyInfoByApplyNoForDisplay" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       AP.CPNY_ID,
+			       get_dept_name(H.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       AP.BATCH_YN,
+			       AP.RECORD_NO,
+			       AP.RECORD_NO APPLY_NO,
+			       AP.PERSON_ID,
+			       AP.APPLY_DATE,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd HH24:MI:SS') R_TIME,
+			       AP.REMARK,
+			       SUBSTR(AP.REMARK, 0, 10) || '...' INTRO,
+			       AP.DOOR_TYPE,
+			       AP.BATCH_RECORD_NO,
+			       DECODE(AP.RECORD_TYPE,'C','因公未打卡','E','忘记打卡(无凭证)','E1','忘记打卡(有凭证)','') RECORD_TYPE,
+			       AR_GET_MAC_APPLY_CNT(AP.PERSON_ID,AP.CPNY_ID,TO_DATE(AP.APPLY_DATE,'YYYY-MM-DD')) MAC_APPLY_CNT
+			  FROM AR_MAC_RECORDS_APPLY AP, 
+			       HR_EMPLOYEE H
+	         WHERE AP.PERSON_ID = H.PERSON_ID
+	           AND AP.RECORD_NO = #APPLY_NO:VARCHAR#	   
+    	]]>	
+	</select>
+	
+	<delete id="deleteArMacRecordApplyByApplyNo">
+		<![CDATA[
+			DELETE AR_MAC_RECORDS_HTSV MAC
+			 WHERE MAC.INSERT_BY  = 'APPLY'
+			   AND TO_CHAR(MAC.R_TIME,'YYYY-MM-DD HH24:MI:SS') = #R_TIME:VARCHAR#
+			   AND MAC.PERSON_ID = #PERSON_ID:VARCHAR#
+			   AND MAC.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+    	]]>			   
+	</delete>
+
+	<delete id="deleteArMacRecordApplyByApplyNoBatch">
+		<![CDATA[
+			DELETE AR_MAC_RECORDS_HTSV MAC
+			 WHERE MAC.INSERT_BY  = 'APPLY'
+			   AND (TO_CHAR(MAC.R_TIME,'YYYY-MM-DD HH24:MI:SS'),MAC.PERSON_ID,MAC.DOOR_TYPE) IN (
+			   		SELECT TO_CHAR(A.R_TIME,'YYYY-MM-DD HH24:MI:SS'),A.PERSON_ID,A.DOOR_TYPE
+			   		  FROM AR_MAC_RECORDS_APPLY_BATCH A,
+			   		  	   AR_MAC_RECORDS_APPLY B
+			   		 WHERE A.BATCH_RECORD_NO = B.RECORD_NO
+			   		   AND B.RECORD_NO = #APPLY_NO:VARCHAR#
+			   )
+    	]]>			   
+	</delete>
+	
+	<insert id="insertArMacRecordApplyResult" parameterClass="linkMap">
+	   	<![CDATA[
+			INSERT INTO AR_MAC_RECORDS_HTSV
+		          (RECORD_NO,
+		           R_TIME,
+		           DOOR_TYPE,
+		           INSERT_BY,
+		           PERSON_ID,
+		           REMARK,
+		           CPNY_ID,
+		           
+		           CREATE_DATE,
+		           CREATED_BY,
+		           ACTIVITY,
+		           ORDERNO)
+		        VALUES
+		          (
+		           AR_RECORDS_SEQ.NEXTVAL,
+		           TO_DATE(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),
+		           #DOOR_TYPE:VARCHAR#,
+		           'APPLY',
+		           #PERSON_ID:VARCHAR#,
+		           #REMARK:VARCHAR#,
+		           #CPNY_ID:VARCHAR#,
+		           
+		           SYSDATE,
+		           #ADMIN_ID:VARCHAR#,
+		           1,
+		           (SELECT NVL(MAX(ORDERNO),0)+1 FROM AR_MAC_RECORDS_HTSV)
+				)
+		 ]]>	 	   
+	</insert>
+	
+	<delete id="delArMacRecordAffirmRelation">
+		<![CDATA[
+			DELETE FROM ESS_AFFIRM 
+			 WHERE APPLY_TYPE = #APPLY_TYPE:VARCHAR# 
+			   AND APPLY_NO = #APPLY_NO:VARCHAR#
+    	]]>			   
+	</delete>
+	
+	<delete id="delArMacRecordApplyByRecordNo">
+		<![CDATA[
+			DELETE FROM AR_MAC_RECORDS_APPLY WHERE RECORD_NO = #APPLY_NO:VARCHAR#
+    	]]>			   
+	</delete>
+	
+	<delete id="delArMacRecordApplyByBatchRecordNo">
+		<![CDATA[
+			DELETE FROM AR_MAC_RECORDS_APPLY_BATCH WHERE BATCH_RECORD_NO = #APPLY_NO:VARCHAR#
+    	]]>			   
+	</delete>
+	<select id="getMacRecordPersonList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+		<![CDATA[
+			SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       H.PERSON_ID, 
+			       n.content POSITION_NAME
+			  FROM HR_EMPLOYEE   H,
+			       HR_DEPARTMENT D,
+			       SY_GLOBAL_NAME N
+			 WHERE H.DEPTNO = D.DEPTNO
+			   and h.position_no = n.no(+)
+		       and n.language(+) = 'zh'
+			   AND H.Status_Code <> '1375'
+		       AND H.CPNY_ID = #CPNY_ID#
+		]]>		
+		<!-- 动态组查询条件  -->
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+		 	     EXISTS (SELECT *
+				          FROM AR_EMP_GROUP E
+				         WHERE E.GROUP_NO = #GROUP_NO:VARCHAR#
+				           AND E.PERSON_ID = H.PERSON_ID)
+		    ]]>
+		</isNotEmpty>
+		<!-- 部门查询条件  -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+					 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = H.DEPTNO
+					         START WITH B1.DEPTNO = #DEPT_NO#
+					       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 过滤权限 start -->
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR H.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	    <!-- 关键字查询条件  -->
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 	          ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+	 </select>
+	
+	 <select id="getMacRecordPersonListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+		 <![CDATA[
+				 SELECT COUNT(0)
+				   FROM HR_EMPLOYEE   H,
+				        HR_DEPARTMENT D,
+		                SY_GLOBAL_NAME N
+				  WHERE H.DEPTNO = D.DEPTNO
+				    and h.position_no = n.no(+)
+	                and n.language(+) = 'zh'
+				    AND H.Status_Code <> '1375'
+			        AND H.CPNY_ID = #CPNY_ID#		   
+		 ]]>
+		 <!-- 动态组查询条件  -->
+		<isNotEmpty prepend="AND" property="GROUP_NO">
+			<![CDATA[
+		 	     EXISTS (SELECT *
+				          FROM AR_EMP_GROUP E
+				         WHERE E.GROUP_NO = #GROUP_NO:VARCHAR#
+				           AND E.PERSON_ID = H.PERSON_ID)
+		    ]]>
+		</isNotEmpty>
+		<!-- 部门查询条件  -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+					 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = H.DEPTNO
+					         START WITH B1.DEPTNO = #DEPT_NO#
+					       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 过滤权限 start -->
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = H.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR H.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	    <!-- 关键字查询条件  -->
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 	          ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	 </select>
+	 <insert id="saveRecordAppFile" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO ESS_MACRECORD_FILE
+			  (ID,RECORD_NO, CREATED_BY, CREATE_DATE, ACTIVITY, FILEURL, FILENAME,NEWNAME)
+			VALUES
+			  (ESS_MACRECORD_FILE_SEQ.NEXTVAL,
+			   #RECORD_NO:VARCHAR#,
+			   #PERSON_ID:VARCHAR#,
+			   SYSDATE,
+			   0,
+			   #FILEURL:VARCHAR#,
+			   #OLDNAME:VARCHAR#,
+			   #NEWNAME:VARCHAR#)
+		]]>
+	</insert>
+	<select id="getCardRecordFileList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT E.* FROM ESS_MACRECORD_FILE E WHERE 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="CREATED_BY"> 
+			<![CDATA[
+				 E.CREATED_BY = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NEWNAME"> 
+			<![CDATA[
+				 E.NEWNAME = #NEWNAME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RECORD_NO"> 
+			<![CDATA[
+				 E.RECORD_NO = #RECORD_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RECORD_NO"> 
+			<![CDATA[
+				 E.ACTIVITY = 0
+			]]>
+		</isEmpty>
+	</select>
+	
+	
+	
+	<select id="getArMacRecordAffirmCheckViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT 
+			       SUBSTR(H.CPNY_ID, 4,2) || '-' || to_char(to_date(AP.Apply_Date,'YYYY-MM-DD'),'YYYYMMDD') || '-L-' || AP.RECORD_NO NO,
+			       H.EMPID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.DEPTNO,
+			       get_dept_name(H.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       AP.RECORD_NO, 
+			       AP.RECORD_NO APPLY_NO,
+			       AP.PERSON_ID,
+			       AP.APPLY_DATE,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd') R_TIME_LD,
+			       TO_CHAR(AP.R_TIME, 'HH24:MI:SS') R_TIME_LT,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd HH24:MI:SS') R_TIME,
+			       AP.REMARK,
+			       SUBSTR(AP.REMARK, 0, 10) || '...' INTRO,
+			       AP.DOOR_TYPE,
+			       AP.CURRENT_AFFIRM_ID,
+			       TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       get_hr_emp_name(AP.CREATED_BY) CREATED_BY,
+			       AP.UPDATE_DATE,
+			       AP.AFFIRM_FLAG,
+			       (SELECT DECODE((SELECT 1
+		                     FROM ESS_AFFIRM a1,
+		                     ess_check b1
+		                     WHERE A1.ESS_AFFIRM_NO = B1.ESS_AFFIRM_NO
+		                     AND A1.APPLY_NO = AP.RECORD_NO
+		                     AND A1.APPLY_TYPE = '218294'
+		                     AND B1.CHECK_FLAG = 0
+		                     AND B1.CHECKOR_ID = #PERSON_ID#
+		                     GROUP BY A1.APPLY_NO),NULL, 0,1) FROM DUAL
+		                ) AFFIRM_FLAG_PERSON,
+		       (SELECT COUNT(0)
+		          FROM ESS_AFFIRM EA
+		         WHERE EA.APPLY_NO = AP.RECORD_NO
+		           AND EA.AFFIRM_FLAG <> 0) AFFIRM_COUNT,
+			       AP.BATCH_YN,
+			       AP.BATCH_RECORD_NO
+			  FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+		         AND EXISTS (
+		               SELECT 1 FROM ESS_AFFIRM ESS1,
+		               ESS_CHECK ESS2
+		               WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		               AND   APPLY_NO = AP.RECORD_NO
+		               AND   APPLY_TYPE = '218294'
+		               AND   ESS2.CHECKOR_ID = #PERSON_ID#
+		           )
+		]]>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				H.CPNY_ID = #interCpnyID:VARCHAR#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				AP.RECORD_NO = #APPLY_NO#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+				AP.RECORD_NO = #RECORD_NO#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     H.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     H.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				H.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG" >
+			<![CDATA[
+	           	 AP.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR# 
+			 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+			        AP.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+					( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )					
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				 APPLY_DATE >= #START_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 APPLY_DATE <= #END_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		    <!-- 部门查询条件  -->
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+						 EXISTS (SELECT *
+						          FROM HR_DEPARTMENT B1
+						         WHERE B1.DEPTNO = H.DEPTNO
+						         START WITH B1.DEPTNO = #DEPT_NO#
+						       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		        ]]>   
+			</isNotEmpty>
+			<![CDATA[
+				ORDER BY AP.CREATE_DATE DESC
+		     ]]>
+	</select>
+	
+	<select id="getArMacRecordAffirmCheckListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(0)
+			 FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+		         AND EXISTS (
+		               SELECT 1 FROM ESS_AFFIRM ESS1,
+		               ESS_CHECK ESS2
+		               WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		               AND   APPLY_NO = AP.RECORD_NO
+		               AND   APPLY_TYPE = '218294'
+		               AND   ESS2.CHECKOR_ID = #PERSON_ID#
+		           )
+			]]>
+		 
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				H.CPNY_ID = #interCpnyID:VARCHAR#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				AP.RECORD_NO = #APPLY_NO#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+				AP.RECORD_NO = #RECORD_NO#
+	 		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     H.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     H.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				H.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG" >
+			<![CDATA[
+	           	 AP.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR# 
+			 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DOOR_TYPE">
+			<![CDATA[
+			        AP.DOOR_TYPE = #DOOR_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+					( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )					
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				 APPLY_DATE >= #START_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				 APPLY_DATE <= #END_DATE:VARCHAR#
+	        ]]>
+		</isNotEmpty>
+		    <!-- 部门查询条件  -->
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+				<![CDATA[
+						 EXISTS (SELECT *
+						          FROM HR_DEPARTMENT B1
+						         WHERE B1.DEPTNO = H.DEPTNO
+						         START WITH B1.DEPTNO = #DEPT_NO#
+						       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+		        ]]>   
+			</isNotEmpty>
+	</select>
+	
+	
+	<select id="getArMacRecordAffirmViewListBySingle" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.DEPTNO,
+			       AP.CPNY_ID,
+			       get_dept_name(H.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       AP.RECORD_NO, 
+			       AP.RECORD_NO APPLY_NO,
+			       AP.PERSON_ID,
+			       AP.APPLY_DATE,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd') R_TIME_LD,
+			       TO_CHAR(AP.R_TIME, 'HH24:MI:SS') R_TIME_LT,
+			       TO_CHAR(AP.R_TIME, 'yyyy-MM-dd HH24:MI:SS') R_TIME,
+			       AP.REMARK,
+			       SUBSTR(AP.REMARK, 0, 10) || '...' INTRO,
+			       AP.DOOR_TYPE,
+			       AP.CURRENT_AFFIRM_ID,
+			       TO_CHAR(AP.CREATE_DATE,'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       get_hr_emp_name(AP.CREATED_BY) CREATED_BY,
+			       AP.UPDATE_DATE,
+			       AP.AFFIRM_FLAG,
+			       AP.BATCH_YN,
+			       AP.BATCH_RECORD_NO,
+			       DECODE(AP.RECORD_TYPE,'C','因公未打卡','E','忘记打卡(无凭证)','E1','忘记打卡(有凭证)','') RECORD_TYPE,
+			       AR_GET_MAC_APPLY_CNT(AP.PERSON_ID,AP.CPNY_ID,TO_DATE(AP.APPLY_DATE,'YYYY-MM-DD')) MAC_APPLY_CNT
+			  FROM AR_MAC_RECORDS_APPLY AP,
+			       HR_EMPLOYEE          H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			<![CDATA[
+				H.CPNY_ID = #interCpnyID:VARCHAR#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			<![CDATA[
+				AP.RECORD_NO = #APPLY_NO#
+	 		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="RECORD_NO">
+			<![CDATA[
+				AP.RECORD_NO = #RECORD_NO#
+	 		]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getEssArMacTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  	SELECT pa.EMPID,
+			       pa.APPLY_NAME,
+			       to_char(pa.APPLY_DATE,'yyyy-mm-dd') APPLY_DATE,
+			       PA.APPLY_TIME,
+			       pa.REMARK,
+			       pa.DOOR_TYPE,
+			       pa.UPLOAD_ERROR_MSG,
+			       pa.LINE_ID,
+			       pa.RESULT_FLAG,
+			       hr.local_name UPLOAD_BY,
+			       to_char(pa.UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE,
+			       pa.CPNY_ID
+			from AR_MAC_RECORDS_APPLY_TEMP pa,
+			hr_employee hr
+			where pa.UPLOAD_BY = hr.person_id
+			and UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY pa.LINE_ID
+		]]>
+	</select>
+	
+	<select id="getEssArMacTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from AR_MAC_RECORDS_APPLY_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getEssArMacTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from AR_MAC_RECORDS_APPLY_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	
+	
+	<select id="getEssArMacList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  	SELECT hr.EMPID,
+			       HR.LOCAL_NAME,
+			       TO_CHAR(PA.R_TIME,'yyyy-mm-dd') APPLY_DATE,
+			       TO_CHAR(PA.R_TIME,'HH24:MI') APPLY_TIME,
+			       pa.REMARK,
+			       pa.DOOR_TYPE,
+			       pa.RECORD_NO,
+			       AR_GET_MAC_APPLY_CNT(pa.PERSON_ID,pa.CPNY_ID,TO_DATE(pa.APPLY_DATE,'YYYY-MM-DD')) MAC_APPLY_CNT
+			from AR_MAC_RECORDS_APPLY_BATCH pa,
+				 hr_employee hr
+			where pa.person_id = hr.person_id
+			  and PA.BATCH_RECORD_NO = #APPLY_NO#
+		]]>
+	</select>
+	
+	<select id="getEssArMacCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  	SELECT count(1)
+			from AR_MAC_RECORDS_APPLY_BATCH pa,
+				 hr_employee hr
+			where pa.person_id = hr.person_id
+			  and PA.BATCH_RECORD_NO = #APPLY_NO#
+		]]>
+	</select>
+	
+	
+	<!-- 提交休假-->
+	<update id="submitTempArMacApply" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE AR_MAC_RECORDS_APPLY
+				SET AFFIRM_FLAG = 0,
+				UPDATED_BY = #UPDATED_BY#,
+				UPDATE_DATE = SYSDATE
+			 WHERE RECORD_NO = #APPLY_NO:VARCHAR#
+		]]>
+	</update>
+	
+	
+	<select id="getEssArMacBatchList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  	SELECT APP.RECORD_NO,
+	             APP.PERSON_ID,
+	             APP.DOOR_TYPE,
+	             APP.APPLY_DATE,
+	             APP.APPLY_DATE AR_FROM_TIME,
+	             APP.APPLY_DATE AR_TO_TIME,
+	             TO_CHAR(APP.R_TIME, 'YYYY-MM-DD HH24:MI:SS') R_TIME,
+	             APP.REMARK,
+	             APP.BATCH_RECORD_NO,
+	             APP.LASTMONTH_YN
+	        FROM AR_MAC_RECORDS_APPLY_BATCH APP
+	       WHERE APP.BATCH_RECORD_NO = #RECORD_NO:VARCHAR#
+		]]>
+	</select>
+	
+	
+	<update id="updateCurrentAffirmId" parameterClass="linkMap">
+		<![CDATA[	
+	  		UPDATE AR_MAC_RECORDS_APPLY A
+		   	   SET UPDATE_DATE = SYSDATE,
+			  	   UPDATED_BY = #PERSON_ID:VARCHAR#,
+			  	   CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#	
+			WHERE RECORD_NO = #APPLY_NO:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	
+	<insert id="insertLeaveApplyResultForArApplyAfterForMacBatch">
+		<![CDATA[	
+			insert into ar_shift_change
+			  (no, person_id, cpny_id, date_str,  create_date, end_date_str,CHANGE_TYPE)
+			  (SELECT ar_shift_change_seq.nextval,
+			          A.PERSON_ID,
+			          B.CPNY_ID,
+			          TO_CHAR(TO_DATE(A.APPLY_DATE,'YYYY-MM-DD') - 1,'YYYY/MM/DD'),
+			   		  sysdate,
+			          TO_CHAR(TO_DATE(A.APPLY_DATE,'YYYY-MM-DD'),'YYYY/MM/DD'),
+			          '漏刷卡取消'
+			   	FROM AR_MAC_RECORDS_APPLY_BATCH A,
+			   		 AR_MAC_RECORDS_APPLY B
+			   WHERE A.BATCH_RECORD_NO = B.RECORD_NO
+			   	 AND B.RECORD_NO = #APPLY_NO:VARCHAR#)
+		]]>
+	</insert>
+	
+	
+	<select id="isXiuXi" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+		<![CDATA[
+			SELECT NVL(SUM(1),0) FROM DUAL
+		     WHERE GET_AR_DATETYPE_DETAIL(#PERSON_ID:VARCHAR#,TO_CHAR(to_date(#R_TIME:VARCHAR#,'YYYY-MM-DD HH24:MI:SS'),'YYYY/MM/DD'),#CPNY_ID:VARCHAR#) = '1440'
+		    ]]>
+ 	</select>
+</sqlMap>

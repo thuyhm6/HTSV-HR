@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "sql-map-2.dtd" >
+<sqlMap namespace="sys.notice">
+	<select id="getNoticeInfo" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.ID, T.TITLE, T.CONTENT, to_char(T.FROM_DATE,'DD/MM/YYYY') FROM_DATE, to_char(T.TO_DATE,'DD/MM/YYYY') TO_DATE,T.CPNY_ID,T.COLOR_FLAG
+			  FROM NOTICE_INFO T
+			 WHERE 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+				T.FROM_DATE > TO_DATE(#FROM_DATE:VARCHAR#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+				T.TO_DATE < TO_DATE(#TO_DATE:VARCHAR#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TITLE">
+			<![CDATA[
+				upper(T.TITLE) like upper('%$TITLE$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTENT">
+			<![CDATA[
+				upper(T.CONTENT) like upper('%$CONTENT$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				T.CPNY_ID like '%HTSV%'
+			]]>
+		</isNotEmpty>
+		ORDER BY CREATE_DATE DESC
+	</select>
+	<select id="getNoticeInfoCn" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM NOTICE_INFO T
+			 WHERE T.CPNY_ID = #interCpnyID#
+		]]>
+		<isNotEmpty prepend="AND" property="FROM_DATE">
+			<![CDATA[
+				T.FROM_DATE > TO_DATE(#FROM_DATE:VARCHAR#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_DATE">
+			<![CDATA[
+				T.TO_DATE < TO_DATE(#TO_DATE:VARCHAR#,'DD/MM/YYYY')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TITLE">
+			<![CDATA[
+				upper(T.TITLE) like upper('%$TITLE$%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTENT">
+			<![CDATA[
+				upper(T.CONTENT) like upper('%$CONTENT$%')
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getNoticeInfoById" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.ID, T.TITLE, T.CONTENT, to_char(T.FROM_DATE,'dd/mm/yyyy') FROM_DATE, to_char(T.TO_DATE,'dd/mm/yyyy') TO_DATE,T.CPNY_ID,
+			T.FILE_NAME,T.FILE_URL,T.CREATED_BY,T.COLOR_FLAG
+			  FROM NOTICE_INFO T
+			 WHERE T.ID = #ID#
+		]]>
+	</select>
+	
+	<!-- 添加公告信息序列查询 -->
+	<select id="getNoticeInfoSeq" parameterClass="linkMap"
+		resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT NOTICE_INFO_SEQ.NEXTVAL FROM DUAL
+		]]>
+	</select> 
+	
+	<insert id="insertNoticeInfo" parameterClass="linkMap">
+		<![CDATA[
+			 INSERT INTO NOTICE_INFO
+			   (ID,
+			    TITLE,
+			    CONTENT,
+			    CPNY_ID,
+			    FROM_DATE,
+			    TO_DATE,
+			    ACTIVITY,
+			    FILE_NAME,
+			    FILE_URL,
+			    CREATE_DATE,
+			    CREATED_BY,
+			    COLOR_FLAG)
+			 VALUES
+			   (#NOTICE_NO:VARCHAR#,
+			    #TITLE:VARCHAR#,
+			    #CONTENT:VARCHAR#,
+			    #CPNY_ID:VARCHAR#,
+			    TO_DATE(#FROM_DATE:VARCHAR#, 'DD/MM/YYYY'),
+   				TO_DATE(#TO_DATE:VARCHAR#, 'DD/MM/YYYY'),
+			    1,
+			    #FILE_NAME:VARCHAR#,
+			    #FILE_URL:VARCHAR#,
+			    SYSDATE,
+			    #CREATE_BY:VARCHAR#,
+			    #COLOR_FLAG:VARCHAR#)
+		]]>
+	</insert>
+	<update id="updateNoticeInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE NOTICE_INFO T
+			   SET T.TITLE     = #TITLE#,
+			   	   T.CONTENT     = #CONTENT#,
+			       T.FROM_DATE   = TO_DATE(#FROM_DATE#, 'DD/MM/YYYY'),
+			       T.TO_DATE     = TO_DATE(#TO_DATE#, 'DD/MM/YYYY'),
+			       T.CPNY_ID     = #CPNY_ID#,
+			       T.UPDATE_DATE = SYSDATE,
+			       T.UPDATED_BY  = #adminID#
+			 WHERE T.ID = #ID#
+				
+		]]>
+	</update>
+	<delete id="delNoticeInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM  NOTICE_INFO T WHERE T.ID = #ID#
+		]]>
+	</delete>
+	<delete id="delOverNoticeInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM NOTICE_INFO T
+			 WHERE SYSDATE > ADD_MONTHS(T.TO_DATE, CEIL(T.PERIOD * 12))
+			  AND T.CPNY_ID = #interCpnyID#
+		]]>
+	</delete>
+</sqlMap>

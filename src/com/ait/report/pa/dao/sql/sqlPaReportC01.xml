@@ -1,0 +1,1216 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.pac01">
+    <select id="getPaActualSalaryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT MIN(PA_MONTH) PA_MONTH,
+			       MIN(CPNY_ID) CPNY_ID,
+			       MIN(DEPT_DISTINGUISH_NO) DEPT_DISTINGUISH_NO,
+			       MIN(DEPT_DISTINGUISH_NAME) DEPT_DISTINGUISH_NAME,
+			       MAX(DEPT_TYPE) DEPT_TYPE,
+			       MAX(DEPT_TYPE_NAME) DEPT_TYPE_NAME,
+			       (CASE
+			         WHEN (grouping(TT.TYPE_TOTAL) = 0 AND
+			              grouping(TT.DEPT_TYPE_NAME) = 0 AND
+			              grouping(TT.DEPT_DISTINGUISH_NAME) = 1) THEN
+			          'AREA_TOTAL'
+			         WHEN (grouping(TT.TYPE_TOTAL) = 0 AND
+			              grouping(TT.DEPT_TYPE_NAME) = 1 AND
+			              grouping(TT.DEPT_DISTINGUISH_NAME) = 1) THEN
+			          'AREA2_TOTAL'
+			         WHEN (grouping(TT.TYPE_TOTAL) = 1 AND
+			              grouping(TT.DEPT_TYPE_NAME) = 1 AND
+			              grouping(TT.DEPT_DISTINGUISH_NAME) = 1) THEN
+			          'COM_TOTAL'
+			         ELSE
+			          TT.DEPT_DISTINGUISH_NAME
+			       END) AS TYPE_TOTAL,
+			       
+			       SUM(PACNT) PACNT,
+			       SUM(BASE_SALARY) BASE_SALARY,
+			       SUM(ALLOWANCE_TOTAL) ALLOWANCE_TOTAL,
+			       SUM(RESIDENT_OUTSIDE_ALLOWANCE) RESIDENT_OUTSIDE_ALLOWANCE,
+			       SUM(OT_TOTAL) OT_TOTAL,
+			       
+			       SUM(SICK_LEAVE_PAYROLL) SICK_LEAVE_PAYROLL,
+			       SUM(MATERNITY_LEAVE_SALARY) MATERNITY_LEAVE_SALARY,
+			       SUM(HERT_WORK_SALARY) HERT_WORK_SALARY,
+			       SUM(DELAY_MEAL_ALLOWANCE) DELAY_MEAL_ALLOWANCE,
+			       SUM(OTHER_ALLOWANCE_TOTAL) OTHER_ALLOWANCE_TOTAL,
+			       
+			       SUM(BEFORE_TAXABLE_PAY_PLUS) BEFORE_TAXABLE_PAY_PLUS,
+			       SUM(BEFORE_TAXABLE_PAY_DEDUCT) BEFORE_TAXABLE_PAY_DEDUCT,
+			       SUM(PERSONAL_LEAVE_DEDUCTIONS) PERSONAL_LEAVE_DEDUCTIONS,
+			       SUM(SICK_LEAVE_DEDUCTIONS) SICK_LEAVE_DEDUCTIONS,
+			       SUM(BANDH_DEDUCTIONS) BANDH_DEDUCTIONS,
+			       
+			       SUM(ABSENTEEISM_DEDUCTIONS) ABSENTEEISM_DEDUCTIONS,
+			       SUM(NO_FREQUENTLY_DEDUCTIONS) NO_FREQUENTLY_DEDUCTIONS,
+			       SUM(TARDINESS_DEDUCTIONS) TARDINESS_DEDUCTIONS,
+			       SUM(EARLYDAY_DEDUCTIONS) EARLYDAY_DEDUCTIONS,
+			       SUM(OTHER_DEDUCT) OTHER_DEDUCT,
+			       
+			       SUM(SHOULD_RELEASE_SALARY) SHOULD_RELEASE_SALARY,
+			       SUM(TAX_PERSONAL_INCOME) TAX_PERSONAL_INCOME,
+			       SUM(ACCUMULATION_FUND_PERSONAL) ACCUMULATION_FUND_PERSONAL,
+			       SUM(ENDOWMENT_IS_PERSONAL) ENDOWMENT_IS_PERSONAL,
+			       SUM(MEDICAL_INSURANCE_PERSONAL) MEDICAL_INSURANCE_PERSONAL,
+			       
+			       SUM(ILLNESS_MEDICAL_IS_PERSONAL) ILLNESS_MEDICAL_IS_PERSONAL,
+			       SUM(UNEMPLOYMENT_IS_PERSONAL) UNEMPLOYMENT_IS_PERSONAL,
+			       SUM(SOCIAL_SECURITY_AFTER_PER) SOCIAL_SECURITY_AFTER_PER,
+			       SUM(ACCUMULA_FUND_AFTERWARDS_PEL) ACCUMULA_FUND_AFTERWARDS_PEL,
+			       SUM(SOCIAL_SECURITY_TOTAL_PERSONAL) SOCIAL_SECURITY_TOTAL_PERSONAL,
+			       
+			       SUM(LABOR_MANAGE_FEE) LABOR_MANAGE_FEE,
+			       SUM(ONLY_CHILDREN_ALLOWANCE) ONLY_CHILDREN_ALLOWANCE,
+			       SUM(AFTER_TAXABLE_PAY_DEDUCT) AFTER_TAXABLE_PAY_DEDUCT,
+			       SUM(AFTER_TAXABLE_PAY_PLUS) AFTER_TAXABLE_PAY_PLUS,
+			       SUM(ACTUAL_RELEASE_SALARY) ACTUAL_RELEASE_SALARY
+			  FROM (SELECT MIN(PA.PA_MONTH) PA_MONTH,
+			               MIN(PA.CPNY_ID) CPNY_ID,
+			               MIN(PA.DEPT_DISTINGUISH_NO) DEPT_DISTINGUISH_NO,
+			               MIN(PA.DEPT_DISTINGUISH_NAME) DEPT_DISTINGUISH_NAME,
+			               MAX(PA.DEPT_TYPE) DEPT_TYPE,
+			               MAX(PA.DEPT_TYPE_NAME) DEPT_TYPE_NAME,
+			               DECODE(MIN(PA.DEPT_TYPE),
+			                      '15945',
+			                      'MD_TOTAL',
+			                      '15946',
+			                      'MD_TOTAL',
+			                      '15947',
+			                      'MD_TOTAL',
+			                      '15948',
+			                      'MD_TOTAL',
+			                      'ZB_TOTAL') TYPE_TOTAL,
+			               
+			               COUNT(PA.PERSON_ID) PACNT,
+			               SUM(DECODE(PA.EMP_TYPE_CODE, '1369', PA.BASE_SALARY, 0)) BASE_SALARY,
+			               SUM(DECODE(PA.EMP_TYPE_CODE, '1369', 0, PA.BASE_SALARY)) ALLOWANCE_TOTAL,
+			               SUM(NVL(PA.RESIDENT_OUTSIDE_ALLOWANCE, 0)) RESIDENT_OUTSIDE_ALLOWANCE,
+			               SUM(NVL(PA.OT_TOTAL, 0)) OT_TOTAL,
+			               
+			               SUM(NVL(PA.SICK_LEAVE_PAYROLL, 0)) SICK_LEAVE_PAYROLL,
+			               SUM(NVL(PA.MATERNITY_LEAVE_SALARY, 0)) MATERNITY_LEAVE_SALARY,
+			               SUM(0) HERT_WORK_SALARY,
+			               SUM(NVL(PA.DELAY_MEAL_ALLOWANCE, 0)) DELAY_MEAL_ALLOWANCE,
+			               SUM(NVL(PA.LEAN_BONUS, 0) + NVL(PA.SELLING_BONUS, 0) +
+			                   NVL(PA.NIGHT_CONSULTING_ALLOWANCE, 0) +
+			                   NVL(PA.DEVELOP_ALLOWANCE, 0) +
+			                   NVL(PA.DRIVER_ALLOWANCE, 0) +
+			                   NVL(PA.SPEICAL_BAKING_STAR_ALLOW, 0) +
+			                   NVL(PA.SPECIAL_COOKED_FOOD_STAR_ALLOW, 0) +
+			                   NVL(PA.HUANJING_JINTIE, 0) +
+			                   NVL(PA.CREDENTIALS_ALLOWANCE, 0) +
+			                   NVL(PA.SECURITY_ALLOWANCE, 0) +
+			                   NVL(PA.STORE_MASTER_ALLOWANCE, 0) +
+			                   NVL(PA.COOKED_FOOD_STAR_ALLOWANCE, 0) +
+			                   NVL(PA.BIZ_PERFORMANCE_BONUS, 0) +
+			                   NVL(PA.CHECK_BONUS_LLC, 0) +
+			                   NVL(PA.TWO_SHIFT_ALLOWANCE, 0) +
+			                   NVL(PA.POSITION_ALLOWANCE, 0) + NVL(PA.POST_ALLOWANCE, 0) +
+			                   NVL(PA.OTHER_ALLOWANCE, 0) +
+			                   NVL(PA.TECHNOLOGY_ALLOWANCE, 0) +
+			                   NVL(PA.AREA_ALLOWANCE, 0) + NVL(PA.FRESH_ALLOWANCE, 0) +
+			                   NVL(PA.CASHIER_ALLOWANCE, 0) + NVL(PA.LECTURER_BONUS, 0) +
+			                   NVL(PA.NIGHT_SHIFT_ALLOWANCE, 0) +
+			                   NVL(PA.AREA_MASTER_ALLOWANCE, 0) +
+			                   NVL(PA.BAKING_STAR_ALLOWANCE, 0) +
+			                   NVL(PA.DEVELOP_BONUS, 0) + NVL(PA.AREA_ALLOWANCE, 0)) OTHER_ALLOWANCE_TOTAL,
+			               
+			               SUM(NVL(PA.BEFORE_TAXABLE_PAY_PLUS, 0)) BEFORE_TAXABLE_PAY_PLUS,
+			               SUM(NVL(PA.BEFORE_TAXABLE_PAY_DEDUCT, 0)) BEFORE_TAXABLE_PAY_DEDUCT,
+			               SUM(NVL(PA.PERSONAL_LEAVE_DEDUCTIONS, 0)) PERSONAL_LEAVE_DEDUCTIONS,
+			               SUM(NVL(PA.SICK_LEAVE_DEDUCTIONS, 0) +
+			                   NVL(PA.MATERNITY_LEAVE_DEDUCTIONS, 0)) SICK_LEAVE_DEDUCTIONS,
+			               SUM(NVL(PA.BANDH_DEDUCTIONS, 0)) BANDH_DEDUCTIONS,
+			               
+			               SUM(NVL(PA.ABSENTEEISM_DEDUCTIONS, 0)) ABSENTEEISM_DEDUCTIONS,
+			               SUM(NVL(PA.NO_FREQUENTLY_DEDUCTIONS, 0)) NO_FREQUENTLY_DEDUCTIONS,
+			               SUM(NVL(PA.TARDINESS_DEDUCTIONS, 0)) TARDINESS_DEDUCTIONS,
+			               SUM(NVL(PA.EARLYDAY_DEDUCTIONS, 0)) EARLYDAY_DEDUCTIONS,
+			               SUM(NVL(PA.OTHER_DEDUCT, 0)) OTHER_DEDUCT,
+			               
+			               SUM(NVL(PA.SHOULD_RELEASE_SALARY, 0)) SHOULD_RELEASE_SALARY,
+			               SUM(NVL(PA.TAX_PERSONAL_INCOME, 0)) TAX_PERSONAL_INCOME,
+			               SUM(NVL(PA.ACCUMULATION_FUND_PERSONAL, 0)) ACCUMULATION_FUND_PERSONAL,
+			               SUM(NVL(PA.ENDOWMENT_IS_PERSONAL, 0)) ENDOWMENT_IS_PERSONAL,
+			               SUM(NVL(PA.MEDICAL_INSURANCE_PERSONAL, 0)) MEDICAL_INSURANCE_PERSONAL,
+			               
+			               SUM(NVL(PA.ILLNESS_MEDICAL_IS_PERSONAL, 0)) ILLNESS_MEDICAL_IS_PERSONAL,
+			               SUM(NVL(PA.UNEMPLOYMENT_IS_PERSONAL, 0)) UNEMPLOYMENT_IS_PERSONAL,
+			               SUM(NVL(PA.SOCIAL_SECURITY_AFTER_PER, 0)) SOCIAL_SECURITY_AFTER_PER,
+			               SUM(NVL(PA.ACCUMULA_FUND_AFTERWARDS_PEL, 0)) ACCUMULA_FUND_AFTERWARDS_PEL,
+			               SUM(NVL(PA.SOCIAL_SECURITY_TOTAL_PERSONAL, 0)) SOCIAL_SECURITY_TOTAL_PERSONAL,
+			               SUM(NVL(PA.LABOR_MANAGE_FEE, 0)) LABOR_MANAGE_FEE,
+			               
+			               SUM(NVL(PA.ONLY_CHILDREN_ALLOWANCE, 0)) ONLY_CHILDREN_ALLOWANCE,
+			               SUM(NVL(PA.AFTER_TAXABLE_PAY_DEDUCT, 0)) AFTER_TAXABLE_PAY_DEDUCT,
+			               SUM(NVL(PA.AFTER_TAXABLE_PAY_PLUS, 0)) AFTER_TAXABLE_PAY_PLUS,
+			               SUM(NVL(PA.ACTUAL_RELEASE_SALARY, 0)) ACTUAL_RELEASE_SALARY
+			          FROM PA_SUMMARY_C01 PA
+			         WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					PA.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				PA.DEPTNO IN (SELECT E.DEPTNO
+                      FROM PA_SUPERVISOR_INFO E
+                     WHERE PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		      		GROUP by PA.DEPT_DISTINGUISH_NAME) TT
+		 GROUP BY TT.CPNY_ID,
+		          rollup(TT.TYPE_TOTAL, TT.DEPT_TYPE_NAME, TT.DEPT_DISTINGUISH_NAME)
+		 ORDER BY TT.CPNY_ID,
+		          TT.TYPE_TOTAL,
+		          TT.DEPT_TYPE_NAME,
+		          TT.DEPT_DISTINGUISH_NAME
+		]]>
+		
+	</select>
+	
+	<select id="getPaPayrollCostsList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT MIN(PA_MONTH) PA_MONTH,
+			       MIN(CPNY_ID) CPNY_ID,
+			       MIN(DEPT_DISTINGUISH_NO) DEPT_DISTINGUISH_NO,
+			       MIN(DEPT_DISTINGUISH_NAME) DEPT_DISTINGUISH_NAME,
+			       MIN(DEPT_TYPE) DEPT_TYPE,
+			       MIN(DEPT_TYPE_NAME) DEPT_TYPE_NAME,
+			       (CASE
+			         WHEN (grouping(TT.TYPE_TOTAL) = 0 AND
+			              grouping(TT.DEPT_TYPE_NAME) = 0 AND
+			              grouping(TT.DEPT_DISTINGUISH_NAME) = 1) THEN
+			          'AREA_TOTAL'
+			         WHEN (grouping(TT.TYPE_TOTAL) = 0 AND
+			              grouping(TT.DEPT_TYPE_NAME) = 1 AND
+			              grouping(TT.DEPT_DISTINGUISH_NAME) = 1) THEN
+			          'AREA2_TOTAL'
+			         WHEN (grouping(TT.TYPE_TOTAL) = 1 AND
+			              grouping(TT.DEPT_TYPE_NAME) = 1 AND
+			              grouping(TT.DEPT_DISTINGUISH_NAME) = 1) THEN
+			          'COM_TOTAL'
+			         ELSE
+			          TT.DEPT_DISTINGUISH_NAME
+			       END) AS TYPE_TOTAL,
+			       SUM(NVL(PACNT, 0)) PACNT,
+			       
+			       SUM(NVL(SHOULD_RELEASE_SALARY, 0)) SHOULD_RELEASE_SALARY,
+			       SUM(NVL(OFFICE_RELEASE_SALARY, 0)) OFFICE_RELEASE_SALARY,
+			       SUM(NVL(ALLOWANCE_RELEASE_SALARY, 0)) ALLOWANCE_RELEASE_SALARY,
+			       SUM(NVL(ENDOWMENT_IS_COMPANY, 0)) ENDOWMENT_IS_COMPANY,
+			       SUM(NVL(ACCUMULATION_FUND_COMPANY, 0)) ACCUMULATION_FUND_COMPANY,
+			       
+			       SUM(NVL(MEDICAL_INSURANCE_COMPANY, 0)) MEDICAL_INSURANCE_COMPANY,
+			       SUM(NVL(UNEMPLOYMENT_IS_COMPANY, 0)) UNEMPLOYMENT_IS_COMPANY,
+			       SUM(NVL(INDUCTRIAL_INSURANCE_COMPANY, 0)) INDUCTRIAL_INSURANCE_COMPANY,
+			       SUM(NVL(BIRTH_INSURANCE_COMPANY, 0)) BIRTH_INSURANCE_COMPANY,
+			       SUM(NVL(ILLNESS_MEDICAL_IS_COMPANY, 0)) ILLNESS_MEDICAL_IS_COMPANY,
+			       
+			       SUM(NVL(SOCIAL_SECURITY_AFTER_COM, 0)) SOCIAL_SECURITY_AFTER_COM,
+			       SUM(NVL(ACCUMULA_FUND_AFTERWARDS_COM, 0)) ACCUMULA_FUND_AFTERWARDS_COM,
+			       SUM(NVL(SOCIAL_SECURITY_TOTAL_COMPANY, 0)) SOCIAL_SECURITY_TOTAL_COMPANY,
+			       SUM(NVL(ONLY_CHILDREN_ALLOWANCE, 0)) ONLY_CHILDREN_ALLOWANCE,
+			       SUM(NVL(LABOR_MANAGE_FEE, 0)) LABOR_MANAGE_FEE,
+			       
+			       SUM(NVL(AFTER_TAXABLE_PAY_PLUS, 0)) AFTER_TAXABLE_PAY_PLUS,
+			       SUM(NVL(PEOPLEWARE_FEE, 0)) PEOPLEWARE_FEE
+			  FROM (SELECT MIN(PA.PA_MONTH) PA_MONTH,
+			               MIN(PA.CPNY_ID) CPNY_ID,
+			               MIN(PA.DEPT_DISTINGUISH_NO) DEPT_DISTINGUISH_NO,
+			               MIN(PA.DEPT_DISTINGUISH_NAME) DEPT_DISTINGUISH_NAME,
+			               MAX(PA.DEPT_TYPE) DEPT_TYPE,
+			               MAX(PA.DEPT_TYPE_NAME) DEPT_TYPE_NAME,
+			               DECODE(MIN(PA.DEPT_TYPE),
+			                      '15945',
+			                      'MD_TOTAL',
+			                      '15946',
+			                      'MD_TOTAL',
+			                      '15947',
+			                      'MD_TOTAL',
+			                      '15948',
+			                      'MD_TOTAL',
+			                      'ZB_TOTAL') TYPE_TOTAL,
+			               COUNT(PA.PERSON_ID) PACNT,
+			               
+			               SUM(NVL(PA.SHOULD_RELEASE_SALARY, 0)) SHOULD_RELEASE_SALARY,
+			               SUM(DECODE(PA.EMP_TYPE_CODE,
+			                          '1369',
+			                          PA.SHOULD_RELEASE_SALARY,
+			                          0)) OFFICE_RELEASE_SALARY,
+			               SUM(DECODE(PA.EMP_TYPE_CODE,
+			                          '1369',
+			                          0,
+			                          PA.SHOULD_RELEASE_SALARY)) ALLOWANCE_RELEASE_SALARY,
+			               SUM(NVL(PA.ENDOWMENT_IS_COMPANY, 0)) ENDOWMENT_IS_COMPANY,
+			               SUM(NVL(PA.ACCUMULATION_FUND_COMPANY, 0)) ACCUMULATION_FUND_COMPANY,
+			               
+			               SUM(NVL(PA.MEDICAL_INSURANCE_COMPANY, 0)) MEDICAL_INSURANCE_COMPANY,
+			               SUM(NVL(PA.UNEMPLOYMENT_IS_COMPANY, 0)) UNEMPLOYMENT_IS_COMPANY,
+			               SUM(NVL(PA.INDUCTRIAL_INSURANCE_COMPANY, 0)) INDUCTRIAL_INSURANCE_COMPANY,
+			               SUM(NVL(PA.BIRTH_INSURANCE_COMPANY, 0)) BIRTH_INSURANCE_COMPANY,
+			               SUM(NVL(PA.ILLNESS_MEDICAL_IS_COMPANY, 0)) ILLNESS_MEDICAL_IS_COMPANY,
+			               
+			               SUM(NVL(PA.SOCIAL_SECURITY_AFTER_COM, 0)) SOCIAL_SECURITY_AFTER_COM,
+			               SUM(NVL(PA.ACCUMULA_FUND_AFTERWARDS_COM, 0)) ACCUMULA_FUND_AFTERWARDS_COM,
+			               SUM(NVL(PA.SOCIAL_SECURITY_TOTAL_COMPANY, 0)) SOCIAL_SECURITY_TOTAL_COMPANY,
+			               SUM(NVL(PA.ONLY_CHILDREN_ALLOWANCE, 0)) ONLY_CHILDREN_ALLOWANCE,
+			               SUM(NVL(PA.LABOR_MANAGE_FEE, 0)) LABOR_MANAGE_FEE,
+			               
+			               SUM(NVL(PA.AFTER_TAXABLE_PAY_PLUS, 0)) AFTER_TAXABLE_PAY_PLUS,
+			               SUM(NVL(PA.LABOR_MANAGE_FEE, 0) + NVL(PA.PEOPLEWARE_FEE, 0)) PEOPLEWARE_FEE
+			          FROM PA_SUMMARY_C01 PA
+			         WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPTNO">
+				<![CDATA[
+					PA.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				         START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+				        CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				PA.DEPTNO IN (SELECT E.DEPTNO
+                      FROM PA_SUPERVISOR_INFO E
+                     WHERE PERSON_ID = #ADMINID:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+						GROUP BY PA.DEPT_DISTINGUISH_NAME) TT
+		 GROUP BY TT.CPNY_ID,
+		          rollup(TT.TYPE_TOTAL, TT.DEPT_TYPE_NAME, TT.DEPT_DISTINGUISH_NAME)
+		 ORDER BY TT.CPNY_ID,
+		          TT.TYPE_TOTAL,
+		          TT.DEPT_TYPE_NAME,
+		          TT.DEPT_DISTINGUISH_NAME
+		]]>
+	</select>
+	
+	<select id="getSysdate" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SUBSTR(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 0, 4) YEA,
+			       SUBSTR(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 6, 2) MON,
+			       SUBSTR(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 9, 2) DAT,
+			       TO_CHAR(SYSDATE, 'YYYY-MM-DD') DDATE
+			  FROM DUAL
+		]]>
+	</select>
+	
+	<select id="getLastMonthStr" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT TO_CHAR(ADD_MONTHS(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), -1),'YYYYMM') LAST_MONTHSTR FROM DUAL
+		]]>
+	</select>
+	
+	<select id="getDistinguishNameByNo" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT GG.CONTENT DISTINGUISH_NAME
+			  FROM SY_GLOBAL_NAME GG
+			 WHERE GG.LANGUAGE = #interLanguage:VARCHAR#
+			   AND GG.NO = #DEPT_DISTINGUISH_NO:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getEmpInfoListByMonth" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       STA.CONTENT STATUS,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_STARTED,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DEPT_DISTINGUISH_NAME
+			  FROM HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     GG,
+			       SY_GLOBAL_NAME     STA
+			 WHERE HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HE.STATUS_CODE = STA.NO(+)
+			   AND STA.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HE.STATUS_CODE <> '1375'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				   HE.DATE_STARTED <= LAST_DAY(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'))
+			   AND (HE.DATE_LEFT IS NULL OR
+			       HE.DATE_LEFT >= TO_DATE(TO_CHAR(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'), 'YYYY-MM') || '-01','YYYY-MM-DD'))
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				           AND HD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getRuZhiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DISTINGUISH_NAME,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HE.JOIN_BLOC_DATE, 'YYYY-MM-DD') JOIN_BLOC_DATE,
+			       TO_CHAR(HEI.START_DATE, 'YYYY-MM-DD') START_DATE,
+			       PA.STANDARD_SALARY,
+			       PA.BASE_SALARY
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       HR_DEPARTMENT        HD,
+			       SY_GLOBAL_NAME       GG,
+			       PA_SUMMARY_C01       PA
+			 WHERE HE.PERSON_ID = HEI.PERSON_ID
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO
+			   AND GG.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HEI.TRANS_NO = '1359'
+			   AND HEI.TRANS_CODE IN ('12280', '12281')
+			   AND HEI.ACTIVITY = 1
+			   AND HE.EMPID = PA.EMPID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				HEI.START_DATE BETWEEN TO_DATE(#PA_MONTH:VARCHAR# || '01', 'YYYYMMDD') AND LAST_DAY(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'))
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				           AND HD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DATE_STARTED,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getLiZhiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DISTINGUISH_NAME,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       TO_CHAR(HE.JOIN_COMPANY_DATE, 'YYYY-MM-DD') JOIN_COMPANY_DATE,
+			       TO_CHAR(HE.JOIN_BLOC_DATE, 'YYYY-MM-DD') JOIN_BLOC_DATE,
+			       TO_CHAR(HEI.RESIGN_DATE, 'YYYY-MM-DD') RESIGN_DATE,
+			       PA.STANDARD_SALARY,
+			       PA.BASE_SALARY
+			  FROM HR_RESIGNATION     HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME HDN,
+			       HR_DEPARTMENT      HD,
+			       SY_GLOBAL_NAME     GG,
+			       PA_SUMMARY_C01     PA
+			 WHERE HE.PERSON_ID = HEI.PERSON_ID
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO
+			   AND GG.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HEI.ACTIVITY = 1
+			   AND HE.EMPID = PA.EMPID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				HEI.RESIGN_DATE BETWEEN TO_DATE(#PA_MONTH:VARCHAR# || '01', 'YYYYMMDD') AND LAST_DAY(TO_DATE(#PA_MONTH:VARCHAR#, 'YYYYMM'))
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FIRST_DAY">
+			<![CDATA[
+				HEI.RESIGN_DATE = TO_DATE(#FIRST_DAY:VARCHAR# || '01', 'YYYYMMDD')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				           AND HD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DATE_LEFT,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getDiaoDongList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			select ee.empid,
+			       ee.local_name,
+			       he.person_id,
+			       he.exp_inside_no,
+			       he.deptno new_deptno,
+			       hnn.content new_dept,
+			       gn.content new_distinguish,
+			       hd.deptno old_deptno,
+			       hno.content old_dept,
+			       gg.content old_distinguish,
+			       to_char(he.start_date,'yyyy-mm-dd') start_date,
+			       pa.standard_salary,
+			       pa.base_salary
+			  from hr_experience_inside he,
+			       hr_emp_dept          hd,
+			       hr_department        hn,
+			       hr_department_name   hnn,
+			       sy_global_name       gn,
+			       hr_department        ho,
+			       hr_department_name   hno,
+			       sy_global_name       gg,
+			       hr_employee          ee,
+                   pa_summary_c01       pa
+			 where ee.person_id = he.person_id
+			   and he.exp_inside_no = hd.e_exp_inside_no
+			   and he.deptno = hn.deptno
+			   and hn.deptno = hnn.deptno
+			   and hnn.language = #interLanguage:VARCHAR#
+			   and hn.dept_distinguish_no = gn.no
+			   and gn.language = #interLanguage:VARCHAR#
+			   and hd.deptno = ho.deptno
+			   and ho.deptno = hno.deptno
+			   and hno.language = #interLanguage:VARCHAR#
+			   and ho.dept_distinguish_no = gg.no
+			   and gg.language = #interLanguage:VARCHAR#
+			   and ee.empid = pa.empid(+)
+			   and he.trans_no = '1365'
+			   and he.trans_code = '15861'
+			   and he.activity = 1
+			   and hn.dept_distinguish_no <> ho.dept_distinguish_no
+		]]>
+		<isNotEmpty prepend="AND" property="DIAORU_NO">
+			<![CDATA[
+				hn.dept_distinguish_no = #DIAORU_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DIAOCHU_NO">
+			<![CDATA[
+				ho.dept_distinguish_no = #DIAOCHU_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				he.start_date between to_date(#PA_MONTH:VARCHAR# || '01','yyyymmdd') and last_day(to_date(#PA_MONTH:VARCHAR#,'yyyymm'))
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				pa.pa_month = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				ee.cpny_id = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+				(HE.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#)
+				OR 
+				HD.DEPTNO IN (SELECT E.DEPTNO
+                      FROM SY_USER_DEPT E, SY_USER F, HR_EMPLOYEE HE
+                     WHERE E.USER_NO = F.USER_NO
+                       AND HE.PERSON_ID = F.PERSON_ID
+                       AND F.PERSON_ID = #ADMINID:VARCHAR#))
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		
+		]]>
+	</select>
+	
+	<select id="getPaInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT PA.PA_MONTH,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       PA.DEPTNO,
+			       PA.DEPT_NAME,
+			       PA.DEPT_DISTINGUISH_NAME,
+			       PA.CREATED_BY
+			  FROM PA_SUMMARY_C01 PA
+			 WHERE 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					PA.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				           AND HD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA.DEPTNO,PA.EMPID
+		]]>
+	</select>
+	
+	<select id="getEmpInfoListByEmpType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       EMP.CONTENT EMP_TYPE,
+			       ST.CONTENT STATUS,
+			       TO_CHAR(HE.DATE_STARTED,'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT,'YYYY-MM-DD') DATE_LEFT,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DISTINGUISH_NAME
+			  FROM HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     EMP,
+			       SY_GLOBAL_NAME     GG,
+			       SY_GLOBAL_NAME     ST
+			 WHERE HE.CPNY_ID = 'C01'
+			   AND HE.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HE.EMP_TYPE_CODE = EMP.NO(+)
+			   AND EMP.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HE.STATUS_CODE = ST.NO(+)
+			   AND ST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				(HE.DATE_STARTED <= LAST_DAY(TO_DATE(#PA_MONTH:VARCHAR#,'YYYYMM')) OR HE.DATE_STARTED IS NULL)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				(HE.DATE_LEFT IS NULL OR HE.DATE_LEFT >= TO_DATE(#PA_MONTH:VARCHAR# || '01','YYYYMMDD'))
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="EMP_TYPE" compareValue="CONTRACT">
+			<![CDATA[
+				HE.EMP_TYPE_CODE IN('1369')
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="EMP_TYPE" compareValue="LOBAR">
+			<![CDATA[
+				HE.EMP_TYPE_CODE IN('3943','3936','3942','14889','14890')
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="EMP_TYPE" compareValue="HOUR">
+			<![CDATA[
+				HE.EMP_TYPE_CODE IN('3945','3946','14888','1371','3944','3947')
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="EMP_TYPE" compareValue="DISPATCH">
+			<![CDATA[
+				HE.EMP_TYPE_CODE IN('1370')
+			]]>
+		</isEqual>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					HE.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				           AND HD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getDispatchEmpInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       EMP.CONTENT EMP_TYPE,
+			       ST.CONTENT STATUS,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DISTINGUISH_NAME,
+			       SA.CONTENT SOCIAL_SECURITY,
+			       WA.CONTENT WORK_AREA
+			  FROM HR_EMPLOYEE        HE,
+			       PA_SUMMARY_C01     PA,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     EMP,
+			       SY_GLOBAL_NAME     GG,
+			       SY_GLOBAL_NAME     ST,
+			       SY_GLOBAL_NAME     SA,
+			       SY_GLOBAL_NAME     WA
+			 WHERE HE.CPNY_ID = 'C01'
+			   AND HE.EMPID = PA.EMPID(+)
+			   AND PA.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HE.EMP_TYPE_CODE = EMP.NO(+)
+			   AND EMP.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HE.STATUS_CODE = ST.NO(+)
+			   AND ST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND PA.SOCIAL_SECURITY_AREA = SA.NO(+)
+			   AND SA.LANGUAGE = #interLanguage:VARCHAR#
+			   AND PA.WORK_AREA = WA.NO(+)
+			   AND WA.LANGUAGE = #interLanguage:VARCHAR#
+			   AND PA.SOCIAL_SECURITY_AREA <> PA.WORK_AREA
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="DEPT_DISTINGUISH_NO">
+			<isEqual prepend="AND" property="DISPATCH_TYPE" compareValue="DISPATCH_IN">
+				<![CDATA[
+					PA.WORK_AREA = #DEPT_DISTINGUISH_NO:VARCHAR#
+				]]>
+			</isEqual>
+			<isEqual prepend="AND" property="DISPATCH_TYPE" compareValue="DISPATCH_OUT">
+				<![CDATA[
+					PA.SOCIAL_SECURITY_AREA = #DEPT_DISTINGUISH_NO:VARCHAR#
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<![CDATA[	
+			ORDER BY PA.DEPTNO,PA.EMPID
+		]]>
+	</select>
+	
+	<select id="getActualSalaryZeroList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       EMP.CONTENT EMP_TYPE,
+			       ST.CONTENT STATUS,
+			       TO_CHAR(HE.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HE.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DISTINGUISH_NAME,
+			       PA.ACTUAL_RELEASE_SALARY,
+			       pa.DEPT_DISTINGUISH_NO
+			  FROM HR_EMPLOYEE        HE,
+			       PA_SUMMARY_C01     PA,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME     EMP,
+			       SY_GLOBAL_NAME     GG,
+			       SY_GLOBAL_NAME     ST
+			 WHERE HE.CPNY_ID = 'C01'
+			   AND HE.EMPID = PA.EMPID(+)
+			   AND PA.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDN.DEPTNO
+			   AND HDN.LANGUAGE = 'zh'
+			   AND HE.EMP_TYPE_CODE = EMP.NO(+)
+			   AND EMP.LANGUAGE(+) = 'zh'
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = 'zh'
+			   AND HE.STATUS_CODE = ST.NO(+)
+			   AND ST.LANGUAGE(+) = 'zh'
+			   AND PA.ACTUAL_RELEASE_SALARY = 0
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty property="CPNY_ID">
+			<isNotEmpty prepend="AND" property="DEPT_DISTINGUISH_NO">
+				<![CDATA[
+					PA.DEPTNO IN
+				       (SELECT HD.DEPTNO
+				          FROM HR_DEPARTMENT HD
+				         WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+				           AND HD.DEPT_DISTINGUISH_NO = #DEPT_DISTINGUISH_NO:VARCHAR#)
+				]]>
+			</isNotEmpty>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	<select id="getAbnormalInsExcelList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT * FROM (   
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.ENDOWMENT_IS_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.ENDOWMENT_IS_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.ENDOWMENT_IS_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.ENDOWMENT_IS_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('养老保险') SUM_NAME,
+			          MIN('1') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.ENDOWMENT_IS_COMPANY IS NOT NULL 
+			     AND PA.ENDOWMENT_IS_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#)
+			  UNION ALL
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.MEDICAL_INSURANCE_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.MEDICAL_INSURANCE_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.MEDICAL_INSURANCE_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.MEDICAL_INSURANCE_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('医疗保险') SUM_NAME,
+			          MIN('2') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.MEDICAL_INSURANCE_COMPANY IS NOT NULL 
+			     AND PA.MEDICAL_INSURANCE_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#)
+			  UNION ALL
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.UNEMPLOYMENT_IS_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.UNEMPLOYMENT_IS_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.UNEMPLOYMENT_IS_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.UNEMPLOYMENT_IS_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('失业保险') SUM_NAME,
+			          MIN('3') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.UNEMPLOYMENT_IS_COMPANY IS NOT NULL 
+			     AND PA.UNEMPLOYMENT_IS_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#)
+			  UNION ALL
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.BIRTH_INSURANCE_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.BIRTH_INSURANCE_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.BIRTH_INSURANCE_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.BIRTH_INSURANCE_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('生育保险') SUM_NAME,
+			          MIN('4') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.BIRTH_INSURANCE_COMPANY IS NOT NULL 
+			     AND PA.BIRTH_INSURANCE_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#)                      
+			  UNION ALL
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.INDUCTRIAL_INSURANCE_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.INDUCTRIAL_INSURANCE_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.INDUCTRIAL_INSURANCE_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.INDUCTRIAL_INSURANCE_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('工伤保险') SUM_NAME,
+			          MIN('5') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.INDUCTRIAL_INSURANCE_COMPANY IS NOT NULL 
+			     AND PA.INDUCTRIAL_INSURANCE_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#)
+			  UNION ALL
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.ILLNESS_MEDICAL_IS_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.ILLNESS_MEDICAL_IS_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.ILLNESS_MEDICAL_IS_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.ILLNESS_MEDICAL_IS_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('大病医疗') SUM_NAME,
+			          MIN('6') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.ILLNESS_MEDICAL_IS_COMPANY IS NOT NULL 
+			     AND PA.ILLNESS_MEDICAL_IS_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#)
+			  UNION ALL
+			  SELECT COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END) LAST_CNT,
+			         COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) SYS_CNT,
+			         (COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #PA_MONTH:VARCHAR# THEN '1' ELSE NULL END) - 
+			          COUNT(CASE NVL(PA.PA_MONTH, 'NO') WHEN #LAST_MONTH:VARCHAR# THEN '1' ELSE NULL END)) ADD_CNT,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.ACCUMULATION_FUND_COMPANY ELSE NULL END) LAST_SUM,
+			         SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.ACCUMULATION_FUND_COMPANY ELSE NULL END) SYS_SUM,
+			         (SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #PA_MONTH:VARCHAR# THEN PA.ACCUMULATION_FUND_COMPANY ELSE NULL END) - 
+			          SUM(CASE NVL(PA.PA_MONTH, '0') WHEN #LAST_MONTH:VARCHAR# THEN PA.ACCUMULATION_FUND_COMPANY ELSE NULL END)) ADD_SUM,
+			          MIN('公积金') SUM_NAME,
+			          MIN('7') SUM_TYPE
+			    FROM PA_SUMMARY_C01 PA
+			   WHERE PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			     AND (PA.PA_MONTH = #PA_MONTH:VARCHAR# OR PA.PA_MONTH = #LAST_MONTH:VARCHAR#)
+			     AND PA.ACCUMULATION_FUND_COMPANY IS NOT NULL 
+			     AND PA.ACCUMULATION_FUND_COMPANY <> 0
+			     AND PA.DEPTNO IN
+			         (SELECT HD.DEPTNO
+			            FROM HR_DEPARTMENT HD
+			           WHERE HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			           START WITH HD.DEPTNO = #DEPTNO:VARCHAR#
+			          CONNECT BY PRIOR HD.DEPTNO = HD.PARENT_DEPT_NO)
+			     AND PA.DEPTNO IN (SELECT PP.DEPTNO FROM PA_SUPERVISOR_INFO PP WHERE PP.PERSON_ID = #ADMINID:VARCHAR#) 
+			) TT ORDER BY TT.SUM_TYPE
+		]]>
+	</select>
+	
+	<select id="getDispatchEmpPaExcelList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT PA.EMPID,
+			       PA.LOCAL_NAME,
+			       get_dept_name(DEPTNO, 'zh') DEPT_NAME,
+			       DEPT_DISTINGUISH_NAME,
+			       WORK_AREA_NAME ,
+			       SOCIAL_SECURITY_AREA_NAME,
+			       
+			       ENDOWMENT_BASE_CAL_COMPANY,
+			       ENDOWMENT_PROPORTION_COM,
+			       ENDOWMENT_IS_COMPANY,
+			       
+			       MEDICAL_BASE_CAL_COMPANY,
+			       MEDICAL_PROPORTION_COM,
+			       MEDICAL_INSURANCE_COMPANY,
+			       
+			       ILLNESS_MEDICAL_FLAG_COM,
+			       ILLNESS_MEDICAL_PRO_COMPANY,
+			       ILLNESS_MEDICAL_IS_COMPANY,
+			       
+			       UNEMPLOYMENT_CAL_COM,
+			       UNEMPLOYMENT_PROPORTION_COM,
+			       UNEMPLOYMENT_IS_COMPANY,
+			       
+			       INDUCTRIAL_INJURY_CAR_CNY,
+			       INDUCTRIAL_INJURY_PRO_COM,
+			       INDUCTRIAL_INSURANCE_COMPANY,
+			       
+			       BIRTH_INSURANCE_CAL_COMPANY,
+			       BIRTH_PROPORTION,
+			       BIRTH_INSURANCE_COMPANY,
+			       
+			       ACCUMULATION_FUND_CAL_COMPANY,
+			       ACCUMULA_FUND_PROPORTION_COM,
+			       ACCUMULATION_FUND_COMPANY,
+			       
+			       SOCIAL_SECURITY_AFTER_COM,
+			       ACCUMULA_FUND_AFTERWARDS_COM,
+			       
+			       SOCIAL_SECURITY_TOTAL_COMPANY,
+			       
+			       ENDOWMENT_BASE_CAL_PERSONAL,
+			       ENDOWMENT_PROPORTION_PER,
+			       ENDOWMENT_IS_PERSONAL,
+			       
+			       MEDICAL_BASE_CAL_PERSONAL,
+			       MEDICAL_PROPORTION_PER,
+			       MEDICAL_INSURANCE_PERSONAL,
+			       
+			       ILLNESS_MEDICAL_FLAG_PER,
+			       ILLNESS_MEDICAL_PRO_PER,
+			       ILLNESS_MEDICAL_IS_PERSONAL,
+			       
+			       UNEMPLOYMENT_CAL_PER,
+			       UNEMPLOYMENT_PROPORTION_PER,
+			       UNEMPLOYMENT_IS_PERSONAL,
+			       
+			       ACCUMULATION_FUND_CAL_PERSONAL,
+			       ACCUMULA_FUND_PROPORTION_PEL,
+			       ACCUMULATION_FUND_PERSONAL,
+			       
+			       ACCUMULA_FUND_AFTERWARDS_PEL,
+			       SOCIAL_SECURITY_AFTER_PER,
+			       
+			       SOCIAL_SECURITY_TOTAL_PERSONAL,
+			       SOCIAL_SECURITY_TOTAL_COMPANY + SOCIAL_SECURITY_TOTAL_PERSONAL SOCIAL_SECURITY_TOTAL
+			  FROM PA_SUMMARY_C01 PA
+			 WHERE 1 = 1
+			  AND (WORK_AREA_NAME <> SOCIAL_SECURITY_AREA_NAME OR WORK_AREA_NAME IS NULL OR SOCIAL_SECURITY_AREA_NAME IS NULL)
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				DEPTNO IN (SELECT DEPTNO
+                    FROM HR_DEPARTMENT HD
+                   START WITH DEPTNO = #DEPTNO:VARCHAR#
+                  CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(EMPID LIKE '%'||#EMPID:VARCHAR#||'%' OR LOCAL_NAME LIKE '%'||#EMPID:VARCHAR#||'%')
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		 ORDER BY DEPT_DISTINGUISH_NAME,
+		          WORK_AREA_NAME,
+		          SOCIAL_SECURITY_AREA_NAME,
+		          DEPTNO,
+		          EMPID
+		]]>
+	</select>
+	
+	<select id="getDispatchEmpInsExcelList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT PA.EMPID,
+			       PA.LOCAL_NAME,
+			       get_dept_name(DEPTNO, 'zh') DEPT_NAME,
+			       DEPT_DISTINGUISH_NAME,
+			       WORK_AREA_NAME,
+			       get_global_name(POST_GRADE_NO,'zh') POST_GRADE_NAME,
+			       to_char(PA.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       SOCIAL_SECURITY_AREA_NAME,
+			       
+			       STANDARD_SALARY,
+			       RESIDENT_OUTSIDE_ALLOWANCE,
+			       ALLOWANCE_TOTAL - RESIDENT_OUTSIDE_ALLOWANCE ALLOWANCE_TOTAL,
+			       SHOULD_RELEASE_SALARY,
+			       
+			       ENDOWMENT_BASE_CAL_COMPANY,
+			       ENDOWMENT_PROPORTION_COM,
+			       ENDOWMENT_IS_COMPANY,
+			       
+			       MEDICAL_BASE_CAL_COMPANY,
+			       MEDICAL_PROPORTION_COM,
+			       MEDICAL_INSURANCE_COMPANY,
+			       
+			       ILLNESS_MEDICAL_FLAG_COM,
+			       ILLNESS_MEDICAL_PRO_COMPANY,
+			       ILLNESS_MEDICAL_IS_COMPANY,
+			       
+			       UNEMPLOYMENT_CAL_COM,
+			       UNEMPLOYMENT_PROPORTION_COM,
+			       UNEMPLOYMENT_IS_COMPANY,
+			       
+			       INDUCTRIAL_INJURY_CAR_CNY,
+			       INDUCTRIAL_INJURY_PRO_COM,
+			       INDUCTRIAL_INSURANCE_COMPANY,
+			       
+			       BIRTH_INSURANCE_CAL_COMPANY,
+			       BIRTH_PROPORTION,
+			       BIRTH_INSURANCE_COMPANY,
+			       
+			       ACCUMULATION_FUND_CAL_COMPANY,
+			       ACCUMULA_FUND_PROPORTION_COM,
+			       ACCUMULATION_FUND_COMPANY,
+			       
+			       SOCIAL_SECURITY_AFTER_COM,
+			       ACCUMULA_FUND_AFTERWARDS_COM,
+			       
+			       SOCIAL_SECURITY_TOTAL_COMPANY,
+			       ENDOWMENT_IS_COMPANY + MEDICAL_INSURANCE_COMPANY +
+			       ILLNESS_MEDICAL_IS_COMPANY + UNEMPLOYMENT_IS_COMPANY +
+			       INDUCTRIAL_INSURANCE_COMPANY + BIRTH_INSURANCE_COMPANY +
+			       ACCUMULATION_FUND_COMPANY COMPANY_INS_TOTAL,
+			       
+			       ENDOWMENT_BASE_CAL_PERSONAL,
+			       ENDOWMENT_PROPORTION_PER,
+			       ENDOWMENT_IS_PERSONAL,
+			       
+			       MEDICAL_BASE_CAL_PERSONAL,
+			       MEDICAL_PROPORTION_PER,
+			       MEDICAL_INSURANCE_PERSONAL,
+			       
+			       ILLNESS_MEDICAL_FLAG_PER,
+			       ILLNESS_MEDICAL_PRO_PER,
+			       ILLNESS_MEDICAL_IS_PERSONAL,
+			       
+			       UNEMPLOYMENT_CAL_PER,
+			       UNEMPLOYMENT_PROPORTION_PER,
+			       UNEMPLOYMENT_IS_PERSONAL,
+			       
+			       ACCUMULATION_FUND_CAL_PERSONAL,
+			       ACCUMULA_FUND_PROPORTION_PEL,
+			       ACCUMULATION_FUND_PERSONAL,
+			       
+			       ACCUMULA_FUND_AFTERWARDS_PEL,
+			       SOCIAL_SECURITY_AFTER_PER,
+			       
+			       SOCIAL_SECURITY_TOTAL_PERSONAL,
+			       ENDOWMENT_IS_PERSONAL + MEDICAL_INSURANCE_PERSONAL +
+			       ILLNESS_MEDICAL_IS_PERSONAL + UNEMPLOYMENT_IS_PERSONAL +
+			       ACCUMULATION_FUND_PERSONAL PERSON_INS_TOTAL,
+			       SOCIAL_SECURITY_TOTAL_COMPANY + SOCIAL_SECURITY_TOTAL_PERSONAL SOCIAL_SECURITY_TOTAL
+			       
+			  FROM PA_SUMMARY_C01 PA
+			 WHERE 1 = 1
+			  AND (WORK_AREA_NAME <> SOCIAL_SECURITY_AREA_NAME OR WORK_AREA_NAME IS NULL OR SOCIAL_SECURITY_AREA_NAME IS NULL)
+		]]>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="DEPTNO_INS">
+			<![CDATA[
+				DEPTNO IN (SELECT DEPTNO
+                    FROM HR_DEPARTMENT HD
+                   START WITH DEPTNO = #DEPTNO_INS:VARCHAR#
+                  CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID_INS">
+			<![CDATA[
+				(EMPID LIKE '%'||#EMPID_INS:VARCHAR#||'%' OR LOCAL_NAME LIKE '%'||#EMPID_INS:VARCHAR#||'%')
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		 ORDER BY DEPT_DISTINGUISH_NAME,
+		          WORK_AREA_NAME,
+		          SOCIAL_SECURITY_AREA_NAME,
+		          DEPTNO,
+		          EMPID
+		]]>
+	</select>
+</sqlMap>

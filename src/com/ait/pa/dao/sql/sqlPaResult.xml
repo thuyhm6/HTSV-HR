@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.paResult">
+	<!-- calculate pa  -->
+	<procedure id="paBalance" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_CONFIRM_P_NEW(#PA_SUPERVISOR_ID:VARCHAR#,#CPNY_ID:VARCAHR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<delete id="deleteSelectedOptions" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE 
+			FROM    PA_SALARYCALCULATERESULT S
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="PERSON_ID">
+				PERSON_ID=#PERSON_ID:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="USERNAME">
+				USERNAME=#USERNAME:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				CPNY_ID=#CPNY_ID:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="FUNCTIONFLAG">
+				FUNCTIONFLAG=#FUNCTIONFLAG:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="FUNCTIONFLAG">
+				RESULT_DISTINGUISH=#DISTINGUISH:VARCHAR2#
+			</isNotEmpty>
+		</dynamic>
+	</delete>
+	
+	<select id="selectSelectedOptions" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM
+			PA_SALARYCALCULATERESULT S			
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="PERSON_ID">
+				PERSON_ID=#PERSON_ID:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="USERNAME">
+				USERNAME=#USERNAME:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				CPNY_ID=#CPNY_ID:VARCHAR2#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="FUNCTIONFLAG">
+				FUNCTIONFLAG=#FUNCTIONFLAG:VARCHAR2#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getiPaGiveDate" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT TO_CHAR(T.GIVE_DATE,'YYYY-MM-DD') GIVE_DATE
+			  FROM $TABLE_NAME$ T
+			 WHERE 
+			   	   T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

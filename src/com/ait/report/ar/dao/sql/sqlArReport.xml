@@ -1,0 +1,1080 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.ar">
+
+	<!--
+		SELECT T.CODE_NO, T.DESCRIPTION, T.DEPTH, T.ORDERNO, T.PARENT_CODE_NO,
+		NVL(U.CONTENT,' ') CONTENT FROM SY_CODE T, SY_GLOBAL_NAME U WHERE
+		T.CODE_NO = U.NO(+) AND U.LANGUAGE(+)=#interLanguage:VARCHAR# AND
+		T.ACTIVITY = 1 START WITH T.CODE_NO=#PARENT_CODE_NO:NUMERIC# CONNECT
+		BY PRIOR T.CODE_NO = T.PARENT_CODE_NO ORDER SIBLINGS BY T.ORDERNO
+	-->
+	<select id="getCodeListByParentCode" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		     SELECT T.CODE_NO,
+			        NVL(U.CONTENT, ' ') AS CONTENT,
+			        T.DEPTH,
+			        T.PARENT_CODE_NO,
+			        get_global_name(T.CODE_NO,'ko') KO,
+              		get_global_name(T.CODE_NO,'en') EN,
+              		T.Orderno ORDERNO
+			   FROM SY_CODE T, SY_GLOBAL_NAME U
+			  WHERE U.NO(+) = T.CODE_NO
+			    AND U.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND T.ACTIVITY = 1
+			  START WITH T.PARENT_CODE_NO = #PARENT_CODE_NO:NUMERIC#
+			 CONNECT BY PRIOR T.CODE_NO = T.PARENT_CODE_NO
+			  ORDER SIBLINGS BY T.ORDERNO
+		]]>
+	</select>
+	<select id="getreportList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+			<![CDATA[
+			    SELECT get_global_name(C.REPORT_NO, #interLanguage:VARCHAR#) REPORT_CONTENT,
+				       C.ORDERNO,
+				       C.REPORT_TYPE_NO,
+				       C.URL_JSP
+				  FROM REPORT_CENTER C
+				 WHERE C.ACTIVITY = '1'
+				AND C.CPNY_ID=#CPNY#
+				 ORDER BY C.REPORT_TYPE_NO, C.ORDERNO
+			]]>
+	</select>
+
+	<select id="getArCodeNameByCode" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+			   SELECT DISTINCT(AR.CODE_NO),
+			   SY.CONTENT AS CODE_NAME 
+			   FROM 
+			      (SELECT AL.LEAVE_TYPE_CODE AS CODE_NO FROM ESS_LEAVE_APPLY_TB AL 
+			       UNION ALL SELECT ALB.LEAVE_TYPE_CODE AS CODE_NO FROM ESS_LEAVE_APPLY_TB_BATCH ALB 
+			       UNION ALL SELECT OT.OT_TYPE_CODE AS CODE_NO FROM ESS_APPLY_OT OT 
+			       UNION ALL SELECT OTB.OT_TYPE_CODE AS CODE_NO FROM ESS_APPLY_OT_BATCH OTB) AR,
+             SY_GLOBAL_NAME SY WHERE AR.CODE_NO = SY.NO AND SY.LANGUAGE = 'zh' 
+             AND AR.CODE_NO NOT IN('21','31','218112')
+             ORDER BY SY.CONTENT
+			]]>
+	</select>
+
+
+	<select id="getArDeptShiftList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+			    
+				select he.empid,
+				       he.local_name,
+				       hdn.content deptname,
+				       sy.content shift_name,
+				       to_char(to_date(ar.ar_date_str,'yyyy-MM-dd'),'yyyy-MM-dd') ar_date_str
+				  from ar_schedule_c11    ar,
+				       hr_employee        he,
+				       hr_department      hd,
+				       hr_department_name hdn,
+				       sy_global_name     sy
+				 where ar.person_id = he.person_id
+				   and he.deptno = hd.deptno
+				   and hd.deptno = hdn.deptno
+				   and hdn.language = #LANGUAGE:VARCHAR#
+				   and ar.shift_no = sy.no(+)
+				   and sy.language = #LANGUAGE:VARCHAR#
+				   and substr(ar.ar_date_str, 1, 7) = #AR_MONTH:VARCHAR#
+				      
+				   and EXISTS
+				 (SELECT *
+				          FROM HR_DEPARTMENT
+				         WHERE HR_DEPARTMENT.DEPTNO = he.DEPTNO
+				         START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+				        
+				        CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+				 order by he.empid, ar.ar_date_str
+
+			]]>
+	</select>
+
+	<select id="getArCompanyCalendarShiftList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				SELECT AC.DDATE_STR, GET_GLOBAL_NAME(AC.SHIFT_NO,#LANGUAGE:VARCHAR#) SHIFT_NAME
+				  FROM AR_CALENDER AC
+				 WHERE AC.DDATE BETWEEN GET_AR_START_DATE(REPLACE(#AR_MONTH:VARCHAR#,'-',''), #CPNY_ID:VARCHAR#, '23692') AND
+				       GET_AR_END_DATE(REPLACE(#AR_MONTH:VARCHAR#,'-',''), #CPNY_ID:VARCHAR#, '23692')
+				   AND AC.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+	</select>
+
+
+
+
+
+
+	<select id="getHrPersonFormalList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+			SELECT T.*,NVL(SC,'0')+NVL(JS,'0')+NVL(PZ,'0')+NVL(SGWZ,'0')+NVL(GMZG,'0')+NVL(KF,'0')+NVL(JYZY,'0') HJ FROM (SELECT '正规' QF,
+        MAX((select COUNT( HE.PERSON_ID)
+          FROM HR_EMPLOYEE HE
+         WHERE HE.CPNY_ID = 'TSTO'  AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+               TO_CHAR(TO_DATE(#FROM_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD')
+           AND (HE.DATE_LEFT IS NULL OR
+               TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+               TO_CHAR(TO_DATE(#FROM_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD'))
+           AND HE.EMPID NOT LIKE '111111%'
+            AND HE.EMP_TYPE_CODE <>'10418'
+              
+           AND HE.POST_GRADE_NO NOT IN ('400091',
+                                        '400092',
+                                        '400093',
+                                        '400094',
+                                        '400095',
+                                        '400096',
+                                        '400002' 
+                                        ) )) SY, 
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014429') THEN
+              1
+           END) SC,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO',  #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014431') THEN
+              1
+           END) JS,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014432') THEN
+              1
+           END) PZ,
+       
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14015179') THEN
+              1
+           END) SGWZ,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014430') THEN
+              1
+           END) GMZG,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014433') THEN
+              1
+           END) KF,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO',  #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014428') THEN
+              1
+           END) JYZY
+  FROM HR_EMPLOYEE HE
+ WHERE HE.CPNY_ID = 'TSTO'
+      
+   AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+       TO_CHAR(TO_DATE( #TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD')
+   AND (HE.DATE_LEFT IS NULL OR
+       TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+       TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD'))
+   AND HE.EMPID NOT LIKE '111111%'
+    AND HE.EMP_TYPE_CODE <>'10418'
+      
+   AND HE.POST_GRADE_NO NOT IN ('400091',
+                                '400092',
+                                '400093',
+                                '400094',
+                                '400095',
+                                '400096',
+                                '400002')
+
+UNION ALL
+
+SELECT '非正规',
+       
+       MAX((select COUNT(HE.PERSON_ID)
+          FROM HR_EMPLOYEE HE
+         WHERE HE.CPNY_ID = 'TSTO'
+              
+           AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+               TO_CHAR(TO_DATE(#FROM_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD')
+           AND (HE.DATE_LEFT IS NULL OR
+               TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+               TO_CHAR(TO_DATE(#FROM_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD'))
+           AND HE.EMPID NOT LIKE '111111%'
+              
+           AND HE.POST_GRADE_NO IN ('400091',
+                                    '400092',
+                                    '400093',
+                                    '400094',
+                                    '400095',
+                                    '400096',
+                                    '400002')
+                                    
+                                 
+        
+        )) SY,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014429') THEN
+              1
+           END) SC,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014431') THEN
+              1
+           END) JS,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014432') THEN
+              1
+           END) PZ,
+       
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14015179') THEN
+              1
+           END) SGWZ,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO',#TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014430') THEN
+              1
+           END) GMZG,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014433') THEN
+              1
+           END) KF,
+       SUM(CASE
+             WHEN HE.DEPTNO IN
+                  (SELECT OIT.DEPTNO
+                     FROM ORG_INFO_TUSE OIT
+                    WHERE OIT.TUSE_NO =
+                          PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO', #TO_DATE#)
+                      AND OIT.DEPT_DISTINGUISH_STANDARD = '14014428') THEN
+              1
+           END) JYZY
+  FROM HR_EMPLOYEE HE
+ WHERE HE.CPNY_ID = 'TSTO'
+      
+   AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+       TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD')
+   AND (HE.DATE_LEFT IS NULL OR
+       TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+       TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD'))
+   AND HE.EMPID NOT LIKE '111111%'
+    AND HE.EMP_TYPE_CODE <>'10418'
+      
+   AND HE.POST_GRADE_NO IN ('400091',
+                            '400092',
+                            '400093',
+                            '400094',
+                            '400095',
+                            '400096',
+                            '400002'))T
+
+
+			]]>
+	</select>
+
+	<select id="getHrPersonEntryList1" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+		 SELECT ZJ,S,G3,G2,P,S+G3+G2+P XJ1,TR1,OS,TR1+OS XJ2,S+G3+G2+P+TR1+OS HJ FROM (SELECT 
+  '增员' ZJ,
+  nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400006',
+                                             '400007',
+                                             '400008',
+                                             '400031',
+                                             '400032',
+                                             '400043',
+                                             '400044',
+                                             '400019',
+                                             '400020') THEN
+                    1
+                 END),
+             '0') S,
+         
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400011',
+                                             '400012',
+                                             '400035',
+                                             '400036',
+                                             '400047',
+                                             '400048',
+                                             '400023',
+                                             '400024') THEN
+                    1
+                 END),
+             '0') G3,
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400013', '400037', '400049', '400025') THEN
+                    1
+                 END),
+             '0') G2,
+         
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400071',
+                                             '400072',
+                                             '400073',
+                                             '400074',
+                                             '400075',
+                                             '400076',
+                                             '400077',
+                                             '400078',
+                                             '400079',
+                                             '400080',
+                                             '400081',
+                                             '400082',
+                                             '400083',
+                                             '400084',
+                                             '400085',
+                                             '400086',
+                                             '400087',
+                                             '400088',
+                                             '400089',
+                                             '400090',
+                                             '400051',
+                                             '400052',
+                                             '400053',
+                                             '400054',
+                                             '400055',
+                                             '400056',
+                                             '400057',
+                                             '400058',
+                                             '400059',
+                                             '400060',
+                                             '400061',
+                                             '400062',
+                                             '400063',
+                                             '400064',
+                                             '400065',
+                                             '400066',
+                                             '400067',
+                                             '400068',
+                                             '400069',
+                                             '400070') THEN
+                    1
+                 END),
+             '0') P,
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400091',
+                                             '400092',
+                                             '400093',
+                                             '400094',
+                                             '400095',
+                                             '400096',
+                                             '400002') THEN
+                    1
+                 END),
+             '0') TR1,
+              nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400002') THEN
+                    1
+                 END),
+             '0') OS
+  
+    FROM HR_EMPLOYEE HE
+   WHERE HE.CPNY_ID = 'TSTO'
+     AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') BETWEEN TO_CHAR(TO_DATE(#TO_DATE_F#,'YYYY/MM/DD')+1,'YYYY/MM/DD') AND  TO_CHAR(TO_DATE(#TO_DATE#,'YYYY/MM/DD'),'YYYY/MM/DD')
+     
+     AND HE.EMPID NOT LIKE '111111%'
+  UNION ALL
+  
+  SELECT '减员',
+  
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400006',
+                                       '400007',
+                                       '400008',
+                                       '400031',
+                                       '400032',
+                                       '400043',
+                                       '400044',
+                                       '400019',
+                                       '400020') THEN
+              1
+           END),
+       '0')*(-1) S,
+   
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400011',
+                                       '400012',
+                                       '400035',
+                                       '400036',
+                                       '400047',
+                                       '400048',
+                                       '400023',
+                                       '400024') THEN
+              1
+           END),
+       '0')*(-1) G3,
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400013', '400037', '400049', '400025') THEN
+              1
+           END),
+       '0')*(-1) G2,
+   
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400071',
+                                       '400072',
+                                       '400073',
+                                       '400074',
+                                       '400075',
+                                       '400076',
+                                       '400077',
+                                       '400078',
+                                       '400079',
+                                       '400080',
+                                       '400081',
+                                       '400082',
+                                       '400083',
+                                       '400084',
+                                       '400085',
+                                       '400086',
+                                       '400087',
+                                       '400088',
+                                       '400089',
+                                       '400090',
+                                       '400051',
+                                       '400052',
+                                       '400053',
+                                       '400054',
+                                       '400055',
+                                       '400056',
+                                       '400057',
+                                       '400058',
+                                       '400059',
+                                       '400060',
+                                       '400061',
+                                       '400062',
+                                       '400063',
+                                       '400064',
+                                       '400065',
+                                       '400066',
+                                       '400067',
+                                       '400068',
+                                       '400069',
+                                       '400070') THEN
+              1
+           END),
+       '0')*(-1) P,
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400091',
+                                       '400092',
+                                       '400093',
+                                       '400094',
+                                       '400095',
+                                       '400096',
+                                       '400002') THEN
+              1
+           END),
+       '0')*(-1) TR1,
+        nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400002') THEN
+                    1
+                 END),
+             '0')*(-1) OS
+  
+    FROM HR_EMPLOYEE HE
+   WHERE HE.CPNY_ID = 'TSTO'
+        
+     AND  
+         TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') BETWEEN TO_CHAR(TO_DATE(#TO_DATE_F#,'YYYY/MM/DD')+1,'YYYY/MM/DD') AND  TO_CHAR(TO_DATE(#TO_DATE#,'YYYY/MM/DD'),'YYYY/MM/DD')
+     AND HE.EMPID NOT LIKE '111111%'
+     )
+
+
+			]]>
+	</select>
+
+	<select id="getHrPersonEntryList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+		 SELECT ZJ,S,G3,G2,P,S+G3+G2+P XJ1,TR1,OS,TR1+OS XJ2,S+G3+G2+P+TR1+OS HJ FROM (SELECT 
+  '增员' ZJ,
+  nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400006',
+                                             '400007',
+                                             '400008',
+                                             '400031',
+                                             '400032',
+                                             '400043',
+                                             '400044',
+                                             '400019',
+                                             '400020') THEN
+                    1
+                 END),
+             '0') S,
+         
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400011',
+                                             '400012',
+                                             '400035',
+                                             '400036',
+                                             '400047',
+                                             '400048',
+                                             '400023',
+                                             '400024') THEN
+                    1
+                 END),
+             '0') G3,
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400013', '400037', '400049', '400025') THEN
+                    1
+                 END),
+             '0') G2,
+         
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400071',
+                                             '400072',
+                                             '400073',
+                                             '400074',
+                                             '400075',
+                                             '400076',
+                                             '400077',
+                                             '400078',
+                                             '400079',
+                                             '400080',
+                                             '400081',
+                                             '400082',
+                                             '400083',
+                                             '400084',
+                                             '400085',
+                                             '400086',
+                                             '400087',
+                                             '400088',
+                                             '400089',
+                                             '400090',
+                                             '400051',
+                                             '400052',
+                                             '400053',
+                                             '400054',
+                                             '400055',
+                                             '400056',
+                                             '400057',
+                                             '400058',
+                                             '400059',
+                                             '400060',
+                                             '400061',
+                                             '400062',
+                                             '400063',
+                                             '400064',
+                                             '400065',
+                                             '400066',
+                                             '400067',
+                                             '400068',
+                                             '400069',
+                                             '400070') THEN
+                    1
+                 END),
+             '0') P,
+         nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400091',
+                                             '400092',
+                                             '400093',
+                                             '400094',
+                                             '400095',
+                                             '400096',
+                                             '400002') THEN
+                    1
+                 END),
+             '0') TR1,
+              nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400002') THEN
+                    1
+                 END),
+             '0') OS
+  
+    FROM HR_EMPLOYEE HE
+   WHERE HE.CPNY_ID = 'TSTO'
+     AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') BETWEEN TO_CHAR(TO_DATE(#TO_DATE_F#,'YYYY/MM/DD'),'YYYY/MM/DD') AND  TO_CHAR(TO_DATE(#TO_DATE#,'YYYY/MM/DD'),'YYYY/MM/DD')
+     
+     AND HE.EMPID NOT LIKE '111111%'
+  UNION ALL
+  
+  SELECT '减员',
+  
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400006',
+                                       '400007',
+                                       '400008',
+                                       '400031',
+                                       '400032',
+                                       '400043',
+                                       '400044',
+                                       '400019',
+                                       '400020') THEN
+              1
+           END),
+       '0')*(-1) S,
+   
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400011',
+                                       '400012',
+                                       '400035',
+                                       '400036',
+                                       '400047',
+                                       '400048',
+                                       '400023',
+                                       '400024',
+                                       
+'400003',
+'400004',
+'400005',
+'400006',
+'400007',
+'400008',
+'400009',
+'400010',
+'400015',
+'400016',
+'400017',
+'400018',
+'400019',
+'400020',
+'400021',
+'400022',
+'400027',
+'400028',
+'400029',
+'400030',
+'400031',
+'400032',
+'400033',
+'400034',
+'400039',
+'400040',
+'400041',
+'400042',
+'400043',
+'400044',
+'400045',
+'400046'
+                                       
+                                       ) THEN
+              1
+           END),
+       '0')*(-1) G3,
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400013', '400037', '400049', '400025') THEN
+              1
+           END),
+       '0')*(-1) G2,
+   
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400071',
+                                       '400072',
+                                       '400073',
+                                       '400074',
+                                       '400075',
+                                       '400076',
+                                       '400077',
+                                       '400078',
+                                       '400079',
+                                       '400080',
+                                       '400081',
+                                       '400082',
+                                       '400083',
+                                       '400084',
+                                       '400085',
+                                       '400086',
+                                       '400087',
+                                       '400088',
+                                       '400089',
+                                       '400090',
+                                       '400051',
+                                       '400052',
+                                       '400053',
+                                       '400054',
+                                       '400055',
+                                       '400056',
+                                       '400057',
+                                       '400058',
+                                       '400059',
+                                       '400060',
+                                       '400061',
+                                       '400062',
+                                       '400063',
+                                       '400064',
+                                       '400065',
+                                       '400066',
+                                       '400067',
+                                       '400068',
+                                       '400069',
+                                       '400070') THEN
+              1
+           END),
+       '0')*(-1) P,
+   nvl(SUM(CASE
+             WHEN HE.POST_GRADE_NO IN ('400091',
+                                       '400092',
+                                       '400093',
+                                       '400094',
+                                       '400095',
+                                       '400096',
+                                       '400002') THEN
+              1
+           END),
+       '0')*(-1) TR1,
+        nvl(SUM(CASE
+                   WHEN HE.POST_GRADE_NO IN ('400002') THEN
+                    1
+                 END),
+             '0')*(-1) OS
+  
+    FROM HR_EMPLOYEE HE
+   WHERE HE.CPNY_ID = 'TSTO'
+        
+     AND  
+         TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') BETWEEN TO_CHAR(TO_DATE(#TO_DATE_F#,'YYYY/MM/DD'),'YYYY/MM/DD') AND  TO_CHAR(TO_DATE(#TO_DATE#,'YYYY/MM/DD'),'YYYY/MM/DD')
+     AND HE.EMPID NOT LIKE '111111%'
+     )
+
+
+			]]>
+	</select>
+
+	<select id="getHrPersonRankList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+				SELECT get_global_name(DEPT_DISTINGUISH_STANDARD, 'zh') DEPT_DIF_NAME,
+       SUM(G) G,
+       SUM(M) M,
+       SUM(S) S,
+       SUM(A) A,
+       SUM(G3) G3,
+       SUM(G2) G2,
+       SUM(G1) G1,
+       SUM(P) P,
+       SUM(G) + SUM(M) + SUM(S) + SUM(A) + SUM(G3) + SUM(G2) + SUM(G1) +
+       SUM(P)    XJ,
+       SUM(FZG) FZG,
+      
+       SUM(G) + SUM(M) + SUM(S) + SUM(A) + SUM(G3) + SUM(G2) + SUM(G1) +
+       SUM(P) + SUM(FZG) HJ
+  FROM (SELECT OIT.DEPTNO,
+               get_dept_name(OIT.DEPTNO, 'zh') DEPT_NAME,
+               OIT.DEPT_DISTINGUISH_STANDARD,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN ('400003',
+                                                   '400005',
+                                                   '400004',
+                                                   '400027',
+                                                   '400028',
+                                                   '400039',
+                                                   '400040',
+                                                   '400015',
+                                                   '400016') THEN
+                          1
+                       END),
+                   '0') G,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN ('400006','400029',
+                                                   '400030',
+                                                   '400041',
+                                                   '400042',
+                                                   '400017',
+                                                   '400018') THEN
+                          1
+                       END),
+                   '0') M,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN (
+                                                   '400007',
+                                                   '400008',
+                                                   '400031',
+                                                   '400032',
+                                                   '400043',
+                                                   '400044',
+                                                   '400019',
+                                                   '400020') THEN
+                          1
+                       END),
+                   '0') S,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN ('400009',
+                                                   '400010',
+                                                   '400033',
+                                                   '400034',
+                                                   '400046',
+                                                   '400045',
+                                                   '400021',
+                                                   '400022') THEN
+                          1
+                       END),
+                   '0') A,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN ('400011',
+                                                   '400012',
+                                                   '400035',
+                                                   '400036',
+                                                   '400047',
+                                                   '400048',
+                                                   '400023',
+                                                   '400024'   ) THEN
+                          1
+                       END),
+                   '0') G3,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN
+                              ('400013', '400037', '400049', '400025') THEN
+                          1
+                       END),
+                   '0') G2,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN
+                              ('400014', '400038', '400050', '400026') THEN
+                          1
+                       END),
+                   '0') G1,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN ('400071',
+                                                   '400072',
+                                                   '400073',
+                                                   '400074',
+                                                   '400075',
+                                                   '400076',
+                                                   '400077',
+                                                   '400078',
+                                                   '400079',
+                                                   '400080',
+                                                   '400081',
+                                                   '400082',
+                                                   '400083',
+                                                   '400084',
+                                                   '400085',
+                                                   '400086',
+                                                   '400087',
+                                                   '400088',
+                                                   '400089',
+                                                   '400090',
+                                                   '400051',
+                                                   '400052',
+                                                   '400053',
+                                                   '400054',
+                                                   '400055',
+                                                   '400056',
+                                                   '400057',
+                                                   '400058',
+                                                   '400059',
+                                                   '400060',
+                                                   '400061',
+                                                   '400062',
+                                                   '400063',
+                                                   '400064',
+                                                   '400065',
+                                                   '400066',
+                                                   '400067',
+                                                   '400068',
+                                                   '400069',
+                                                   '400070') THEN
+                          1
+                       END),
+                   '0') P,
+               nvl(SUM(CASE
+                         WHEN HE.POST_GRADE_NO IN ('400091',
+                                                   '400092',
+                                                   '400093',
+                                                   '400094',
+                                                   '400095',
+                                                   '400096',
+                                                   '400002') THEN
+                          1
+                       END),
+                   '0') FZG 
+                   
+                   
+                 
+        
+          FROM HR_EMPLOYEE HE, ORG_INFO_TUSE OIT
+         WHERE HE.CPNY_ID = 'TSTO'
+              
+           AND OIT.DEPTNO = HE.DEPTNO(+)
+           AND OIT.TUSE_NO =
+               PKG_HR_DETAIL.GET_ORG_INFO_TUSE_NO('TSTO',    #TO_DATE#)
+           AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+               TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD')
+           AND (HE.DATE_LEFT IS NULL OR
+               TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+               TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD'))
+           AND HE.EMPID NOT LIKE '111111%'
+        
+         GROUP BY OIT.DEPTNO, OIT.DEPT_DISTINGUISH_STANDARD)
+ GROUP BY DEPT_DISTINGUISH_STANDARD
+ ORDER BY DEPT_DISTINGUISH_STANDARD desc
+
+
+			]]>
+	</select>
+
+	<select id="getHrPersonDeptList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+			<![CDATA[
+			SELECT parent_dept_name,
+       dept_name,
+       GROUP_FLAG,
+       ORDER_NOS,
+       SUM(YESTERDAY_CNT) YESTERDAY_CNT,
+       SUM(TODAY_CNT) TODAY_CNT
+
+  FROM (SELECT parent_dept_name,
+               dept_name,
+                GROUP_FLAG,
+               ORDER_NOS,
+               0 YESTERDAY_CNT,
+               COUNT(*) TODAY_CNT
+        
+          from (SELECT HD.ORG_NAME_LOCAL DEPT_NAME,
+                       hdn.org_name_local parent_dept_name,
+                       hd.ORDER_NOS,
+                       HE.PERSON_ID,
+                       (select TT.deptno
+                          FROM hr_department TT　
+                         WHERE TT.CPNY_ID = 'TSTO'
+                           and tt.DEPT_LEVEL = 2
+                           and rownum = 1
+                          START WITH TT.DEPTNO = HE.DEPTNO
+                        CONNECT BY PRIOR TT.PARENT_DEPT_NO = TT.DEPTNO 　) GROUP_FLAG
+                  FROM HR_EMPLOYEE HE,
+                       (SELECT hd1.*, ROWNUM ORDER_NOS
+                          FROM HR_DEPARTMENT hd1
+                         WHERE hd1.CPNY_ID = 'TSTO'
+                         START WITH hd1.PARENT_DEPT_NO = '0'
+                        CONNECT BY PRIOR hd1.DEPTNO = hd1.PARENT_DEPT_NO
+                         ORDER SIBLINGS BY hd1.ORDERNO) HD,
+                       HR_DEPARTMENT HDN
+                 WHERE HE.CPNY_ID = 'TSTO'
+                   AND HE.DEPTNO = HD.DEPTNO
+                   AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+                       TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'), 'YYYY/MM/DD')
+                   AND (HE.DATE_LEFT IS NULL OR
+                       TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+                       TO_CHAR(TO_DATE(#TO_DATE#, 'YYYY/MM/DD'),
+                                'YYYY/MM/DD'))
+                   AND HE.EMPID NOT LIKE '111111%'
+                      
+                   AND HE.EMP_TYPE_CODE <> '10418'
+                      
+                   and hd.parent_dept_no = hdn.deptno(+)
+                
+                 group by HE.EMP_TYPE_CODE,
+                          HE.DEPTNO,
+                          HD.ORG_NAME_LOCAL,
+                          hdn.org_name_local,
+                          HD.ORDER_NOS,
+                          HE.PERSON_ID) tt
+         group by parent_dept_name, ORDER_NOS, dept_name, GROUP_FLAG
+        
+        union all
+        
+        SELECT parent_dept_name,
+               dept_name,
+               GROUP_FLAG,
+               ORDER_NOS,
+               COUNT(*) YESTERDAY_CNT,
+               0 TODAY_CNT
+        
+          from (SELECT HD.ORG_NAME_LOCAL DEPT_NAME,
+                       hdn.org_name_local parent_dept_name,
+                       hd.ORDER_NOS,
+                       HE.PERSON_ID,
+                       (select TT.deptno
+                          FROM hr_department TT　
+                         WHERE TT.CPNY_ID = 'TSTO'
+                           and tt.DEPT_LEVEL = 2
+                           and rownum = 1
+                        
+                         START WITH TT.DEPTNO = HE.DEPTNO
+                        CONNECT BY PRIOR TT.PARENT_DEPT_NO = TT.DEPTNO 　) GROUP_FLAG
+                  FROM HR_EMPLOYEE HE,
+                       (SELECT hd1.*, ROWNUM ORDER_NOS
+                          FROM HR_DEPARTMENT hd1
+                         WHERE hd1.CPNY_ID = 'TSTO'
+                         START WITH hd1.PARENT_DEPT_NO = '0'
+                        CONNECT BY PRIOR hd1.DEPTNO = hd1.PARENT_DEPT_NO
+                         ORDER SIBLINGS BY hd1.ORDERNO) HD,
+                       HR_DEPARTMENT HDN
+                 WHERE HE.CPNY_ID = 'TSTO'
+                   AND HE.DEPTNO = HD.DEPTNO
+                   AND TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') <=
+                       TO_CHAR(TO_DATE(#FROM_DATE#, 'YYYY/MM/DD'),
+                               'YYYY/MM/DD')
+                   AND (HE.DATE_LEFT IS NULL OR
+                       TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') >
+                       TO_CHAR(TO_DATE(#FROM_DATE#, 'YYYY/MM/DD'),
+                                'YYYY/MM/DD'))
+                   AND HE.EMPID NOT LIKE '111111%'
+                   AND HE.EMP_TYPE_CODE <> '10418'
+                      
+                   and hd.parent_dept_no = hdn.deptno(+)
+                
+                 group by HE.EMP_TYPE_CODE,
+                          HE.DEPTNO,
+                          HD.ORG_NAME_LOCAL,
+                          hdn.org_name_local,
+                          HD.ORDER_NOS,
+                          HE.PERSON_ID) tt
+         group by parent_dept_name, ORDER_NOS, dept_name, GROUP_FLAG
+        
+        )
+
+ group by parent_dept_name, ORDER_NOS, dept_name, GROUP_FLAG
+
+          
+			]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,2075 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.contractInfo">
+
+	<!--
+		<sql id="getContractInfoListCondition" > <isNotEmpty prepend="AND"
+		property="CPNY_ID"> <![CDATA[ B.CPNY_ID = #CPNY_ID:VARCHAR# ]]>
+		</isNotEmpty> <isNotEmpty prepend="AND" property="DEPTNO"> <![CDATA[
+		B.DEPTNO IN ( select sud.deptno from sy_user_dept sud, (SELECT DEPTNO
+		FROM HR_DEPARTMENT START WITH DEPTNO = #DEPTNO# CONNECT BY PRIOR
+		DEPTNO=PARENT_DEPT_NO) DEPT where sud.deptno = DEPT.deptno AND
+		sud.user_no=#userNo:VARCHAR# ) ]]> </isNotEmpty> <isEmpty prepend=""
+		property="DEPTNO"> <isNotEmpty prepend="" property="specialParam">
+		<isNotEqual prepend="AND" property="specialParam"
+		compareValue="general"> <![CDATA[ (B.PERSON_ID =
+		#supervisorPersonId:VARCHAR# OR B.DEPTNO IN ]]> <include
+		refid="sys.include.getDataPermission"/> <![CDATA[ ) ]]> </isNotEqual>
+		<isEqual prepend="AND" property="specialParam" compareValue="general">
+		B.PERSON_ID = #supervisorPersonId:VARCHAR# </isEqual> </isNotEmpty>
+		</isEmpty> <isNotEmpty prepend="" property="specialParam"> <isNotEqual
+		prepend="AND" property="specialParam" compareValue="general">
+		<![CDATA[ ( B.PERSON_ID = #supervisorPersonId:VARCHAR# OR
+		B.EMP_TYPE_CODE IN ]]> <include
+		refid="sys.include.getDataPermissionEmpTypeCode"/> <![CDATA[ ) ]]>
+		</isNotEqual> <isEqual prepend="AND" property="specialParam"
+		compareValue="general"> B.PERSON_ID = #supervisorPersonId:VARCHAR#
+		</isEqual> </isNotEmpty> <isNotEmpty prepend="AND"
+		property="singlePerson_id"> <![CDATA[ B.PERSON_ID =
+		#singlePerson_id:VARCHAR# ]]> </isNotEmpty> <isNotEmpty prepend="AND"
+		property="CONTRACT_TYPE_CODE"> <![CDATA[
+		A.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR# ]]> </isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TOTALPERIOD"> <![CDATA[
+		A.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR# ]]> </isNotEmpty> <isNotEmpty
+		prepend="AND" property="KEY"> <![CDATA[ (B.LOCAL_NAME LIKE '%' ||
+		#KEY:VARCHAR# || '%' OR B.EMPID LIKE upper('%' || #KEY:VARCHAR# ||
+		'%') OR B.CHINESE_PINYIN LIKE upper('%'||#KEY#||'%')) ]]>
+		</isNotEmpty> <isNotEmpty prepend="AND" property="ENDp_CONTRACT_DATE">
+		<![CDATA[ A.END_CONTRACT_DATE >=
+		TO_DATE(#ENDp_CONTRACT_DATE:VARCHAR#,'YYYY.MM.DD') ]]> </isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ENDf_CONTRACT_DATE"> <![CDATA[
+		A.END_CONTRACT_DATE <=
+		TO_DATE(#ENDf_CONTRACT_DATE:VARCHAR#,'YYYY.MM.DD') ]]> </isNotEmpty>
+		</sql>
+	-->
+
+	<select id="getNotExistsContractList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		     SELECT A.EMPID,
+			       A.PERSON_ID,
+			       A.LOCAL_NAME,
+			       A.POST_FAMILY,
+			       CASE WHEN (A.POST_FAMILY = '14015815' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 1) THEN (get_global_name('14014302', #interLanguage:VARCHAR#))
+                        WHEN (A.POST_FAMILY = '14015813' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 2) THEN (get_global_name('123204', #interLanguage:VARCHAR#)) 
+                   END as  CONTRACT_TYPE_CODE_NAME,
+                    CASE WHEN (A.POST_FAMILY = '14015815' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 1) THEN '14014302'
+			     WHEN (A.POST_FAMILY = '14015813' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 2) THEN '123204' 
+                   END as  CONTRACT_TYPE_CODE_NO,
+                    CASE WHEN (A.POST_FAMILY = '14015815' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 1) THEN TO_CHAR(ADD_MONTHS(A.DATE_STARTED,1), 'DD/MM/YYYY')
+			     WHEN (A.POST_FAMILY = '14015813' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 2) THEN TO_CHAR(ADD_MONTHS(A.DATE_STARTED,2), 'DD/MM/YYYY')
+                   END as   END_CONTRACT_DATED,
+                    CASE WHEN (A.POST_FAMILY = '14015815' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 1) THEN '1'
+			     WHEN (A.POST_FAMILY = '14015813' and TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED)) <= 2) THEN '2' 
+                   END as  CONTRACT_LENT,
+			       A.DEPTNO,
+			       get_dept_name(A.DEPTNO,#interLanguage:VARCHAR#) DEPARTMENT_NAME,
+			       TO_CHAR(A.DATE_STARTED,'DD/MM/YYYY') DATE_STARTED,
+			       A.POST_GRADE_NO,
+			       get_global_name(A.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+			       trunc(MONTHS_BETWEEN(sysdate, A.DATE_STARTED) / 12) YEARS,
+			       A.POSITION_NO,
+			       get_global_name(A.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       A.EMP_TYPE_CODE,
+			       get_global_name(A.EMP_TYPE_CODE,#interLanguage:VARCHAR#) EMP_TYPE_CODE_NAME,
+			       get_global_name(HR_GET_CONTRACT_TYPE_SPC_SH(A.PERSON_ID,'CONTRACT_TYPE'),#interLanguage:VARCHAR#) CONTRACT_TYPE_SH,
+			       get_global_name(HR_GET_CONTRACT_TYPE_SPC_SH(A.PERSON_ID,'CONTRACT_TYPE_CODE'),#interLanguage:VARCHAR#) CONTRACT_TYPE_CODE_SH,
+			       A.POSITION,
+			       get_global_name(A.POSITION,#interLanguage:VARCHAR#) POSITION_NAME,
+			       TO_CHAR(A.DATE_STARTED,'DD/MM/YYYY') START_CONTRACT_DATE,
+			       TO_CHAR(ADD_MONTHS(A.DATE_STARTED,1), 'DD/MM/YYYY') END_CONTRACT_DATED,
+			       TO_CHAR(ADD_MONTHS(A.DATE_STARTED,12),'DD/MM/YYYY') ONEEND_CONTRACT_DATE,
+			       TO_CHAR(ADD_MONTHS(A.DATE_STARTED,24),'DD/MM/YYYY') TWOEND_CONTRACT_DATE
+			  FROM HR_EMPLOYEE   A, HR_PERSONAL_INFO P
+			  WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.EMP_OFFICE <> '15120'
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.EMPID NOT LIKE '111111%'
+			   AND A.PERSON_ID = P.PERSON_ID
+  	 	]]>
+  	 	<!--<isEqual prepend="" property="interCpnyID" compareValue="SPC_SH">
+  	 		AND A.EMP_TYPE_CODE not in ('14015550')
+  	 		AND A.EMPID not in ('3627')
+  	 		AND A.EMPID not in ('3628')
+  	 		AND A.EMPID not in ('3629')
+  	 		AND A.EMPID not in ('3630')
+		</isEqual>
+	 	<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+			AND A.EMPLOYEE_OWNED = '14015586'
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="HTSV">
+			<isNotEmpty prepend="AND" property="EMPLOYEE_OWNED">
+				<![CDATA[
+			 		 A.EMPLOYEE_OWNED in ($EMPLOYEE_OWNED$)
+			    ]]>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual prepend="" property="interCpnyID" compareValue="SPC_NJ">
+  	 		AND A.EMP_TYPE_CODE not in ('14015550')
+		</isEqual> -->
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS(
+		 		  	SELECT 1
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+	   		ORDER BY A.DATE_STARTED DESC
+        ]]>
+	</select>
+
+	<select id="getNotExistsContractCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[ 
+		     SELECT COUNT(A.EMPID)
+			  FROM HR_EMPLOYEE        A
+			 WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.EMP_OFFICE <> '15120'
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.EMP_TYPE_CODE ='10420'
+			   AND A.EMPID NOT LIKE '1111%'
+  	 	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+			]]>
+		</isNotEmpty>
+	</select>
+<!-- (select BASE_SALARY,person_id
+          			from PA_SUMMARY_HTSV c1
+         			where not exists (select 1
+                  		from PA_SUMMARY_HTSV c2
+                 		where c1.person_id = c2.person_id
+                   		and c1.pay_schedule_no < c2.pay_schedule_no)) PPD 工资之前算法--> 
+	<select id="getContractInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  	SELECT A.EMPID,
+			       A.PERSON_ID,
+			       A.LOCAL_NAME,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'DEPTNO'), #interLanguage:VARCHAR#) DEPARTMENT_NAME,
+                   TO_CHAR(A.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+			       A.POST_GRADE_NO,
+			       get_global_name(GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'POST_GRADE_NO'), #interLanguage:VARCHAR#) POST_GRADE,
+			       TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) YEARS,
+			       A.POSITION_NO,
+			       get_global_name(GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'POSITION_NO'), #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       HRC.WORK_HOUR_TYPE,
+			       get_global_name(HRC.WORK_HOUR_TYPE, #interLanguage:VARCHAR#) WORK_HOUR_NAME,
+			       GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) AS SEXNAME,
+			       TRUNC(MONTHS_BETWEEN(SYSDATE, P.DOB) / 12) AGE,
+			       TO_CHAR(HRC.START_CONTRACT_DATE, 'DD/MM/YYYY') START_CONTRACT_DATE,
+			       TO_CHAR(HRC.END_CONTRACT_DATE, 'DD/MM/YYYY') END_CONTRACT_DATE,
+			       HRC.CONTRACT_TYPE_CODE,
+			       get_global_name(HRC.CONTRACT_TYPE_CODE, #interLanguage:VARCHAR#) CONTRACT_TYPE_CODE_NAME,
+			       HRC.CONTRACT_TYPE,
+			       get_global_name(HRC.CONTRACT_TYPE, #interLanguage:VARCHAR#) CONTRACT_TYPE_NAME,
+			       HRC.TOTAL_PERIOD,
+			       HRC.CONTRACT_NAME,
+			       HRC.WORK_CONTENT,
+			       HRC.REMARK,
+			       CASE WHEN HRC.updated_by IS NULL THEN (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.created_by) else (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.updated_by) END as QIANDING_REN,
+                   CASE WHEN HRC.UPDATE_DATE IS NULL THEN TO_CHAR(HRC.CREATE_DATE,'DD/MM/YYYY') ELSE TO_CHAR(HRC.UPDATE_DATE,'DD/MM/YYYY') END QIANDING_DATE,
+			       GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'BASE_SALARY') BASE_PAY,
+			       HRC.SALARY,
+			       CASE WHEN HRC.END_CONTRACT_DATE IS NOT NULL THEN
+			       		TRUNC( MONTHS_BETWEEN(HRC.END_CONTRACT_DATE + 1 , HRC.START_CONTRACT_DATE) / 12 ) || ' Năm'
+			       	ELSE
+			       		' '
+			       	END CONTRACT_LEN
+			  FROM HR_EMPLOYEE A, HR_PERSONAL_INFO P,HR_CONTRACT  HRC
+       WHERE A.PERSON_ID = P.PERSON_ID
+         AND A.PERSON_ID = HRC.PERSON_ID
+			   AND HRC.ACTIVITY = 1
+			   AND A.EMPID NOT LIKE '111111%'
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<!-- (SELECT Y.* FROM HR_CONTRACT Y WHERE START_CONTRACT_DATE = (SELECT MAX(t.START_CONTRACT_DATE)
+                             FROM HR_CONTRACT t
+                            WHERE t.person_id = Y.PERSON_ID)) HRC -->
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+				EXISTS(
+		 		  	SELECT 1
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATUS_CODE">
+			<![CDATA[
+			     A.EMP_OFFICE = #STATUS_CODE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_GRADE_NO">
+			<![CDATA[
+			     A.POST_GRADE_NO = #POST_GRADE_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="S_END_DATE">
+			<isNotEmpty prepend="" property="E_END_DATE">
+			      <![CDATA[
+				 		HRC.END_CONTRACT_DATE BETWEEN TO_DATE(#S_END_DATE:VARCHAR#,'DD/MM/YYYY') AND TO_DATE(#E_END_DATE:VARCHAR#,'DD/MM/YYYY')
+			      ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="S_DATE_STARTED">
+			<isNotEmpty prepend="" property="E_DATE_STARTED">
+			      <![CDATA[
+				 		A.DATE_STARTED BETWEEN TO_DATE(#S_DATE_STARTED:VARCHAR#,'DD/MM/YYYY') AND TO_DATE(#E_DATE_STARTED:VARCHAR#,'DD/MM/YYYY')
+			      ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			HRC.CONTRACT_TYPE_CODE = #CONTRACT_TYPE_CODE:VARCHAR#
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="DATE_STARTED">
+			A.DATE_STARTED = TO_DATE(#DATE_STARTED:VARCHAR#,'DD/MM/YYYY')
+	    </isNotEmpty> 
+	    <isNotEmpty prepend="AND" property="CONTRACT_TYPE">
+			HRC.CONTRACT_TYPE = #CONTRACT_TYPE:VARCHAR#
+	    </isNotEmpty> 
+	    <isNotEmpty prepend="AND" property="eqOrMore">
+	    	<isEqual prepend="" property="eqOrMore" compareValue="1">
+				<![CDATA[
+					HRC.total_period = #CONCOUNT:VARCHAR#
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="eqOrMore" compareValue="0">
+				<![CDATA[
+					HRC.total_period >= #CONCOUNT:VARCHAR#
+				]]>
+			</isEqual>
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="TOTAL_PERIOD08">
+			HRC.total_period08 > '0' and HRC.total_period08 not in ('null')
+	    </isNotEmpty>
+		<![CDATA[
+			ORDER　BY A.PERSON_ID,HRC.TOTAL_PERIOD DESC
+		]]>
+	</select>
+	<select id="expiredContractApprove" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select HRM.CONTRACT_NO,
+				   hrm.person_id,
+			       HRE.EMPID,
+			       HRE.LOCAL_NAME,
+			       HRD.CONTENT DEPARTMENT_NAME,
+			       HRM.TOTAL_PERIOD,
+						 get_city_name(HR.WORK_AREA) WORK_AREA_NAME,
+						 get_city_name(HRM.WORK_AREA) WORK_AREA_NAME2,
+						 GET_GLOBAL_NAME(HR.CONTRACT_TYPE_CODE,'zh') CONTRACT_TYPE,
+						 GET_GLOBAL_NAME(HRM.CONTRACT_TYPE_CODE,'zh') CONTRACT_TYPE2,
+						 TO_CHAR(HR.START_CONTRACT_DATE, 'YYYY.MM.DD') CONTRACTSTARTDATE,
+						 TO_CHAR(HRM.START_CONTRACT_DATE, 'YYYY.MM.DD') CONTRACTSTARTDATE2,
+						 TO_CHAR(HR.END_CONTRACT_DATE, 'YYYY.MM.DD') CONTRACTENDDATE,
+						 TO_CHAR(HRM.END_CONTRACT_DATE, 'YYYY.MM.DD') CONTRACTENDDATE2,
+			       HRM.REMARK,
+			       hrm.CONTRACT_NUMBER,
+			       hrm.CONTRACT_VERSION,
+				   GET_GLOBAL_NAME(hrm.WORK_HOUR_TYPE,'zh') WORK_HOUR_NAME,
+				   hrm.WORK_HOUR_TYPE
+			       from  hr_contract hr,
+			             hr_employee hre,
+			             HR_DEPARTMENT_NAME HRD,
+			             hr_contract hrm
+			        where hr.total_period = hrm.total_period - 1
+			        and hr.person_id = hrm.person_id
+			        AND hr.PERSON_ID = HRE.PERSON_ID
+			        AND HRE.DEPTNO = HRD.DEPTNO(+)
+			        AND HRD.LANGUAGE = 'zh'
+			        AND HRM.CURRENT_AFFIRM_ID = #PERSON_ID#
+	 	]]>
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+	        hre.DEPTNO IN (SELECT DEPTNO
+	            FROM HR_DEPARTMENT 
+	            START WITH DEPTNO = #DEPTNO#
+	            CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+	        )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[ 
+			( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			<![CDATA[
+				HRM.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			<![CDATA[
+				HRM.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HRE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HRE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			HRE.EMP_TYPE_CODE IN
+			(SELECT JOBTYPE_NO
+			FROM HR_JOB_TYPE_SETUP P
+			WHERE JOBTYPE_GROUP_NO =
+			#JobTypeGroupNo#
+			AND CPNY_ID = #interCpnyID:VARCHAR#
+			)
+		</isNotEmpty>
+	</select>
+
+	<select id="expiredContractApproveCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			select COUNT(1)
+			       from  hr_contract hr,
+			             hr_employee hre,
+			             hr_contract hrm
+			        where hr.person_id = hrm.person_id
+			        and  hr.PERSON_ID = HRE.PERSON_ID
+			        AND hr.total_period = hrm.total_period - 1
+			        AND HRM.CURRENT_AFFIRM_ID = #ADMIN_ID#
+	 	]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+	        hre.DEPTNO IN (SELECT DEPTNO
+	            FROM HR_DEPARTMENT 
+	            START WITH DEPTNO = #DEPTNO#
+	            CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+	        )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[ 
+			( HRE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			<![CDATA[
+				HRM.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			<![CDATA[
+				HRM.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HRE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HRE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			HRE.EMP_TYPE_CODE IN
+			(SELECT JOBTYPE_NO
+			FROM HR_JOB_TYPE_SETUP P
+			WHERE JOBTYPE_GROUP_NO =
+			#JobTypeGroupNo#
+			AND CPNY_ID = #interCpnyID:VARCHAR#
+			)
+		</isNotEmpty>
+	</select>
+
+	<select id="getContractInfoCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+		  SELECT COUNT(EMPID) FROM (
+			SELECT  SHOWCOUNT_ROW.CONCOUNT,
+		  			   HRE.EMPID,
+                       HRE.PERSON_ID,
+		  			   HRE.LOCAL_NAME,
+		  			   HRE.CHINESE_PINYIN,
+		  			   HRE.emp_office,
+		  			   HRE.DEPTNO,
+		               HRC.CONTRACT_TYPE_CODE,
+		               TO_CHAR(HRC.START_CONTRACT_DATE,'YYYY.MM.DD')START_CONTRACT_DATE,
+		               TO_CHAR(HRC.END_CONTRACT_DATE,'YYYY.MM.DD')END_CONTRACT_DATE
+		          FROM HR_CONTRACT HRC,HR_EMPLOYEE HRE,(
+				       SELECT FIRSTONE.PERSON_ID,MIN(FIRSTONE.START_CONTRACT_DATE)START_CONTRACT_DATE FROM HR_CONTRACT FIRSTONE
+				       WHERE FIRSTONE.ACTIVITY = 1
+				       GROUP BY FIRSTONE.PERSON_ID
+				  )FIRST_ONE,
+				  (
+					  	SELECT T.PERSON_ID,T.START_CONTRACT_DATE,T.END_CONTRACT_DATE,
+					  		ROW_NUMBER() OVER(PARTITION BY T.PERSON_ID ORDER BY T.END_CONTRACT_DATE) CONCOUNT
+					  	FROM HR_CONTRACT T
+					  	WHERE TO_CHAR(T.START_CONTRACT_DATE, 'YYYY.MM.DD') >= '2008-01-01'
+					  	UNION
+					  	SELECT TT.PERSON_ID,TT.START_CONTRACT_DATE,TT.END_CONTRACT_DATE,
+					  		0 CONCOUNT
+					  	FROM HR_CONTRACT TT
+					  	WHERE TO_CHAR(TT.START_CONTRACT_DATE, 'YYYY.MM.DD') < '2008-01-01'
+					  )SHOWCOUNT_ROW
+				 WHERE HRC.PERSON_ID = FIRST_ONE.PERSON_ID
+		         AND HRC.ACTIVITY = 1
+				 AND HRC.PERSON_ID = SHOWCOUNT_ROW.PERSON_ID
+				 AND HRC.START_CONTRACT_DATE =SHOWCOUNT_ROW.START_CONTRACT_DATE
+				 AND HRC.END_CONTRACT_DATE =SHOWCOUNT_ROW.END_CONTRACT_DATE
+		         AND HRC.PERSON_ID = HRE.PERSON_ID
+		         	AND HRE.EMP_TYPE_CODE = '10420'
+			   		AND HRE.EMPID NOT LIKE '1111%'
+			   	AND HRE.CPNY_ID = #interCpnyID:VARCHAR#
+			   	)A WHERE TO_DATE(END_CONTRACT_DATE,'YYYY.MM.DD') BETWEEN TO_DATE(NVL(#S_END_DATE:VARCHAR#,'1990.01.01'),'YYYY.MM.DD') 
+		         									AND TO_DATE(NVL(#E_END_DATE:VARCHAR#,'9999.01.01'),'YYYY.MM.DD')
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+				EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="showAllFlag">
+			<isEqual prepend="" property="showAllFlag" compareValue="N">
+				<![CDATA[
+		 			(A.PERSON_ID,TO_DATE(END_CONTRACT_DATE, 'YYYY.MM.DD'))IN
+		                                   (SELECT FIRSTONE.PERSON_ID,
+		                                      MAX(FIRSTONE.END_CONTRACT_DATE) START_CONTRACT_DATE
+		                                 FROM HR_CONTRACT FIRSTONE
+		                                WHERE FIRSTONE.ACTIVITY = 1
+		                                GROUP BY FIRSTONE.PERSON_ID)
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     A.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<!--<isNotEmpty prepend="AND" property="DATE_STARTED">
+			<![CDATA[
+			     A.DATE_STARTED = #DATE_STARTED:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		--><isNotEmpty prepend="AND" property="CONCOUNT">
+			<isEqual prepend="" property="eqOrMore" compareValue="1">
+				<![CDATA[
+		      		A.CONCOUNT >= #CONCOUNT:VARCHAR#
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="eqOrMore" compareValue="0">
+				<![CDATA[
+	      			A.CONCOUNT = #CONCOUNT:VARCHAR#
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			( A.CONTRACT_TYPE_CODE =
+			#CONTRACT_TYPE_CODE:VARCHAR#
+			OR A.CONTRACT_TYPE_CODE IS NULL)
+	    </isNotEmpty>
+	</select>
+
+
+
+	<sql id="getEmpWithoutCondition">
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				a.DEPTNO IN (
+					select sud.deptno 
+					from sy_user_dept sud,
+						(SELECT DEPTNO
+						FROM HR_DEPARTMENT 
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO) DEPT
+					where sud.deptno = DEPT.deptno
+					AND sud.user_no=#userNo:VARCHAR# 
+				)
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		A.DEPTNO IN
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				A.PERSON_ID = #ADMIN_ID:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+
+
+
+	</sql>
+
+	<!-- 签订契约列表查询 -->
+	<select id="searchEmpWithoutContract" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.EMPID,
+			       A.PERSON_ID,
+			       A.LOCAL_NAME,
+			       D.CONTENT EMP_TYPE_CODE,
+			       A.IN_THE_DIFFERENCE,
+			       C.CONTENT DEPARTMENT_NAME,
+			       F.CONTENT POSITION_NAME,
+			       H.CONTENT POST_NAME,
+			       TO_CHAR( A.BEFORE_END_PROBATION_DATE, 'YYYY.MM.DD')  BEFORE_END_PROBATION_DATE
+			  FROM HR_EMPLOYEE        A,
+			       HR_DEPARTMENT_NAME C,
+			       SY_GLOBAL_NAME     D,
+			       HR_POSITION        E,
+			       SY_GLOBAL_NAME     F,
+			       HR_POST            G,
+			       SY_GLOBAL_NAME     H
+			 WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.DEPTNO = C.DEPTNO(+)
+			   AND C.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.EMP_TYPE_CODE = D.NO(+)
+			   AND D.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.POSITION_NO = E.POSITION_NO(+)
+			   AND E.POSITION_NO = F.NO(+)
+			   AND F.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.POST_NO = G.POST_NO(+)
+			   AND G.POST_NO = H.NO(+)
+			   AND H.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND A.EMP_OFFICE <> '15120'
+			   AND A.EMP_TYPE_CODE <> '3943'
+		]]>
+		<dynamic prepend="">
+			<include refid="getEmpWithoutCondition" />
+		</dynamic>
+
+		<isNotEmpty prepend="" property="CPNY_ID">
+			<isEqual prepend="" property="CPNY_ID" compareValue="C04">
+				AND
+				A.EMP_TYPE_CODE NOT IN '14890'
+	           </isEqual>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="orderType">
+
+			<isEqual prepend="" property="orderType" compareValue="EMPID">
+				order
+				by EMPID
+	           </isEqual>
+
+			<isEqual prepend="" property="orderType" compareValue="LOCAL_NAME">
+				order
+				by NLSSORT(LOCAL_NAME,'NLS_SORT = SCHINESE_PINYIN_M')
+	           </isEqual>
+
+			<isEqual prepend="" property="orderType" compareValue="DEPTNO">
+				order
+				by DEPARTMENT_NAME
+	           </isEqual>
+
+			<isEqual prepend="" property="orderType" compareValue="POSITION_NO">
+				order
+				by POSITION_NAME
+	           </isEqual>
+
+			<isEqual prepend="" property="orderType" compareValue="POST_NO">
+				order
+				by POST_NAME
+	           </isEqual>
+
+			<isEqual prepend="" property="sortOrGradeDownForSign"
+				compareValue="sort">
+				asc
+	           </isEqual>
+
+			<isEqual prepend="" property="sortOrGradeDownForSign"
+				compareValue="gradeDown">
+				desc
+	           </isEqual>
+
+		</isNotEmpty>
+
+	</select>
+
+	<select id="searchEmpWithoutCntContract" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_EMPLOYEE        A,
+			       HR_DEPARTMENT_NAME C,
+			       SY_GLOBAL_NAME     D,
+			       HR_POSITION        E,
+			       SY_GLOBAL_NAME     F,
+			       HR_POST            G,
+			       SY_GLOBAL_NAME     H
+			 WHERE NOT EXISTS (SELECT B.PERSON_ID FROM HR_CONTRACT B WHERE B.PERSON_ID = A.PERSON_ID)
+			   AND A.DEPTNO = C.DEPTNO(+)
+			   AND C.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.STATUS_CODE = D.NO(+)
+			   AND D.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.POSITION_NO = E.POSITION_NO(+)
+			   AND E.POSITION_NO = F.NO(+)
+			   AND F.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.POST_NO = G.POST_NO(+)
+			   AND G.POST_NO = H.NO(+)
+			   AND H.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND A.EMP_OFFICE <> '15120'
+			   AND A.EMP_TYPE_CODE <> '3943'
+		]]>
+		<dynamic prepend="">
+			<include refid="getEmpWithoutCondition" />
+		</dynamic>
+
+		<isNotEmpty prepend="" property="CPNY_ID">
+			<isEqual prepend="" property="CPNY_ID" compareValue="C04">
+				AND
+				A.EMP_TYPE_CODE NOT IN '14890'
+	           </isEqual>
+		</isNotEmpty>
+	</select>
+
+
+	<!-- 签订合同 -->
+	<insert id="addContract" parameterClass="linkMap">
+		<![CDATA[
+			insert into HR_CONTRACT
+   			    (CONTRACT_NO,
+	   			 CONTRACT_NAME,
+	   			 TOTAL_PERIOD,
+	   			 PERSON_ID, 
+	   			 CONTRACT_TYPE_CODE, 
+	   			 START_CONTRACT_DATE, 
+	   			 END_CONTRACT_DATE,
+	   			 WORK_CONTENT,
+	   			 WORK_HOUR_TYPE,
+	   			 SALARY,
+	   			 REMARK,
+	   			 CREATE_DATE,
+	   			 CREATED_BY,
+	   			 CREATED_IP,
+	   			 ACTIVITY
+   			)
+ 			values
+ 			(
+ 				HR_CONTRACT_SEQ.NEXTVAL,
+ 				#CONTRACT_TYPE_CODE:VARCHAR# || '-' || #START_CONTRACT_DATE:VARCHAR# || '-' || #END_CONTRACT_DATE:VARCHAR#,
+ 				#TOTAL_PERIOD:VARCHAR#,
+ 				#PERSON_ID:VARCHAR#,
+ 				GET_CODE_NO(#CONTRACT_TYPE_CODE:VARCHAR#,'123199',#interCpnyID:VARCHAR#,'CODE'),
+ 				TO_DATE(#START_CONTRACT_DATE:VARCHAR#,'DD/MM/YYYY'),
+ 				decode(#END_CONTRACT_DATE:VARCHAR#,'','',TO_DATE(#END_CONTRACT_DATE:VARCHAR#,'DD/MM/YYYY')),
+ 				#WORK_CONTENT:VARCHAR#,
+ 				GET_CODE_NO(#WORK_HOUR_TYPE:VARCHAR#,'123200',#interCpnyID:VARCHAR#,'CODE'),
+ 				#SALARY:VARCHAR#,
+ 				#REMARK:VARCHAR#,
+ 				SYSDATE,
+ 				#adminID:VARCHAR#,
+ 				#adminIP:VARCHAR#,
+ 				1
+ 			)
+		]]>
+	</insert>
+	
+	
+
+	
+	<insert id="addExpiredContract" parameterClass="linkMap">
+		<![CDATA[
+ 			insert into HR_CONTRACT
+   			(
+	   			 CONTRACT_NO,
+	   			 PERSON_ID, 
+	   			 CONTRACT_TYPE_CODE, 
+	   			 START_CONTRACT_DATE, 
+	   			 END_CONTRACT_DATE,
+	   			 REMARK,
+	   			 WORK_POSITION,
+	   			 WORK_CONTENT,
+	   			 WORK_TIME,
+	   			 SALARY,
+	   			 DEPTNO,
+	   			 POSITION_NO,
+	   			 POST_GRADE_NO,
+	   			 CREATED_BY,
+	   			 CREATED_IP,
+	   			 CREATE_DATE,
+	   			 ACTIVITY
+   			)values
+ 			(
+ 				HR_CONTRACT_SEQ.NEXTVAL,
+ 				#PERSON_ID:VARCHAR#,
+ 				#CONTRACT_TYPE_CODE:VARCHAR#,
+ 				TO_DATE(#START_CONTRACT_DATE:VARCHAR#,'YYYY.MM.DD'),
+ 				TO_DATE(#END_CONTRACT_DATE:VARCHAR#,'YYYY.MM.DD'),
+ 				#REMARK:VARCHAR#,
+ 				#WORK_POSITION:VARCHAR#,
+ 				#WORK_CONTENT:VARCHAR#,
+ 				#WORK_TIME:VARCHAR#,
+ 				#SALARY:VARCHAR#,
+ 				#DEPTNO:VARCHAR#,
+ 				#POSITION_NO:VARCHAR#,
+ 				#POST_GRADE_NO:VARCHAR#,
+ 				#CREATED_BY:VARCHAR#,
+ 				#CREATED_IP:VARCHAR#,
+ 				SYSDATE,
+ 				1
+ 			)
+		]]>
+	</insert>
+
+	<!-- 签订契约列表查询 -->
+	<select id="getContractSeq" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT HR_CONTRACT_SEQ.NEXTVAL FROM DUAL
+		]]>
+	</select>
+
+	<sql id="getRenewContractCondition">
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				B.DEPTNO IN (
+					select sud.deptno
+					from sy_user_dept sud,
+						(SELECT DEPTNO
+						FROM HR_DEPARTMENT
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO) DEPT
+					where sud.deptno = DEPT.deptno
+					AND sud.user_no=#userNo:VARCHAR#
+				)
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			A.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			A.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		B.DEPTNO IN
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				B.PERSON_ID = #ADMIN_ID:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+	</sql>
+
+
+	<select id="getRenewContractForGrid" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT B.EMPID,
+		             B.PERSON_ID,
+		             B.LOCAL_NAME,
+		             B.DEPTNO,
+		             TOTAL_PERIOD + 1 TOTAL_PERIOD,
+		             A.REMARK,
+		             GET_DEPT_NAME(B.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT_NAME,
+		             TO_CHAR(B.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+		             B.POST_GRADE_NO,
+		             get_global_name(B.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE,
+		             B.EMP_TYPE_CODE,
+		             get_global_name(B.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_CODE_NAME,
+		             get_global_name(HPI.SEXCODE, #interLanguage:VARCHAR#) SEXNAME,
+		             A.SALARY,
+		             A.WORK_CONTENT,
+		             B.POSITION_NO,
+		             A.CONTRACT_TYPE_CODE,
+		             A.WORK_HOUR_TYPE,
+		             get_global_name(A.WORK_HOUR_TYPE, #interLanguage:VARCHAR#) WORK_HOUR_NAME,
+		             get_global_name(B.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NAME,
+		             CASE WHEN TOTAL_PERIOD = '1' THEN GET_GLOBAL_NAME('14014303',#interLanguage:VARCHAR#)
+                            WHEN TOTAL_PERIOD = '2' THEN GET_GLOBAL_NAME('123203',#interLanguage:VARCHAR#)
+                            WHEN TOTAL_PERIOD > '2' THEN GET_GLOBAL_NAME('14014305',#interLanguage:VARCHAR#)  END CONTRACT_TYPE_CODE_NAME,
+		             TO_CHAR(END_CONTRACT_DATE + 1, 'DD/MM/YYYY') START_CONTRACT_DATE,
+		             TO_CHAR(add_months(A.END_CONTRACT_DATE, 12), 'DD/MM/YYYY') ONEEND_CONTRACT_DATE,
+		             TO_CHAR(add_months(A.END_CONTRACT_DATE, 24), 'DD/MM/YYYY') TWOEND_CONTRACT_DATE,
+		             TO_CHAR(A.START_CONTRACT_DATE, 'DD/MM/YYYY') || '-' || TO_CHAR(A.END_CONTRACT_DATE, 'DD/MM/YYYY') CONTRACT_QIJIAN,
+		             TRUNC(MONTHS_BETWEEN(SYSDATE, B.DATE_STARTED) / 12) || ' Năm ' ||
+       					TRUNC(MOD(MONTHS_BETWEEN(SYSDATE, B.DATE_STARTED), 12)) || ' Tháng' YEAR,
+       				TRUNC(MONTHS_BETWEEN(A.END_CONTRACT_DATE, A.START_CONTRACT_DATE) / 12) || ' Năm ' ||
+       					TRUNC(MOD(MONTHS_BETWEEN(A.END_CONTRACT_DATE, A.START_CONTRACT_DATE), 12)) || ' Tháng' AGE,
+		             CASE WHEN A.updated_by IS NULL THEN (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = A.created_by) else (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = A.updated_by) END as QIANDING_REN,
+                     CASE WHEN A.UPDATE_DATE IS NULL THEN A.CREATE_DATE ELSE A.UPDATE_DATE END QIANDING_DATE
+			  FROM (SELECT CONTRACT_NO,
+			  			   TOTAL_PERIOD,
+			               HRC.PERSON_ID,
+			               CASE WHEN TOTAL_PERIOD = '1' THEN '14014303'
+                            WHEN TOTAL_PERIOD = '2' THEN '123203'
+                            WHEN TOTAL_PERIOD > '2' THEN '14014305' END CONTRACT_TYPE_CODE,
+			               HRC.START_CONTRACT_DATE,
+			               HRC.END_CONTRACT_DATE,
+			               REMARK,
+			               WORK_CONTENT,
+			               WORK_HOUR_TYPE,
+			               SALARY,
+			               HRC.CREATED_BY,
+                     	   HRC.UPDATED_BY,
+                           HRC.UPDATE_DATE,
+                           HRC.CREATE_DATE,
+			               ROW_NUMBER() OVER(PARTITION BY HRC.PERSON_ID ORDER BY HRC.START_CONTRACT_DATE DESC) CONCOUNT
+			          FROM HR_CONTRACT HRC
+			         WHERE HRC.ACTIVITY = 1
+			         		) A,
+			       HR_EMPLOYEE B,
+			       HR_PERSONAL_INFO HPI
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND B.PERSON_ID = HPI.PERSON_ID
+			   AND B.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CONCOUNT = 1
+			   AND B.EMPID NOT LIKE '111111%'
+			   AND B.EMP_OFFICE <> '15120'
+			   AND A.END_CONTRACT_DATE IS NOT NULL
+			   AND ((A.CONTRACT_TYPE_CODE = '14014302' AND A.END_CONTRACT_DATE <= SYSDATE + 7)
+            		OR (A.CONTRACT_TYPE_CODE = '123204' AND A.END_CONTRACT_DATE <= SYSDATE + 14)
+               		OR (A.CONTRACT_TYPE_CODE NOT IN ('123204','14014302') AND A.END_CONTRACT_DATE <= ADD_MONTHS(SYSDATE,1)))
+		]]>
+		
+		<isEmpty prepend="AND" property="S_END_DATE">
+			<isEmpty prepend="" property="E_END_DATE">
+			      <![CDATA[
+			 			A.END_CONTRACT_DATE <= ADD_MONTHS(SYSDATE,2)
+			      ]]>
+			</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="S_END_DATE">
+			<isNotEmpty prepend="" property="E_END_DATE">
+			      <![CDATA[
+				 		END_CONTRACT_DATE BETWEEN TO_DATE(#S_END_DATE:VARCHAR#,'DD/MM/YYYY') AND TO_DATE(#E_END_DATE:VARCHAR#,'DD/MM/YYYY')
+			      ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+	      <![CDATA[
+		      ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+				EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+	      <![CDATA[
+				CASE WHEN TOTAL_PERIOD = '1' THEN '14014303'
+                     WHEN TOTAL_PERIOD = '2' THEN '123203'
+                     WHEN TOTAL_PERIOD > '2' THEN '14014305' END = #CONTRACT_TYPE_CODE:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+    
+		<![CDATA[
+			ORDER　BY A.END_CONTRACT_DATE DESC,B.person_id
+		]]>
+	</select>
+	
+	<select id="getExpiredIdCardList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		    SELECT HE.EMPID,
+		    	   HE.LOCAL_NAME,
+		    	   GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+		    	   IDCARD_EXPIRE_DATE
+		  FROM HR_PERSONAL_INFO HP, HR_EMPLOYEE HE
+		 WHERE HE.CPNY_ID = #interCpnyID#
+		   AND HE.PERSON_ID = HP.PERSON_ID
+		   AND TO_DATE(IDCARD_EXPIRE_DATE,'YYYY/MM/DD') - 60 < SYSDATE
+		   AND HE.EMP_OFFICE <> '15120'
+		]]>
+	</select>
+	
+	<select id="getPaNotImportList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		    SELECT HRE.EMPID,
+		    	   HRE.LOCAL_NAME,
+		    	   HRE.PERSON_ID,
+		    	   GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+		    	   GET_PA_REMIND_STR(HRE.PERSON_ID,HRE.WAGE_TYPE,HRE.CPNY_ID) REMIND_STR
+		  FROM HR_EMPLOYEE HRE
+	       WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+	       AND HRE.EMPID NOT LIKE '11111%'
+	       AND TO_CHAR(HRE.DATE_STARTED,'YYYYMM') = TO_CHAR(SYSDATE,'YYYYMM')
+	       AND (GET_PA_REMIND_STR(HRE.PERSON_ID,HRE.WAGE_TYPE,HRE.CPNY_ID) IS NOT NULL OR GET_PA_REMIND_STR(HRE.PERSON_ID,HRE.WAGE_TYPE,HRE.CPNY_ID) <> '')
+	       AND HRE.EMP_TYPE_CODE NOT IN ('14015552','14015550')
+		]]>
+	</select>
+	
+	
+	<update id="updateBecomeRegularEvaluate" parameterClass="linkMap">
+		<![CDATA[
+ 			UPDATE HR_PERSONAL_INFO 
+ 			SET BECOME_REGULAR_EVALUATE = #PINGJIA:VARCHAR#
+ 			WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 转正提醒 -->
+	<select id="getBecomeRegularWarn" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT HRE.EMPID,
+             HRE.CPNY_ID,
+             HRE.LOCAL_NAME,
+             HRE.PERSON_ID,
+             GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+             GET_GLOBAL_NAME(HRE.POST_FAMILY,#interLanguage:VARCHAR#) POST_FAMILY_NAME,
+             GET_GLOBAL_NAME(HRE.EMP_TYPE_CODE,#interLanguage:VARCHAR#) EMP_TYPE_NAME,
+             TO_CHAR(HRE.DATE_STARTED,'dd/MM/yyyy') DATE_STARTED,
+             TO_CHAR(HRE.END_PROBATION_DATE+1,'dd/MM/yyyy') END_PROBATION_DATE
+      FROM HR_EMPLOYEE HRE,HR_PERSONAL_INFO HRP
+         WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+          AND HRE.PERSON_ID = HRP.PERSON_ID
+         AND HRE.EMPID NOT LIKE '11111%'
+         AND HRE.EMP_TYPE_CODE = '10420'
+         AND HRE.EMP_OFFICE <> '15120'
+         AND HRE.END_PROBATION_DATE IS NOT NULL 
+ 			   AND ((HRE.POST_FAMILY in ('14015813','14015814') AND TO_CHAR(HRE.END_PROBATION_DATE + 1, 'YYYYMMDD') <= TO_CHAR(SYSDATE + 14, 'YYYYMMDD') )
+              		OR (HRE.POST_FAMILY = '14015815' AND TO_CHAR(HRE.END_PROBATION_DATE + 1, 'YYYYMMDD') <= TO_CHAR(SYSDATE + 7, 'YYYYMMDD')))
+         ORDER BY TO_CHAR(HRE.END_PROBATION_DATE+1,'YYYYMMDD') DESC
+		]]>
+	</select>
+
+
+
+<!-- 转正信息导出 -->
+	<select id="daochuBecomeRegularWarn" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HRE.EMPID,
+			       HRE.CPNY_ID,
+			       HRE.LOCAL_NAME,
+			       HRE.PERSON_ID,
+			       HRP.BECOME_REGULAR_EVALUATE,
+			       GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       GET_GLOBAL_NAME(HRE.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NAME,
+			       GET_GLOBAL_NAME(HRED.DEGREE_CODE,#interLanguage:VARCHAR#) DEGREE_CODE,
+			       HRED.SUBJECT,
+			       TO_CHAR(HRE.DATE_STARTED,'YYYY-MM-DD') DATE_STARTED,
+			       TO_CHAR(HRE.END_PROBATION_DATE,'YYYY-MM-DD') END_PROBATION_DATE
+			FROM HR_EMPLOYEE HRE,HR_PERSONAL_INFO HRP,(SELECT Y.* FROM HR_EDUCATION Y WHERE end_date  = (SELECT MAX(t.end_date) FROM HR_EDUCATION t WHERE t.person_id=Y.PERSON_ID)) HRED
+			 WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND HRED.PERSON_ID = HRP.PERSON_ID
+			    AND TO_CHAR(HRE.END_PROBATION_DATE+1,'YYYYMMDD') <= TO_CHAR(ADD_MONTHS(SYSDATE,1),'YYYYMMDD') 
+			   AND HRE.PERSON_ID = HRP.PERSON_ID
+			    AND HRE.PERSON_ID=#PERSON_ID:VARCHAR#
+			   AND HRE.EMPID NOT LIKE '11111%'
+			   AND HRE.STATUS_CODE = '1374'
+			   AND HRE.EMP_TYPE_CODE = '10420'
+			   AND HRE.POST_FAMILY = '14015813'
+		]]>
+	</select>
+
+<!--   WHERE HRE.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND HRP.PERSON_ID = HRED.PERSON_ID 
+				 AND HRE.PERSON_ID=#PERSON_ID:VARCHAR#
+			   AND HRP.PERSON_ID = HRE.PERSON_ID 
+			   AND HRE.EMPID NOT LIKE '11111%'
+			    AND HRE.EMP_TYPE_CODE = '10420' -->
+
+	<select id="getRenewContractCntForGrid" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+		SELECT COUNT(1)
+		  FROM (SELECT CONTRACT_NO,PERSON_ID,END_CONTRACT_DATE,
+		               ROW_NUMBER() OVER(PARTITION BY HRC.PERSON_ID ORDER BY HRC.START_CONTRACT_DATE DESC) CONCOUNT
+		          FROM HR_CONTRACT HRC
+		         WHERE HRC.ACTIVITY = 1
+		         ) A,
+		       HR_EMPLOYEE B
+		 WHERE A.PERSON_ID = B.PERSON_ID
+			AND B.CPNY_ID = #interCpnyID:VARCHAR#
+		   AND A.CONCOUNT = 1
+		   AND B.EMP_OFFICE <> '15120'
+		]]>
+		<isEmpty prepend="AND" property="S_END_DATE">
+			<isEmpty prepend="" property="E_END_DATE">
+			      <![CDATA[
+			 			A.END_CONTRACT_DATE <= ADD_MONTHS(SYSDATE,2)
+			      ]]>
+			</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="S_END_DATE">
+			<isEmpty prepend="" property="E_END_DATE">
+			      <![CDATA[
+				 		TO_CHAR(END_CONTRACT_DATE,'YYYY.MM.DD') >= #S_END_DATE:VARCHAR#
+			      ]]>
+			</isEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="E_END_DATE">
+			<isEmpty prepend="" property="S_END_DATE">
+			      <![CDATA[
+				 		#E_END_DATE:VARCHAR# >= TO_CHAR(END_CONTRACT_DATE,'YYYY.MM.DD')
+			      ]]>
+			</isEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="S_END_DATE">
+			<isNotEmpty prepend="" property="E_END_DATE">
+			      <![CDATA[
+				 		TO_CHAR(END_CONTRACT_DATE,'YYYY.MM.DD') BETWEEN #S_END_DATE:VARCHAR# AND #E_END_DATE:VARCHAR#
+			      ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			      <![CDATA[
+			      ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+				EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+
+	</select>
+
+	<select id="getContractForUpdate" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPTNAME,
+			       T.TOTAL_PERIOD,
+			       T.CONTRACT_NO,
+			       T.PERSON_ID,
+			       T.CONTRACT_TYPE_CODE,
+                   get_global_name(T.CONTRACT_TYPE_CODE,#interLanguage:VARCHAR#) CONTRACT_TYPE_NAME,
+			       TO_CHAR(T.START_CONTRACT_DATE, 'YYYY.MM.DD') START_CONTRACT_DATE,
+			       TO_CHAR(T.END_CONTRACT_DATE, 'YYYY.MM.DD') END_CONTRACT_DATE,
+			       T.REMARK,
+                   HE.EMP_TYPE_CODE,
+                   T.WORK_AREA,
+                   get_city_name(T.WORK_AREA) WORK_AREA_NAME,
+                   HEC.EMPID EMPID_C,
+                   HEC.LOCAL_NAME LOCAL_NAME_C,
+                   TO_CHAR(T.CREATE_DATE, 'YYYY.MM.DD') CREATE_DATE,
+                   T.CONTRACT_NUMBER,
+                   T.CONTRACT_VERSION
+			  FROM HR_CONTRACT        T,
+			       HR_EMPLOYEE        HE,
+			       HR_EMPLOYEE        HEC,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE T.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO
+			   AND T.CREATED_BY = HEC.PERSON_ID
+			   AND HDN.LANGUAGE = #interLanguage:VARCHAR#
+			   AND T.CONTRACT_NO = #CONTRACT_NO:VARCHAR#
+		]]>
+	</select>
+
+
+
+	<update id="updateContractInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE HR_CONTRACT 
+			 SET ACTIVITY = 0,
+			     UPDATE_DATE = SYSDATE,
+			     UPDATED_BY = #adminID:VARCHAR#,
+			     UPDATED_IP = #adminIP:VARCHAR#
+      		WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="deleteContractInfo1" parameterClass="linkMap">
+		<![CDATA[
+      		DELETE FROM HR_CONTRACT WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateContractInfo1" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE HR_CONTRACT 
+			 SET   CONTRACT_TYPE_CODE = GET_CODE_NO(#CONTRACT_TYPE_CODE:VARCHAR#,'123199',#interCpnyID:VARCHAR#,'CODE'),
+			  	   CONTRACT_TYPE = GET_CODE_NO(#CONTRACT_TYPE:VARCHAR#,'14016095',#interCpnyID:VARCHAR#,'CODE'),
+			 	   PERSON_ID = #PERSON_ID:VARCHAR#,
+			 	   TOTAL_PERIOD = #TOTAL_PERIOD:VARCHAR#,
+			 	   TOTAL_PERIOD08 = #TOTAL_PERIOD08:VARCHAR#,
+				   START_CONTRACT_DATE = TO_DATE(#START_CONTRACT_DATE:VARCHAR#,'YYYY.MM.DD'),
+				   END_CONTRACT_DATE = TO_DATE(#END_CONTRACT_DATE:VARCHAR#,'YYYY.MM.DD'),
+				   CHANGE_DATE = NVL(#CHANGE_DATE:VARCHAR#,TO_CHAR(SYSDATE,'YYYY.MM.DD')),
+				   CONTRACT_NAME = #CONTRACT_TYPE_CODE:VARCHAR# || '-' || #START_CONTRACT_DATE# || '-' || #END_CONTRACT_DATE#,
+				   REMARK = #REMARK:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+      		WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<insert id="addContractInfo1" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO HR_CONTRACT
+				  (CONTRACT_NO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY) 
+				   VALUES
+				   (HR_CONTRACT_SEQ.NEXTVAL,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+	<delete id="deleteContractNullInfo1" parameterClass="linkMap" >
+		<![CDATA[
+      		DELETE FROM HR_CONTRACT WHERE PERSON_ID IS NULL AND CREATED_BY = #adminID:VARCHAR#
+		]]>
+	</delete>
+	
+	<insert id="insertChangeContractInfo" parameterClass="linkMap">
+		<![CDATA[
+			 INSERT INTO HR_CONTRACT
+				  (CONTRACT_NO,
+				   PERSON_ID,
+				   CONTRACT_TYPE_CODE,
+				   CONTRACT_TYPE,
+				   START_CONTRACT_DATE,
+				   END_CONTRACT_DATE,
+				   CHANGE_DATE,
+				   REMARK,
+				   WORK_HOUR_TYPE,
+				   SALARY,
+				   WORK_CONTENT,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   ORDERNO,
+				   ACTIVITY,
+				   CREATED_IP,
+				   UPDATED_IP,
+				   TOTAL_PERIOD,
+				   CONTRACT_NAME)
+				  SELECT HR_CONTRACT_SEQ.NEXTVAL,
+				         PERSON_ID,
+				         GET_CODE_NO(#CONTRACT_TYPE_CODE:VARCHAR#,'123199',#interCpnyID:VARCHAR#,'CODE'),
+				         CONTRACT_TYPE,
+				         TO_DATE(#START_CONTRACT_DATE:VARCHAR#,'DD/MM/YYYY'),
+				         TO_DATE(#END_CONTRACT_DATE:VARCHAR#,'DD/MM/YYYY'),
+				         NVL(#CHANGE_DATE:VARCHAR#,TO_CHAR(SYSDATE,'DD/MM/YYYY')),
+				         #REMARK:VARCHAR#,
+				         WORK_HOUR_TYPE,
+				         SALARY,
+				         WORK_CONTENT,
+				         SYSDATE,
+				         #adminID:VARCHAR#,
+				         SYSDATE,
+				         #adminID:VARCHAR#,
+				         ORDERNO,
+				         1,
+				         #adminIP:VARCHAR#,
+				         #adminIP:VARCHAR#,
+				         TOTAL_PERIOD,
+				         GET_GLOBAL_NAME(CONTRACT_TYPE_CODE,'zh') || '-' || TO_CHAR(START_CONTRACT_DATE,'DD/MM/YYYY') || '-' || #END_CONTRACT_DATE#
+				    FROM HR_CONTRACT
+      			WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR#
+		]]>
+	</insert>
+
+	<!-- 只是修改合同08年后的签订次数 -->
+	<update id="updateContractInfoCnt" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE HR_CONTRACT SET
+					TOTAL_PERIOD_08 = #TOTAL_PERIOD_08:VARCHAR#
+			WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR# 
+		]]>
+	</update>
+
+	<select id="getPersonalInfoForInformation" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+				SELECT
+				H.PERSON_ID,
+				GET_DEPT_NAME(H.DEPTNO,#interLanguage:VARCHAR#)  DEPTNAME,
+				(SELECT TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = H.PERSON_ID) WORK_YEAR,
+                (SELECT TRUNC(MOD(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) , 12)) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = H.PERSON_ID) AS WORK_MONTH,
+				H.EMPID,
+				H.LOCAL_NAME,
+				H.CHINESE_PINYIN,
+				P.IDCARD_NO,
+				GET_GLOBAL_NAME(P.SEXCODE,#interLanguage:VARCHAR#) SEX,
+				P.DOB,
+				HDM.CONTENT,
+				GET_GLOBAL_NAME(H.GRADE_LEVEL,#interLanguage:VARCHAR#) GRADE_LEVEL,
+				GET_GLOBAL_NAME(H.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NO,
+				GET_GLOBAL_NAME(H.POST_GRADE_NO,#interLanguage:VARCHAR#) GRADE_NO,
+				GET_GLOBAL_NAME(H.POST_NO,#interLanguage:VARCHAR#) POST_NO,
+				H.JOIN_COMPANY_DATE,
+				GET_GLOBAL_NAME(H.EMP_OFFICE,#interLanguage:VARCHAR#) IN_THE,
+				H.NOW_DEPARTMENT_DATE,
+				H.PROMOTION_DATE,
+				H.DATE_LEFT,
+				H.INNER_WORK_YEAR,
+				GET_GLOBAL_NAME(H.EMPLOYMENT_TYPE,#interLanguage:VARCHAR#) EMPLOYMENTTYPE,
+				GET_GLOBAL_NAME(H.WORKING_TIME,#interLanguage:VARCHAR#) WORKTIMETYPE,
+				GET_GLOBAL_NAME(H.CONTRACT_TYPE,#interLanguage:VARCHAR#) CONTRACTTYPE,
+				GET_GLOBAL_NAME(H.EMP_TYPE_CODE,#interLanguage:VARCHAR#) TYPECODE
+				FROM
+				HR_EMPLOYEE H,
+				HR_PERSONAL_INFO P,
+				HR_DEPARTMENT_NAME HDM,
+				Hr_Department HDD
+				WHERE
+				H.CPNY_ID=#CPNYID:VARCHAR#
+				AND H.PERSON_ID=P.PERSON_ID
+				AND H.DEPTNO=HDM.DEPTNO
+				AND HDM.Language=#interLanguage:VARCHAR#
+				 AND hdd.deptno=h.deptno
+				
+	]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			H.DEPTNO=#DEPTNO:VARCHAR#
+	</isNotEmpty>
+
+		<isEmpty prepend="AND" property="STATUS">
+				<![CDATA[	H.EMP_OFFICE <> '15120']]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="CPNYSTATUS">
+			HDD.Deptno in (
+			select
+			hd.deptno from hr_department hd start with
+			hd.deptno=#CPNYSTATUS:VARCHAR# connect by prior hd.deptno =
+			hd.parent_dept_no)
+	</isNotEmpty>
+
+		order by H.EMPID desc
+	</select>
+
+
+	<select id="getPersonalInfoForInformationCount" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+	<![CDATA[				
+				SELECT
+				COUNT(*)
+				FROM
+				HR_EMPLOYEE H,
+				HR_PERSONAL_INFO P,
+				HR_DEPARTMENT_NAME HDM,
+				Hr_Department HDD
+				WHERE
+				H.CPNY_ID=#CPNYID:VARCHAR#
+				AND H.PERSON_ID=P.PERSON_ID
+				AND H.DEPTNO=HDM.DEPTNO
+				AND HDM.Language=#interLanguage:VARCHAR#
+				AND hdd.deptno=h.deptno
+				
+	]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			H.DEPTNO=#DEPTNO:VARCHAR#
+	</isNotEmpty>
+		<isEmpty prepend="AND" property="STATUS">
+		<![CDATA[ H.EMP_OFFICE <> '15120']]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="CPNYSTATUS">
+
+			HDD.Deptno in (
+			select
+			hd.deptno from hr_department hd start with
+			hd.deptno=#CPNYSTATUS:VARCHAR# connect by prior hd.deptno =
+			hd.parent_dept_no)
+		
+	</isNotEmpty>
+
+	</select>
+
+
+	<select id="getParticularHumanDistinguishList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			SELECT 
+					TT.EMP_TYPE_CODE    EMP_TYPE_CODE,
+					T2.CONTENT      	EMP_TYPE_NAME
+			FROM 
+					SY_GLOBAL_NAME T2,
+					(SELECT DISTINCT T1.EMP_TYPE_CODE FROM HR_EMPLOYEE T1)TT
+			WHERE   
+					TT.EMP_TYPE_CODE=T2.NO(+)
+					AND T2.LANGUAGE=#interLanguage:VARCHAR#	
+		]]>
+	</select>
+
+	<select id="getCodeList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.CODE_NO,
+	               SY.CONTENT CODENAME
+	          FROM SY_CODE        T,
+	           	   SY_CODE_PARAM  SP,
+	               SY_GLOBAL_NAME SY
+	         WHERE T.CODE_NO = SY.NO(+)
+	           AND T.CODE_NO = SP.CODE_NO
+			   AND SP.CPNY_ID = #interCpnyID:VARCHAR#
+	           AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+	           AND T.PARENT_CODE_NO = #PARENT_CODE_NO:VARCHAR#
+	           AND T.ACTIVITY = 1
+		]]>
+		<![CDATA[  
+			 ORDER BY T.ORDERNO
+		]]>
+	</select>
+
+	<!-- 详细人力区分 关联 详细合同类型 -->
+	<select id="getRenLiAndQiYueList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+			SELECT 	C.CODE_NO , 
+					GET_GLOBAL_NAME(C.CODE_NO,#interLanguage:VARCHAR#) CODE_NAME
+			FROM SY_CODE C
+			WHERE C.PARENT_CODE_NO IN (	SELECT DISTINCT TT.CODE_TWO
+										FROM HR_HUMAN_RELEVANCE TT
+										WHERE TT.DEPTH = 4
+										AND TT.CODE_NO = #EMP_TYPE_CODE:VARCHAR#
+										AND TT.CPNY_ID = #CPNY_ID:VARCHAR#)
+		]]>
+
+	</select>
+
+	<!-- 详细人力区分 关联 详细合同类型  by jjy -->
+	<select id="getRenLiAndQiYueList2" parameterClass="linkMap"
+		resultClass="linkMap">
+        <![CDATA[
+            SELECT  C.CODE_NO , 
+                    GET_GLOBAL_NAME(C.CODE_NO,#interLanguage:VARCHAR#) CODE_NAME
+            FROM SY_CODE C
+            WHERE C.CODE_NO IN (    SELECT distinct TT.CODE_NO
+                                        FROM HR_HUMAN_RELEVANCE TT
+                                        WHERE TT.DEPTH = 5
+                                        AND TT.CODE_ONE = #EMP_TYPE_CODE:VARCHAR#
+                                        AND TT.CPNY_ID = #CPNY_ID:VARCHAR#)
+        ]]>
+	</select>
+
+	<update id="approveExpiredContract" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE HR_CONTRACT SET
+			 		ACTIVITY = #FLAG:VARCHAR#,
+			 		EXPRIED_CONTRACT = #EXPRIED_CONTRACT:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID:VARCHAR#
+			WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR# 
+		]]>
+	</update>
+
+	<!-- 获取合同裁决者列表  -->
+	<select id="getEssAffirmList" parameterClass="linkMap"
+		resultClass="linkMap">
+        <![CDATA[
+            select ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRM_FLAG,
+			       ESS.ACTIVITY
+			       from ESS_AFFIRM ESS
+			       WHERE ESS.APPLY_NO = #APPLY_NO#
+			       AND ESS.APPLY_TYPE = #APPLY_TYPE#
+        ]]>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[ 
+				ESS.AFFIRM_FLAG = #ACTIVITY#
+			]]>
+		</isNotEmpty>
+	
+		<![CDATA[  
+			 ORDER BY ESS.AFFIRM_LEVEL
+		]]>
+	</select>
+
+	<update id="affirmContract" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE ESS_AFFIRM SET
+			 		ACTIVITY = #FLAG:VARCHAR#,
+			 		AFFIRM_FLAG = #FLAG#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					AFFIRM_CONTENT = #AFFIRM_CONTENT:VARCHAR#
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		]]>
+	</update>
+
+	<select id="getContractChangeList_back" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT /*+ ordered */
+					CONTRACT_NO,
+				   B.EMPID,
+			       A.PERSON_ID,
+			       B.LOCAL_NAME,
+			       B.DEPTNO,
+			       A.CONTRACT_TYPE_CODE,
+			       D.CONTENT  CONTRACT_TYPE,
+			       TO_CHAR(START_CONTRACT_DATE, 'YYYY.MM.DD') CONTRACTSTARTDATE,
+			       TO_CHAR(END_CONTRACT_DATE, 'YYYY.MM.DD') CONTRACTENDDATE,
+			       get_global_name(A.WORK_TIME,#interLanguage:VARCHAR#) WORK_TIME,
+			       trunc(MONTHS_BETWEEN(sysdate, B.DATE_STARTED) / 12) YEARS,
+			       A.REMARK,
+			       A.ACTIVITY,
+			       A.UPDATE_DATE 
+			  FROM HR_CONTRACT A,
+			       HR_EMPLOYEE B,
+			       SY_GLOBAL_NAME D,
+			       ( select max(TOTAL_PERIOD) TOTAL_PERIOD_MAX,PERSON_ID from HR_CONTRACT group by PERSON_ID) C
+			 WHERE A.TOTAL_PERIOD = C.TOTAL_PERIOD_MAX
+			 	AND A.PERSON_ID = C.PERSON_ID
+			 	AND A.PERSON_ID = B.PERSON_ID(+)
+			   AND A.CONTRACT_TYPE_CODE = D.NO(+)
+			   AND D.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND B.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND B.EMP_OFFICE <> '15120'
+			   AND B.EMP_TYPE_CODE not in (10418)
+			   AND A.ACTIVITY = 1
+			   AND A.END_CONTRACT_DATE IS NOT NULL
+	 	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+	      	B.DEPTNO IN (
+		          select sud.deptno 
+		          from sy_user_dept sud,
+		            (SELECT DEPTNO
+		            FROM HR_DEPARTMENT 
+		            START WITH DEPTNO = #DEPTNO#
+		            CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO) DEPT
+		          where sud.deptno = DEPT.deptno
+		          AND sud.user_no=#userNo:VARCHAR#
+		        )
+	      ]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="DEPTNO">
+			<isNotEmpty prepend="" property="specialParam">
+				<isNotEqual prepend="AND" property="specialParam"
+					compareValue="general">
+	          <![CDATA[
+	               (B.PERSON_ID = #supervisorPersonId:VARCHAR# OR B.DEPTNO IN
+	                 ]]>
+					<include refid="sys.include.getDataPermission" />
+	                 <![CDATA[
+	               )
+	                 ]]>
+				</isNotEqual>
+				<isEqual prepend="AND" property="specialParam" compareValue="general">
+					B.PERSON_ID = #supervisorPersonId:VARCHAR#
+	              </isEqual>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="" property="specialParam">
+			<isNotEqual prepend="AND" property="specialParam"
+				compareValue="general">
+	        <![CDATA[
+	             ( B.PERSON_ID = #supervisorPersonId:VARCHAR# OR B.EMP_TYPE_CODE IN
+	            ]]>
+				<include refid="sys.include.getDataPermissionEmpTypeCode" />
+	           <![CDATA[
+	             )
+	           ]]>
+			</isNotEqual>
+			<isEqual prepend="AND" property="specialParam" compareValue="general">
+				B.PERSON_ID = #supervisorPersonId:VARCHAR#
+	          </isEqual>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			A.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			A.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     B.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			    B.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			B.EMP_TYPE_CODE IN
+			(SELECT JOBTYPE_NO
+			FROM HR_JOB_TYPE_SETUP P
+			WHERE JOBTYPE_GROUP_NO =
+			#JobTypeGroupNo#
+			AND CPNY_ID = #interCpnyID:VARCHAR#
+			)
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	
+	
+	<select id="getContractChangeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT * FROM (     SELECT A.EMPID,
+		             A.PERSON_ID,
+		             A.LOCAL_NAME,
+		             A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT_NAME,
+		             TO_CHAR(A.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+		             A.POST_GRADE_NO,
+		             get_global_name(A.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE,
+		             TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) YEARS,
+		             A.POSITION_NO,
+		             get_global_name(A.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+		             A.POSITION,
+		             get_global_name(A.POSITION, #interLanguage:VARCHAR#) POSITION_NAME,
+		             HRC.WORK_HOUR_TYPE,
+		             get_global_name(HRC.WORK_HOUR_TYPE, #interLanguage:VARCHAR#) WORK_HOUR_NAME,
+		             GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) AS SEXNAME,
+		             TRUNC(MONTHS_BETWEEN(SYSDATE, P.DOB) / 12) AGE,
+		             TO_CHAR(HRC.START_CONTRACT_DATE, 'DD/MM/YYYY') START_CONTRACT_DATE,
+		             TO_CHAR(HRC.END_CONTRACT_DATE, 'DD/MM/YYYY') END_CONTRACT_DATE,
+		             HRC.CONTRACT_TYPE_CODE,
+		             get_global_name(HRC.CONTRACT_TYPE_CODE, #interLanguage:VARCHAR#) CONTRACT_TYPE_CODE_NAME,
+		             HRC.CONTRACT_TYPE,
+		             get_global_name(HRC.CONTRACT_TYPE, #interLanguage:VARCHAR#) CONTRACT_TYPE_NAME,
+		             HRC.TOTAL_PERIOD,
+		             HRC.TOTAL_PERIOD08,
+		             HRC.CONTRACT_NAME,
+		             CASE WHEN HRC.updated_by IS NULL THEN (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.created_by) else (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.updated_by) END as QIANDING_REN,
+                     CASE WHEN HRC.UPDATE_DATE IS NULL THEN HRC.CREATE_DATE ELSE HRC.UPDATE_DATE END QIANDING_DATE,
+		             HRC.REMARK,
+		             CASE WHEN HRC.END_CONTRACT_DATE IS NOT NULL THEN
+		                 TRUNC( MONTHS_BETWEEN(HRC.END_CONTRACT_DATE + 1 , HRC.START_CONTRACT_DATE) / 12 ) || ' Năm ' 
+		                 || TRUNC(MOD(MONTHS_BETWEEN(HRC.END_CONTRACT_DATE + 1 , HRC.START_CONTRACT_DATE),12)) || ' Tháng'
+		               ELSE
+		                 ' '
+		               END CONTRACT_LEN,
+					       ROW_NUMBER() OVER(PARTITION BY HRC.PERSON_ID ORDER BY HRC.START_CONTRACT_DATE DESC) CNT,
+					 HRC.CHANGE_DATE,
+					 HRC.CONTRACT_NO
+		        FROM HR_EMPLOYEE A, HR_PERSONAL_INFO P,
+					(select *  from hr_contract c1
+                      where not exists (select 1
+                     from hr_contract c2
+                     where c1.person_id = c2.person_id
+                       and c1.TOTAL_PERIOD < c2.TOTAL_PERIOD)
+                       and c1.activity = '1') HRC
+       WHERE A.PERSON_ID = P.PERSON_ID
+         AND A.PERSON_ID = HRC.PERSON_ID
+				 AND A.EMP_OFFICE <> '15120'
+				 AND A.EMPID NOT LIKE '111111%'
+		         AND A.CPNY_ID = #interCpnyID:VARCHAR# ) A
+		      WHERE A.CNT = 1
+	 	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+	      <![CDATA[
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	      ]]>
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+	        EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			A.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			A.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.END_CONTRACT_DATE
+		]]>
+	</select>
+	
+	<select id="getnullContractUpdateList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT
+		             TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY.MM.DD') START_CONTRACT_DATE,
+		             TO_CHAR(HRC.END_CONTRACT_DATE, 'YYYY.MM.DD') END_CONTRACT_DATE,
+		             HRC.CONTRACT_TYPE_CODE,
+		             get_global_name(HRC.CONTRACT_TYPE_CODE, #interLanguage:VARCHAR#) CONTRACT_TYPE_CODE_NAME,
+		             HRC.CONTRACT_TYPE,
+		             get_global_name(HRC.CONTRACT_TYPE, #interLanguage:VARCHAR#) CONTRACT_TYPE_NAME,
+		             HRC.TOTAL_PERIOD,
+		             HRC.TOTAL_PERIOD08,
+		             HRC.CONTRACT_NAME,
+		             CASE WHEN HRC.updated_by IS NULL THEN (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.created_by) else (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.updated_by) END as QIANDING_REN,
+                     CASE WHEN HRC.UPDATE_DATE IS NULL THEN HRC.CREATE_DATE ELSE HRC.UPDATE_DATE END QIANDING_DATE,
+		             HRC.REMARK,
+					 HRC.CHANGE_DATE,
+					 HRC.CONTRACT_NO
+		        FROM hr_contract HRC
+		      WHERE HRC.PERSON_ID IS NULL 
+		      AND  CREATED_BY = #adminID:VARCHAR#
+		]]>
+	</select>
+	<select id="getContractUpdateList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT * FROM (     SELECT A.EMPID,
+		             A.PERSON_ID,
+		             A.LOCAL_NAME,
+		             A.DEPTNO,
+		             GET_DEPT_NAME(A.DEPTNO, #interLanguage:VARCHAR#) DEPARTMENT_NAME,
+		             TO_CHAR(A.DATE_STARTED, 'YYYY.MM.DD') DATE_STARTED,
+		             A.POST_GRADE_NO,
+		             get_global_name(A.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE,
+		             TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) YEARS,
+		             A.POSITION_NO,
+		             get_global_name(A.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+		             A.POSITION,
+		             get_global_name(A.POSITION, #interLanguage:VARCHAR#) POSITION_NAME,
+		             HRC.WORK_HOUR_TYPE,
+		             get_global_name(HRC.WORK_HOUR_TYPE, #interLanguage:VARCHAR#) WORK_HOUR_NAME,
+		             GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) AS SEXNAME,
+		             TRUNC(MONTHS_BETWEEN(SYSDATE, P.DOB) / 12) AGE,
+		             TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY.MM.DD') START_CONTRACT_DATE,
+		             TO_CHAR(HRC.END_CONTRACT_DATE, 'YYYY.MM.DD') END_CONTRACT_DATE,
+		             HRC.CONTRACT_TYPE_CODE,
+		             get_global_name(HRC.CONTRACT_TYPE_CODE, #interLanguage:VARCHAR#) CONTRACT_TYPE_CODE_NAME,
+		             HRC.CONTRACT_TYPE,
+		             get_global_name(HRC.CONTRACT_TYPE, #interLanguage:VARCHAR#) CONTRACT_TYPE_NAME,
+		             HRC.TOTAL_PERIOD,
+		             HRC.TOTAL_PERIOD08,
+		             HRC.CONTRACT_NAME,
+		             CASE WHEN HRC.updated_by IS NULL THEN (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.created_by) else (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.updated_by) END as QIANDING_REN,
+                     CASE WHEN HRC.UPDATE_DATE IS NULL THEN HRC.CREATE_DATE ELSE HRC.UPDATE_DATE END QIANDING_DATE,
+		             HRC.REMARK,
+		             CASE WHEN HRC.END_CONTRACT_DATE IS NOT NULL THEN
+		                 TRUNC( MONTHS_BETWEEN(HRC.END_CONTRACT_DATE + 1 , HRC.START_CONTRACT_DATE) / 12 ) || ' Năm '
+		               ELSE
+		                 ' '
+		               END CONTRACT_LEN,
+					       ROW_NUMBER() OVER(PARTITION BY HRC.PERSON_ID ORDER BY HRC.START_CONTRACT_DATE DESC) CNT,
+					 HRC.CHANGE_DATE,
+					 HRC.CONTRACT_NO,
+					 HRC.ACTIVITY
+		        FROM HR_EMPLOYEE A, HR_PERSONAL_INFO P,hr_contract HRC
+			       WHERE A.PERSON_ID = P.PERSON_ID
+			         AND A.PERSON_ID = HRC.PERSON_ID
+		         AND A.CPNY_ID = #interCpnyID:VARCHAR# ) A
+		      WHERE A.EMPID NOT LIKE '111111%'
+	 	]]>
+		<isNotEmpty prepend="AND" property="KEY">
+	      <![CDATA[
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	      ]]>
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+	        EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			A.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			A.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.END_CONTRACT_DATE
+		]]>
+	</select>
+
+	<select id="getContractChangeCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			select COUNT(1)
+			       FROM HR_CONTRACT A,
+			       HR_EMPLOYEE B,
+			       ( select max(TOTAL_PERIOD) TOTAL_PERIOD_MAX,PERSON_ID from HR_CONTRACT group by PERSON_ID) C
+			 WHERE A.TOTAL_PERIOD = C.TOTAL_PERIOD_MAX
+			 	AND A.PERSON_ID = C.PERSON_ID
+			 	AND A.PERSON_ID = B.PERSON_ID(+)
+			   AND B.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND B.EMP_OFFICE <> '15120'
+			   AND A.ACTIVITY = 1
+			   AND A.END_CONTRACT_DATE IS NOT NULL
+	 	]]>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		      <![CDATA[
+		        B.DEPTNO IN (
+		          select sud.deptno 
+		          from sy_user_dept sud,
+		            (SELECT DEPTNO
+		            FROM HR_DEPARTMENT 
+		            START WITH DEPTNO = #DEPTNO#
+		            CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO) DEPT
+		          where sud.deptno = DEPT.deptno
+		          AND sud.user_no=#userNo:VARCHAR#
+		        )
+		      ]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="DEPTNO">
+			<isNotEmpty prepend="" property="specialParam">
+				<isNotEqual prepend="AND" property="specialParam"
+					compareValue="general">
+		          <![CDATA[
+		               (B.PERSON_ID = #supervisorPersonId:VARCHAR# OR B.DEPTNO IN
+		                 ]]>
+					<include refid="sys.include.getDataPermission" />
+		                 <![CDATA[
+		               )
+		                 ]]>
+				</isNotEqual>
+				<isEqual prepend="AND" property="specialParam" compareValue="general">
+					B.PERSON_ID = #supervisorPersonId:VARCHAR#
+		              </isEqual>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="" property="specialParam">
+			<isNotEqual prepend="AND" property="specialParam"
+				compareValue="general">
+		        <![CDATA[
+		             ( B.PERSON_ID = #supervisorPersonId:VARCHAR# OR B.EMP_TYPE_CODE IN
+		            ]]>
+				<include refid="sys.include.getDataPermissionEmpTypeCode" />
+		           <![CDATA[
+		             )
+		           ]]>
+			</isNotEqual>
+			<isEqual prepend="AND" property="specialParam" compareValue="general">
+				B.PERSON_ID = #supervisorPersonId:VARCHAR#
+		          </isEqual>
+		</isNotEmpty>
+
+
+		<isNotEmpty prepend="AND" property="TOTALPERIOD">
+			A.TOTAL_PERIOD=#TOTALPERIOD:VARCHAR#
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			A.CONTRACT_TYPE_CODE=#CONTRACT_TYPE_CODE:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     B.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			    B.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			B.EMP_TYPE_CODE IN
+			(SELECT JOBTYPE_NO
+			FROM HR_JOB_TYPE_SETUP P
+			WHERE JOBTYPE_GROUP_NO =
+			#JobTypeGroupNo#
+			AND CPNY_ID = #interCpnyID:VARCHAR#
+			)
+		</isNotEmpty>
+	</select>
+
+	<select id="checkContractNo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			select 1
+			       FROM HR_CONTRACT A
+			 WHERE A.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND A.CONTRACT_NUMBER = #CONTRACT_NUMBER:VARCHAR#
+	 	]]>
+	</select>
+
+
+	<select id="getContractTempList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT CON.LINE_ID,
+	 	  		CON.EMPID,
+		       HR.LOCAL_NAME,
+		       get_dept_name(HR.DEPTNO, #interLanguage#) DEPT_NAME,
+		       get_global_name(HR.EMP_TYPE_CODE, #interLanguage#) EMP_TYPE_NAME,
+		       get_global_name(HR.WORK_AREA, #interLanguage#) WORK_AREA_NAME,
+		       HR.POSITION_NO,
+		       HR.DUTY_NO,
+			   trunc(Months_Between (HR.end_probation_date , HR.prob_strt_date)) MONTH_TOTAL,
+			   HRE.PROB_PAY_RAT,
+		       CON.CONTRACT_NUMBER,
+		       CON.CONTRACT_TYPE,
+		       CON.CONTRACT_VERSION,
+		       TO_CHAR(CON.START_CONTRACT_DATE,'YYYY.MM.DD') START_CONTRACT_DATE,
+		       TO_CHAR(CON.END_CONTRACT_DATE,'YYYY.MM.DD') END_CONTRACT_DATE,
+		       TOTAL_PERIOD_08,
+		       CON.REMARK,
+		       CON.WORK_AREA,
+		       CON.UPLOAD_ERROR_MSG
+		  FROM HR_CONTRACT_TEMP CON, 
+		  		HR_EMPLOYEE HR,
+		  		HR_EMP_PA_INFO HRE
+		 WHERE CON.EMPID = HR.EMPID(+)
+		   AND HR.PERSON_ID = HRE.PERSON_ID(+)
+		   AND CON.UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getContractTempCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from HR_CONTRACT_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getContractTempErrorCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from HR_CONTRACT_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	<select id="getContractManagerList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT C.PERSON_ID,C.EMAIL,D.EMPID
+			  FROM HR_PERSONAL_INFO C,
+			       HR_EMPLOYEE D,
+			       SY_USER A, 
+			       SY_USER_RELATION B
+			 WHERE C.PERSON_ID = D.PERSON_ID
+			   AND D.PERSON_ID = A.PERSON_ID
+			   AND D.EMP_OFFICE <> '15120'
+			   AND A.USER_NO = B.USER_NO
+			   AND B.ROLE_GROUP_NO = '218740'
+		]]>
+	</select>
+	<select id="getContractRemindList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT C.PERSON_ID,C.EMAIL
+			  FROM HR_PERSONAL_INFO C, SY_USER A, SY_USER_RELATION B
+			 WHERE C.PERSON_ID = A.PERSON_ID
+			   AND A.USER_NO = B.USER_NO
+			   AND B.ROLE_GROUP_NO = '218740'
+		]]>
+	</select>
+	
+	<update id="updateContractInfoForUpdate" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE HR_CONTRACT 
+			 SET ACTIVITY = 0,
+			     UPDATE_DATE = SYSDATE,
+			     UPDATED_BY = #adminID:VARCHAR#,
+			     UPDATED_IP = #adminIP:VARCHAR#
+      		WHERE CONTRACT_NO = #CONTRACT_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="viewChangeContractHistoryList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  	SELECT A.EMPID,
+			       A.PERSON_ID,
+			       A.LOCAL_NAME,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'DEPTNO'), #interLanguage:VARCHAR#) DEPARTMENT_NAME,
+			       CASE WHEN HRC.START_CONTRACT_DATE  IS NULL THEN TO_CHAR(A.DATE_STARTED, 'YYYY/MM/DD') ELSE GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'STARTED_DATE')  END AS DATE_STARTED,
+			       A.POST_GRADE_NO,
+			       get_global_name(GET_EMP_HISTORY_INFO(A.PERSON_ID,TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY/MM/DD'),'POST_GRADE_NO'), #interLanguage:VARCHAR#) POST_GRADE,
+			       TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) YEARS,
+			       A.POSITION_NO,
+			       get_global_name(A.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       HRC.WORK_HOUR_TYPE,
+			       get_global_name(HRC.WORK_HOUR_TYPE, #interLanguage:VARCHAR#) WORK_HOUR_NAME,
+			       GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) AS SEXNAME,
+			       TRUNC(MONTHS_BETWEEN(SYSDATE, P.DOB) / 12) AGE,
+			       TO_CHAR(HRC.START_CONTRACT_DATE, 'YYYY.MM.DD') START_CONTRACT_DATE,
+			       TO_CHAR(HRC.END_CONTRACT_DATE, 'YYYY.MM.DD') END_CONTRACT_DATE,
+			       HRC.CONTRACT_TYPE_CODE,
+			       get_global_name(HRC.CONTRACT_TYPE_CODE, #interLanguage:VARCHAR#) CONTRACT_TYPE_CODE_NAME,
+			       HRC.TOTAL_PERIOD,
+			       HRC.CONTRACT_NAME,
+			       HRC.REMARK,
+			       CASE WHEN HRC.updated_by IS NULL THEN (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.created_by) else (SELECT LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.PERSON_ID = HRC.updated_by) END as QIANDING_REN,
+                   CASE WHEN HRC.UPDATE_DATE IS NULL THEN HRC.CREATE_DATE ELSE HRC.UPDATE_DATE END QIANDING_DATE,
+			       CASE WHEN HRC.END_CONTRACT_DATE IS NOT NULL THEN
+			       		TRUNC( MONTHS_BETWEEN(HRC.END_CONTRACT_DATE + 1 , HRC.START_CONTRACT_DATE) / 12 ) || ' Năm '
+			       	ELSE
+			       		' '
+			       	END CONTRACT_LEN,
+			       	HRC.ACTIVITY
+			  FROM HR_EMPLOYEE A, HR_PERSONAL_INFO P,HR_CONTRACT HRC
+			 WHERE A.PERSON_ID = P.PERSON_ID
+			   AND A.PERSON_ID = HRC.PERSON_ID
+			   AND A.EMPID NOT LIKE '111111%'
+			   AND A.EMP_TYPE_CODE not in (10418)
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			( A.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR A.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+	      <![CDATA[
+				EXISTS(
+		 		  	SELECT 1
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR# OR #DEPTNO:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     A.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DATE_STARTED">
+			<![CDATA[
+			     A.DATE_STARTED = TO_DATE(#DATE_STARTED:VARCHAR#,'YYYY.MM.DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CONTRACT_TYPE_CODE">
+			HRC.CONTRACT_TYPE_CODE = #CONTRACT_TYPE_CODE:VARCHAR#
+	    </isNotEmpty> 
+	    <isNotEmpty prepend="AND" property="eqOrMore">
+	    	<isEqual prepend="" property="eqOrMore" compareValue="1">
+				<![CDATA[
+					HRC.total_period = #CONCOUNT:VARCHAR#
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="eqOrMore" compareValue="0">
+				<![CDATA[
+					HRC.total_period >= #CONCOUNT:VARCHAR#
+				]]>
+			</isEqual>
+	    </isNotEmpty>
+		<![CDATA[
+			ORDER　BY A.PERSON_ID,HRC.CREATE_DATE
+		]]>
+	</select>
+	
+</sqlMap>

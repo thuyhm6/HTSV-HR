@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="lge"
+  id="myeclipse.1389756501599"
+  j2ee-spec="1.4"
+  archive="lge.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

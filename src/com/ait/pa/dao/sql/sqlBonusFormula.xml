@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusFormula">
+	
+	<sql id="getBonusFormulaListCondition" >
+		<isNotEmpty prepend="AND" property="FORMULAR_NO">
+			<![CDATA[
+		 		  FORMULAR_NO = #FORMULAR_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  ITEM_NO = #ITEM_NO:NUMERIC# 
+		    ]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  CPNY_ID = #CPNY_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getBonusFormulaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT FORMULAR_NO,
+				       ITEM_NO,
+				       CONDITION,
+				       FORMULAR,
+				       CONDITION_SEQ
+				  FROM BN_FORMULAR T
+		]]>
+		
+		<dynamic prepend="WHERE">
+			<include refid="getBonusFormulaListCondition"/>
+		 </dynamic>
+		 
+	
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY CONDITION_SEQ DESC
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+    <select id="getBonusFormulaCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT count(t.formular_no)
+				  FROM BN_FORMULAR T
+		]]>
+		
+	     <dynamic prepend="WHERE">
+			<include refid="getBonusFormulaListCondition"/>
+		 </dynamic>		 
+		
+	</select>
+	
+	<update id="updateBnFormularByCalcuOrderOne" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_FORMULAR 
+			 SET CONDITION_SEQ = #CONDITIONSEQ:NUMERIC#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updateBnFormularByCalcuOrderTwo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_FORMULAR 
+			 SET CONDITION_SEQ = #ORDER:VARCHAR#,
+			 	 UPDATE_DATE = SYSDATE,
+			 	 UPDATED_BY = #UPDATED_BY:VARHCAR#
+				WHERE ITEM_NO = #ITEM_NO:VARCHAR#
+				 AND  CONDITION_SEQ = #CALORDER:VARCHAR#
+			]]>
+	</update>
+	
+	<update id="updateBnFormularByCalcuOrderThree" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_FORMULAR SET
+					CONDITION_SEQ = #CALORDER:VARCHAR#,
+			 	 	UPDATE_DATE = SYSDATE,
+			 	 	UPDATED_BY = #UPDATED_BY:VARHCAR#
+			WHERE CONDITION_SEQ = 0
+			AND   FORMULAR_NO = #FORMULAR_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<insert id="addBonusFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_FORMULAR
+			  (FORMULAR_NO,
+			   ITEM_NO,
+			   CONDITION,
+			   CONDITION_SEQ,
+			   FORMULAR,
+			   CPNY_ID,
+			   ACTIVITY,
+			   ORDERNO,
+			   CREATE_DATE,
+			   CREATED_BY
+			   )
+			VALUES
+			  (BN_FORMULAR_SEQ.NEXTVAL,
+			   #ITEM_NO:NUMERIC#,
+			   #CONDITION:VARCHAR#,
+			  (SELECT NVL(MAX(T.CONDITION_SEQ),0)+1 AS CONDITION_SEQ FROM BN_FORMULAR T WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#),
+			   #FORMULAR:VARCHAR#,
+			   #CPNY_ID:VARCHAR#,
+			   1,
+			   (SELECT NVL(MAX(F.ORDERNO),0)+1 AS CONDITION_SEQ FROM BN_FORMULAR F),
+			   SYSDATE,
+			   #CREATED_BY:VARCHAR#)
+		]]>
+	</insert>
+	
+	<update id="updateBonusFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+					UPDATE BN_FORMULAR
+					   SET CONDITION   = #CONDITION:VARCHAR#,
+					       FORMULAR    = #FORMULAR:VARCHAR#,
+					       UPDATE_DATE = SYSDATE,
+					       UPDATED_BY  = #UPDATED_BY:VARCHAR#
+					 WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+					   AND ITEM_NO = #ITEM_NO:NUMERIC#
+		]]>
+	</update>
+	
+	<delete id="deleteBonusFormulaInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM BN_FORMULAR  WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	 <select id="getBnFormularBySeq" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT CONDITION_SEQ
+				  FROM $TABLE_NAME$ T
+				WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</select>
+	
+	<update id="updateBnFormularBySeq" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE $TABLE_NAME$
+			   SET CONDITION_SEQ   = CONDITION_SEQ - 1,
+			       UPDATE_DATE     = SYSDATE,
+			       UPDATED_BY      = #UPDATED_BY:VARCHAR#
+			 WHERE ITEM_NO = #ITEM_NO:VARCHAR#
+			   AND CONDITION_SEQ > #DELETESEQ:NUMERIC#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+	</update>
+	<select id="getBnFormularByItemNo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT ITEM_NO FROM $TABLE_NAME$ WHERE FORMULAR_NO = #FORMULAR_NO:NUMERIC#
+		]]>
+	</select>
+</sqlMap>

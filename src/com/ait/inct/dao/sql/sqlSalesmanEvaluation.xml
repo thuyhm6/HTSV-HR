@@ -1,0 +1,853 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="inct.salesman">
+
+	<select id="getEvaluationDataImportList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT
+				      T.YYYY   
+				      ,T.QUARTER   
+				      ,T.EMPNO 
+				      ,T.CATEGORY AS CD
+				      ,T.PAY_AREA_CD  
+				      ,GET_DEPT_NAME(E.DEPTNO, #interLanguage:VARCHAR#) ORG_NM
+				      ,T.CURRENT_VALUE
+				      ,T.LAST_VALUE
+				      ,GET_EMP_LOCAL_NAME(T.EMPNO, T.SUBSD_CD) AS EMP_NM   
+				      ,GET_DEPT_NAME(T.PAY_AREA_CD, #interLanguage:VARCHAR#) AS PAY_AREA_NM   
+				      ,GET_CODE_NAME_BY_DESC(T.CATEGORY, '210868', #interLanguage:VARCHAR#) AS CATEGORY_NM
+				      ,GET_CODE_NAME_BY_DESC(E.EVS_TYPE_CODE, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM
+				      ,T.UPDT_USER 
+				      ,TO_CHAR(T.UPDT_DTIME,'yyyy-mm-dd') UPDT_DTIME
+			   FROM INC_SALS_EVAL_RAW_DATA T,
+			       	HR_EMPLOYEE  E 
+			  WHERE T.SUBSD_CD   = E.CPNY_ID 
+			    AND T.EMPNO      = E.EMPID      
+			    AND T.YYYY       = #YEAR#
+			    AND T.QUARTER    = #QUARTER#
+			    AND T.SUBSD_CD	 = #SUBSD_CD#
+				AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+	        E.PAY_AREA_CD    IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)  
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPNO"> 
+			<![CDATA[
+				 (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR E.EMPID = #EMPNO:VARCHAR#)
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SALES_EVAL_TYPE"> 
+			<![CDATA[
+				 T.CATEGORY = #SALES_EVAL_TYPE# 
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD"> 
+			<![CDATA[
+				 E.EVS_TYPE_CODE = #EV_TP_CD#
+			]]>	
+		</isNotEmpty>
+		<![CDATA[
+				 ORDER BY T.EMPNO
+		]]>	
+		
+	</select>
+	
+	<select id="getEvaluationDataImportListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 select count(*)
+			   FROM INC_SALS_EVAL_RAW_DATA T,
+			       	HR_EMPLOYEE  E 
+			  WHERE T.SUBSD_CD   = E.CPNY_ID 
+			    AND T.EMPNO      = E.EMPID   
+			    AND T.YYYY       = #YEAR#
+			    AND T.QUARTER    = #QUARTER#
+			    AND T.SUBSD_CD	 = #SUBSD_CD#
+				AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+	        E.PAY_AREA_CD    IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)  
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPNO"> 
+			<![CDATA[
+				 (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR E.EMPID = #EMPNO:VARCHAR#)
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SALES_EVAL_TYPE"> 
+			<![CDATA[
+				 T.CATEGORY = #SALES_EVAL_TYPE# 
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD"> 
+			<![CDATA[
+				 E.EVS_TYPE_CODE = #EV_TP_CD#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<select id="getEvaluationDataImportResultList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT T.LINE_ID,
+			 		T.YYYY,
+			        T.QUARTER,	
+			        T.PAY_AREA_CD,		        
+					GET_DEPT_NAME(T.PAY_AREA_CD, #interLanguage:VARCHAR#) AS PAY_AREA_NM,   
+					T.EMPNO,
+					T.EVAL_TYPE CATEGORY_CD,
+					GET_CODE_NAME_BY_DESC(T.EVAL_TYPE, '210868', #interLanguage:VARCHAR#) AS CATEGORY_NM,
+			        NVL(T.CURRENT_VALUE, 0) AS CURRENT_VALUE,
+			        NVL(T.LAST_VALUE, 0) AS LAST_VALUE,
+			        T.UPLOAD_ERROR_MSG,			        
+			        T.UPDT_USER,
+			        TO_CHAR(T.UPDT_DTIME,'yyyy-mm-dd') UPDT_DTIME
+			   FROM INC_SALS_EVAL_UPLOAD_TEMP T,
+			        HR_EMPLOYEE  E
+			  WHERE T.SUBSD_CD   = E.CPNY_ID(+)
+				AND T.EMPNO      = E.EMPID(+)
+	     		AND T.UPDT_USER  = #UPDT_USER#
+				AND T.SUBSD_CD	 = #SUBSD_CD#	
+		]]>	
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		ORDER BY T.UPLOAD_ERROR_MSG	
+	</select>
+	
+	<select id="getEvaluationDataImportResultListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(*)
+			  FROM INC_SALS_EVAL_UPLOAD_TEMP T
+		     WHERE T.UPDT_USER = #UPDT_USER#
+		       AND T.SUBSD_CD  = #SUBSD_CD#	
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<select id="getEvaluationDataImportErrCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM INC_SALS_EVAL_UPLOAD_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPDT_USER 	= #UPDT_USER#
+		       AND T.SUBSD_CD	= #SUBSD_CD#	
+		]]>
+	</select>
+	
+	<!-- 写入excel临时表数据验证 -->
+	<procedure id="importSalesEvalRAWFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_SALESMAN_EXCEL_IMP.PR_IMPORT_EVAL_DATA(
+						 #IMP_EMPNO:VARCHAR#
+						,#SUBSD_CD#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	
+	</procedure>
+	
+	<select id="getSalesEvalImportList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		SELECT T.SUBSD_CD,
+		       T.PAY_AREA_CD AS PAY_AREA_CD,
+		       T.YYYY,
+		       T.QUARTER,
+		       T.EVAL_TYPE,
+		       T.EMPNO,
+		       NVL(T.CURRENT_VALUE, 0) AS CURRENT_VALUE,
+		       NVL(T.LAST_VALUE, 0) AS LAST_VALUE,
+	           T.UPLOAD_ERROR_MSG,
+	           '' AS CATEGORY_NM
+	      FROM INC_SALS_EVAL_UPLOAD_TEMP T
+	     WHERE T.UPDT_USER = #UPDT_USER#
+	       AND T.SUBSD_CD  = #SUBSD_CD#
+	     ORDER BY T.UPLOAD_ERROR_MSG 
+	    ]]>
+	</select>	
+	
+	<!-- 评价项目权重设置 查询 -->
+	<select id="getEvaluationItemWeightList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT CATEGORY,
+				      GET_CODE_NAME_BY_DESC(T.CATEGORY, '210878',#interLanguage:VARCHAR#) AS CATEGORY_NM,              
+		              EV_TP_CD,
+		              GET_CODE_NAME_BY_DESC(T.EV_TP_CD, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM,
+		              T.JOB_POSI_CD,
+		              T.JOB_POSI_CD AS JOB_POSI_NM,
+		              WEIGHT,
+		              USE_YN,
+		              T.RGST_USER,
+		              GET_EMP_LOCAL_NAME(T.RGST_USER, T.SUBSD_CD ) AS RGST_USER_NM,
+		              TO_CHAR(RGST_DTIME,'yyyy-mm-dd') AS RGST_DTIME,
+		              T.UPDT_USER,
+			          GET_EMP_LOCAL_NAME(T.UPDT_USER, T.SUBSD_CD ) AS UPDT_USER_NM,
+			          TO_CHAR(UPDT_DTIME,'yyyy-mm-dd') AS UPDT_DTIME
+		     FROM INC_SALS_EVAL_WEIGHT T
+		     WHERE SUBSD_CD = 'TSTO'			  
+		]]>
+		 
+		<isNotEmpty prepend="AND" property="SALES_EVAL_TYPE">
+		    T.CATEGORY = #SALES_EVAL_TYPE# 
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+		    T.EV_TP_CD = #EV_TP_CD#
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="JOB_POSI_CD">
+		    T.JOB_POSI_CD = #JOB_POSI_CD#
+	    </isNotEmpty>
+	    <![CDATA[
+	     ORDER BY CATEGORY
+	    ]]>		
+	</select>
+	<select id="getEvaluationItemWeightListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 SELECT COUNT(*) CNT
+		     FROM INC_SALS_EVAL_WEIGHT T
+		     WHERE SUBSD_CD = 'TSTO'		  
+		]]>		 
+		<isNotEmpty prepend="AND" property="SALES_EVAL_TYPE">
+		    T.CATEGORY = #SALES_EVAL_TYPE# 
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+		    T.EV_TP_CD = #EV_TP_CD#
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="JOB_POSI_CD">
+		    T.JOB_POSI_CD = #JOB_POSI_CD#
+	    </isNotEmpty>	
+	</select>	
+
+	<!-- 评价项目权重设置 创建 -->
+	<insert id="createEvaluationItemWeight" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO INC_SALS_EVAL_WEIGHT
+			  (SUBSD_CD,
+			   CATEGORY,
+			   EV_TP_CD,
+			   JOB_POSI_CD,
+			   WEIGHT,
+			   RGST_USER,
+			   RGST_DTIME,
+			   USE_YN,
+			   UPDT_USER,
+			   UPDT_DTIME)
+			VALUES
+			  (#CPNY_ID#,
+			  #SALES_EVAL_TYPE:VARCHAR#,
+			  #EV_TP_CD:VARCHAR#,
+			  #JOB_POSI_CD:VARCHAR#,
+			  #WEIGHT#,
+			  #LOGIN_USER#, 
+			  SYSDATE, 
+			  'Y',
+			  null, 
+			  null)
+		]]>
+	</insert>
+	<!-- 评价项目权重设置 修改 -->
+	<update id="updateEvaluationItemWeight" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE INC_SALS_EVAL_WEIGHT 
+		       SET WEIGHT 		= #WEIGHT#,
+		       	   USE_YN 		= #USE_YN#,
+		       	   UPDT_USER 	= #LOGIN_USER#,
+		       	   UPDT_DTIME 	= sysdate
+		     WHERE SUBSD_CD 	= #interCpnyID:VARCHAR#
+		       AND CATEGORY 	= #SALES_EVAL_TYPE#
+		       AND EV_TP_CD 	= #EV_TP_CD#
+		       AND JOB_POSI_CD 	= #JOB_POSI_CD#  
+		]]>
+	</update>
+	
+	<!-- 评价项目系数设置查询 -->
+	<select id="getSalesIncEvaluationRatioList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT INC_SALS_EVAL_RATIO_SEQ AS MAP_SEQ,
+	              CATEGORY,
+	              GET_CODE_NAME_BY_DESC(T.CATEGORY, '210878',#interLanguage:VARCHAR#) AS CATEGORY_NM,              
+	              EV_TP_CD,
+	              GET_CODE_NAME_BY_DESC(T.EV_TP_CD, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM,
+	              JOB_POSI_CD,
+	              JOB_POSI_CD AS JOB_POSI_NM,
+	              LEFT_START_VALUE,
+	              LEFT_END_VALUE,
+	              TOP_START_VALUE,
+	              TOP_END_VALUE,
+	              RATIO,
+	              T.RGST_USER,
+	              GET_EMP_LOCAL_NAME(T.RGST_USER, T.SUBSD_CD) AS RGST_USER_NM,
+	              TO_CHAR(RGST_DTIME,'yyyy-mm-dd') AS RGST_DTIME,
+	              T.UPDT_USER,
+	              GET_EMP_LOCAL_NAME(T.UPDT_USER, T.SUBSD_CD ) AS UPDT_USER_NM,
+	              TO_CHAR(UPDT_DTIME,'yyyy-mm-dd') AS UPDT_DTIME
+	         FROM INC_SALS_EVAL_RATIO T
+	        WHERE SUBSD_CD = 'TSTO'  				  
+		]]>
+		 
+	   <isNotEmpty prepend="AND" property="MAP_SEQ">
+		    T.INC_SALS_EVAL_RATIO_SEQ = #MAP_SEQ# 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="SALES_EVAL_TYPE">
+		    T.CATEGORY = #SALES_EVAL_TYPE# 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="EV_TP_CD">
+		    T.EV_TP_CD = #EV_TP_CD#
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="JOB_POSI_CD">
+		    T.JOB_POSI_CD = #JOB_POSI_CD#
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="LEFT_VALUE">
+	   <![CDATA[
+		    T.LEFT_START_VALUE <= #LEFT_VALUE# 
+	   ]]>
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="LEFT_VALUE">
+		    T.LEFT_END_VALUE >= #LEFT_VALUE#
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="TOP_VALUE">
+	   <![CDATA[
+		    T.TOP_START_VALUE <= #TOP_VALUE#
+	   ]]>
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="TOP_VALUE">
+		    T.TOP_END_VALUE >= #TOP_VALUE#
+	   </isNotEmpty>
+	   <![CDATA[
+	     ORDER BY CATEGORY
+	   ]]>
+		
+	</select>	
+	<select id="getSalesIncEvaluationRatioListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			select count(*) CNT
+			  FROM INC_SALS_EVAL_RATIO T
+		    WHERE SUBSD_CD = 'TSTO'	
+		]]>
+	   <isNotEmpty prepend="AND" property="MAP_SEQ">
+		    T.INC_SALS_EVAL_RATIO_SEQ = #MAP_SEQ# 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="SALES_EVAL_TYPE">
+		    T.CATEGORY = #SALES_EVAL_TYPE# 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="EV_TP_CD">
+		    T.EV_TP_CD = #EV_TP_CD#
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="JOB_POSI_CD">
+		    T.JOB_POSI_CD = #JOB_POSI_CD#
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="LEFT_VALUE">
+	   <![CDATA[
+		    T.LEFT_START_VALUE <= #LEFT_VALUE# 
+	   ]]>
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="LEFT_VALUE">
+		    T.LEFT_END_VALUE >= #LEFT_VALUE#
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="TOP_VALUE">
+	   <![CDATA[
+		    T.TOP_START_VALUE <= #TOP_VALUE#
+	   ]]>
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="TOP_VALUE">
+		    T.TOP_END_VALUE >= #TOP_VALUE#
+	   </isNotEmpty>
+	</select>
+	
+	<!-- 重复期间检查 -->
+	<select id="getEvaluationRatioDupPeriodCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) CNT
+		      FROM INC_SALS_EVAL_RATIO T
+		     WHERE SUBSD_CD 	= 'TSTO'
+		       AND CATEGORY 	= #SALES_EVAL_TYPE# 
+		       AND EV_TP_CD 	= #EV_TP_CD#
+		       AND JOB_POSI_CD 	= #JOB_POSI_CD#
+		       AND INC_SALS_EVAL_RATIO_SEQ != #MAP_SEQ#
+		       AND ((LEFT_START_VALUE <= #LEFT_START_VALUE#  AND LEFT_END_VALUE > #LEFT_START_VALUE#) OR 
+		            (LEFT_START_VALUE < #LEFT_END_VALUE# AND LEFT_END_VALUE >= #LEFT_END_VALUE#) OR 
+		            (LEFT_START_VALUE >= #LEFT_START_VALUE# AND LEFT_END_VALUE <= #LEFT_END_VALUE#))
+	           AND ((TOP_START_VALUE <= #TOP_START_VALUE# AND TOP_END_VALUE > #TOP_START_VALUE#) OR
+	                (TOP_START_VALUE < #TOP_END_VALUE# AND TOP_END_VALUE >= #TOP_END_VALUE#) OR
+	                (TOP_START_VALUE >= #TOP_START_VALUE# AND TOP_END_VALUE <= #TOP_END_VALUE#))	
+		]]>
+	</select>
+	
+	<!-- 评价项目系数设置 创建 -->
+	<insert id="creatSalesIncEvaluationRatio" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO INC_SALS_EVAL_RATIO
+			  (INC_SALS_EVAL_RATIO_SEQ,
+			   SUBSD_CD,
+			   CATEGORY,
+			   EV_TP_CD,
+			   JOB_POSI_CD,
+			   LEFT_START_VALUE,
+			   LEFT_END_VALUE,
+			   TOP_START_VALUE,
+			   TOP_END_VALUE,
+			   RATIO,
+			   RGST_USER,
+			   RGST_DTIME,
+			   UPDT_USER,
+			   UPDT_DTIME)
+			VALUES
+			  (inc_sals_eval_ratio_seq.nextval,
+			  'TSTO',
+			   #SALES_EVAL_TYPE:VARCHAR#,
+			   #EV_TP_CD:VARCHAR#,
+			   #JOB_POSI_CD:VARCHAR#,
+			   #LEFT_START_VALUE#,
+			   #LEFT_END_VALUE#,
+			   #TOP_START_VALUE#,
+			   #TOP_END_VALUE#,
+			   #RATIO#,
+			   #LOGIN_USER#, 
+			   SYSDATE,
+			   null, 
+			   null)	
+		]]>
+	</insert>
+	<!-- 评价项目系数设置 修改 -->
+	<update id="updateSalesIncEvaluationRatio" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE INC_SALS_EVAL_RATIO 
+		       SET LEFT_START_VALUE = #LEFT_START_VALUE#,
+		       	   LEFT_END_VALUE = #LEFT_END_VALUE#,
+		       	   TOP_START_VALUE = #TOP_START_VALUE#,
+		       	   TOP_END_VALUE = #TOP_END_VALUE#,
+		       	   RATIO = #RATIO#,
+		       	   UPDT_USER = #LOGIN_USER#,
+		       	   UPDT_DTIME = sysdate
+		     WHERE SUBSD_CD = 'TSTO'
+		       AND INC_SALS_EVAL_RATIO_SEQ = #MAP_SEQ#  
+		]]>
+	</update>
+	
+	<!-- 营业员评价查询 -->
+	<select id="getSalesIncEvaluationInquiryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT A.YYYY,
+			        A.QUARTER,
+			        A.PAY_AREA_CD,
+			        GET_DEPT_NAME(E.DEPTNO,#interLanguage:VARCHAR#) ORG_NM,
+			        GET_DEPT_NAME(A.PAY_AREA_CD, #interLanguage:VARCHAR#) AS PAY_AREA_NM,
+			        A.EV_TP_CD,
+			        GET_CODE_NAME_BY_DESC(A.EV_TP_CD, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM,
+			        A.JOB_POSI_CD,
+			        A.JOB_POSI_CD AS JOB_POSI_NM,
+			        A.EMPNO,
+			        GET_EMP_LOCAL_NAME(a.empno,A.SUBSD_CD) AS EMPNM,
+			        A.BONUS_RATIO,
+			        A.EVAL_VALUE,
+			        A.REMARK,
+			        TO_CHAR(A.RGST_DTIME,'yyyy-mm-dd') AS RGST_DTIME,
+	                A.RGST_USER
+			   FROM INC_SALS_EVAL_RESULT A, 
+			        HR_EMPLOYEE E
+			  WHERE A.SUBSD_CD   = E.CPNY_ID
+			    AND A.EMPNO      = E.EMPID       
+			    AND A.SUBSD_CD   = 'TSTO' 
+			    AND A.YYYY		 = #YEAR:VARCHAR#
+			    AND A.QUARTER 	 = #QUARTER:VARCHAR#
+			    AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+	    ]]>
+		<isNotEmpty prepend="AND" property="EMPNO">
+			 (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR E.EMPID = #EMPNO:VARCHAR#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[ 
+			 E.PAY_AREA_CD     IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+										from dual
+								  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+			    		)   
+		]]>	    		 
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+			 A.EV_TP_CD        = #EV_TP_CD#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_POSI_CD">
+			 A.JOB_POSI_CD     = #JOB_POSI_CD#
+		</isNotEmpty>
+	    ORDER BY A.YYYY,
+		         A.QUARTER,
+		         A.PAY_AREA_CD
+	</select>	
+	<select id="getSalesIncEvaluationInquiryListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 select count(*)
+			   FROM INC_SALS_EVAL_RESULT A, 
+			        HR_EMPLOYEE E
+			  WHERE A.SUBSD_CD   = E.CPNY_ID
+			    AND A.EMPNO      = E.EMPID       
+			    AND A.SUBSD_CD   = 'TSTO' 
+			    AND A.YYYY		 = #YEAR:VARCHAR#
+			    AND A.QUARTER 	 = #QUARTER:VARCHAR#
+			    AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="EMPNO">
+			 (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR A.EMPNO = #EMPNO:VARCHAR#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+			 E.PAY_AREA_CD     IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+										from dual
+								  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+			    		) 
+		]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+			 A.EV_TP_CD        = #EV_TP_CD#
+		   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_POSI_CD">
+			 A.JOB_POSI_CD     = #JOB_POSI_CD#
+		</isNotEmpty>
+	</select>
+	<!-- 营业员评价查询 (明细) -->
+	<select id="getSalesIncEvaluationInquiryDetailList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			 SELECT A.YYYY,
+			        A.QUARTER,
+			        A.PAY_AREA_CD,
+			        GET_DEPT_NAME(A.PAY_AREA_CD, #interLanguage:VARCHAR#) AS PAY_AREA_NM,
+			        GET_DEPT_NAME(E.DEPTNO, #interLanguage:VARCHAR#) AS ORG_NM,
+			        A.EV_TP_CD,
+			        GET_CODE_NAME_BY_DESC(A.EV_TP_CD, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM,
+			        A.JOB_POSI_CD,
+			        A.JOB_POSI_CD AS JOB_POSI_NM,
+			        A.EMPNO,
+			        GET_EMP_LOCAL_NAME(a.empno,a.SUBSD_CD) AS EMPNM,
+			        A.CATEGORY,
+			        GET_CODE_NAME_BY_DESC(a.CATEGORY, '210878',#interLanguage:VARCHAR#) AS CATEGORY_NM,
+			        A.LEFT_CURRENT,
+			        A.LEFT_LAST,
+			        A.LEFT_VALUE,
+			        A.TOP_CURRENT,
+			        A.TOP_LAST,
+			        A.TOP_VALUE,
+			        A.RATIO,
+			        A.WEIGHT || '%' WEIGHT,
+			        D.EVAL_VALUE,
+			        D.BONUS_RATIO,
+			        A.REMARK,
+			        TO_CHAR(A.RGST_DTIME,'yyyy-mm-dd') AS RGST_DTIME,
+	                A.RGST_USER,
+	                A.UPDT_USER,
+	                TO_CHAR(A.UPDT_DTIME,'yyyy-mm-dd') AS UPDT_DTIME
+			   FROM INC_SALS_EVAL_RESULT_DTL A, 
+			        INC_SALS_EVAL_RESULT D,
+			        HR_EMPLOYEE E
+	  		  WHERE A.SUBSD_CD    = D.SUBSD_CD
+				AND A.YYYY        = D.YYYY
+				AND A.QUARTER     = D.QUARTER
+				AND A.PAY_AREA_CD = D.PAY_AREA_CD
+				AND A.EV_TP_CD   = D.EV_TP_CD
+				AND A.JOB_POSI_CD = D.JOB_POSI_CD
+				AND A.EMPNO       = D.EMPNO
+				AND A.SUBSD_CD    = E.CPNY_ID
+				AND A.EMPNO       = E.EMPID				
+				AND A.SUBSD_CD    ='TSTO'
+				AND A.YYYY        = #YEAR:VARCHAR#
+				AND A.QUARTER     = #QUARTER:VARCHAR#
+				AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+	    ]]>
+		<isNotEmpty prepend="AND" property="EMPNO">
+			 (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR A.EMPNO = #EMPNO:VARCHAR#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+			 E.PAY_AREA_CD     IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+										from dual
+								  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+			    		)    
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+			 A.EV_TP_CD        = #EV_TP_CD#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_POSI_CD">
+			 A.JOB_POSI_CD     = #JOB_POSI_CD#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CATEGORY">
+			 A.CATEGORY     = #CATEGORY#
+		</isNotEmpty>
+	    ORDER BY A.YYYY,
+		         A.QUARTER,
+		         A.PAY_AREA_CD
+	</select>	
+	<select id="getSalesIncEvaluationInquiryDetailListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 select count(*)
+			   FROM INC_SALS_EVAL_RESULT_DTL A, 
+			        INC_SALS_EVAL_RESULT D,
+			        HR_EMPLOYEE E
+	  		  WHERE A.SUBSD_CD    = D.SUBSD_CD
+				AND A.YYYY        = D.YYYY
+				AND A.QUARTER     = D.QUARTER
+				AND A.PAY_AREA_CD = D.PAY_AREA_CD
+				AND A.EV_TP_CD   = D.EV_TP_CD
+				AND A.JOB_POSI_CD = D.JOB_POSI_CD
+				AND A.EMPNO       = D.EMPNO
+				AND A.SUBSD_CD    = E.CPNY_ID
+				AND A.EMPNO       = E.EMPID				
+				AND A.SUBSD_CD    = 'TSTO'
+				AND A.YYYY        = #YEAR:VARCHAR#
+				AND A.QUARTER     = #QUARTER:VARCHAR#	
+				AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="EMPNO">
+			 (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR A.EMPNO = #EMPNO:VARCHAR#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+			 E.PAY_AREA_CD     IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+										from dual
+								  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+			    		)
+		]]>	    		    
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+			 A.EV_TP_CD        = #EV_TP_CD#
+		   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_POSI_CD">
+			 A.JOB_POSI_CD     = #JOB_POSI_CD#
+		</isNotEmpty>
+	</select>
+	
+	<!--营业员评价存储过程 -->
+	<procedure id="callSalesEvaluation" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[	
+		{CALL 
+			PKG_LGECH_SALESMAN_EVAL.SALES_EVAL(#SUBSD_CD#
+												,#YEAR:VARCHAR#
+												,#QUARTER:VARCHAR#
+												,#PAY_AREA_CD#
+												,#EV_TP_CD#
+												,#JOB_POSI_CD#
+												,#EMPNO#
+												,#UPDT_USER#
+												,#REMARK#
+												,#MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+												,#CNT,jdbcType=INTEGER,mode=INOUT#)}
+	]]>		
+	</procedure>
+	
+	<!--营业员个人评价结果查询   汇总 -->
+	<select id="getPersonalEvaluationResultInfo" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+		   	 SELECT A.YYYY,
+			        A.QUARTER,
+			        A.PAY_AREA_CD,
+			        GET_DEPT_NAME(E.DEPTNO, #interLanguage:VARCHAR#) AS ORG_NM,
+			        GET_DEPT_NAME(A.PAY_AREA_CD, #interLanguage:VARCHAR#) AS PAY_AREA_NM,
+			        A.EV_TP_CD,
+			        GET_CODE_NAME_BY_DESC(A.EV_TP_CD, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM,
+			        A.JOB_POSI_CD,
+			        A.JOB_POSI_CD AS JOB_POSI_NM,
+			        A.EMPNO,
+			        GET_EMP_LOCAL_NAME(a.empno, a.subsd_cd) AS EMPNM,
+			        A.BONUS_RATIO,
+			        A.EVAL_VALUE,
+			        A.REMARK
+		   FROM INC_SALS_EVAL_RESULT A, 
+		        HR_EMPLOYEE E
+		  WHERE A.SUBSD_CD 	= E.CPNY_ID
+		    AND A.EMPNO 	= E.EMPID
+		    AND A.SUBSD_CD 	='TSTO'
+		    AND A.YYYY 		= #YEAR:VARCHAR#
+		    AND A.QUARTER 	= #QUARTER:VARCHAR#
+		    AND A.EMPNO     = #EMPNO#
+	    ]]>
+		<isNotEmpty prepend="AND" property="EV_TP_CD">
+			 A.EV_TP_CD        = #EV_TP_CD#
+		   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="JOB_POSI_CD">
+			 A.JOB_POSI_CD     = #JOB_POSI_CD#
+		   </isNotEmpty>
+	    ORDER BY A.YYYY,
+		         A.QUARTER,
+		         A.PAY_AREA_CD
+	</select>
+	
+	<!--营业员个人评价结果查询   明细 -->
+	<select id="getPersonalEvaluationResultDetailInfo" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[			
+		SELECT B.YYYY,
+		       B.QUARTER,
+		       B.PAY_AREA_CD,
+		       GET_DEPT_NAME(B.PAY_AREA_CD, #interLanguage:VARCHAR#) AS PAY_AREA_NM,
+		       GET_DEPT_NAME(E.DEPTNO, #interLanguage:VARCHAR#) AS  ORG_NM,
+		       B.EV_TP_CD,
+		       GET_CODE_NAME_BY_DESC(B.EV_TP_CD, '14895', #interLanguage:VARCHAR#) AS EV_TP_NM,
+		       B.JOB_POSI_CD,
+		       B.JOB_POSI_CD AS JOB_POSI_NM,
+		       B.EMPNO,
+		       GET_EMP_LOCAL_NAME(B.empno, B.SUBSD_CD) EMPNM,
+		       A_CURRENT_VALUE,
+		       A_LAST_VALUE,
+		       A_TARGET_VALUE,
+		       B_CURRENT_VALUE,
+		       B_LAST_VALUE,
+		       B_TARGET_VALUE,
+		       C_CURRENT_VALUE,
+		       C_LAST_VALUE,
+		       C_TARGET_VALUE,
+		       D_CURRENT_VALUE,
+		       D_LAST_VALUE,
+		       H_CURRENT_VALUE,
+		       H_LAST_VALUE,
+		       H_TARGET_VALUE,
+		       J_OVERDUE_VALUE,
+		       J_LOGNTERM_VALUE,
+		       J_TOTAL_VALUE,
+		       GE_CURRENT_VALUE,
+	           GE_TARGET_VALUE,
+	           GA_CURRENT_VALUE,
+	           GA_TARGET_VALUE,
+	           GC_CURRENT_VALUE,
+	           GC_TARGET_VALUE,
+		       C.BONUS_RATIO,
+		       C.EVAL_VALUE,
+		       C.REMARK
+		  FROM (SELECT A.SUBSD_CD,
+		               A.YYYY,
+		               A.QUARTER,
+		               A.PAY_AREA_CD,
+		               A.EV_TP_CD,
+		               A.JOB_POSI_CD,
+		               A.EMPNO,
+		               SUM(DECODE(A.CATEGORY,'A',NVL(A.LEFT_CURRENT, 0),0)) A_CURRENT_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'A', NVL(A.LEFT_LAST, 0), 0)) A_LAST_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'A', NVL(A.TOP_LAST, 0), 0)) A_TARGET_VALUE,
+		               SUM(DECODE(A.CATEGORY,'B',NVL(A.LEFT_CURRENT, 0),0)) B_CURRENT_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'B', NVL(A.LEFT_LAST, 0), 0)) B_LAST_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'E', NVL(A.LEFT_LAST, 0), 0)) B_TARGET_VALUE,
+		               SUM(DECODE(A.CATEGORY,'C',NVL(A.LEFT_CURRENT, 0),'F', NVL(A.LEFT_CURRENT, 0), 0)) C_CURRENT_VALUE,
+		               SUM(DECODE(A.CATEGORY,'C', NVL(A.LEFT_LAST, 0),0)) C_LAST_VALUE,
+		               SUM(DECODE(A.CATEGORY,'C', NVL(A.TOP_CURRENT, 0),0)) C_TARGET_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'D', NVL(A.LEFT_CURRENT, 0), 0)) D_CURRENT_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'D', NVL(A.LEFT_LAST, 0), 0)) D_LAST_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'H', NVL(A.LEFT_LAST, 0), 0)) H_LAST_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'H', NVL(A.LEFT_CURRENT, 0), 0)) H_CURRENT_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'H', NVL(A.TOP_CURRENT, 0), 0)) H_TARGET_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'J', NVL(A.LEFT_CURRENT, 0), 0)) J_OVERDUE_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'J', NVL(A.TOP_CURRENT, 0), 0)) J_LOGNTERM_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'J', NVL(A.LEFT_LAST, 0), 0)) J_TOTAL_VALUE,
+		               SUM(DECODE(A.CATEGORY, 'GE', NVL(A.LEFT_CURRENT,0), 0)) GE_CURRENT_VALUE,
+	                   SUM(DECODE(A.CATEGORY, 'GE', NVL(A.TOP_CURRENT, 0), 0)) GE_TARGET_VALUE,
+	                   SUM(DECODE(A.CATEGORY, 'GA', NVL(A.LEFT_CURRENT,0), 0)) GA_CURRENT_VALUE,
+	                   SUM(DECODE(A.CATEGORY, 'GA', NVL(A.TOP_CURRENT, 0), 0)) GA_TARGET_VALUE,
+	                   SUM(DECODE(A.CATEGORY, 'GC', NVL(A.LEFT_CURRENT,0), 0)) GC_CURRENT_VALUE,
+	                   SUM(DECODE(A.CATEGORY, 'GC', NVL(A.TOP_CURRENT, 0), 0)) GC_TARGET_VALUE
+		          FROM INC_SALS_EVAL_RESULT_DTL A
+		         WHERE A.SUBSD_CD 	= #interCpnyID:VARCHAR#
+		           AND A.YYYY 		= #YEAR:VARCHAR#
+		           AND A.QUARTER 	= #QUARTER:VARCHAR#
+		           AND A.EMPNO 		= #EMPNO:VARCHAR#
+		         GROUP BY A.SUBSD_CD,
+		                  A.YYYY,
+		                  A.QUARTER,
+		                  A.PAY_AREA_CD,
+		                  A.EV_TP_CD,
+		                  A.JOB_POSI_CD,
+		                  A.EMPNO) B,
+		       INC_SALS_EVAL_RESULT C,
+		       HR_EMPLOYEE E
+		 WHERE B.SUBSD_CD 	= C.SUBSD_CD
+		   AND B.YYYY 		= C.YYYY
+		   AND B.QUARTER 	= C.QUARTER
+		   AND B.PAY_AREA_CD= C.PAY_AREA_CD
+		   AND B.EV_TP_CD 	= C.EV_TP_CD
+		   AND B.EMPNO 		= C.EMPNO
+		   AND B.SUBSD_CD 	= E.CPNY_ID
+		   AND B.EMPNO 		= E.EMPID
+		   AND C.EMPNO      = #EMPNO#
+		]]>			                  
+	</select>
+	<!--评价项目code-->
+	<select id="getSalesEvaluationTypeCodeList" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[	
+			SELECT T.DESCRIPTION,
+			       S1.CONTENT CODE_NAME,
+			       T.DESCRIPTION || ':' || S1.CONTENT AS CODE_DESC
+			  FROM SY_CODE        T,
+			       SY_CODE_PARAM  SP,
+			       SY_GLOBAL_NAME S1
+			 WHERE T.PARENT_CODE_NO = #PARENT_CODE_NO:VARCHAR#
+			   AND T.CODE_NO 		= SP.CODE_NO
+			   AND SP.CPNY_ID 		= #interCpnyID:VARCHAR#
+			   AND T.CODE_NO 		= S1.NO(+)
+			   AND S1.LANGUAGE(+)	= #interLanguage:VARCHAR#
+		]]>
+	</select>
+	<!-- 大区code -->
+	<select id="getPayAreaCodeList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT HD.DEPTNO AS CODE_NO,
+			       HD.ORG_NAME_LOCAL AS CODE_NAME,
+			       HD.DEPTNO || ':' || HD.ORG_NAME_LOCAL AS CODE_DESC
+			  FROM HR_DEPARTMENT HD,
+			       HR_DEPARTMENT_NAME HDN
+			 WHERE HD.DEPTNO=HDN.DEPTNO
+			   AND HD.CPNY_ID=#CPNY_ID#
+			   AND HDN.LANGUAGE=#interLanguage#
+			   AND HD.DEPT_LEVEL=2
+			   ORDER BY HD.ORG_NAME_LOCAL
+		]]>
+	</select>
+	<!-- 营业员评价数据导入  临时表数据清理  -->
+	<delete id="deleteImportSalesEvalTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM INC_SALS_EVAL_UPLOAD_TEMP 
+ 			 WHERE UPDT_USER = #IMP_EMPNO#
+ 			   AND SUBSD_CD  = #SUBSD_CD#
+		]]>
+	</delete>
+	
+	<!--
+          更新提成计算数据
+	-->
+	<update id="updateSalesIncEvaluationRatioForAdjust" parameterClass="linkMap">
+		<![CDATA[
+		UPDATE INC_SALS_EVAL_RESULT_DTL 
+	       SET RATIO = #RATIO#,
+	       	   REMARK = #REMARK#,
+	       	   UPDT_USER = #UPDT_USER#,
+	       	   UPDT_DTIME = sysdate
+	     WHERE SUBSD_CD 	= 'TSTO'
+	       AND YYYY 		= #YEAR:VARCHAR#
+	       AND QUARTER 		= #QUARTER:VARCHAR#
+	       AND PAY_AREA_CD 	= #PAY_AREA_CD:VARCHAR#
+	       AND EMPNO 		= #EMPNO#
+	       AND CATEGORY 	= #CATEGORY#
+	      ]]>
+	  </update>
+	  
+	 <!--营业员评价结果调整function -->
+	<procedure id="callSalesEvaluationFuncForAdjust" parameterClass="linkMap">
+	<![CDATA[	
+		{#MESSAGE,jdbcType=VARCHAR,mode=OUT# = call 
+			PKG_LGECH_SALESMAN_EVAL.SALES_EVAL_RESULT(#SUBSD_CD#
+												,#YEAR:VARCHAR#
+												,#QUARTER:VARCHAR#
+												,#PAY_AREA_CD#
+												,#EV_TP_CD#
+												,#JOB_POSI_CD#
+												,#EMPNO#
+												,#UPDT_USER#)}
+	]]>		
+	</procedure>
+</sqlMap>

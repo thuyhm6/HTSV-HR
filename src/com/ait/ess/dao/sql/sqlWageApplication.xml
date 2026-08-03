@@ -1,0 +1,1022 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.WageApp">
+	<select id="listByEmp" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+	   <![CDATA[
+			SELECT * FROM (SELECT GET_HR_EMP_NAME(T.CREATED_BY) EMPNAME,
+			       T.CREATED_BY,
+			       GET_EMPID(T.CREATED_BY) EMPID,
+			       TO_CHAR(T.CREATE_DATE, 'YYYYMMDD') CREATEDATE,
+			       T.ID,
+			       T.TITLE,
+			       T.FILENAME,
+			       T.FILEURL,
+			       M.FLAG,
+			       (SELECT AFFIRMOR_ID
+			          FROM ESS_AFFIRM T
+			         WHERE APPLY_TYPE = 217886
+			           AND APPLY_NO = T.ID
+			           AND AFFIRM_FLAG = 0
+			           AND ROWNUM = 1
+			         GROUP BY APPLY_NO, AFFIRMOR_ID) AFFIRMOR_ID,
+			         (SELECT ESS_AFFIRM_NO
+				          FROM ESS_AFFIRM T
+				         WHERE APPLY_TYPE = 217886
+				           AND APPLY_NO = T.ID
+				           AND AFFIRM_FLAG = 0
+				           AND ROWNUM = 1) ESS_AFFIRM_NO
+			  FROM ESS_WAGEAPPLICATION T,
+			       HR_EMPLOYEE E,
+			       (SELECT APPLY_NO,
+			               CASE WHEN MAX(AFFIRM_FLAG) = 0 THEN 0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN 2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN 1
+			                 ELSE 3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M
+			 WHERE T.ID = M.APPLY_NO
+			   AND T.CREATED_BY = E.PERSON_ID
+			   AND E.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+			<![CDATA[
+				TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATE">
+			M.FLAG = #STATE:VARCHAR#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			T.CREATED_BY =
+			#PERSON_ID:VARCHAR#
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			E.DEPTNO IN (SELECT
+			DISTINCT T.DEPTNO FROM SY_USER_DEPT T WHERE T.USER_NO =
+			#USEROLE:VARCHAR#
+			UNION ALL SELECT DEPTNO FROM HR_EMPLOYEE WHERE
+			PERSON_ID =
+			#PERSON_ID:VARCHAR#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			)INFO
+			ORDER BY INFO.ID DESC
+		]]>
+	</select>
+	<select id="listByEmpCnt" parameterClass="linkMap" resultClass="int"
+		remapResults="true">
+	   	<![CDATA[
+			SELECT COUNT(T.ID)
+			  FROM ESS_WAGEAPPLICATION T,
+			       HR_EMPLOYEE E,
+			       (SELECT APPLY_NO,
+			               CASE WHEN MAX(AFFIRM_FLAG) = 0 THEN 0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN 2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN 1
+			                 ELSE 3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M
+			 WHERE T.ID = M.APPLY_NO
+			   AND T.CREATED_BY = E.PERSON_ID
+			   AND E.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+			<![CDATA[
+				TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATE">
+			M.FLAG = #STATE:VARCHAR#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			T.CREATED_BY =
+			#PERSON_ID:VARCHAR#
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			E.DEPTNO IN (SELECT
+			DISTINCT T.DEPTNO FROM SY_USER_DEPT T WHERE T.USER_NO =
+			#USEROLE:VARCHAR#
+			UNION ALL SELECT DEPTNO FROM HR_EMPLOYEE WHERE
+			PERSON_ID =
+			#PERSON_ID:VARCHAR#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+
+	<select id="getWageApplicationList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	   <![CDATA[
+	   	  SELECT GET_HR_EMP_NAME(T.CREATED_BY) EMPNAME,
+		       T.CREATED_BY,
+		       GET_EMPID(T.CREATED_BY) EMPID,
+		       TO_CHAR(T.CREATE_DATE, 'YYYYMMDD') CREATEDATE,
+		       T.ID,
+		       T.TITLE,
+		       T.FILEURL,
+		       T.FILENAME,
+		       N.AFFIRMOR_ID,
+		       N.ESS_AFFIRM_NO,
+		       M.FLAG,
+		       N.AFFIRM_LEVEL
+		  FROM ESS_WAGEAPPLICATION T, ESS_AFFIRM N,
+		  (SELECT APPLY_NO,MIN(AFFIRM_LEVEL) AFFIRM_LEVEL FROM ESS_AFFIRM 
+		  		WHERE APPLY_TYPE=217886 
+		  ]]>
+		<isNotEmpty prepend="AND" property="STATE">
+			AFFIRM_FLAG =
+			#STATE:VARCHAR#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="STATE">
+			AFFIRM_FLAG IN (0,3)
+		</isEmpty>
+        <![CDATA[
+		  		GROUP BY APPLY_NO) O,
+		  (SELECT APPLY_NO,
+		               CASE
+		                 WHEN MAX(AFFIRM_FLAG) = 0 THEN
+		                  0
+		                 WHEN MAX(AFFIRM_FLAG) = 2 THEN
+		                  2
+		                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+		                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN
+		                  1
+		                 ELSE
+		                  3
+		               END FLAG
+		          FROM ESS_AFFIRM
+		         WHERE APPLY_TYPE = 217886
+		         GROUP BY APPLY_NO) M
+		 WHERE T.ID = N.APPLY_NO
+		   AND O.APPLY_NO = N.APPLY_NO
+		   AND O.APPLY_NO = M.APPLY_NO
+		   AND O.AFFIRM_LEVEL = N.AFFIRM_LEVEL
+		   AND N.APPLY_TYPE = 217886
+		 ]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+	      <![CDATA[
+	        TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			(GET_HR_EMP_NAME(T.CREATED_BY) LIKE '%'||#EMPID:VARCHAR#||'%' OR
+			GET_EMPID(T.CREATED_BY) LIKE '%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			AFFIRMOR_ID =
+			#PERSON_ID:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATE">
+			M.FLAG = #STATE:VARCHAR#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="STATE">
+			M.FLAG IN (0,3)
+		</isEmpty>
+	</select>
+	<select id="getWageApplicationCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+	   	 <![CDATA[
+	   	  SELECT COUNT(*)
+		  FROM ESS_WAGEAPPLICATION T, ESS_AFFIRM N,
+		  (SELECT APPLY_NO,MIN(AFFIRM_LEVEL) AFFIRM_LEVEL FROM ESS_AFFIRM 
+		  		WHERE APPLY_TYPE=217886 
+		  ]]>
+		<isNotEmpty prepend="AND" property="STATE">
+			AFFIRM_FLAG =
+			#STATE:VARCHAR#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="STATE">
+			AFFIRM_FLAG IN (0,3)
+		</isEmpty>
+        <![CDATA[
+		  		GROUP BY APPLY_NO) O,
+		  (SELECT APPLY_NO,
+		               CASE
+		                 WHEN MAX(AFFIRM_FLAG) = 0 THEN
+		                  0
+		                 WHEN MAX(AFFIRM_FLAG) = 2 THEN
+		                  2
+		                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+		                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN
+		                  1
+		                 ELSE
+		                  3
+		               END FLAG
+		          FROM ESS_AFFIRM
+		         WHERE APPLY_TYPE = 217886
+		         GROUP BY APPLY_NO) M
+		 WHERE T.ID = N.APPLY_NO
+		   AND O.APPLY_NO = N.APPLY_NO
+		   AND O.APPLY_NO = M.APPLY_NO
+		   AND O.AFFIRM_LEVEL = N.AFFIRM_LEVEL
+		   AND N.APPLY_TYPE = 217886
+		 ]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+	      <![CDATA[
+	        TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			(GET_HR_EMP_NAME(T.CREATED_BY) LIKE '%'||#EMPID:VARCHAR#||'%' OR
+			GET_EMPID(T.CREATED_BY) LIKE '%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			AFFIRMOR_ID =
+			#PERSON_ID:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATE">
+			M.FLAG = #STATE:VARCHAR#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="STATE">
+			M.FLAG IN (0,3)
+		</isEmpty>
+	</select>
+
+	<select id="getApplicationList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT E.LOCAL_NAME EMPNAME,
+		       COSTEMP,
+		       E.EMPID,
+		       TYPENAME,
+		       TO_CHAR(START_DATE, 'YYYY-MM') START_DATE,
+		       TO_CHAR(END_DATE, 'YYYY-MM') END_DATE,
+		       MONEY,
+		       DECODE(T.REALSTATE,'N','(已撤销)','') || DEMO AS DEMO,
+		       (SELECT NVL(SUM(MONEY),0) FROM ESS_WAGEAPPLICATION_DETAIL L WHERE L.APPLYID = T.APPLYID AND L.CREATED_BY = T.CREATED_BY AND L.REALSTATE ='Y' AND L.MONEY>0) ZHENG,
+       		   (SELECT NVL(SUM(MONEY),0) FROM ESS_WAGEAPPLICATION_DETAIL L WHERE L.APPLYID = T.APPLYID AND L.CREATED_BY = T.CREATED_BY AND L.REALSTATE ='Y' AND L.MONEY<0) FU
+		  FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E
+		 WHERE T.COSTEMP = E.EMPID
+		   AND T.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			T.APPLYID =
+			#APPLY_NO:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			T.CREATED_BY =
+			#PERSON_ID:VARCHAR#
+		</isNotEmpty>
+	</select>
+
+	<select id="getApplicationListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 	  SELECT COUNT(TYPENAME)
+		  FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E
+		 WHERE T.COSTEMP = E.EMPID
+		   AND T.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			T.APPLYID =
+			#APPLY_NO:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			T.CREATED_BY =
+			#PERSON_ID:VARCHAR#
+		</isNotEmpty>
+	</select>
+
+	<select id="getProveAppList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.ID,
+			       GET_HR_EMP_NAME(M.AFFIRMOR_ID) EMPNAME,
+			       T.CREATED_BY,
+			       TO_CHAR(T.CREATE_DATE, 'YYYYMMDD') CREATEDATE,
+			       M.AFFIRM_FLAG,
+			       M.AFFIRM_LEVEL,
+			       M.AFFIRM_CONTENT,
+			       TO_CHAR(M.UPDATE_DATE, 'YYYYMMDD') AFFIRM_DATE,
+			       M.ESS_AFFIRM_NO,
+			       M.APPLY_NO,
+			       M.AFFIRMOR_ID,
+			       GET_EMPID(M.AFFIRMOR_ID) EMPID,
+			       M.APPLY_TYPE
+			  FROM ESS_WAGEAPPLICATION T, HR_EMPLOYEE E, ESS_AFFIRM M
+			 WHERE T.ID = M.APPLY_NO
+			   AND T.CREATED_BY = E.PERSON_ID
+			   AND E.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE">
+			M.APPLY_TYPE =
+			#APPLY_TYPE:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO">
+			M.APPLY_NO =
+			#APPLY_NO:VARCHAR#
+		</isNotEmpty>
+	</select>
+	<update id="updateBatchSubmitApp" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_AFFIRM
+			   SET AFFIRM_FLAG    = #AFFIRM_FLAG:VARCHAR#,
+			       UPDATE_DATE    = SYSDATE,
+			       UPDATED_BY     = #PERSON_ID:VARCHAR#,
+			       ACTIVITY       = #AFFIRM_FLAG:VARCHAR#,
+			       AFFIRM_CONTENT = #AFFIRM_CONTENT:VARCHAR#
+			 WHERE ESS_AFFIRM_NO = #AFFIRM_NO:VARCHAR#
+			   AND APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+		]]>
+	</update>
+
+	<select id="getProveCheckAppList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	   <![CDATA[
+			SELECT GET_HR_EMP_NAME(T.CREATED_BY) EMPNAME,
+				   GET_EMPID(T.CREATED_BY) CREATEDID,
+			       T.CREATED_BY,
+			       TO_CHAR(T.CREATE_DATE, 'YYYYMMDD') CREATEDATE,
+			       T.ID,
+			       T.TITLE,
+			       T.FILEURL,
+			       T.FILENAME,
+			       M.FLAG,
+			       K.ESS_AFFIRM_NO,
+			       K.CHECKOR_ID,
+			       K.CHECK_FLAG,
+			       GET_EMPID(K.CHECKOR_ID) EMPID
+			  FROM ESS_WAGEAPPLICATION T,
+			       HR_EMPLOYEE E,
+			       (SELECT APPLY_NO,
+			               CASE WHEN MAX(AFFIRM_FLAG) = 0 THEN 0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN 2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN 1
+			                 ELSE 3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M,
+			         ESS_AFFIRM RM,
+			         ESS_CHECK K
+			 WHERE T.ID = M.APPLY_NO
+			   AND M.APPLY_NO = RM.APPLY_NO
+			   AND T.CREATED_BY = E.PERSON_ID
+			   AND RM.ESS_AFFIRM_NO = K.ESS_AFFIRM_NO
+			   AND RM.AFFIRMOR_ID = K.CREATED_BY
+			   AND RM.APPLY_TYPE = 217886
+		]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+			<![CDATA[
+				TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			(GET_HR_EMP_NAME(K.CHECKOR_ID) LIKE '%'||#EMPID:VARCHAR#||'%' OR
+			K.CHECKOR_ID LIKE '%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATE">
+			M.FLAG = #STATE:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+			AND K.CHECKOR_ID = #PERSON_ID:VARCHAR#
+		    AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+			ORDER BY T.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<select id="getProveCheckAppListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+	   	<![CDATA[
+			SELECT count(K.CHECKOR_ID)
+			  FROM ESS_WAGEAPPLICATION T,
+			       HR_EMPLOYEE E,
+			       (SELECT APPLY_NO,
+			               CASE WHEN MAX(AFFIRM_FLAG) = 0 THEN 0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN 2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN 1
+			                 ELSE 3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M,
+			         ESS_AFFIRM RM,
+			         ESS_CHECK K
+			 WHERE T.ID = M.APPLY_NO
+			   AND M.APPLY_NO = RM.APPLY_NO
+			   AND T.CREATED_BY = E.PERSON_ID
+			   AND RM.ESS_AFFIRM_NO = K.ESS_AFFIRM_NO
+			   AND RM.AFFIRMOR_ID = K.CREATED_BY
+			   AND RM.APPLY_TYPE = 217886
+			   AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND K.CHECKOR_ID = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+			<![CDATA[
+				TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			(GET_HR_EMP_NAME(K.CHECKOR_ID) LIKE '%'||#EMPID:VARCHAR#||'%' OR
+			K.CHECKOR_ID LIKE '%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATE">
+			M.FLAG = #STATE:VARCHAR#
+		</isNotEmpty>
+	</select>
+
+	<select id="getCancleApplicationState" parameterClass="linkMap"
+		resultClass="int">
+	   	<![CDATA[
+		     SELECT DECODE(MAX(PA_LOCK_FLAG),'',1,0,1,1,0)
+			   FROM PA_PROGRESS
+			  WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+			    AND PA_MONTH_STR = (SELECT TO_CHAR(MIN(START_DATE), 'YYYYMM')
+			                          FROM ESS_WAGEAPPLICATION_DETAIL
+			                         WHERE APPLYID IN (#IDS:VARCHAR#)
+			                           AND CREATED_BY = #PERSON_ID:VARCHAR#)
+			    AND STAT_NO = GET_AR_STATNO(#PERSON_ID:VARCHAR#, #CPNY_ID:VARCHAR#)
+		     
+		]]>
+	</select>
+
+	<delete id="deleteOtApplication1" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_CHECK WHERE ESS_AFFIRM_NO IN 
+			(SELECT ESS_AFFIRM_NO FROM ESS_AFFIRM 
+				WHERE APPLY_NO = #APPLY_NO:VARCHAR# 
+				  AND APPLY_TYPE=217886
+				  AND CURRENT_CHECKOR_ID IS NOT NULL)
+		]]>
+	</delete>
+
+	<delete id="deleteOtApplication2" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_AFFIRM WHERE APPLY_NO = #APPLY_NO:VARCHAR# AND APPLY_TYPE=217886
+		]]>
+	</delete>
+
+	<delete id="deleteOtApplication3" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_WAGEAPPLICATION WHERE ID = #APPLY_NO:VARCHAR#
+		]]>
+	</delete>
+
+	<delete id="deleteOtApplication4" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ESS_WAGEAPPLICATION_DETAIL WHERE APPLYID = #APPLY_NO:VARCHAR#
+		]]>
+	</delete>
+
+	<delete id="deleteOtApplication5" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_PARAM_DATA
+			 WHERE PARAM_DATA_NO IN (SELECT PARAM_DATA_NO
+			                           FROM PA_PARAM_DATA              T,
+			                                ESS_WAGEAPPLICATION_DETAIL L,
+			                                PA_PARAM_ITEM_PARAM        M
+			                          WHERE T.APPLY_NO = L.ID
+			                            AND T.RETURN_VALUE = L.MONEY
+			                            AND M.PARAM_ITEM_NO = L.TYPE
+			                            AND M.PARAM_NO = T.PARAM_NO
+			                            AND T.IS_APPLY = L.REALSTATE
+			                            AND L.APPLYID = #APPLY_NO:VARCHAR#
+			                            AND L.CPNY_ID = #CPNY_ID:VARCHAR#
+			                            AND T.IS_APPLY = 'Y')
+		]]>
+	</delete>
+
+	<select id="getPbWageList" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+	   	<![CDATA[
+			SELECT T.ID,
+			       T.CREATED_BY,
+			       N.TITLE,
+			       E.LOCAL_NAME EMPNAME,
+			       T.COSTEMP,
+			       E.EMPID EMPID,
+			       T.TYPENAME,
+			       T.TYPE,
+			       TO_CHAR(T.START_DATE, 'YYYY-MM') START_DATE,
+			       TO_CHAR(T.END_DATE, 'YYYY-MM') END_DATE,
+			       T.MONEY,
+			       T.DEMO,
+			       TO_CHAR(T.CREATE_DATE, 'YYYYMMDD') CREATE_DATE,
+			       T.REALSTATE,
+			       T.APPLYID,
+			       M.FLAG
+			  FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E,ESS_WAGEAPPLICATION N,
+			  (SELECT APPLY_NO,
+			               CASE
+			                 WHEN MAX(AFFIRM_FLAG) = 0 THEN 0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN 2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+			                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN 1
+			                 ELSE 3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M
+			 WHERE T.APPLYID = M.APPLY_NO
+			   AND T.APPLYID = N.ID
+			   AND T.COSTEMP = E.EMPID
+			   AND T.CREATED_BY = #PERSON_ID:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.REALSTATE = 'Y'
+			   AND M.FLAG = 1
+		]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+			<![CDATA[
+				TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			(E.LOCAL_NAME LIKE
+			'%'||#EMPID:VARCHAR#||'%' OR T.COSTEMP LIKE
+			'%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY T.CREATE_DATE DESC
+		]]>
+	</select>
+
+	<select id="getPbWageCnt" parameterClass="linkMap" resultClass="int">
+	   	<![CDATA[
+	   		SELECT COUNT(*) 
+	   		    FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E,ESS_WAGEAPPLICATION N,
+			  (SELECT APPLY_NO,
+			               CASE
+			                 WHEN MAX(AFFIRM_FLAG) = 0 THEN 0
+			                 WHEN MAX(AFFIRM_FLAG) = 2 THEN 2
+			                 WHEN MAX(AFFIRM_FLAG) = 1 AND
+			                      SUM(AFFIRM_FLAG) = MAX(AFFIRM_LEVEL) THEN 1
+			                 ELSE 3
+			               END FLAG
+			          FROM ESS_AFFIRM
+			         WHERE APPLY_TYPE = 217886
+			         GROUP BY APPLY_NO) M
+			 WHERE T.APPLYID = M.APPLY_NO
+			   AND T.APPLYID = N.ID
+			   AND T.COSTEMP = E.EMPID
+			   AND T.CREATED_BY = #PERSON_ID:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.REALSTATE = 'Y'
+			   AND M.FLAG = 1
+		]]>
+		<isNotEmpty prepend="AND" property="STARTTIME">
+			TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') >= #STARTTIME:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ENDTIME">
+			<![CDATA[
+				TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') <= #ENDTIME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			(E.LOCAL_NAME LIKE
+			'%'||#EMPID:VARCHAR#||'%' OR T.COSTEMP LIKE
+			'%'||#EMPID:VARCHAR#||'%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     E.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				E.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+
+	<procedure id="getBackPbOtApplication" parameterClass="linkMap"
+		resultClass="int">
+		CALL
+		ESS_WAGE_BACK_APPLICATION(#WAGEID:VARCHAR#,#CPNY_ID:VARCHAR#)
+	</procedure>
+
+	<select id="getWageApplicationTempList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	   	<![CDATA[
+		SELECT T.CPNY_ID,
+			       T.COSTEMP,
+			       E.LOCAL_NAME,
+			       E.EMPID,
+			       T.START_DATE,
+			       T.END_DATE,
+			       T.MONEY,
+			       T.DEMO,
+			       T.TYPENAME,
+			       T.UPLOAD_ERROR_MSG
+			  FROM ESS_WAGEAPPLI_DETAIL_TEMP T,HR_EMPLOYEE E
+			 WHERE T.COSTEMP = E.EMPID
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 T.RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+		ORDER BY T.LINE_ID
+	</select>
+
+	<select id="getWageApplicationTempCnt" parameterClass="linkMap"
+		resultClass="int">
+	   	<![CDATA[
+	   		SELECT count(*)
+			  FROM ESS_WAGEAPPLI_DETAIL_TEMP T
+		     WHERE T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		       AND T.CPNY_ID  = #CPNY_ID:VARCHAR#	
+		]]>
+	</select>
+
+	<select id="getWageApplicationTempErrCnt" parameterClass="linkMap"
+		resultClass="int">
+	   	<![CDATA[
+	   		SELECT NVL(SUM(1),0) ERR_CNT
+			  FROM ESS_WAGEAPPLI_DETAIL_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		       AND T.UPLOAD_BY = #PERSON_ID:VARCHAR#
+		       AND T.CPNY_ID  = #CPNY_ID:VARCHAR#	
+		]]>
+	</select>
+
+	<procedure id="importApplicationExcelTempExcel"
+		parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_ALLOWANCE_EXCEL_IMP.PR_IMPORT_APPLICATION_DATA(
+						 #PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<update id="updateApplicatCheck" parameterClass="linkMap">
+		UPDATE ESS_CHECK
+		SET CHECK_FLAG = 1
+		WHERE CHECKOR_ID = #PERSON_ID:VARCHAR#
+		AND
+		ESS_AFFIRM_NO IN
+		(SELECT ESS_AFFIRM_NO
+		FROM ESS_AFFIRM
+		WHERE APPLY_NO =
+		#APPLY_NO:VARCHAR#
+		AND AFFIRMOR_ID = #PERSON_ID:VARCHAR#
+		AND APPLY_TYPE
+		= 217886)
+	</update>
+
+	<insert id="insertPaParamApplications" parameterClass="linkMap">
+		<![CDATA[
+				INSERT INTO PA_PARAM_DATA
+		    (param_data_no,
+		     param_no,
+		     person_id,
+		     return_value,
+		     cpny_id,
+		     start_month,
+		     end_month,
+		     create_date,
+		     created_by,
+		     activity,
+		     remark,
+		     batch_import_mark,
+		     is_apply,
+		     apply_no)
+		    SELECT PA_PARAM_DATA_SEQ.NEXTVAL,
+		           M.PARAM_NO,
+		           E.PERSON_ID,
+		           L.MONEY,
+		           L.CPNY_ID,
+		           TO_CHAR(L.START_DATE, 'YYYYMM'),
+		           TO_CHAR(L.END_DATE, 'YYYYMM'),
+		           SYSDATE,
+		           #UPDATED_BY:VARCHAR#,
+		           '1',
+		           L.DEMO,
+		           '1',
+		           'Y',
+		           L.ID
+		      FROM ESS_WAGEAPPLICATION_DETAIL L,
+		           PA_PARAM_ITEM_PARAM        M,
+		           HR_EMPLOYEE                E
+		     WHERE L.TYPE = M.PARAM_ITEM_NO
+		       AND L.CPNY_ID = M.CPNY_ID
+		       AND L.COSTEMP = E.EMPID
+		       AND L.APPLYID = #APPLY_NO:VARCHAR#
+		       AND L.REALSTATE = 'Y'
+       ]]>
+	</insert>
+
+	<select id="checkApplyApplicationState" parameterClass="linkMap"
+		resultClass="int">
+	   	<![CDATA[
+	   		SELECT DECODE(NVL(MAX(S.PA_APPLY_LOCK_FLAG),0), 0,1,0)
+			  FROM PA_PROGRESS S, HR_EMPLOYEE E
+			 WHERE S.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND S.PA_MONTH_STR = TO_CHAR(SYSDATE,'YYYYMM')
+			   AND E.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="AREA_ID"> 
+			<![CDATA[
+				 S.AR_DEPT_NO = E.PAY_AREA_CD
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getApplicationByNoApplyNo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT E.LOCAL_NAME EMPNAME,
+	 	       E.ENGLISH_NAME ENGLISH_NAME,
+		       COSTEMP,
+		       TYPENAME,
+		       TO_CHAR(START_DATE,'YYYY-MM') START_DATE,
+       		   TO_CHAR(END_DATE,'YYYY-MM') END_DATE,
+		       MONEY,
+		       DEMO
+		  FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E
+		 WHERE T.COSTEMP = E.EMPID
+		   AND T.CREATED_BY = #PERSON_ID:VARCHAR#
+		   AND T.ACTIVITY = 0
+		   AND T.REALSTATE = 'N'
+		]]>
+	</select>
+
+	<select id="getApplicationByNoApplyNoCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 	  SELECT COUNT(DEMO)
+		  FROM ESS_WAGEAPPLICATION_DETAIL T,HR_EMPLOYEE E
+		 WHERE T.COSTEMP = E.EMPID
+		   AND T.CREATED_BY = #PERSON_ID:VARCHAR#
+		   AND T.ACTIVITY = 0
+		   AND T.REALSTATE = 'N'
+		]]>
+	</select>
+
+	<insert id="saveWageAppFile" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO ESS_WAGEAPPLICATION_FILE
+			  (ID, CREATED_BY, CREATE_DATE, ACTIVITY, FILEURL, FILENAME, NEWNAME)
+			VALUES
+			  (ESS_WAGEAPP_FILE_SEQ.NEXTVAL,
+			   #PERSON_ID:VARCHAR#,
+			   SYSDATE,
+			   0,
+			   #FILEURL:VARCHAR#,
+			   #OLDNAME:VARCHAR#,
+			   #name:VARCHAR#)
+		]]>
+	</insert>
+
+	<select id="getAppliFileList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT E.* FROM ESS_WAGEAPPLICATION_FILE E WHERE 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID"> 
+			<![CDATA[
+				 E.CREATED_BY = #PERSON_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NEWNAME"> 
+			<![CDATA[
+				 E.NEWNAME = #NEWNAME:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_NO"> 
+			<![CDATA[
+				 E.WAGENO = #APPLY_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="APPLY_NO"> 
+			<![CDATA[
+				 E.ACTIVITY = 0
+			]]>
+		</isEmpty>
+	</select>
+	<delete id="deleteWageAppFile" parameterClass="linkMap">
+		<![CDATA[
+	 	  DELETE FROM ESS_WAGEAPPLICATION_FILE WHERE CREATED_BY = #CREATED_BY:VARCHAR# AND NEWNAME = #NEWNAME:VARCHAR#
+		]]>
+	</delete>
+	<update id="updateWageAppFile" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_WAGEAPPLICATION_FILE SET WAGENO = #WAGENO:VARCHAR#,ACTIVITY = 1 WHERE CREATED_BY = #CREATED_BY:VARCHAR#
+			AND CREATE_DATE = ( SELECT MAX(CREATE_DATE) FROM ESS_WAGEAPPLICATION_FILE )
+		]]>
+	</update>
+
+	<!-- 费用履历查看页面 -->
+	<select id="getWageCheckList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+	    <![CDATA[
+			 SELECT HE.EMPID,
+                   HE.LOCAL_NAME WAGE_NAME,
+                   HE.DEPTNO,
+                   HS.JOBTYPE_GROUP_NO,
+                   SY.CONTENT EMP_TYPE_NAME,
+                   HD.CONTENT DEPT_NAME,
+                   HE1.PAY_AREA_CD,
+                   ED.TYPENAME,
+                   HD1.CONTENT PAY_AREA,
+                   TO_CHAR(ED.START_DATE,'yyyy-mm') START_DATE,
+                   TO_CHAR(ED.END_DATE,'yyyy-mm') END_DATE,
+                   ED.MONEY,
+                   ED.UPDATED_BY,
+                   HE1.LOCAL_NAME UPDATED_NAME
+              FROM HR_EMPLOYEE HE,
+                   HR_EMPLOYEE HE1,
+                   HR_DEPARTMENT_NAME HD,
+                   HR_DEPARTMENT_NAME HD1,
+                   ESS_WAGEAPPLICATION_DETAIL ED,
+                   SY_GLOBAL_NAME SY,
+                   HR_JOB_TYPE_SETUP HS
+             WHERE HE.EMPID = ED.COSTEMP
+               AND HE1.PAY_AREA_CD = HD1.DEPTNO
+               AND HD1.LANGUAGE = #interLanguage:VARCHAR#
+               AND HE.DEPTNO = HD.DEPTNO
+               AND HD.LANGUAGE = #interLanguage:VARCHAR#
+               AND HE.EMP_TYPE_CODE = HS.JOBTYPE_NO
+               AND HS.CPNY_ID = #CPNY_ID:VARCHAR#
+               AND HS.JOBTYPE_GROUP_NO = SY.NO
+               AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+               AND HE1.PERSON_ID(+) = ED.UPDATED_BY
+               AND ED.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 	     HE.DEPTNO = #DEPTNO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAYAREA">
+			<![CDATA[
+			     HE1.PAY_AREA_CD in ( $PAYAREA$)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_GROUP">
+			<![CDATA[
+		 	     HS.JOBTYPE_GROUP_NO = #EMP_TYPE_GROUP:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			   ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )  
+	       ]]>
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPENAME">
+			<![CDATA[
+		 	     ED.TYPENAME = #TYPENAME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+ 		<isNotEmpty prepend="AND" property="MONTH"> 
+ 			<![CDATA[ 
+ 		 	     TO_CHAR(ED.START_DATE,'yyyy-mm') <= #MONTH:VARCHAR#
+ 		 	     AND #MONTH:VARCHAR# <= TO_CHAR(ED.END_DATE,'yyyy-mm')
+ 		    ]]> 
+ 		</isNotEmpty> 
+ 		<isNotEmpty prepend="AND" property="UPDATED_NAME"> 
+ 			<![CDATA[ 
+ 		 	     ED.UPDATED_BY = #UPDATED_NAME:VARCHAR#
+ 		    ]]> 
+ 		</isNotEmpty>  
+	</select>
+
+	<select id="getWageCheckCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(0)
+			FROM HR_EMPLOYEE HE,
+                   HR_EMPLOYEE HE1,
+                   HR_DEPARTMENT_NAME HD,
+                   HR_DEPARTMENT_NAME HD1,
+                   ESS_WAGEAPPLICATION_DETAIL ED,
+                   SY_GLOBAL_NAME SY,
+                   HR_JOB_TYPE_SETUP HS
+             WHERE HE.EMPID = ED.COSTEMP
+               AND HE1.PAY_AREA_CD = HD1.DEPTNO
+               AND HD1.LANGUAGE = #interLanguage:VARCHAR#
+               AND HE.DEPTNO = HD.DEPTNO
+               AND HD.LANGUAGE = #interLanguage:VARCHAR#
+               AND HE.EMP_TYPE_CODE = HS.JOBTYPE_NO
+               AND HS.CPNY_ID = #CPNY_ID:VARCHAR#
+               AND HS.JOBTYPE_GROUP_NO = SY.NO
+               AND SY.LANGUAGE (+) = #interLanguage:VARCHAR#
+               AND HE1.PERSON_ID(+) = ED.UPDATED_BY
+               AND ED.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 	     HE.DEPTNO = #DEPTNO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PAYAREA">
+			<![CDATA[
+			     HE1.PAY_AREA_CD in ( $PAYAREA$)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE_GROUP">
+			<![CDATA[
+		 	     HS.JOBTYPE_GROUP_NO = #EMP_TYPE_GROUP:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			   ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' ) 
+	       ]]>
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPENAME">
+			<![CDATA[
+		 	     ED.TYPENAME = #TYPENAME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MONTH"> 
+ 			<![CDATA[ 
+ 		 	     TO_CHAR(ED.START_DATE,'yyyy-mm') <= #MONTH:VARCHAR#
+ 		 	     AND #MONTH:VARCHAR# <= TO_CHAR(ED.END_DATE,'yyyy-mm')
+ 		    ]]> 
+ 		</isNotEmpty> 
+ 		<isNotEmpty prepend="AND" property="UPDATED_NAME"> 
+ 			<![CDATA[ 
+ 		 	     ED.UPDATED_BY = #UPDATED_NAME:VARCHAR#
+ 		    ]]> 
+ 		</isNotEmpty> 
+	</select>
+</sqlMap>

@@ -1,0 +1,3522 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="promoter">
+
+	<!-- 固定工资设置列表查询 -->
+	<!-- @Create date: 2014.06.09 -->
+	<select id="searchFixedPayList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT t.PAY_AREA_CD
+			      ,nvl((SELECT n.content
+			            FROM   HR_DEPARTMENT_NAME n
+			            WHERE  n.deptno   = t.pay_area_cd
+			            AND    n.language = #language#
+			            AND    ROWNUM = 1),t.PAY_AREA_CD) PAY_AREA_NM
+			      ,t.BRANCH_CD
+			      ,nvl((SELECT n.content
+			            FROM   HR_DEPARTMENT_NAME n
+			            WHERE  n.deptno   = t.Branch_Cd
+			            AND    n.language = #language#
+			            AND    ROWNUM = 1),t.BRANCH_CD) BRANCH_NM
+			      ,t.SHOP_AREA_ID
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.SHOP_AREA_ID
+ 			            AND    s.parent_code_no = '211057'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.SHOP_AREA_ID) SHOP_AREA_NM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.SHOP_LEVEL
+ 			            AND    s.parent_code_no = '210608'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.SHOP_LEVEL) SHOP_LEVEL_NM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+			      ,t.SHOP_LEVEL,  t.PROD_TP,      t.BASIC_INCTV_AMT, t.LOWST_INCTV_AMT,
+			       t.ALOWN_AMT,   t.DVD_ALOWN_AMT, t.MIC_ALOWN_AMT,  t.RAC_ALOWN_AMT,
+			       t.VACL_ALOWN_AMT, t.SML_PROD_ALOWN_AMT, t.RGST_DTIME, t.UPDT_DTIME,
+			       t.UPDT_USER,   t.USE_YN
+			FROM   INC_PROMOR_BASIC_GRADE  t       
+			WHERE  1 = 1
+			AND    F_CHECK_USER_DEPT_AUTH(t.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+			AND    F_CHECK_USER_DEPT_AUTH(t.BRANCH_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			t.BRANCH_CD = #BRANCH_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_AREA_ID">
+			<![CDATA[
+			t.SHOP_AREA_ID = #SHOP_AREA_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_LEVEL">
+			<![CDATA[
+			t.SHOP_LEVEL = #SHOP_LEVEL#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY t.PAY_AREA_CD,t.BRANCH_CD,t.SHOP_AREA_ID,t.PROD_TP,t.SHOP_LEVEL
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.09 -->
+	<select id="searchFixedPayListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_PROMOR_BASIC_GRADE t
+			WHERE 1 = 1
+			AND    F_CHECK_USER_DEPT_AUTH(t.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+			AND    F_CHECK_USER_DEPT_AUTH(t.BRANCH_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			t.BRANCH_CD = #BRANCH_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_AREA_ID">
+			<![CDATA[
+			t.SHOP_AREA_ID = #SHOP_AREA_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_LEVEL">
+			<![CDATA[
+			t.SHOP_LEVEL = #SHOP_LEVEL#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.09 -->
+	<update id="updateFixedPay" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_PROMOR_BASIC_GRADE 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			    ,BASIC_INCTV_AMT = #BASIC_INCTV_AMT:NUMERIC#
+			    ,ALOWN_AMT = #ALOWN_AMT:NUMERIC#
+			    ,USE_YN      = #USE_YN:VARCHAR#
+			WHERE PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+			AND   BRANCH_CD   = #BRANCH_CD:VARCHAR#
+			AND   SHOP_AREA_ID = #SHOP_AREA_ID:VARCHAR#
+			AND   SHOP_LEVEL = #SHOP_LEVEL:VARCHAR#
+			AND   PROD_TP = #PROD_TP:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.06.13 -->
+	<update id="addFixedPay" parameterClass="linkMap">
+		<![CDATA[  
+			MERGE INTO INC_PROMOR_BASIC_GRADE a
+			USING (SELECT #PAY_AREA_CD:VARCHAR#  PAY_AREA_CD
+			             ,#BRANCH_CD:VARCHAR#    BRANCH_CD
+			             ,#SHOP_AREA_ID:VARCHAR# SHOP_AREA_ID
+			             ,#SHOP_LEVEL:VARCHAR#   SHOP_LEVEL
+			             ,#PROD_TP:VARCHAR#      PROD_TP
+			       FROM  DUAL
+      			) b
+			ON (    a.PAY_AREA_CD  = b.PAY_AREA_CD
+      			AND a.BRANCH_CD    = b.BRANCH_CD
+      			AND a.SHOP_AREA_ID = b.SHOP_AREA_ID
+      			AND a.SHOP_LEVEL   = b.SHOP_LEVEL
+      			AND a.PROD_TP      = b.PROD_TP
+   			)
+			WHEN MATCHED THEN
+      			UPDATE 
+      			SET  a.UPDT_DTIME = SYSDATE
+          			,a.UPDT_USER  = #UPDATED_BY:VARCHAR#
+          			,a.BASIC_INCTV_AMT = #BASIC_INCTV_AMT:NUMERIC#
+          			,a.ALOWN_AMT = #ALOWN_AMT:NUMERIC#
+          			,a.USE_YN       = #USE_YN:VARCHAR#
+      			WHERE a.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+      			AND   a.BRANCH_CD   = #BRANCH_CD:VARCHAR#
+      			AND   a.SHOP_AREA_ID = #SHOP_AREA_ID:VARCHAR#
+      			AND   a.SHOP_LEVEL = #SHOP_LEVEL:VARCHAR#
+      			AND   a.PROD_TP = #PROD_TP:VARCHAR#
+			WHEN NOT MATCHED THEN
+      			INSERT(
+           			 a.PAY_AREA_CD
+          			,a.BRANCH_CD
+          			,a.SHOP_AREA_ID
+          			,a.SHOP_LEVEL
+          			,a.PROD_TP
+          			,a.UPDT_DTIME
+          			,a.RGST_DTIME
+          			,a.UPDT_USER
+          			,a.BASIC_INCTV_AMT
+          			,a.ALOWN_AMT
+          			,a.USE_YN
+      			)
+      			VALUES (
+           			 #PAY_AREA_CD:VARCHAR#
+          			,#BRANCH_CD:VARCHAR#
+          			,#SHOP_AREA_ID:VARCHAR#
+          			,#SHOP_LEVEL:VARCHAR#
+          			,#PROD_TP:VARCHAR#
+          			,SYSDATE
+          			,SYSDATE
+          			,#UPDATED_BY:VARCHAR#
+          			,#BASIC_INCTV_AMT:NUMERIC#
+          			,#ALOWN_AMT:NUMERIC#
+          			,#USE_YN:VARCHAR#
+      			)
+		]]>
+	</update>
+	
+	<!-- 城市等级信息列表查询 -->
+	<!-- @Create date: 2014.06.10 -->
+	<select id="searchCityLevelList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT M.STATE_CD, M.STATE_NM, M.CITY_CD, M.CITY_NM, 
+			       M.REGION_CD, M.REGION_NM, M.CITY_LEVEL CITY_LEVEL_EN
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = M.CITY_LEVEL
+ 			            AND    s.parent_code_no = '211057'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),M.CITY_LEVEL) CITY_LEVEL
+			FROM  INC_CITY_TO_CITYLEVEL_MAPP M
+			WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="and" property="STATENM">
+			<![CDATA[
+			M.STATE_CD = #STATENM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITYNM">
+			<![CDATA[
+			M.CITY_CD = #CITYNM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="REGION">
+			<![CDATA[
+			M.REGION_CD = #REGION#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITYLEVEL">
+			<![CDATA[
+			M.CITY_LEVEL = #CITYLEVEL#
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY M.STATE_NM, M.CITY_NM, M.REGION_NM, M.CITY_LEVEL
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.10 -->
+	<select id="searchCityLevelListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_CITY_TO_CITYLEVEL_MAPP M
+			WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="and" property="STATENM">
+			<![CDATA[
+			M.STATE_CD = #STATENM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITYNM">
+			<![CDATA[
+			M.CITY_CD = #CITYNM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="REGION">
+			<![CDATA[
+			M.REGION_CD = #REGION#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITYLEVEL">
+			<![CDATA[
+			M.CITY_LEVEL = #CITYLEVEL#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.10 -->
+	<update id="updateCityLevel" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_CITY_TO_CITYLEVEL_MAPP 
+			SET  UPDATE_DATE = SYSDATE
+			    ,UPDATE_USER  = #UPDATED_BY:VARCHAR#
+			    ,CITY_LEVEL = #CITY_LEVEL_EN:VARCHAR#
+			WHERE STATE_CD  = #STATE_CD:VARCHAR#
+			AND   CITY_CD   = #CITY_CD:VARCHAR#
+			AND   REGION_CD = #REGION_CD:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 门店基本信息列表查询 -->
+	<!-- @Create date: 2014.06.10 -->
+	<select id="searchCustInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT t.YYYY,
+       			   t.DIV_CD,
+       			   t.COM_CD,
+			       nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = t.DIV_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.DIV_CD) DIV_CD_NM
+       			  ,t.DEPT_CD
+			      ,nvl((SELECT n.content
+			            FROM   HR_DEPARTMENT_NAME n
+			            WHERE  n.deptno   = t.BRANCH_CD
+			            AND    n.language = #language#
+			            AND    ROWNUM = 1),t.BRANCH_CD) DEPT_NM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.CITY_LEVEL
+ 			            AND    s.parent_code_no = '211057'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.CITY_LEVEL) CITY_LEVEL_NM,
+       			   t.SHOP_CD,
+       			   t.SHOP_NAME,
+       			   t.SHOP_LEVEL,
+			       nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.SHOP_LEVEL
+ 			            AND    s.parent_code_no = '210608'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.SHOP_LEVEL) SHOP_LEVEL_NM,
+       			   t.GOLDEN_SHOP,
+       			   t.CHANNEL1_NAME,
+       			   t.CHANNEL2_NAME,
+       			   t.STATE_NAME,
+       			   t.CITY_NAME,
+       			   t.CITY_LEVEL,
+       			   t.AREA_NAME,
+       			   t.OPEN_DATE,
+       			   t.UPDT_USER,
+       			   t.UPDT_DTIME,
+       			   t.USE_YN,
+       			   t.DEDUCT_RATIO,
+       			   t.INC_UP_LIMIT
+			FROM   SPMS_SHOP_GRADE_CHRS t
+			WHERE 1 = 1
+			AND    F_CHECK_USER_DEPT_AUTH(t.DIV_CD, #USER_NO:VARCHAR#, 'pa') > 0
+			AND    F_CHECK_USER_DEPT_AUTH(t.BRANCH_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="YEAR">
+			<![CDATA[
+			t.YYYY = #YEAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR">
+			<![CDATA[
+			t.YYYY = to_char(sysdate, 'YYYY')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="COM_CD">
+			<![CDATA[
+			t.COM_CD = #COM_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PAY_AREA_02">
+			<![CDATA[
+			t.DIV_CD = #PAY_AREA_02#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_02">
+			<![CDATA[
+			t.BRANCH_CD = #BRANCH_02#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPT_CD">
+			<![CDATA[
+			t.DEPT_CD = #DEPT_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_CD">
+			<![CDATA[
+			t.SHOP_CD = #SHOP_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_NAME">
+			<![CDATA[
+			t.SHOP_NAME = #SHOP_NAME#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_LEVEL">
+			<![CDATA[
+			t.SHOP_LEVEL = #SHOP_LEVEL#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_AREA_ID">
+			<![CDATA[
+			t.CITY_LEVEL = #SHOP_AREA_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="STATE_NM">
+			<![CDATA[
+			t.STATE = #STATE_NM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITY_NM">
+			<![CDATA[
+			t.CITY = #CITY_NM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="REGION_NM">
+			<![CDATA[
+			t.AREA = #REGION_NM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_CD1">
+			<![CDATA[
+			t.SHOP_CD like '%'||#SHOP_CD1#||'%'
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY t.CITY_LEVEL,t.SHOP_LEVEL
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.06.10 -->
+	<select id="searchCustInfoListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  SPMS_SHOP_GRADE_CHRS t
+			WHERE 1 = 1
+			AND    F_CHECK_USER_DEPT_AUTH(t.DIV_CD, #USER_NO:VARCHAR#, 'pa') > 0
+			AND    F_CHECK_USER_DEPT_AUTH(t.BRANCH_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="YEAR">
+			<![CDATA[
+			t.YYYY = #YEAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR">
+			<![CDATA[
+			t.YYYY = to_char(SYSDATE, 'YYYY')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="COM_CD">
+			<![CDATA[
+			t.COM_CD = #COM_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PAY_AREA_02">
+			<![CDATA[
+			t.DIV_CD = #PAY_AREA_02#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_02">
+			<![CDATA[
+			t.BRANCH_CD = #BRANCH_02#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPT_CD">
+			<![CDATA[
+			t.DEPT_CD = #DEPT_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_CD">
+			<![CDATA[
+			t.SHOP_CD = #SHOP_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_NAME">
+			<![CDATA[
+			t.SHOP_NAME = #SHOP_NAME#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_LEVEL">
+			<![CDATA[
+			t.SHOP_LEVEL = #SHOP_LEVEL#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_AREA_ID">
+			<![CDATA[
+			t.CITY_LEVEL = #SHOP_AREA_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="STATE_NM">
+			<![CDATA[
+			t.STATE = #STATE_NM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITY_NM">
+			<![CDATA[
+			t.CITY = #CITY_NM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="REGION_NM">
+			<![CDATA[
+			t.AREA = #REGION_NM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="SHOP_CD1">
+			<![CDATA[
+			t.SHOP_CD like '%'||#SHOP_CD1#||'%'
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.10 -->
+	<update id="updateCustInfo" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE SPMS_SHOP_GRADE_CHRS 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			    ,USE_YN     = #USE_YN:VARCHAR#
+			    ,SHOP_LEVEL = #SHOP_LEVEL:VARCHAR#
+			    ,CITY_LEVEL = #CITY_LEVEL:VARCHAR#
+			    ,DEDUCT_RATIO = #DEDUCT_RATIO:NUMERIC#
+			    ,INC_UP_LIMIT = #INC_UP_LIMIT:NUMERIC#
+			WHERE YYYY      = #YYYY:VARCHAR#
+			AND   COM_CD    = #COM_CD:VARCHAR#
+			AND   SHOP_CD   = #SHOP_CD:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.06.11 -->
+	<select id="getStateList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT t.state_cd AS CODE_NO
+     			, t.state_nm AS CODE_NAME
+			FROM   INC_CITY_TO_CITYLEVEL_MAPP t
+			
+		]]>
+		<isNotEmpty property="ORDER_TYPE">
+		      <isEqual property="ORDER_TYPE" compareValue="PY">
+		        <![CDATA[
+		          ORDER BY NLSSORT(t.state_nm,'NLS_SORT =SCHINESE_PINYIN_M')
+		        ]]>
+		      </isEqual>
+		    </isNotEmpty>
+		    <isEmpty  property="ORDER_TYPE">
+		    	<![CDATA[
+				ORDER BY t.state_cd
+				]]> 
+		    </isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.09.12 by:wangqiang -->
+	<select id="getShengList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			      
+      SELECT 
+       DISTINCT m.state_cd AS CODE_NO
+     			, m.state_nm AS CODE_NAME,
+                 
+			       s.ACTIVITY PQD_ACTIVITY
+			  FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS M, sy_dispatch s
+			 WHERE 1 = 1
+			   and M.STATE_CD = s.pqd_shengfen
+			   and M.CITY_CD = s.pqd_chengshimingcheng
+			   and M.REGION_CD = s.pqd_diqumingcheng
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.06.11 -->
+	<select id="getCityByStateList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT t.city_cd AS CODE_NO
+     			, t.city_nm AS CODE_NAME
+			FROM   INC_CITY_TO_CITYLEVEL_MAPP t
+			WHERE  1 = 1
+			AND    t.state_cd = #PARENT_CODE_NO#
+			ORDER BY t.city_cd
+		]]>
+	</select>
+	<!-- @Create date: 2014.09.12 by:wangqiang -->
+	<select id="getCity2ByStateList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT m.city_cd AS CODE_NO
+     			, m.city_nm AS CODE_NAME
+		  FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS M, sy_dispatch s
+			 WHERE 1 = 1
+			   and M.STATE_CD = s.pqd_shengfen
+			   and M.CITY_CD = s.pqd_chengshimingcheng
+         
+        
+			   and M.REGION_CD = s.pqd_diqumingcheng
+			    AND   m.state_cd = #PARENT_CODE_NO#
+			    ORDER BY m.city_cd
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.06.11 -->
+	<select id="getRegionByCityList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT t.region_cd AS CODE_NO
+     			, t.region_nm AS CODE_NAME
+			FROM   INC_CITY_TO_CITYLEVEL_MAPP t
+			WHERE  1 = 1
+			AND    t.city_cd = #PARENT_CODE_NO#
+			ORDER BY t.region_cd
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.11  by:wangqiang-->
+	<select id="getRegionByCityTwoList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+		 	SELECT DISTINCT M.region_cd AS CODE_NO
+     			, M.region_nm AS CODE_NAME
+		  FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS M, sy_dispatch s
+			 WHERE 1 = 1
+			   and M.STATE_CD = s.pqd_shengfen
+			   and M.CITY_CD = s.pqd_chengshimingcheng 
+			   and M.REGION_CD = s.pqd_diqumingcheng
+	 		  	AND   m.city_cd = #PARENT_CODE_NO#
+	 		    AND  S.PQD_FAREN =#CPNYID:VARCHAR2#
+			  	ORDER BY M.region_cd
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.08.11 -->
+	<select id="getBranchList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT A.DEPTNO  AS CODE_NO
+     			 , NVL(B.CONTENT,' ') AS CODE_NAME
+     			 , A.DEPT_LEVEL
+     			 , A.PARENT_DEPT_NO
+     			 , (CASE
+     			        WHEN A.DEPT_LEVEL > 3 THEN
+     			            'false'
+     			        ELSE
+     			            'true'
+     			    END) AS open
+     			 , A.DEPT_DISTINGUISH_NO
+     			 , A.ACC_ORG_CODE
+			FROM  HR_DEPARTMENT A, HR_DEPARTMENT_NAME B
+			WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+			AND    A.DEPTNO = B.DEPTNO(+)
+			AND   DECODE(A.DEPT_LEVEL,3,LOWER(A.DEPT_TYPE),'branch') = 'branch'
+			AND    B.LANGUAGE(+) = #interLanguage:VARCHAR#
+			AND    A.CPNY_ID=#CPNYID:VARCHAR#
+			AND    F_CHECK_USER_DEPT_AUTH(A.DEPTNO, #USER_NO:VARCHAR#, 'hr') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="PARENT_CODE_NO">
+			A.PARENT_DEPT_NO = #PARENT_CODE_NO:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptLevel">
+		<![CDATA[
+         A.DEPT_LEVEL = #deptLevel#
+        ]]>
+		</isNotEmpty>
+		ORDER BY A.DEPT_LEVEL,A.ORDERNO,CODE_NAME
+	</select>
+	
+	<!-- 提成计算查询 -->
+	<!-- @Create date: 2014.06.17 -->
+	<select id="searchSalesAchLocalList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = his.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),his.PAY_AREA_CD) PAY_AREA_NM
+			    ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.dept_type = 'branch'
+ 			            AND    b.language(+) = #language#
+ 			            START WITH A.DEPTNO = emp.Deptno
+ 			            CONNECT BY A.DEPTNO = PRIOR A.PARENT_DEPT_NO
+ 			            AND    ROWNUM = 1),'') BRANCH
+			    ,his.SUBSD_CD      ,his.EMPNO ,his.INCTV_MON ,his.TOT_SALS_QTY
+       			,his.TOT_SALS_AMT     ,his.TOT_SALS_AMT_APP     ,his.TOT_MIN_GOAL_AMT
+       			,his.TOT_MON_GOAL_AMT ,his.TOT_MIN_GOAL_AMT_APP ,his.TOT_MON_GOAL_AMT_APP
+       			,his.TARG_RAT         ,his.PREMI_RAT            ,his.FXD_INCTV_AMT
+       			,his.VARB_INCTV_AMT   ,his.ALOWN_AMT            ,his.TOT_AMT
+       			,his.CUST_ID          ,his.PROD_TP              ,his.RGST_DTIME
+       			,his.UPDT_DTIME       ,his.UPDT_USER            ,his.USE_YN
+       			,his.TARG_ALOWN_AMT   ,emp.local_name EMPNM
+			FROM  INC_PROMTR_INCTV_HIST  his
+       			 ,HR_EMPLOYEE  emp
+			WHERE emp.EMPID = his.EMPNO
+			AND   F_CHECK_USER_DEPT_AUTH(emp.Deptno, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			emp.PAY_AREA_CD IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			his.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPTNO">
+			<![CDATA[
+			emp.DEPTNO IN ( SELECT A.DEPTNO
+			                FROM   HR_DEPARTMENT A
+			                START WITH A.DEPTNO = #DEPTNO#
+			                CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+			              )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ACC_YN">
+			<![CDATA[
+			his.ACCRUAL_YN = #ACC_YN#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="EMP">
+			<![CDATA[
+			( his.EMPNO LIKE '%'||#EMP#||'%' OR emp.LOCAL_NAME LIKE '%'||#EMP#||'%')
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY  his.EMPNO
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.17 -->
+	<select id="searchSalesAchLocalListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_PROMTR_INCTV_HIST  his
+       			 ,HR_EMPLOYEE  emp
+			WHERE emp.EMPID = his.EMPNO
+			AND   F_CHECK_USER_DEPT_AUTH(emp.Deptno, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			emp.PAY_AREA_CD IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			his.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPTNO">
+			<![CDATA[
+			emp.DEPTNO IN ( SELECT A.DEPTNO
+			                FROM   HR_DEPARTMENT A
+			                START WITH A.DEPTNO = #DEPTNO#
+			                CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+			              )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ACC_YN">
+			<![CDATA[
+			his.ACCRUAL_YN = #ACC_YN#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="EMP">
+			<![CDATA[
+			( his.EMPNO LIKE '%'||#EMP#||'%' OR emp.LOCAL_NAME LIKE '%'||#EMP#||'%')
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<select id="searchSalesAchLocalListD" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = his.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),his.PAY_AREA_CD) PAY_AREA_NM
+			    ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.dept_type = 'branch'
+ 			            AND    b.language(+) = #language#
+ 			            START WITH A.DEPTNO = emp.Deptno
+ 			            CONNECT BY A.DEPTNO = PRIOR A.PARENT_DEPT_NO
+ 			            AND    ROWNUM = 1),'') BRANCH
+       			,his.SUBSD_CD      ,his.EMPNO ,his.INCTV_MON ,his.TOT_SALS_QTY
+       			,his.TOT_SALS_AMT     ,his.TOT_SALS_AMT_APP     ,his.TOT_MIN_GOAL_AMT
+       			,his.TOT_MON_GOAL_AMT ,his.TOT_MIN_GOAL_AMT_APP ,his.TOT_MON_GOAL_AMT_APP
+       			,his.TARG_RAT         ,his.PREMI_RAT            ,his.FXD_INCTV_AMT
+       			,his.VARB_INCTV_AMT   ,his.ALOWN_AMT            ,his.TOT_AMT
+       			,his.CUST_ID          ,his.PROD_TP              ,his.RGST_DTIME
+       			,his.UPDT_DTIME       ,his.UPDT_USER            ,his.USE_YN
+       			,his.TARG_ALOWN_AMT   ,emp.local_name EMPNM
+       			,his.VARB_INCTV_RATIO ,his.SALE_AMT_RATIO
+			FROM  INC_PROMTR_INCTV_HIST_DTL  his
+       			 ,HR_EMPLOYEE  emp
+			WHERE emp.EMPID = his.EMPNO
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			emp.PAY_AREA_CD IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			his.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPTNO">
+			<![CDATA[
+			emp.DEPTNO IN ( SELECT A.DEPTNO
+			                FROM   HR_DEPARTMENT A
+			                START WITH A.DEPTNO = #DEPTNO#
+			                CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+			              )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ACC_YN">
+			<![CDATA[
+			his.ACCRUAL_YN = #ACC_YN#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="EMP">
+			<![CDATA[
+			( his.EMPNO LIKE '%'||#EMP#||'%' OR emp.LOCAL_NAME LIKE '%'||#EMP#||'%')
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY  his.EMPNO
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.17 -->
+	<select id="searchSalesAchLocalListDCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_PROMTR_INCTV_HIST_DTL  his
+       			 ,HR_EMPLOYEE  emp
+			WHERE emp.EMPID = his.EMPNO
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			emp.PAY_AREA_CD IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			his.INCTV_MON = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			his.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPTNO">
+			<![CDATA[
+			emp.DEPTNO IN ( SELECT A.DEPTNO
+			                FROM   HR_DEPARTMENT A
+			                START WITH A.DEPTNO = #DEPTNO#
+			                CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+			              )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ACC_YN">
+			<![CDATA[
+			his.ACCRUAL_YN = #ACC_YN#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="EMP">
+			<![CDATA[
+			( his.EMPNO LIKE '%'||#EMP#||'%' OR emp.LOCAL_NAME LIKE '%'||#EMP#||'%')
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.17 -->
+	<procedure id="calSalesAchLocal" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMTER_INCTV_CALC.SP_CAL_LGECH_PG
+			     (
+			         #SUBSD_CD#, #PAY_AREA_CD#, #YEAR_MON#, #UPDT_USER#, #ACC_YN#
+			       , #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	
+	<!-- 总公司单台提成设置列表查询 -->
+	<!-- @Create date: 2014.06.19 -->
+	<select id="searchIncBasicSetupList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PROD_TP, PROD_ID, INC_RATE, UNIT_PRC, HEAD_UNIT_PRC, PRC_APP_DATE
+			      ,SUBSD_INCTV_AMT, PROD_DESC, RGST_DTIME, UPDT_DTIME, UPDT_USER, USE_YN 
+			      ,DECODE(SIGN(add_months(UPDT_DTIME,1)-SYSDATE ),'-1','N','Y')   DATE_YN
+			      ,TO_CHAR(PRICE_IF_DATE,'YYYY-MM-DD') PRICE_IF_DATE
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+			FROM  INF_PROD t
+			WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_IDs">
+			<![CDATA[
+			PROD_ID like '%'||#PROD_IDs#||'%'
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY PROD_TP, PROD_ID
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.06.19 -->
+	<select id="searchIncBasicSetupListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INF_PROD
+			WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_IDs">
+			<![CDATA[
+			PROD_ID like '%'||#PROD_IDs#||'%'
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.19 -->
+	<update id="updateIncBasicSetup" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INF_PROD 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			    ,HEAD_UNIT_PRC  = #HEAD_UNIT_PRC:NUMERIC#
+			    ,INC_RATE   = #INC_RATE:NUMERIC#
+			    ,SUBSD_INCTV_AMT = #SUBSD_INCTV_AMT:NUMERIC#
+			WHERE PROD_TP = #PROD_TP#
+			AND   PROD_ID = #PROD_ID#
+		]]>
+	</update>
+	
+	<!-- 大区单台提成调整列表查询 -->
+	<!-- @Create date: 2014.06.20 -->
+	<select id="searchOfficeIncAdjustList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT AO.PAY_AREA_CD,
+			       nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = AO.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),AO.PAY_AREA_CD) PAY_AREA_NM
+			      ,AO.PROD_TP
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = AO.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),AO.PROD_TP) PROD_TP_NM
+			      ,AO.PROD_ID, P.HEAD_UNIT_PRC, P.UNIT_PRC, NVL(P.SUBSD_INCTV_AMT,0) AS SUBSD_INCTV_AMT
+			      ,NVL(AO.DIFF_RAT,0) AS DIFF_RAT,ROUND(NVL(P.SUBSD_INCTV_AMT,0)*(1+NVL(AO.DIFF_RAT,0)/100),2)  AS BASE_AMT
+			      ,NVL(AO.FXD_AMT,0) AS FXD_AMT
+			      ,AO.USE_YN ,DECODE(SIGN(add_months(AO.RGST_DTIME,1)-SYSDATE ),'-1','N','Y') DATE_YN, AO.UPDT_USER
+			FROM   INC_INCTV_AMT_BY_OFICE AO
+			      ,INF_PROD P
+			WHERE AO.PROD_ID     = P.PROD_ID 
+			AND   AO.PROD_TP     = P.PROD_TP
+			AND   AO.PROD_TP NOT IN ('GSM','MPC')
+			AND   NVL(P.SUBSD_INCTV_AMT,0) <> 0
+			AND   F_CHECK_USER_DEPT_AUTH(AO.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			AO.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			AO.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			AO.PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_IDs">
+			<![CDATA[
+			AO.PROD_ID like '%'||#PROD_IDs#||'%'
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY AO.PAY_AREA_CD, AO.PROD_TP
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.06.20 -->
+	<select id="searchOfficeIncAdjustListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM   INC_INCTV_AMT_BY_OFICE AO
+			      ,INF_PROD P
+			WHERE AO.PROD_ID     = P.PROD_ID 
+			AND   AO.PROD_TP     = P.PROD_TP
+			AND   AO.PROD_TP NOT IN ('GSM','MPC')
+			AND   NVL(P.SUBSD_INCTV_AMT,0) <> 0
+			AND   F_CHECK_USER_DEPT_AUTH(AO.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			AO.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			AO.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			AO.PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_IDs">
+			<![CDATA[
+			AO.PROD_ID like '%'||#PROD_IDs#||'%'
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.20 -->
+	<update id="updateOfficeIncAdjust" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_INCTV_AMT_BY_OFICE 
+			SET  FXD_AMT    = NVL(#FXD_AMT:NUMERIC#, 0)
+			    ,DIFF_RAT   = NVL(#DIFF_RAT:NUMERIC#, 0)
+			    ,UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			    ,USE_YN     = NVL(#USE_YN:VARCHAR#, 'N')
+			WHERE PAY_AREA_CD = #PAY_AREA_CD#
+			AND   PROD_TP = #PROD_TP#
+			AND   PROD_ID = #PROD_ID#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.06.20 -->
+	<update id="addOfficeIncAdjust" parameterClass="linkMap">
+		<![CDATA[  
+			MERGE INTO INC_INCTV_AMT_BY_OFICE a
+			USING (SELECT #PAY_AREA_CD:VARCHAR# PAY_AREA_CD
+			             ,#PROD_TP:VARCHAR# PROD_TP
+			             ,#PROD_ID:VARCHAR# PROD_ID
+			       FROM  DUAL
+      			) b
+			ON (      a.PAY_AREA_CD  = b.PAY_AREA_CD
+			       AND a.PROD_TP     = b.PROD_TP
+			       AND a.PROD_ID     = b.PROD_ID
+   			)
+			WHEN MATCHED THEN
+      			UPDATE 
+      			SET  a.FXD_AMT = NVL(#FXD_AMT:NUMERIC#, 0)
+           			,a.DIFF_RAT = NVL(#DIFF_RAT:NUMERIC#, 0)
+           			,a.UPDT_DTIME = SYSDATE
+           			,a.UPDT_USER  = #UPDATED_BY:VARCHAR#
+           			,a.USE_YN  = 'Y'
+      			WHERE a.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+      			AND   a.PROD_TP = #PROD_TP:VARCHAR#
+      			AND   a.PROD_ID = #PROD_ID:VARCHAR#
+			WHEN NOT MATCHED THEN
+      			INSERT(
+           			 a.PAY_AREA_CD
+           			,a.PROD_TP
+           			,a.PROD_ID
+           			,a.FXD_AMT
+           			,a.DIFF_RAT
+           			,a.RGST_DTIME
+           			,a.UPDT_DTIME
+           			,a.UPDT_USER
+           			,a.USE_YN
+      			)
+      			VALUES (
+           			 #PAY_AREA_CD:VARCHAR#
+           			,#PROD_TP:VARCHAR#
+           			,#PROD_ID:VARCHAR#
+           			,NVL(#FXD_AMT:NUMERIC#, 0)
+           			,NVL(#DIFF_RAT:NUMERIC#, 0)
+           			,SYSDATE
+           			,SYSDATE
+           			,#UPDATED_BY:VARCHAR#
+           			,'Y'
+      			)
+		]]>
+	</update>
+	
+	<!-- 日别单台提成设置 -->
+	<!-- @Create date: 2014.06.23 -->
+	<select id="searchIncBasicSetupByDayList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ ,PROD_TP ,PROD_ID ,SUBSD_INCTV_AMT ,UPDT_USER ,INC_RATE
+			      ,HEAD_UNIT_PRC ,PRC_BEGIN_DAY ,USE_YN ,PRC_END_DAY ,YYYYMM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+			FROM  INF_PROD_BY_DAY t
+			WHERE 1=1
+		]]>
+		<isNotEmpty prepend="and" property="SEQ">
+			<![CDATA[
+			t.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			t.PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_IDs">
+			<![CDATA[
+			t.PROD_ID like '%'||#PROD_IDs#||'%'
+			]]>
+		</isNotEmpty>
+		AND ( 1=1
+		<isNotEmpty prepend="and" property="START_DATE">
+			PRC_BEGIN_DAY BETWEEN replace(#START_DATE#,'-','') AND replace(#END_DATE#,'-','')
+		</isNotEmpty>	
+		<isNotEmpty prepend="or" property="END_DATE">
+			PRC_END_DAY BETWEEN replace(#START_DATE#,'-','') AND replace(#END_DATE#,'-','')
+		</isNotEmpty>
+		)
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY PROD_ID,PRC_BEGIN_DAY,USE_YN
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.06.23 -->
+	<select id="searchIncBasicSetupByDayListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INF_PROD_BY_DAY t
+			WHERE 1=1
+		]]>
+		<isNotEmpty prepend="and" property="SEQ">
+			<![CDATA[
+			t.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			t.PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_IDs">
+			<![CDATA[
+			t.PROD_ID like '%'||#PROD_IDs#||'%'
+			]]>
+		</isNotEmpty>
+		AND ( 1=1
+		<isNotEmpty prepend="and" property="START_DATE">
+			PRC_BEGIN_DAY BETWEEN replace(#START_DATE#,'-','') AND replace(#END_DATE#,'-','')
+		</isNotEmpty>	
+		<isNotEmpty prepend="or" property="END_DATE">
+			PRC_END_DAY BETWEEN replace(#START_DATE#,'-','') AND replace(#END_DATE#,'-','')
+		</isNotEmpty>
+		)
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.23 -->
+	<update id="updateIncBasicSetupByDay" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INF_PROD_BY_DAY 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			    ,PRC_BEGIN_DAY = replace(#PRC_BEGIN_DAY:VARCHAR#,'-','')
+			    ,PRC_END_DAY = replace(#PRC_END_DAY:VARCHAR#,'-','')
+			    ,HEAD_UNIT_PRC = #HEAD_UNIT_PRC:NUMERIC#
+			    ,INC_RATE = #INC_RATE:NUMERIC#
+			    ,SUBSD_INCTV_AMT = #SUBSD_INCTV_AMT:NUMERIC#
+			    ,USE_YN = #USE_YN:VARCHAR#
+			WHERE SEQ = #SEQ#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.06.23 -->
+	<update id="addIncBasicSetupByDay" parameterClass="linkMap">
+		<![CDATA[  
+			MERGE INTO INF_PROD_BY_DAY a
+			USING (SELECT #SEQ:VARCHAR# SEQ
+			       FROM  DUAL
+      			) b
+			ON ( a.SEQ = b.SEQ
+   			)
+			WHEN MATCHED THEN
+      			UPDATE 
+      			SET  a.UPDT_DTIME = SYSDATE
+           			,a.UPDT_USER  = #UPDATED_BY:VARCHAR#
+           			,a.USE_YN  = #USE_YN:VARCHAR#
+           			,a.PRC_BEGIN_DAY = replace(#PRC_BEGIN_DAY:VARCHAR#,'-','')
+           			,a.PRC_END_DAY = replace(#PRC_END_DAY:VARCHAR#,'-','')
+           			,a.HEAD_UNIT_PRC = #HEAD_UNIT_PRC:NUMERIC#
+           			,a.INC_RATE = #INC_RATE:NUMERIC#
+           			,SUBSD_INCTV_AMT = #SUBSD_INCTV_AMT:NUMERIC#
+      			WHERE a.SEQ = #SEQ:VARCHAR#
+			WHEN NOT MATCHED THEN
+      			INSERT(
+           			 a.SEQ
+           			,a.PROD_TP
+           			,a.PROD_ID
+           			,a.SUBSD_INCTV_AMT
+           			,a.UPDT_DTIME
+           			,a.UPDT_USER
+           			,a.USE_YN
+           			,a.INC_RATE
+           			,a.HEAD_UNIT_PRC
+           			,a.YYYYMM
+           			,a.PRC_BEGIN_DAY
+           			,a.PRC_END_DAY
+      			)
+      			VALUES (
+           			 SUBSTR('0000000000'||INF_PROD_SEQ.NEXTVAL,-10)
+           			,#PROD_TP:VARCHAR#
+           			,#PROD_ID:VARCHAR#
+           			,#SUBSD_INCTV_AMT:NUMERIC#
+           			,SYSDATE
+           			,#UPDATED_BY:VARCHAR#
+           			,#USE_YN:VARCHAR#
+           			,#INC_RATE:NUMERIC#
+           			,#HEAD_UNIT_PRC:NUMERIC#
+           			,#year:VARCHAR#||#month:VARCHAR#
+           			,#PRC_BEGIN_DAY:VARCHAR#
+           			,#PRC_END_DAY:VARCHAR#
+      			)
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.08.07 -->
+	<select id="incBasicCheckProdId" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INF_PROD t
+			WHERE 1=1
+		]]>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_ID">
+			<![CDATA[
+			t.PROD_ID = #PROD_ID#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.08.07 -->
+	<select id="incBasicCheckPrcDayCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) CNT
+			FROM (
+    			    SELECT *
+			        FROM INF_PROD_BY_DAY  
+			        WHERE  PROD_TP = #PROD_TP#
+			        AND  PROD_ID = #PROD_ID#
+			        AND  USE_YN    = 'Y'
+			        AND (( PRC_BEGIN_DAY <= #PRC_BEGIN_DAY# AND  PRC_END_DAY >= #PRC_BEGIN_DAY#)
+    			        OR ( PRC_BEGIN_DAY<=  #PRC_END_DAY# AND  PRC_END_DAY >= #PRC_END_DAY#)
+			            )
+			        AND SEQ != #SEQ#
+			        UNION
+			        SELECT *
+			        FROM INF_PROD_BY_DAY  
+			        WHERE  PROD_TP = #PROD_TP#
+			        AND  PROD_ID   = #PROD_ID#
+			        AND  USE_YN    = 'Y'
+			        AND ( #PRC_BEGIN_DAY# <=  PRC_BEGIN_DAY  AND #PRC_END_DAY# >= PRC_END_DAY  ) 
+			        and SEQ != #SEQ#
+			    )
+		]]>
+	</select>  	  	
+	
+	<!-- 最小目标管理 -->
+	<!-- @Create date: 2014.06.24 -->
+	<select id="searchMinGoalSetupList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT MIN.PAY_AREA_CD
+			      ,MIN.PROD_TP
+			      ,MIN.MIN_GOAL_AMT
+			      ,MIN.USE_YN
+			      ,MIN.UPDT_DTIME
+			      ,MIN.UPDT_USER
+			      ,nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = MIN.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),MIN.PAY_AREA_CD) PAY_AREA_NM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = MIN.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),MIN.PROD_TP) PROD_TP_NM
+			FROM  INC_PROD_TP_MIN_GOAL MIN
+			WHERE 1 = 1
+			AND   F_CHECK_USER_DEPT_AUTH(MIN.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			MIN.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			MIN.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY MIN.PROD_TP
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.06.24 -->
+	<select id="searchMinGoalSetupListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_PROD_TP_MIN_GOAL MIN
+			WHERE 1 = 1
+			AND   F_CHECK_USER_DEPT_AUTH(MIN.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			MIN.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			MIN.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.24 -->
+	<update id="updateMinGoalSetup" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_PROD_TP_MIN_GOAL 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			    ,MIN_GOAL_AMT = #MIN_GOAL_AMT:NUMERIC#
+			    ,PAY_AREA_CD  = #PAY_AREA_CD:VARCHAR#
+			    ,PROD_TP  = #PROD_TP:VARCHAR#
+			    ,USE_YN  = #USE_YN:VARCHAR#
+			WHERE PAY_AREA_CD = #PAY_AREA_CD#
+			AND   PROD_TP = #PROD_TP#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.06.24 -->
+	<update id="addMinGoalSetup" parameterClass="linkMap">
+		<![CDATA[  
+			MERGE INTO INC_PROD_TP_MIN_GOAL a
+			USING (SELECT #PAY_AREA_CD:VARCHAR# PAY_AREA_CD
+			             ,#PROD_TP:VARCHAR# PROD_TP
+			       FROM  DUAL
+      			) b
+			ON (    a.PAY_AREA_CD = b.PAY_AREA_CD
+			    AND a.PROD_TP = b.PROD_TP
+   			)
+			WHEN MATCHED THEN
+      			UPDATE 
+      			SET  a.UPDT_DTIME = SYSDATE
+           			,a.UPDT_USER  = #UPDATED_BY:VARCHAR#
+           			,a.MIN_GOAL_AMT = #MIN_GOAL_AMT:NUMERIC#
+           			,a.USE_YN  = #USE_YN:VARCHAR#
+      			WHERE a.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+			    AND a.PROD_TP = #PROD_TP:VARCHAR#
+			WHEN NOT MATCHED THEN
+      			INSERT(
+           			 a.PAY_AREA_CD
+           			,a.PROD_TP
+           			,a.MIN_GOAL_AMT
+           			,a.RGST_DTIME
+           			,a.UPDT_DTIME
+           			,a.UPDT_USER
+           			,a.USE_YN
+      			)
+      			VALUES (
+           			 #PAY_AREA_CD:VARCHAR#
+           			,#PROD_TP:VARCHAR#
+           			,#MIN_GOAL_AMT:NUMERIC#
+           			,SYSDATE
+           			,SYSDATE
+           			,#UPDATED_BY:VARCHAR#
+           			,#USE_YN:VARCHAR#
+      			)
+		]]>
+	</update>
+	
+	<!-- 达成率对应指标设置 -->
+	<!-- @Create date: 2014.06.24 -->
+	<select id="searchSalsRateList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT t.PAY_AREA_CD ,t.PROD_TP ,t.FRUT_STRT_RNG
+			      ,t.FRUT_END_RNG ,t.PARAM_TP ,t.PARA_RAT
+			      ,t.PARAM_VAL ,t.RGST_DTIME ,t.UPDT_DTIME
+			      ,t.UPDT_USER ,t.USE_YN
+			      ,nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = t.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.PAY_AREA_CD) PAY_AREA_NM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+			FROM  INC_PAY_AREA_FRUT_PARAM t
+			WHERE 1 = 1
+			AND   F_CHECK_USER_DEPT_AUTH(t.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="FRUT_STRT_RNG">
+			<![CDATA[
+			t.FRUT_STRT_RNG = #FRUT_STRT_RNG#
+			]]>
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+			ORDER BY t.PROD_TP,t.FRUT_END_RNG
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- @Create date: 2014.06.24 -->
+	<select id="searchSalsRateListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_PAY_AREA_FRUT_PARAM t
+			WHERE 1 = 1
+			AND   F_CHECK_USER_DEPT_AUTH(t.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="FRUT_STRT_RNG">
+			<![CDATA[
+			t.FRUT_STRT_RNG = #FRUT_STRT_RNG#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.24 -->
+	<update id="updateSalsRate" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_PAY_AREA_FRUT_PARAM 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+           		,FRUT_END_RNG  = NVL(#FRUT_END_RNG:NUMERIC# ,0)
+           		,PARAM_TP  = NVL(#PARAM_TP:NUMERIC# ,0)
+           		,PARA_RAT  = NVL(#PARA_RAT:NUMERIC# ,0)
+           		,PARAM_VAL  = NVL(#PARAM_VAL:NUMERIC# ,0)
+           		,USE_YN  = #USE_YN:VARCHAR#
+			WHERE PAY_AREA_CD = #PAY_AREA_CD#
+			AND   PROD_TP = #PROD_TP#
+			AND   FRUT_STRT_RNG = #FRUT_STRT_RNG#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.06.24 -->
+	<update id="addSalsRate" parameterClass="linkMap">
+		<![CDATA[  
+			MERGE INTO INC_PAY_AREA_FRUT_PARAM a
+			USING (SELECT #PAY_AREA_CD:VARCHAR# PAY_AREA_CD
+			             ,#PROD_TP:VARCHAR# PROD_TP
+			             ,NVL(#FRUT_STRT_RNG:VARCHAR# ,0) FRUT_STRT_RNG
+			       FROM  DUAL
+      			) b
+			ON (    a.PAY_AREA_CD = b.PAY_AREA_CD
+			    AND a.PROD_TP = b.PROD_TP
+			    AND a.FRUT_STRT_RNG = b.FRUT_STRT_RNG
+   			)
+			WHEN MATCHED THEN
+      			UPDATE 
+      			SET  a.UPDT_DTIME = SYSDATE
+           			,a.UPDT_USER  = #UPDATED_BY:VARCHAR#
+           			,a.FRUT_END_RNG  = NVL(#FRUT_END_RNG:NUMERIC# ,0)
+           			,a.PARAM_TP  = NVL(#PARAM_TP:NUMERIC# ,0)
+           			,a.PARA_RAT  = NVL(#PARA_RAT:NUMERIC# ,0)
+           			,a.PARAM_VAL  = NVL(#PARAM_VAL:NUMERIC# ,0)
+           			,a.USE_YN  = #USE_YN:VARCHAR#
+      			WHERE a.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+      			AND   a.PROD_TP = #PROD_TP:VARCHAR#
+      			AND   a.FRUT_STRT_RNG = NVL(#FRUT_STRT_RNG:VARCHAR# ,0)
+			WHEN NOT MATCHED THEN
+      			INSERT(
+           			 a.PAY_AREA_CD
+           			,a.PROD_TP
+           			,a.FRUT_STRT_RNG
+           			,a.FRUT_END_RNG
+           			,a.PARAM_TP
+           			,a.PARA_RAT
+           			,a.PARAM_VAL
+           			,a.RGST_DTIME
+           			,a.UPDT_DTIME
+           			,a.UPDT_USER
+           			,a.USE_YN
+      			)
+      			VALUES (
+           			 #PAY_AREA_CD:VARCHAR#
+           			,#PROD_TP:VARCHAR#
+           			,NVL(#FRUT_STRT_RNG:NUMERIC# ,0)
+           			,NVL(#FRUT_END_RNG:NUMERIC# ,0)
+           			,NVL(#PARAM_TP:NUMERIC# ,0)
+           			,NVL(#PARA_RAT:NUMERIC# ,0)
+           			,NVL(#PARAM_VAL:NUMERIC# ,0)
+           			,SYSDATE
+           			,SYSDATE
+           			,#UPDATED_BY:VARCHAR#
+           			,#USE_YN:VARCHAR#
+      			)
+		]]>
+	</update>
+	
+	<!-- 促销员担当产品 -->
+	<!-- @Create date: 2014.06.25 -->
+	<select id="searchIncProdTpByPromoterList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT t.SUBSD_CD ,t.EMPNO, t.EMPNO EMP_NM, null INSRAREA_ID 
+			      ,null CN_INSRAREA_NM  ,t.PAY_AREA_CD, null PAY_AREA_NM
+			      ,t.PROD_TP ,t.OFICE_AREA_ID ,t.PROMTR_PAYMNT_TP ,t.PROMTR_WORK_TP
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP)  PROD_TP_NM
+			      ,t.OFICE_AREA_ID OFICE_AREA_NM
+			      ,t.PROMTR_PAYMNT_TP PROMTR_PAYMNT_TP_NM
+			      ,t.PROMTR_WORK_TP PROMTR_WORK_TP_NM
+			      ,t.CUST_TP CUST_TP_NM ,t.USE_YN, null TENU_STAT
+			      ,null ORG_ID, null RETIR_DATE      
+			FROM INC_PROD_TP_BY_PROMTR t
+			WHERE SUBSD_CD = #CPNY_ID#
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="EMPID">
+			<![CDATA[
+			t.EMPNO = #EMPID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.25 -->
+	<select id="searchIncProdTpByPromoterListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)    
+			FROM INC_PROD_TP_BY_PROMTR t
+			WHERE SUBSD_CD = #CPNY_ID#
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="EMPNO">
+			<![CDATA[
+			t.EMPNO = #EMPNO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.25 -->
+	<update id="updateIncProdTpByPromoter" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_PROD_TP_BY_PROMTR 
+			SET  UPDT_DTIME = SYSDATE
+			    ,UPDT_USER  = #UPDATED_BY:VARCHAR#
+			WHERE SUBSD_CD = #SUBSD_CD#
+			AND   EMPNO = #EMPNO#
+		]]>
+	</update>
+	
+	<!-- 促销员实绩上报 -->
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchPromoterSelloutUploadList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ ,COM_CODE ,EMP_NO ,SALE_MONTH ,SALE_DAY ,MODEL_CATEGORY_CODE
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.MODEL_CATEGORY_CODE
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.MODEL_CATEGORY_CODE)  PROD_TP_NM
+			      ,MODEL_CODE ,SHIP_TO_CODE ,CHANNEL_CODE ,SALE_QTY
+			      ,NOTICE_PRICE ,SELLOUT_PRICE ,DOC_NAME
+			      ,nvl(GET_DEPT_NAME(h.deptno, #language#),t.BRANCH) BRANCH
+			      ,t.IMP_SEQ
+			FROM  INF_PR_SELLOUT_UPLOAD  t,	
+				  HR_DEPARTMENT         h
+		   WHERE t.branch = h.acc_org_code
+			 AND h.dept_type = 'branch'
+			 AND h.CPNY_ID = 'TSTO'
+			 AND F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t1
+                      WHERE  t1.acc_org_code = t.branch
+                      AND    t1.parent_dept_no = #PAY_AREA_CD#
+                      AND    t1.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_1">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t1
+                      WHERE  t1.acc_org_code = t.branch
+                      AND    t1.deptno = #BRANCH_1#
+                      AND    t1.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALE_MONTH = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALE_MONTH = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			MODEL_CATEGORY_CODE = #PROD_TP#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchPromoterSelloutUploadListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			FROM  INF_PR_SELLOUT_UPLOAD t,	
+				  HR_DEPARTMENT         h
+		   WHERE t.branch = h.acc_org_code
+			 AND h.dept_type = 'branch'
+			 AND h.CPNY_ID = 'TSTO'
+			 AND F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t1
+                      WHERE  t1.acc_org_code = t.branch
+                      AND    t1.parent_dept_no = #PAY_AREA_CD#
+                      AND    t1.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_1">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t1
+                      WHERE  t1.acc_org_code = t.branch
+                      AND    t1.deptno = #BRANCH_1#
+                      AND    t1.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALE_MONTH = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALE_MONTH = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			MODEL_CATEGORY_CODE = #PROD_TP#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- 促销员实绩上报确认 -->
+	<!-- @Create date: 2014.08.19 -->
+	<select id="viewPromoterSelloutConfirmList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT h.CPNY_ID COM_CODE, t.BRANCH, nvl(#YEAR_MON#,to_char(ADD_MONTHS(SYSDATE,-1),'YYYYMM')) SALE_MONTH, t.PROD_TP MODEL_CATEGORY_CODE, PARENT_DEPT_NO PAY_AREA_CD
+            ,t.TOTAL_NUM QTY, t.TOTAL_AMT AMT
+            ,nvl((SELECT b.content
+                  FROM   hr_department a, hr_department_name b
+                   WHERE  a.deptno  = b.deptno(+)
+                   AND    a.Acc_Org_Code  = t.BRANCH
+                   AND    a.cpny_id = #CPNY_ID#
+                   AND    a.dept_type = 'branch'
+                   AND    b.language(+) = #language#
+                   AND    ROWNUM = 1),t.BRANCH) BRANCH_NM
+            ,nvl((SELECT b.content
+                  FROM   hr_department a, hr_department_name b
+                   WHERE  a.parent_dept_no = b.deptno(+)
+                   AND    a.Acc_Org_Code   = t.BRANCH
+                   AND    a.cpny_id = #CPNY_ID#
+                   AND    a.dept_type = 'branch'
+                   AND    b.language(+) = #language#
+                   AND    ROWNUM = 1),t.BRANCH) PAY_AREA_NM
+           ,nvl((SELECT n.content
+                  FROM   sy_code        s
+                         ,sy_global_name n
+                   WHERE  s.code_no  = n.no
+                   AND    s.description  = t.PROD_TP
+                   AND    s.parent_code_no = '211424'
+                   AND    n.language = #language#
+                   AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+            ,t.branch_qty, t.invoice_qty, t.screen_qty
+            ,sum(1) over(partition by PARENT_DEPT_NO,BRANCH) PCOUNT
+            ,row_number() over(PARTITION BY PARENT_DEPT_NO,BRANCH ORDER BY PARENT_DEPT_NO,BRANCH,PROD_TP) PNUM,
+            (SELECT NVL(PROCESS_FLAG, 'N')
+	          FROM INC_SELLOUT_REQ_REPORT
+	         WHERE REQ_ID = T.REQ_ID
+	           AND BRANCH = T.BRANCH
+	           AND ROWNUM = 1) CONFIRM_Flag
+      FROM  INC_SELLOUT_REQ_DTL   t
+           ,HR_DEPARTMENT         h
+      WHERE t.branch = h.acc_org_code
+      AND   h.dept_type = 'branch'
+      AND   h.CPNY_ID = 'TSTO'
+      AND   F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+      AND   t.REQ_ID = (
+                          SELECT MAX(t1.REQ_ID)
+                          FROM   INC_SELLOUT_REQ_MST    t1
+                                ,INC_SELLOUT_REQ_REPORT t2
+                          WHERE  t1.BRANCH   = t.BRANCH
+                          AND    t2.BRANCH   = t.BRANCH
+                          AND    T2.REQ_ID   = T1.REQ_ID
+                          AND    t1.REQ_DATE = nvl(#YEAR_MON#,to_char(ADD_MONTHS(SYSDATE,-1),'YYYYMM'))
+                          AND    t1.SUBMIT_STATUS = 1
+                          AND    t1.AFFIRM_FLAG   = 1
+                          AND    T1.ACTIVITY = 1
+                          AND    t2.REAL_FLAG     = 'Y'
+                          AND    NVL(T2.PROCESS_FLAG,'N') LIKE DECODE(NVL(#CONFIRM_FLAG#,'N'),'ALL','%',NVL(#CONFIRM_FLAG#,'N'))
+                       )
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t2
+                      WHERE  t2.acc_org_code = t.branch
+                      AND    T2.CPNY_ID = 'TSTO'
+                      AND    t2.parent_dept_no IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+                      AND    t2.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			h.deptno = #BRANCH_CD#
+			]]>
+		</isNotEmpty>
+		ORDER BY PARENT_DEPT_NO,BRANCH,PROD_TP
+	</select>
+	
+	<!-- @Create date: 2014.08.19 -->
+	<select id="viewPromoterSelloutConfirmListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+      FROM  INC_SELLOUT_REQ_DTL   t
+           ,HR_DEPARTMENT         h
+      WHERE t.branch = h.acc_org_code
+      AND   h.dept_type = 'branch'
+      AND   h.CPNY_ID = 'TSTO'
+      AND   F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+      AND   t.REQ_ID = (
+                          SELECT MAX(t1.REQ_ID)
+                          FROM   INC_SELLOUT_REQ_MST    t1
+                                ,INC_SELLOUT_REQ_REPORT t2
+                          WHERE  t1.BRANCH   = t.BRANCH
+                          AND    t2.BRANCH   = t.BRANCH
+                          AND    T2.REQ_ID   = T1.REQ_ID
+                          AND    t1.REQ_DATE = nvl(#YEAR_MON#,to_char(ADD_MONTHS(SYSDATE,-1),'YYYYMM'))
+                          AND    t1.SUBMIT_STATUS = 1
+                          AND    t1.AFFIRM_FLAG   = 1
+                          AND    t2.REAL_FLAG     = 'Y'
+                          AND    NVL(T2.PROCESS_FLAG,'N')  LIKE DECODE(NVL(#CONFIRM_FLAG#,'N'),'ALL','%',NVL(#CONFIRM_FLAG#,'N'))
+                       )
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t2
+                      WHERE  t2.acc_org_code = t.branch
+                      AND    T2.CPNY_ID = 'TSTO'
+                      AND    t2.parent_dept_no IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+                      AND    t2.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			h.deptno = #BRANCH_CD#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.08.19 -->
+	<select id="searchPromoterSelloutConfirmList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		    SELECT TT.*
+			      ,sum(1) over(partition by COM_CODE,BRANCH,SALE_MONTH) PCOUNT
+			      ,row_number() over(PARTITION BY COM_CODE,BRANCH,SALE_MONTH ORDER BY COM_CODE,BRANCH,SALE_MONTH,MODEL_CATEGORY_CODE) PNUM
+			FROM (
+			SELECT t.COM_CODE, t.BRANCH, t.SALE_MONTH, t.MODEL_CATEGORY_CODE, h.parent_dept_no PAY_AREA_CD
+			      ,SUM(NVL(t.SALE_QTY,0)) QTY, SUM(NVL(t.SALE_QTY,0) * NVL(t.SELLOUT_PRICE,0)) AMT
+			      ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.Acc_Org_Code  = t.BRANCH
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.dept_type = 'branch'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.BRANCH) BRANCH_NM
+			      ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.parent_dept_no = b.deptno(+)
+ 			            AND    a.Acc_Org_Code   = t.BRANCH
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.dept_type = 'branch'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.BRANCH) PAY_AREA_NM
+ 			    ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.MODEL_CATEGORY_CODE
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.MODEL_CATEGORY_CODE) PROD_TP_NM,MAX(a.sals_qty) total_num
+ 			     ,MAX(a.branch_qty) branch_qty, MAX(a.invoice_qty) invoice_qty, MAX(a.screen_qty) screen_qty
+			FROM  INF_PR_SELLOUT_UPLOAD  t
+			     ,hr_department          h
+			     ,inc_sellout_req_total  a
+			WHERE t.branch = h.acc_org_code
+			AND   t.branch  = a.branch
+			AND   t.sale_month = a.sals_month
+			AND   t.model_category_code = a.prod_tp
+			AND   nvl(t.process_flag,'N') = 'N'
+			AND   h.dept_type = 'branch'
+			AND   F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t1
+                      WHERE  t1.acc_org_code = t.branch
+                      AND    t1.parent_dept_no IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+                      AND    t1.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			h.deptno = #BRANCH_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			t.SALE_MONTH = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			t.SALE_MONTH = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		GROUP BY t.com_code, t.branch, t.sale_month, t.MODEL_CATEGORY_CODE, h.parent_dept_no
+		) TT
+		ORDER BY COM_CODE,BRANCH,SALE_MONTH,MODEL_CATEGORY_CODE
+	</select>
+	
+	<!-- @Create date: 2014.08.19 -->
+	<select id="searchPromoterSelloutConfirmListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0) FROM (
+			SELECT 0
+			FROM  INF_PR_SELLOUT_UPLOAD t
+			     ,hr_department         h
+			WHERE t.branch = h.acc_org_code
+			AND   nvl(t.process_flag,'N') = 'N'
+			AND   h.dept_type = 'branch'
+			AND   F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			EXISTS ( SELECT 0 FROM hr_department t1
+                      WHERE  t1.acc_org_code = t.branch
+                      AND    t1.parent_dept_no IN (select regexp_substr(#PAY_AREA_CD#,'[^,]+',1,level) from dual connect by level<=length(#PAY_AREA_CD#)-length(replace(#PAY_AREA_CD#,','))+1)
+                      AND    t1.dept_type = 'branch'
+                    )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			h.deptno = #BRANCH_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			t.SALE_MONTH = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			t.SALE_MONTH = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		GROUP BY t.com_code, t.branch, t.sale_month, t.MODEL_CATEGORY_CODE, h.parent_dept_no )
+	</select>  	  	
+	
+	<!-- @Create date: 2014.08.19 -->
+	<procedure id="selloutConfirm" parameterClass="linkMap">
+		<![CDATA[
+			{call PRO_PROMOTER_UPLOAD_CONFIRM
+			     (
+			         #YEAR_MON#, #BRANCHS#
+			       , #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	
+	<!-- 促销员实贩卖实绩读取 -->
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchSalesAchievementList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT h.LOCAL_NAME EMP_NM ,t.EMPNO ,t.PAY_AREA_CD,GET_BRANCH_NAME(H.DEPTNO) BRANCH
+ 			    ,t.PROD_TP
+			    ,nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = t.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.PAY_AREA_CD) PAY_AREA_NM
+ 			    ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+ 			    ,t.PROD_ID ,t.SALS_QTY
+			    ,t.VARB_INCTV_AMT ,t.CUST_ID ,t.CHANNEL CUST_TP
+			    ,t.RGST_DTIME ,t.UPDT_DTIME ,FXD_INCTV_AMT ,SALS_AMT   
+			FROM INC_PROMTR_SALS_FRUT  t,
+			     HR_EMPLOYEE H
+			WHERE T.EMPNO = H.EMPID
+			  AND T.SUBSD_CD=H.CPNY_ID
+			  AND F_CHECK_USER_DEPT_AUTH(t.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			H.DEPTNO IN (
+			              SELECT DEPTID
+			                FROM HR_DEPARTMENT 
+			               WHERE CPNY_ID = #CPNY_ID#
+			             CONNECT BY PRIOR
+			                    DEPTID    = PARENT_DEPT_NO
+			               START WITH 
+			                    DEPTID    = #BRANCH_CD:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALS_MON = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALS_MON = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ACC_YN">
+			<![CDATA[
+			ACCRUAL_YN = #ACC_YN#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.06.26 -->
+	<select id="searchSalesAchievementListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)  
+			FROM INC_PROMTR_SALS_FRUT  t,
+			     HR_EMPLOYEE H
+			WHERE T.EMPNO = H.EMPID
+			  AND T.SUBSD_CD=H.CPNY_ID
+			AND   F_CHECK_USER_DEPT_AUTH(t.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_CD#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_CD">
+			<![CDATA[
+			H.DEPTNO IN (
+			              SELECT DEPTID
+			                FROM HR_DEPARTMENT 
+			               WHERE CPNY_ID = #CPNY_ID#
+			             CONNECT BY PRIOR
+			                    DEPTID    = PARENT_DEPT_NO
+			               START WITH 
+			                    DEPTID    = #BRANCH_CD:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALS_MON = #YEAR_MON#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="and" property="YEAR_MON">
+			<![CDATA[
+			SALS_MON = to_char(ADD_MONTHS(SYSDATE,-1), 'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="and" property="PROD_TP">
+			<![CDATA[
+			t.PROD_TP = #PROD_TP#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="ACC_YN">
+			<![CDATA[
+			ACCRUAL_YN = #ACC_YN#
+			]]>
+		</isNotEmpty>
+	</select>  	  	
+	
+	<!-- @Create date: 2014.06.26 -->
+	<procedure id="reLoadSalesAchievement" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMTER_INCTV_CALC.PR_INC_GET_SAL_ARCHMNT
+			     (
+			         #YEAR_MON#, #SUBSD_CD#, #PAY_AREA_CD#, #PROD_TP#, #UPDT_USER#, #ACC_YN#
+			       , #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	
+	<!-- @Create date: 2014.06.26 -->
+	<procedure id="calSalesAchievement" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMTER_INCTV_CALC.PR_INC_UPD_FIXPRODID
+			     (
+			         #LANGUAGE#, #YEAR_MON#, #SUBSD_CD#, #PAY_AREA_CD#, #UPDT_USER#, #UPDT_USER#, #ACC_YN#
+			       , #PROD_TP#, #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	
+	<!-- @Create date: 2014.07.10 -->
+	<delete id="deleteIncBasicSetupTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM inf_prod_temp 
+			WHERE  UPDT_USER = #UPDT_USER#
+		]]>
+	</delete>
+	
+	<!-- @Create date: 2014.07.10 -->
+	<insert id="insertExcelDataForTmp" parameterClass="linkMap" >
+      <![CDATA[ 
+	      	INSERT INTO $tableName$ (
+				 $aliasNameKeyContent$
+			)VALUES(
+				 $aliasValueContent$
+			)    
+       ]]>
+	</insert>
+	
+	<!-- @Create date: 2014.07.10 -->
+	<select id="getDataImportResultList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT LINE_ID, PROD_TP, PROD_ID, INC_RATE, UNIT_PRC, HEAD_UNIT_PRC, PRC_APP_DATE
+			      ,SUBSD_INCTV_AMT, PROD_DESC, RGST_DTIME, UPDT_DTIME, UPDT_USER, USE_YN 
+			      ,DECODE(SIGN(add_months(UPDT_DTIME,1)-SYSDATE ),'-1','N','Y')   DATE_YN
+			      ,TO_CHAR(PRICE_IF_DATE,'YYYY-MM-DD') PRICE_IF_DATE
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.code_no  = t.PROD_TP
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+			      ,t.UPLOAD_ERROR_MSG
+			FROM  INF_PROD_TEMP t
+			WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 nvl(t.RESULT_FLAG,'N') = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.UPDT_USER = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+				 ORDER BY t.LINE_ID	
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.10 -->
+	<select id="getDataImportResultListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0)
+			FROM  INF_PROD_TEMP t
+			WHERE 1 = 1
+		]]>	
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 nvl(t.RESULT_FLAG,'N') = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.UPDT_USER = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.10 -->
+	<select id="getDataImportErrCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0) ERR_CNT
+			  FROM INF_PROD_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		]]>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.UPDT_USER = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.10 -->
+	<procedure id="importIncBasicSetupFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_IMPORT_INCBASICSETUP(
+						 #UPDT_USER:VARCHAR#
+						,#SUBSD_CD#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	
+	</procedure>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<delete id="deleteOfficeIncAdjustTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM INC_INCTV_AMT_BY_OFICE_TEMP 
+			WHERE  UPDT_USER = #UPDT_USER#
+		]]>
+	</delete>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<select id="getImportOfficeIncAdjustResultList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT t.PAY_AREA_CD,
+			       nvl((SELECT b.content
+			            FROM   hr_dept_tree_v a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.deptno  = t.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.parent_dept_no = '198659'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.PAY_AREA_CD) PAY_AREA_NM
+			      ,t.PROD_TP, t.PROD_ID, NVL(t.DIFF_RAT,0) AS DIFF_RAT
+			      ,NVL(t.FXD_AMT,0) AS FXD_AMT
+			      ,t.USE_YN ,DECODE(SIGN(add_months(t.RGST_DTIME,1)-SYSDATE ),'-1','N','Y') DATE_YN, t.UPDT_USER
+			      ,t.UPLOAD_ERROR_MSG
+			      ,P.HEAD_UNIT_PRC, P.UNIT_PRC, NVL(P.SUBSD_INCTV_AMT,0) AS SUBSD_INCTV_AMT
+			      ,ROUND(NVL(P.SUBSD_INCTV_AMT,0)*(1+NVL(t.DIFF_RAT,0)/100),2)  AS BASE_AMT
+			FROM   INC_INCTV_AMT_BY_OFICE_TEMP t
+			      ,INF_PROD P
+			WHERE  t.PROD_ID     = P.PROD_ID(+)
+			AND    t.PROD_TP     = P.PROD_TP(+)
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 nvl(t.RESULT_FLAG,'N') = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.UPDT_USER = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+				 ORDER BY t.LINE_ID	
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<select id="getImportOfficeIncAdjustResultCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0)
+			FROM  INC_INCTV_AMT_BY_OFICE_TEMP t
+			WHERE 1 = 1
+		]]>	
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 nvl(t.RESULT_FLAG,'N') = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.UPDT_USER = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<select id="getImportOfficeIncAdjustErrCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0) ERR_CNT
+			  FROM INC_INCTV_AMT_BY_OFICE_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		]]>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.UPDT_USER = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<procedure id="importOfficeIncAdjustFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_IMPORT_OFFICEINCADJUST(
+						 #UPDT_USER:VARCHAR#
+						,#SUBSD_CD#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	
+	</procedure>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<delete id="deleteSelloutTemp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM INF_PR_SELLOUT_UPLOAD_TEMP 
+			WHERE  MODIFY_EMP = #UPDT_USER#
+		]]>
+	</delete>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<select id="getImportSelloutResultList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ ,COM_CODE ,EMP_NO ,SALE_MONTH ,SALE_DAY ,MODEL_CATEGORY_CODE
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.MODEL_CATEGORY_CODE
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #language#
+ 			            AND    ROWNUM = 1),t.MODEL_CATEGORY_CODE)  PROD_TP_NM
+			      ,MODEL_CODE ,BRANCH ,SHIP_TO_CODE ,CHANNEL_CODE ,SALE_QTY
+			      ,NOTICE_PRICE ,SELLOUT_PRICE ,DOC_NAME,t.IMP_SEQ
+			      ,t.UPLOAD_ERROR_MSG
+			FROM   INF_PR_SELLOUT_UPLOAD_TEMP t
+			WHERE  1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 nvl(t.RESULT_FLAG,'N') = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.MODIFY_EMP = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+		<isEmpty property="sortname">
+			<![CDATA[
+				 ORDER BY t.LINE_ID	
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<select id="getImportSelloutResultCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0)
+			FROM  INF_PR_SELLOUT_UPLOAD_TEMP t
+			WHERE 1 = 1
+		]]>	
+		<isNotEmpty prepend="AND" property="RESULT_FLAG"> 
+			<![CDATA[
+				 nvl(t.RESULT_FLAG,'N') = #RESULT_FLAG#
+			]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.MODIFY_EMP = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<select id="getImportSelloutErrCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(0) ERR_CNT
+			  FROM INF_PR_SELLOUT_UPLOAD_TEMP T
+		     WHERE T.UPLOAD_ERROR_MSG IS NOT NULL
+		]]>
+		<isNotEmpty prepend="AND" property="UPDT_USER"> 
+			<![CDATA[
+				 t.MODIFY_EMP = #UPDT_USER#
+			]]>	
+		</isNotEmpty>
+	</select>
+	
+	<!-- @Create date: 2014.07.16 -->
+	<procedure id="importSelloutFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_IMPORT_SELLOUT(
+						 #UPDT_USER:VARCHAR#
+						,#SUBSD_CD#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	
+	</procedure>
+	
+	<!-- @Create date: 2014.08.26 -->
+	<select id="getLastMonth" parameterClass="linkMap" resultClass="String">
+		<![CDATA[
+			SELECT to_char(add_months(trunc(sysdate),-1),'yyyymm') FROM dual
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.01 -->
+	<select id="searchSelloutRequestList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	   <![CDATA[
+			SELECT t.REQ_ID
+			      ,t.REQ_TITLE
+			      ,t.REQ_DATE
+			      ,GET_HR_EMP_NAME(t.CREATED_BY) EMPNAME
+			      ,t.REMARK
+			      ,t.SUBMIT_STATUS
+			      ,t.CURRENT_AFFIRM_ID
+			      ,t.CURRENT_CHECK_ID
+			      ,t.COMMON_EMPID
+			      ,t.EVENT_CONTENT
+			      ,t.AFFIRM_FLAG
+			      ,t.PAY_AREA_CD
+			      ,t.BRANCH
+			      ,t.ACCRUAL_FLAG
+			      ,t.CREATE_DATE
+			      ,t.CREATED_BY
+			      ,t.UPDATE_DATE
+			      ,t.UPDATED_BY
+			      ,t.ORDERNO
+			      ,t.ACTIVITY
+			      ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.Acc_Org_Code = t.BRANCH
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.dept_type = 'branch'
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.BRANCH) BRANCH_NM
+			      ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno = b.deptno(+)
+ 			            AND    a.deptno  = t.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    b.language(+) = #language#
+ 			            AND    ROWNUM = 1),t.PAY_AREA_CD) PAY_AREA_NM
+			FROM  INC_SELLOUT_REQ_MST t
+			     ,hr_department       h
+			WHERE t.branch = h.acc_org_code
+			AND   h.dept_type = 'branch'
+			AND   F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_cx1600">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_cx1600#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_cx1600">
+			<![CDATA[
+			h.deptno = #BRANCH_cx1600#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				TO_CHAR(t.CREATE_DATE,'YYYY-MM-DD') >= #START_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				TO_CHAR(t.CREATE_DATE,'YYYY-MM-DD') <= #END_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUBMIT_STATUS">
+			<![CDATA[
+				t.SUBMIT_STATUS = #SUBMIT_STATUS:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="-2">
+	   			<![CDATA[
+						t.SUBMIT_STATUS = 0
+			    ]]>
+			</isEqual>
+			<isNotEqual prepend="" property="AFFIRM_FLAG" compareValue="-2">
+				<![CDATA[
+					( t.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+					AND t.SUBMIT_STATUS <> 0 )
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YYYYMM">
+			<![CDATA[
+				t.REQ_DATE = #YYYYMM:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY t.REQ_ID DESC
+		]]>
+	</select>
+	
+	<select id="searchSelloutRequestListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+	   	<![CDATA[
+			SELECT COUNT(0)
+			FROM  INC_SELLOUT_REQ_MST  t
+			     ,hr_department        h
+			WHERE t.branch = h.acc_org_code
+			AND   h.dept_type = 'branch'
+			AND   F_CHECK_USER_DEPT_AUTH(h.deptno, #USER_NO#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="and" property="PAY_AREA_cx1600">
+			<![CDATA[
+			t.PAY_AREA_CD = #PAY_AREA_cx1600#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="BRANCH_cx1600">
+			<![CDATA[
+			h.deptno = #BRANCH_cx1600#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="START_DATE">
+			<![CDATA[
+				TO_CHAR(t.CREATE_DATE,'YYYY-MM-DD') >= #START_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="END_DATE">
+			<![CDATA[
+				TO_CHAR(t.CREATE_DATE,'YYYY-MM-DD') <= #END_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUBMIT_STATUS">
+			<![CDATA[
+				t.SUBMIT_STATUS = #SUBMIT_STATUS:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="-2">
+	   			<![CDATA[
+						t.SUBMIT_STATUS = 0
+			    ]]>
+			</isEqual>
+			<isNotEqual prepend="" property="AFFIRM_FLAG" compareValue="-2">
+				<![CDATA[
+					( t.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+					AND t.SUBMIT_STATUS <> 0 )
+				]]>
+			</isNotEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YYYYMM">
+			<![CDATA[
+				t.REQ_DATE = #YYYYMM:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<!-- @Create date: 2014.09.01 -->
+	<select id="searchSelloutReqDtlList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	   <![CDATA[
+			SELECT DISTINCT
+			       t.REQ_ID
+			      ,t.PAY_AREA_CD
+			      ,t.BRANCH
+			      ,t.PROD_TP
+			      ,t.TOTAL_NUM
+			      ,t.TOTAL_AMT
+			      ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno  = b.deptno(+)
+ 			            AND    a.Acc_Org_Code = t.BRANCH
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    a.dept_type = 'branch'
+ 			            AND    b.language(+) = #LANGUAGE#
+ 			            AND    ROWNUM = 1),t.BRANCH) BRANCH_NM
+			      ,nvl((SELECT b.content
+			            FROM   hr_department a, hr_department_name b
+ 			            WHERE  a.deptno = b.deptno(+)
+ 			            AND    a.deptno  = t.PAY_AREA_CD
+ 			            AND    a.cpny_id = #CPNY_ID#
+ 			            AND    b.language(+) = #LANGUAGE#
+ 			            AND    ROWNUM = 1),t.PAY_AREA_CD) PAY_AREA_NM
+			      ,nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.description  = t.PROD_TP
+ 			            AND    s.parent_code_no = '211424'
+ 			            AND    n.language = #LANGUAGE#
+ 			            AND    ROWNUM = 1),t.PROD_TP) PROD_TP_NM
+			      ,t.BRANCH_QTY
+			      ,t.INVOICE_QTY
+			      ,t.SCREEN_QTY
+			      ,sum(1) over(partition by t.PAY_AREA_CD,t.BRANCH) PCOUNT
+			      ,row_number() over(PARTITION BY t.PAY_AREA_CD,t.BRANCH ORDER BY t.PAY_AREA_CD,t.BRANCH,t.PROD_TP) PNUM
+			FROM  INC_SELLOUT_REQ_DTL  t
+			     ,INC_SELLOUT_REQ_MST  m
+			     ,hr_department        h
+			WHERE t.REQ_ID = m.REQ_ID
+			AND   m.branch = h.acc_org_code
+			AND    h.cpny_id = #CPNY_ID#
+			AND   t.REQ_ID = #REQ_ID:VARCHAR#
+			ORDER BY t.PAY_AREA_CD, t.BRANCH,t.PROD_TP
+		]]>
+	</select>
+		
+	<select id="searchSelloutReqDtlListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+	   	<![CDATA[
+			SELECT COUNT(0)
+			FROM   INC_SELLOUT_REQ_DTL t
+			     ,INC_SELLOUT_REQ_MST  m
+			     ,hr_department        h
+			WHERE t.REQ_ID = m.REQ_ID
+			AND   m.branch = h.acc_org_code
+			AND   t.REQ_ID = #REQ_ID:VARCHAR#
+			ORDER BY t.PAY_AREA_CD, t.BRANCH DESC
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.01 -->
+	<procedure id="addSelloutReq" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_SELLOUT_REQUEST
+			     (
+			         #SUBSD_CD#, #PAY_AREA_CD#, #BRANCH_CD#, #REQ_ID#, #AFFIRMOR_ID#, #viewAddSelloutReqFLAG#, #YYYYMM#, #PERSON_ID#
+			       , #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	<update id="updateSellInvoiceQty" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE INC_SELLOUT_REQ_DTL t 
+			SET  t.INVOICE_QTY = #INVOICE_QTY:NUMERIC#
+			    ,t.SCREEN_QTY  = #SCREEN_QTY:NUMERIC#
+			WHERE REQ_ID = #REQ_ID:VARCHAR#
+		]]>
+	</update>
+	<update id="updateSellPayRate" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE INC_SELLOUT_REQ_OVER10 t 
+			SET  t.PAY_RATE = #PAY_RATE:NUMERIC#
+			    ,t.REAL_QTY = #PAY_RATE:NUMERIC# * t.SALS_QTY / 100
+			WHERE t.REQ_ID = #REQ_ID:VARCHAR#
+			AND   t.SEQ    = #SELL_SEQ:VARCHAR#
+		]]>
+	</update>
+	<update id="updateSellPayRateRep" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE INC_SELLOUT_REQ_REPORT t 
+			SET  t.PAY_RATE = #PAY_RATE:NUMERIC#
+			WHERE t.REQ_ID = #REQ_ID:VARCHAR#
+			AND   t.SEQ    = #SELL_SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- @Create date: 2014.09.05 -->
+	<select id="getSelloutReqByReqId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	   	<![CDATA[
+			SELECT t.REQ_ID
+			      ,t.REQ_TITLE
+			      ,t.REQ_DATE
+			      ,t.REMARK
+			      ,t.SUBMIT_STATUS
+			      ,t.CURRENT_AFFIRM_ID
+			      ,t.CURRENT_CHECK_ID
+			      ,t.COMMON_EMPID
+			      ,t.EVENT_CONTENT
+			      ,t.AFFIRM_FLAG
+			      ,t.PAY_AREA_CD
+			      ,t.BRANCH
+			      ,h.deptno BRANCH_CD
+			      ,t.ACCRUAL_FLAG
+			      ,t.CREATE_DATE
+			      ,t.CREATED_BY
+			      ,t.UPDATE_DATE
+			      ,t.UPDATED_BY
+			      ,t.ORDERNO
+			      ,t.ACTIVITY
+			      ,(SELECT e.local_name FROM hr_employee e
+			        WHERE  e.PERSON_ID = t.CREATED_BY) LOCAL_NAME
+			      ,SUBSTR(t.REQ_DATE,1,4) year
+			      ,SUBSTR(t.REQ_DATE,5,2) month
+			FROM  INC_SELLOUT_REQ_MST t
+			     ,hr_department        h
+			WHERE t.REQ_ID = #REQ_ID:VARCHAR#
+			AND   t.branch = h.acc_org_code
+			AND   h.dept_type = 'branch'
+	   	]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.05 -->
+	<select id="getNewReqId" parameterClass="linkMap" resultClass="Long">
+		<![CDATA[
+			SELECT INF_PR_SELLOUT_UPLOAD_TEMP_SEQ.Nextval FROM dual
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.10 -->
+	<select id="getMenuThirdList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	   	<![CDATA[
+			SELECT T.MENU_CODE,
+			       S.CONTENT AS MENU_NAME,
+			       T.MENU_URL,
+			       T.DEPTH,
+			       T.MENU_NO
+			  FROM SY_MENU T, SY_MENU_PARAM T2,SY_GLOBAL_NAME S
+			 WHERE T.ACTIVITY = 1
+			   AND T2.ACTIVITY = 1
+			   AND T.MENU_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #LANGUAGE:VARCHAR#
+			   AND T.MENU_NO = T2.MENU_NO
+			   AND T2.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.MENU_PARENT_NO = '219983'
+			 START WITH T.MENU_PARENT_NO = 0 and T2.CPNY_ID = #CPNY_ID:VARCHAR# AND S.LANGUAGE(+)=#LANGUAGE:VARCHAR#
+			CONNECT BY PRIOR T.MENU_NO = T.MENU_PARENT_NO and T2.CPNY_ID = #CPNY_ID:VARCHAR# AND S.LANGUAGE(+)=#LANGUAGE:VARCHAR#
+			 ORDER SIBLINGS BY T.ORDERNO
+	   	]]>
+	</select>
+	
+	<!-- 申请加决裁者 -->
+	<insert id="insertAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+			(
+				ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY,
+				APPLY_TYPE
+            ) 
+		VALUES (
+    		    ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #REQ_ID#,
+				0, 
+				#AFFIRM_LEVEL#, 
+				#AFFIRMOR_ID#, 
+				SYSDATE, 
+				#PERSON_ID#, 
+				0,
+				#APPLY_TYPE_NO:VARCHAR#
+				)
+	    ]]>
+	</insert>
+	
+	<!-- 删除决裁者 -->
+	<delete id="deleteAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+	    DELETE FROM ESS_AFFIRM
+	    	WHERE APPLY_NO = #REQ_ID#
+	    	AND APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+	    	AND AFFIRM_FLAG = 0
+	    	
+	    ]]>
+	    <isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				ESS_AFFIRM_NO <> #ESS_AFFIRM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	    <isNotEmpty prepend="AND" property="dept_level">
+			<![CDATA[
+				AFFIRM_LEVEL >= #dept_level:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<select id="getAffirmorList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	    SELECT ESS.ESS_AFFIRM_NO,
+	 	    	   ESS.APPLY_NO,
+			       ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_CONTENT,
+			       TO_CHAR(ESS.UPDATE_DATE,'YYYY-MM-DD') UPDATE_DATE,
+			       HR.EMPID,
+			       HR.LOCAL_NAME
+			FROM ESS_AFFIRM ESS,
+			     HR_EMPLOYEE HR
+			WHERE ESS.AFFIRMOR_ID = HR.PERSON_ID
+			AND ESS.APPLY_NO = #REQ_ID:VARCHAR#
+			AND ESS.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+			ORDER BY ESS.AFFIRM_LEVEL
+		]]>
+	</select>
+	
+	<select id="getCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.ESS_CHECK_NO,
+		       A.ESS_AFFIRM_NO,
+		       C.PERSON_ID PERSON_ID_R,
+		       C.EMPID EMPID_R,
+		       C.LOCAL_NAME LOCAL_NAME_R,
+		       C.POSITION_NO POSITION_NO_R,
+		       get_dept_name(C.DEPTNO , 'zh') DEPTNAME_R,
+		       A.CHECK_REASON,
+		       TO_CHAR(A.CREATED_DATE,'YYYY-MM-DD') DATE_R,
+		       D.PERSON_ID PERSON_ID_C,
+		       D.EMPID EMPID_C,
+		       A.CHECKOR_ID,
+		       D.LOCAL_NAME LOCAL_NAME_C,
+		       D.POSITION_NO POSITION_NO_C,
+		       get_dept_name(D.DEPTNO , 'zh') DEPTNAME_C,
+		       A.CHECK_CONTENT,
+		       A.CHECK_FLAG,
+		       TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') DATE_C
+		       FROM  ESS_CHECK A,
+		             ESS_AFFIRM B,
+		             HR_EMPLOYEE C,
+		             HR_EMPLOYEE D
+		       WHERE A.ESS_AFFIRM_NO = B.ESS_AFFIRM_NO
+		       AND   A.CHECKOR_ID = D.PERSON_ID
+		       AND   B.AFFIRMOR_ID = C.PERSON_ID
+		       AND   B.APPLY_NO = #REQ_ID:VARCHAR#
+		       AND   B.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		       ORDER BY A.CREATED_DATE
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.16 -->
+	<procedure id="affirmSellout" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_SELLOUT_AFFIRM
+			     (
+			         #REQ_ID#, #ESS_AFFIRM_NO#, #AFFIRMOR_ID#, #viewAffirmSellOutFLAG#, #AFFIRM_CONTENT#
+			       , #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	
+	<select id="getCheckListToLgep" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.ESS_CHECK_NO,
+		       A.ESS_AFFIRM_NO,
+		       CHECKOR_ID
+		FROM  ESS_CHECK A
+		WHERE A.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		AND   CHECK_FLAG = 0
+		]]>
+	</select>
+	
+	<!-- @Create date: 2014.09.18 -->
+	<procedure id="delSelloutReq" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_SELLOUT_DEL
+			     (
+			         #REQ_IDS#, #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	<procedure id="submitSellout" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_SELLOUT_SUBMIT
+			     (
+			         #REQ_ID#, #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	<procedure id="getSelloutFromCnmas" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_PROMOTER_EXCEL_IMP.PR_SELLOUT_FROM_CNMAS
+			     (
+			         #BRANCH_CD#, #YEAR_MON#, #RET,jdbcType=VARCHAR,mode=INOUT#, #MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+			     )
+			}
+		]]>
+	</procedure>
+	
+	<select id="getReqOver10List" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT t.REQ_ID, t.SHOP_CD, t.PR_EMPID, t.SALE_DATE, t.PROD_ID, t.SALS_QTY, t.SEQ
+		      ,t.BRANCH, t.SHOP_NAME, t.SHOP_LEVEL, t.CHANNEL_GRADE, t.CHANNEL_NAME, t.BILL_TO_NAME, t.PAY_RATE, t.REAL_QTY 
+		FROM  INC_SELLOUT_REQ_OVER10 t
+		WHERE t.REQ_ID = #REQ_ID#
+		]]>
+	</select>
+	
+	<select id="getReqOver9kList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT t.REQ_ID, t.BRANCH, t.EMPID, t.LOCAL_NAME, t.SHOP_CD, t.SHOP_NAME, t.CHANNEL_NAME
+		      ,t.PROD_TP, t.SALS_AMT, t.SALS_QTY, t.INC_AMT, t.CHECK_FLAG, t.REMARK
+		FROM  INC_SELLOUT_REQ_OVER9K t
+		WHERE t.REQ_ID = #REQ_ID#
+		]]>
+	</select>
+	
+	<select id="getReqRatioList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT t.REQ_ID, t.BRANCH, t.EMPID, t.LOCAL_NAME, t.SHOP_CD, t.SHOP_NAME, t.CHANNEL_NAME
+		      ,t.PROD_TP, t.SALS_QTY, LAST_SALS_QTY, t.INC_AMT, LAST_INC_AMT, t.CHECK_FLAG, t.REMARK
+		      ,round(DECODE(NVL(LAST_INC_AMT,0),0,1,(nvl(INC_AMT,0)-NVL(LAST_INC_AMT,0)) / NVL(LAST_INC_AMT,0)), 2) * 100 RATIO
+		FROM  INC_SELLOUT_REQ_RATIO t
+		WHERE t.REQ_ID = #REQ_ID#
+		]]>
+	</select>
+	
+	<select id="getReqExshopList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT t.REQ_ID, t.BRANCH, t.EMPID, t.LOCAL_NAME, t.SHOP_CD, t.SHOP_NAME, t.CHANNEL_NAME
+		      ,t.PROD_TP, t.SALS_QTY, LAST_SALS_QTY, t.INC_AMT, LAST_INC_AMT, t.CHECK_FLAG, t.REMARK
+		      ,round(DECODE(NVL(LAST_INC_AMT,0),0,1,(nvl(INC_AMT,0)-NVL(LAST_INC_AMT,0)) / NVL(LAST_INC_AMT,0)), 2) * 100 RATIO
+		FROM  INC_SELLOUT_REQ_EXSHOP t
+		WHERE t.REQ_ID = #REQ_ID#
+		]]>
+	</select>
+	
+	<select id="getReqReportList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT T.REQ_ID,
+		       T.REAL_FLAG,
+		       T.COM_CODE,
+		       T.EMP_NO,
+		       E.LOCAL_NAME EMP_NM,
+		       T.SALE_MONTH,
+		       TO_CHAR(T.SALE_DAY, 'yyyy-mm-dd') SALE_DAY,
+		       T.MODEL_CATEGORY_CODE,
+		       T.MODEL_CODE,
+		       T.BRANCH,
+		       T.SHIP_TO_CODE,
+		       S.SHOP_NAME AS SHIP_TO_NAME,
+		       T.CHANNEL_CODE,
+		       T.SALE_QTY,
+		       T.NOTICE_PRICE,
+		       T.SELLOUT_PRICE,
+		       T.CREATE_DATE,
+		       T.CREATE_EMP,
+		       T.MODIFY_DATE,
+		       T.MODIFY_EMP,
+		       T.PROCESS_FLAG,
+		       T.PROCESS_DATE,
+		       T.IMP_SEQ SEQ,
+		       T.DOC_NAME
+		  FROM INC_SELLOUT_REQ_REPORT T, 
+		       HR_EMPLOYEE E, 
+		       SPMS_SHOP_GRADE_CHRS S
+		 WHERE T.REQ_ID = #REQ_ID#
+		   AND T.EMP_NO = E.EMPID
+		   AND E.CPNY_ID = 'TSTO'
+		   AND T.SHIP_TO_CODE = S.SHOP_CD
+		   AND T.COM_CODE = S.COM_CD
+		   AND SUBSTR(T.SALE_MONTH, 0, 4) = S.YYYY
+		]]>
+	</select>
+	<select id="getReqReportListCnt" parameterClass="linkMap" resultClass="int">
+	    <![CDATA[
+	    SELECT COUNT(0)
+	    FROM  INC_SELLOUT_REQ_REPORT t
+		     ,HR_EMPLOYEE            e
+		WHERE t.REQ_ID = #REQ_ID#
+		AND   t.EMP_NO = e.EMPID
+	    ]]>
+	</select>
+	
+	<select id="getReqTotalList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT B.SALS_MONTH,
+		       B.BRANCH,
+			   B.PROD_TP,
+			   B.TOTAL_NUM ,
+			   A.BRANCH_QTY, 
+			   0 INVOICE_QTY, 
+			   0 SCREEN_QTY,
+			   sum(1) over(partition by B.BRANCH) PCOUNT,
+			   row_number() over(PARTITION BY B.BRANCH ORDER BY B.BRANCH,B.PROD_TP) PNUM
+		FROM (SELECT 
+					 T.BRANCH,
+					 T.MODEL_CATEGORY_CODE,
+					 SUM(NVL(T.SALE_QTY, 0)) BRANCH_QTY,
+					 SUM(NVL(T.SALE_QTY, 0) * NVL(T.SELLOUT_PRICE, 0)) BRANCH_AMT
+						FROM INF_PR_SELLOUT_UPLOAD T, HR_DEPARTMENT D
+					 WHERE T.BRANCH = D.ACC_ORG_CODE
+						 AND NVL(T.PROCESS_FLAG,'N') = 'N'
+						 AND D.DEPTNO = TO_CHAR(#BRANCH_CD#)
+						 AND T.SALE_MONTH = #YEAR_MON#
+					 GROUP BY T.BRANCH, T.SALE_MONTH, T.MODEL_CATEGORY_CODE) A,
+				 (SELECT P.ACC_ORG_CODE BRANCH,
+								 T.PROD_TP PROD_TP,
+								 T.SALS_MON SALS_MONTH,
+								 SUM(T.SALS_QTY) TOTAL_NUM,
+								 SUM(T.SALS_AMT) TOTAL_AMT
+						FROM INC_PROMTR_SALS_FRUT T, HR_EMPLOYEE H, HR_DEPARTMENT P
+					 WHERE H.CPNY_ID = 'TSTO'
+						 AND T.EMPNO = H.EMPID
+						 AND T.ACCRUAL_YN = 'Y'
+						 AND H.DEPTNO IN
+								 (SELECT R.DEPTNO
+										FROM HR_DEPARTMENT R
+									 WHERE R.CPNY_ID = 'TSTO'
+									 START WITH R.DEPTNO = TO_CHAR(#BRANCH_CD#)
+									CONNECT BY PRIOR R.DEPTNO = R.PARENT_DEPT_NO)
+						 AND P.DEPTNO = TO_CHAR(#BRANCH_CD#)
+						 AND T.SALS_MON = #YEAR_MON#
+						 AND P.CPNY_ID = 'TSTO'
+					 GROUP BY P.ACC_ORG_CODE, T.PROD_TP, T.SALS_MON) B
+				 WHERE B.BRANCH = A.BRANCH(+)
+					 AND B.PROD_TP= A.MODEL_CATEGORY_CODE(+)
+		]]>
+	</select>
+	
+	<select id="getNewReqOver10List" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT D.CUST_ID SHOP_CD,
+						A.EMPNO PR_EMPID,
+						TO_CHAR(A.SALS_DAY,'YYYY-MM-DD') SALE_DATE,
+						A.PROD_ID,
+						A.SALS_QTY SALS_QTY,
+						T.BRANCH,
+						S.SHOP_NAME,
+						S.SHOP_LEVEL,
+						S.CHANNEL_GRADE,
+						S.CHANNEL1_NAME CHANNEL_NAME,
+						S.BILL_TO_NAME,
+						ROUND(SUM(NVL(T.SALE_QTY, 0)) / DECODE(A.SALS_QTY,0,1,A.SALS_QTY) * 100, 2) PAY_RATE,
+						SUM(NVL(T.SALE_QTY, 0)) REAL_QTY
+			 FROM INF_PR_SELLOUT_UPLOAD        T,
+				  INC_PROMOTER_SHOP_DTL        D,
+				  SPMS_SHOP_GRADE_CHRS         S,
+				  HR_DEPARTMENT                P,
+				  INC_PROMTR_SALS_FRUT_DAY_VAL A
+			WHERE A.SUBSD_CD = D.SUBSD_CD
+				AND A.EMPNO = D.EMPNO
+				AND A.SALS_MON = D.YYYYMM
+				AND D.CUST_ID = S.SHOP_CD
+				AND T.BRANCH = P.ACC_ORG_CODE
+				AND A.SUBSD_CD = T.COM_CODE
+				AND A.EMPNO = T.EMP_NO
+				AND A.SALS_MON = T.SALE_MONTH
+				AND A.SALS_DAY = T.SALE_DAY
+				AND A.CUST_ID = T.SHIP_TO_CODE
+				AND A.PROD_ID = T.MODEL_CODE
+				AND P.CPNY_ID = 'TSTO'
+				AND S.YYYY = SUBSTR(#YEAR_MON#, 1, 4)
+				AND A.SALS_MON = #YEAR_MON#
+				AND P.DEPTNO = TO_CHAR(#BRANCH_CD#)
+			GROUP BY D.CUST_ID,
+							 A.EMPNO,
+							 A.SALS_DAY,
+							 A.PROD_ID,
+							 A.SALS_QTY,
+							 T.BRANCH,
+							 S.SHOP_NAME,
+							 S.SHOP_LEVEL,
+							 S.CHANNEL_GRADE,
+							 S.CHANNEL1_NAME,
+							 S.BILL_TO_NAME
+				HAVING SUM(NVL(T.SALE_QTY, 0)) >= 10
+		]]>
+	</select>
+
+	<select id="getNewReqOver9kList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT F.BRANCH,
+					 F.EMPID,
+					 F.LOCAL_NAME,
+					 F.SHOP_CD,
+					 S.SHOP_NAME,
+					 S.CHANNEL1_NAME CHANNEL_NAME,
+					 F.PROD_TP,
+					 SUM(NVL(F.SALS_AMT, 0)) SALS_AMT,
+					 SUM(NVL(F.SALS_QTY, 0)) SALS_QTY,
+					 ROUND(DECODE(SUM(G.TOTAL_QTY), 0, 0,
+									SUM(NVL(G.INCTV_AMT, 0)) / SUM(G.TOTAL_QTY) *
+									 SUM(NVL(F.SALS_QTY, 0))),2) INC_AMT,
+					 '' CHECK_FLAG,
+					 '' REMARK
+			FROM (SELECT A.BRANCH,
+									 A.EMP_NO EMPID,
+									 H.LOCAL_NAME,
+									 A.SHIP_TO_CODE SHOP_CD,
+									 A.CHANNEL_CODE,
+									 A.MODEL_CATEGORY_CODE PROD_TP,
+									 A.MODEL_CODE,
+									 SUM(NVL(A.SALE_QTY, 0)) SALS_QTY,
+									 SUM(NVL(A.SELLOUT_PRICE, 0)) SALS_AMT
+							FROM INF_PR_SELLOUT_UPLOAD A, HR_EMPLOYEE H, HR_DEPARTMENT D
+						 WHERE A.BRANCH = D.ACC_ORG_CODE
+							 AND A.PROCESS_FLAG = 'N'
+							 AND A.EMP_NO = H.EMPID
+							 AND H.CPNY_ID = 'TSTO'
+							 AND D.CPNY_ID = 'TSTO'
+							 AND H.DEPTNO = D.DEPTNO
+							 AND D.DEPTNO = TO_CHAR(#BRANCH_CD#)
+							 AND A.SALE_MONTH = #YEAR_MON#
+						 GROUP BY A.BRANCH,
+											A.EMP_NO,
+											H.LOCAL_NAME,
+											A.SHIP_TO_CODE,
+											A.CHANNEL_CODE,
+											A.MODEL_CATEGORY_CODE,
+											A.MODEL_CODE) F,
+					 (SELECT /*+ INDEX(T INC_PROMTR_SALS_FRUT_INDX2) */
+						 T.EMPNO,
+						 T.CUST_ID,
+						 T.CHANNEL,
+						 T.PROD_TP ,
+						 T.PROD_ID,
+						 SUM(T.SALS_QTY) TOTAL_QTY,
+						 SUM(T.VARB_INCTV_AMT) INCTV_AMT
+							FROM INC_PROMTR_SALS_FRUT T, HR_EMPLOYEE H
+						 WHERE H.CPNY_ID = 'TSTO'
+							 AND T.EMPNO = H.EMPID
+							 AND T.ACCRUAL_YN = 'Y'
+							 AND H.DEPTNO IN
+									 (SELECT R.DEPTNO
+											FROM HR_DEPARTMENT R
+										 WHERE R.CPNY_ID = 'TSTO'
+										 START WITH R.DEPTNO = TO_CHAR(#BRANCH_CD#)
+										CONNECT BY PRIOR R.DEPTNO = R.PARENT_DEPT_NO)
+							 AND T.SALS_MON = #YEAR_MON#
+						 GROUP BY T.EMPNO, T.CUST_ID, T.CHANNEL, T.PROD_TP, T.PROD_ID) G,
+					 SPMS_SHOP_GRADE_CHRS S
+		 WHERE F.EMPID = G.EMPNO
+			 AND F.SHOP_CD = G.CUST_ID
+			 AND F.CHANNEL_CODE = G.CHANNEL
+			 AND F.PROD_TP = G.PROD_TP
+			 AND F.MODEL_CODE = G.PROD_ID
+			 AND F.SHOP_CD = S.SHOP_CD
+			 AND S.YYYY = SUBSTR(#YEAR_MON#, 1, 4)
+		 GROUP BY F.BRANCH,
+							F.EMPID,
+							F.LOCAL_NAME,
+							F.SHOP_CD,
+							S.SHOP_NAME,
+							S.CHANNEL1_NAME,
+							F.PROD_TP
+		HAVING DECODE(SUM(G.TOTAL_QTY), 0, 0, SUM(NVL(G.INCTV_AMT, 0)) / SUM(G.TOTAL_QTY) * SUM(NVL(F.SALS_QTY, 0))) >= 9000 
+
+		]]>
+	</select>
+	
+	<select id="getNewReqRatioList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		          SELECT F.BRANCH,
+						 F.EMPID,
+						 F.LOCAL_NAME,
+						 F.SHOP_CD,
+						 S.SHOP_NAME,
+						 S.CHANNEL1_NAME CHANNEL_NAME,
+						 F.PROD_TP,
+						 SUM(NVL(F.SALS_AMT, 0)) SALS_AMT,
+						 SUM(NVL(F.SALS_QTY, 0)) SALS_QTY,
+						 SUM(NVL(K.TOTAL_QTY, 0)) LAST_SALS_QTY,
+						 ROUND(DECODE(SUM(G.TOTAL_QTY), 0, 0,
+										SUM(NVL(G.INCTV_AMT, 0)) / SUM(G.TOTAL_QTY) *
+										 SUM(NVL(F.SALS_QTY, 0))),2) INC_AMT,
+						 SUM(NVL(K.INCTV_AMT, 0)) LAST_INC_AMT,
+						 '' CHECK_FLAG,
+						 '' REMARK,
+						 ROUND((SUM(NVL(F.SALS_QTY, 0)) - SUM(NVL(K.TOTAL_QTY, 0))) / DECODE(SUM(NVL(K.TOTAL_QTY, 0)), 0, 1, SUM(NVL(K.TOTAL_QTY, 0))),2) *100 RATIO
+					FROM (SELECT A.BRANCH,
+								 A.EMP_NO EMPID,
+								 H.LOCAL_NAME,
+								 A.SHIP_TO_CODE SHOP_CD,
+								 A.CHANNEL_CODE,
+								 A.MODEL_CATEGORY_CODE PROD_TP,
+								 A.MODEL_CODE,
+								 SUM(NVL(A.SALE_QTY, 0)) SALS_QTY,
+								 SUM(NVL(A.SELLOUT_PRICE, 0)) SALS_AMT
+						FROM INF_PR_SELLOUT_UPLOAD A, HR_EMPLOYEE H, HR_DEPARTMENT D
+					 WHERE A.BRANCH = D.ACC_ORG_CODE
+						 AND A.PROCESS_FLAG = 'N'
+						 AND A.EMP_NO = H.EMPID
+						 AND H.CPNY_ID = 'TSTO'
+						 AND D.CPNY_ID = 'TSTO'
+						 AND H.DEPTNO = D.DEPTNO
+						 AND D.DEPTNO = TO_CHAR(#BRANCH_CD#)
+						 AND A.SALE_MONTH = #YEAR_MON#
+					 GROUP BY A.BRANCH,
+										A.EMP_NO,
+										H.LOCAL_NAME,
+										A.SHIP_TO_CODE,
+										A.CHANNEL_CODE,
+										A.MODEL_CATEGORY_CODE,
+										A.MODEL_CODE) F,
+						 (SELECT /*+ INDEX(T INC_PROMTR_SALS_FRUT_INDX2) */
+							 T.EMPNO,
+							 T.CUST_ID,
+							 T.CHANNEL,
+							 T.PROD_TP PROD_TP,
+							 T.PROD_ID,
+							 SUM(T.SALS_QTY) TOTAL_QTY,
+							 SUM(T.VARB_INCTV_AMT) INCTV_AMT
+								FROM INC_PROMTR_SALS_FRUT T, HR_EMPLOYEE H
+							 WHERE H.CPNY_ID = 'TSTO'
+								 AND T.EMPNO = H.EMPID
+								 AND T.ACCRUAL_YN = 'Y'
+								 AND H.DEPTNO IN
+										 (SELECT R.DEPTNO
+												FROM HR_DEPARTMENT R
+											 WHERE R.CPNY_ID = 'TSTO'
+											 START WITH R.DEPTNO = TO_CHAR(#BRANCH_CD#)
+											CONNECT BY PRIOR R.DEPTNO = R.PARENT_DEPT_NO)
+								 AND T.SALS_MON = #YEAR_MON#
+							 GROUP BY T.EMPNO, T.CUST_ID, T.CHANNEL, T.PROD_TP, T.PROD_ID) G,
+						 (SELECT /*+ INDEX(T INC_PROMTR_SALS_FRUT_INDX2) */
+							 T.EMPNO,
+							 T.CUST_ID,
+							 T.CHANNEL,
+							 T.PROD_TP,
+							 T.PROD_ID,
+							 SUM(T.SALS_QTY) TOTAL_QTY,
+							 SUM(T.VARB_INCTV_AMT) INCTV_AMT
+								FROM INC_PROMTR_SALS_FRUT T, HR_EMPLOYEE H
+							 WHERE H.CPNY_ID = 'TSTO'
+								 AND T.EMPNO = H.EMPID
+								 AND T.ACCRUAL_YN = 'N'
+								 AND H.DEPTNO IN
+										 (SELECT R.DEPTNO
+												FROM HR_DEPARTMENT R
+											 WHERE R.CPNY_ID = 'TSTO'
+											 START WITH R.DEPTNO = TO_CHAR(#BRANCH_CD#)
+											CONNECT BY PRIOR R.DEPTNO = R.PARENT_DEPT_NO)
+								 AND T.SALS_MON = TO_CHAR(ADD_MONTHS(TO_DATE(#YEAR_MON#, 'YYYYMM'),-1), 'YYYYMM')
+							 GROUP BY T.EMPNO, T.CUST_ID, T.CHANNEL, T.PROD_TP, T.PROD_ID) K,
+						 SPMS_SHOP_GRADE_CHRS S
+			 WHERE F.EMPID = G.EMPNO
+				 AND F.SHOP_CD = G.CUST_ID
+				 AND F.CHANNEL_CODE = G.CHANNEL
+				 AND F.PROD_TP = G.PROD_TP
+				 AND F.MODEL_CODE = G.PROD_ID
+				 AND F.SHOP_CD = S.SHOP_CD
+				 AND F.EMPID = K.EMPNO
+				 AND F.SHOP_CD = K.CUST_ID
+				 AND F.CHANNEL_CODE = K.CHANNEL
+				 AND F.PROD_TP = K.PROD_TP
+				 AND F.MODEL_CODE = K.PROD_ID
+				 AND S.YYYY = SUBSTR(#YEAR_MON#, 1, 4)
+			 GROUP BY F.BRANCH,
+								F.EMPID,
+								F.LOCAL_NAME,
+								F.SHOP_CD,
+								S.SHOP_NAME,
+								S.CHANNEL1_NAME,
+								F.PROD_TP
+			HAVING DECODE(SUM(G.TOTAL_QTY), 0, 0, SUM(NVL(G.INCTV_AMT, 0)) / SUM(G.TOTAL_QTY) * SUM(NVL(F.SALS_QTY, 0))) >= 5000 
+			AND (SUM(NVL(F.SALS_QTY, 0)) - SUM(NVL(K.TOTAL_QTY, 0))) / DECODE(SUM(NVL(K.TOTAL_QTY, 0)), 0, 1, SUM(NVL(K.TOTAL_QTY, 0))) >= 1 
+			AND SUM(NVL(F.SALS_QTY, 0)) > 0 
+			AND SUM(NVL(K.TOTAL_QTY, 0)) > 0
+		]]>
+	</select>
+	
+	<select id="getNewReqExshopList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		          SELECT F.BRANCH,
+						 F.EMPID,
+						 F.LOCAL_NAME,
+						 F.SHOP_CD,
+						 S.SHOP_NAME,
+						 S.CHANNEL1_NAME CHANNEL_NAME,
+						 F.PROD_TP,
+						 SUM(NVL(F.SALS_AMT, 0)) SALS_AMT,
+						 SUM(NVL(F.SALS_QTY, 0)) SALS_QTY,
+						 SUM(NVL(K.TOTAL_QTY, 0)) LAST_SALS_QTY,
+						 ROUND(DECODE(SUM(G.TOTAL_QTY), 0, 0,
+										SUM(NVL(G.INCTV_AMT, 0)) / SUM(G.TOTAL_QTY) *
+										 SUM(NVL(F.SALS_QTY, 0))),2) INC_AMT,
+						 SUM(NVL(K.INCTV_AMT, 0)) LAST_INC_AMT,
+						 '' CHECK_FLAG,
+						 '' REMARK,
+						 ROUND((SUM(NVL(F.SALS_QTY, 0)) - SUM(NVL(K.TOTAL_QTY, 0))) / DECODE(SUM(NVL(K.TOTAL_QTY, 0)), 0, 1, SUM(NVL(K.TOTAL_QTY, 0))),2) *100 RATIO
+					FROM (SELECT A.BRANCH,
+								 A.EMP_NO EMPID,
+								 H.LOCAL_NAME,
+								 A.SHIP_TO_CODE SHOP_CD,
+								 A.CHANNEL_CODE,
+								 A.MODEL_CATEGORY_CODE PROD_TP,
+								 A.MODEL_CODE,
+								 SUM(NVL(A.SALE_QTY, 0)) SALS_QTY,
+								 SUM(NVL(A.SELLOUT_PRICE, 0)) SALS_AMT
+						FROM INF_PR_SELLOUT_UPLOAD A, HR_EMPLOYEE H, HR_DEPARTMENT D
+					 WHERE A.BRANCH = D.ACC_ORG_CODE
+						 AND A.PROCESS_FLAG = 'N'
+						 AND A.EMP_NO = H.EMPID
+						 AND H.CPNY_ID = 'TSTO'
+						 AND D.CPNY_ID = 'TSTO'
+						 AND H.DEPTNO = D.DEPTNO
+						 AND D.DEPTNO = TO_CHAR(#BRANCH_CD#)
+						 AND A.SALE_MONTH = #YEAR_MON#
+					 GROUP BY A.BRANCH,
+										A.EMP_NO,
+										H.LOCAL_NAME,
+										A.SHIP_TO_CODE,
+										A.CHANNEL_CODE,
+										A.MODEL_CATEGORY_CODE,
+										A.MODEL_CODE) F,
+				 (SELECT /*+ INDEX(T INC_PROMTR_SALS_FRUT_INDX2) */
+					 T.EMPNO,
+					 T.CUST_ID,
+					 T.CHANNEL,
+					 T.PROD_TP PROD_TP,
+					 T.PROD_ID,
+					 SUM(T.SALS_QTY) TOTAL_QTY,
+					 SUM(T.VARB_INCTV_AMT) INCTV_AMT
+						FROM INC_PROMTR_SALS_FRUT T, HR_EMPLOYEE H
+					 WHERE H.CPNY_ID = 'TSTO'
+						 AND T.EMPNO = H.EMPID
+						 AND T.ACCRUAL_YN = 'Y'
+						 AND H.DEPTNO IN
+								 (SELECT R.DEPTNO
+										FROM HR_DEPARTMENT R
+									 WHERE R.CPNY_ID = 'TSTO'
+									 START WITH R.DEPTNO = TO_CHAR(#BRANCH_CD#)
+									CONNECT BY PRIOR R.DEPTNO = R.PARENT_DEPT_NO)
+						 AND T.SALS_MON = #YEAR_MON#
+					 GROUP BY T.EMPNO, T.CUST_ID, T.CHANNEL, T.PROD_TP, T.PROD_ID) G,
+				 (SELECT /*+ INDEX(T INC_PROMTR_SALS_FRUT_INDX2) */
+					 T.EMPNO,
+					 T.CUST_ID,
+					 T.CHANNEL,
+					 T.PROD_TP,
+					 T.PROD_ID,
+					 SUM(T.SALS_QTY) TOTAL_QTY,
+					 SUM(T.VARB_INCTV_AMT) INCTV_AMT
+						FROM INC_PROMTR_SALS_FRUT T, HR_EMPLOYEE H
+					 WHERE H.CPNY_ID = 'TSTO'
+						 AND T.EMPNO = H.EMPID
+						 AND T.ACCRUAL_YN = 'N'
+						 AND H.DEPTNO IN
+								 (SELECT R.DEPTNO
+										FROM HR_DEPARTMENT R
+									 WHERE R.CPNY_ID = 'TSTO'
+									 START WITH R.DEPTNO = TO_CHAR(#BRANCH_CD#)
+									CONNECT BY PRIOR R.DEPTNO = R.PARENT_DEPT_NO)
+						 AND T.SALS_MON = TO_CHAR(ADD_MONTHS(TO_DATE(#YEAR_MON#, 'YYYYMM'),-1), 'YYYYMM')
+					 GROUP BY T.EMPNO, T.CUST_ID, T.CHANNEL, T.PROD_TP, T.PROD_ID) K,
+				 SPMS_SHOP_GRADE_CHRS S
+			 WHERE F.EMPID = G.EMPNO
+				 AND F.SHOP_CD = G.CUST_ID
+				 AND F.CHANNEL_CODE = G.CHANNEL
+				 AND F.PROD_TP = G.PROD_TP
+				 AND F.MODEL_CODE = G.PROD_ID
+				 AND F.SHOP_CD = S.SHOP_CD
+				 AND F.EMPID = K.EMPNO(+)
+				 AND F.SHOP_CD = K.CUST_ID(+)
+				 AND F.CHANNEL_CODE = K.CHANNEL(+)
+				 AND F.PROD_TP = K.PROD_TP(+)
+				 AND F.MODEL_CODE = K.PROD_ID(+)
+				 AND S.CHANNEL1   = 'D00'
+                 AND S.CHANNEL2   = 'D18'
+				 AND S.YYYY = SUBSTR(#YEAR_MON#, 1, 4)
+			 GROUP BY F.BRANCH,
+						F.EMPID,
+						F.LOCAL_NAME,
+						F.SHOP_CD,
+						S.SHOP_NAME,
+						S.CHANNEL1_NAME,
+						F.PROD_TP
+		]]>
+	</select>
+	
+	<select id="getNewReqReportList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT /*+ index(s pk_spms_shop) */
+				 T.COM_CODE,
+				 T.EMP_NO,
+				 E.LOCAL_NAME EMP_NM,
+				 T.SALE_MONTH,
+				 TO_CHAR(T.SALE_DAY, 'yyyy-mm-dd') SALE_DAY,
+				 T.MODEL_CATEGORY_CODE,
+				 T.MODEL_CODE,
+				 T.BRANCH,
+				 T.SHIP_TO_CODE,
+				 S.SHOP_NAME AS SHIP_TO_NAME,
+				 T.CHANNEL_CODE,
+				 T.SALE_QTY,
+				 T.NOTICE_PRICE,
+				 T.SELLOUT_PRICE,
+				 T.CREATE_DATE,
+				 T.CREATE_EMP,
+				 T.MODIFY_DATE,
+				 T.MODIFY_EMP,
+				 T.PROCESS_FLAG,
+				 T.PROCESS_DATE,
+				 T.IMP_SEQ SEQ,
+				 T.DOC_NAME
+		  FROM INF_PR_SELLOUT_UPLOAD T,
+		       HR_DEPARTMENT         P,
+		       HR_EMPLOYEE           E,
+		       SPMS_SHOP_GRADE_CHRS  S
+		 WHERE T.BRANCH = P.ACC_ORG_CODE
+		   AND T.EMP_NO = E.EMPID
+		   AND T.SHIP_TO_CODE = S.SHOP_CD
+		   AND T.COM_CODE = S.COM_CD
+		   AND S.YYYY = SUBSTR(#YEAR_MON#, 1, 4)
+		   AND SUBSTR(T.SALE_MONTH, 0, 4) = S.YYYY
+		   AND P.CPNY_ID = 'TSTO'
+		   AND T.SALE_MONTH = #YEAR_MON#
+		   AND P.DEPTNO = #BRANCH_CD#
+		]]>
+	</select>
+	
+	<select id="getNewReqReportListCnt" parameterClass="linkMap" resultClass="int">
+	    <![CDATA[
+	    SELECT COUNT(0)
+	    FROM   INF_PR_SELLOUT_UPLOAD t
+	         ,HR_DEPARTMENT         p
+	         ,HR_EMPLOYEE           e
+	    WHERE t.BRANCH     = p.ACC_ORG_CODE
+	    AND   t.EMP_NO     = e.EMPID
+	    AND   p.CPNY_ID = 'TSTO'
+	    AND   t.SALE_MONTH = #YEAR_MON#
+	    AND   p.DEPTNO     = #BRANCH_CD#
+	    ]]>
+	</select>
+	
+	<delete id="deleteimportTempEmp" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_TMPEMP_UPLOAD 
+			WHERE  UPLOAD_BY = #UPDT_USER#
+		]]>
+	</delete>
+	
+</sqlMap>

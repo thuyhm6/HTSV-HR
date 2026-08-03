@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.commons">
+
+	<!-- retrieve report table -->
+	<select id="retrieveReportTableList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  SELECT REPORT_TABLE.*, 
+			  		 SY1.CONTENT TABLE_NAME,
+			  		 SY2.CONTENT VIEW_NAME
+			    FROM REPORT_TABLE,
+			     	 SY_GLOBAL_NAME SY1,
+			     	 SY_GLOBAL_NAME SY2
+			    WHERE MENU_NO = #MENU_NO:VARCHAR#
+			      AND CPNY_ID = #interCpnyID:VARCHAR#
+			      AND REPORT_TABLE.MENU_NO = SY1.NO(+)
+			      AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			      AND REPORT_TABLE.RT_NO = SY2.NO(+)
+			      AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+				ORDER BY SY2.CONTENT
+		]]>		
+	</select>
+	
+	<!-- retrieve report item -->
+	<select id="retrieveReportItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  SELECT REPORT_ITEM.*,SY1.CONTENT REF_ITEM_NAME
+			    FROM REPORT_ITEM,
+			    	 SY_GLOBAL_NAME SY1
+			    WHERE RT_NO = #RT_NO:NUMERIC#
+			      AND REPORT_ITEM.REF_ITEM_NO = SY1.NO(+)
+			      AND SY1.LANGUAGE(+) = #LANGUAGE:VARCHAR#
+			      AND REPORT_ITEM.CPNY_ID = #CPNY_ID:VARCHAR#
+				ORDER BY REPORT_ITEM.ORDERNO
+		]]>		
+	</select>
+	
+	<!-- retrieve report item -->
+	<select id="retrieveReportDataList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			  $sql$
+		]]>		
+	</select>
+</sqlMap>

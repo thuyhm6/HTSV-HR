@@ -1,0 +1,2632 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.salaryCanShu">
+	<delete id="deletePaiQianDiGuanLiInfo" parameterClass="linkMap">
+				<![CDATA[
+					  delete from sy_dispatch s where s.pqd_no = #PQD_NO#
+				]]>
+	</delete>
+
+	<delete id="deletePaiQianDiTempChongFuInfo" parameterClass="linkMap">
+				<![CDATA[
+					 delete from sy_dispatch_temp pp
+ 						where pp.pqd_no
+ 						  not in (select max(p.pqd_no) from sy_dispatch_temp p
+                          where p.created_by = #CREATED_BY#
+                          group by p.pqd_faren,
+                                   p.pqd_chengshidengji,
+                                   p.pqd_shengfen,
+                                   p.pqd_chengshimingcheng,
+                                   p.pqd_diqumingcheng) 
+                                   and pp.created_by =  #CREATED_BY#
+				]]>
+	</delete>
+
+	<delete id="deletePaiQianDiInfoWithTempInfo" parameterClass="linkMap">
+				<![CDATA[
+				delete from sy_dispatch_temp s
+                                   where s.created_by = #CREATED_BY#
+                                     and s.pqd_daoru_result = 'N'
+                                     and s.pqd_no in
+                                         (select p1.pqd_no
+                                            from sy_dispatch_temp p1,
+                                                 sy_dispatch      p
+                                           where p1.created_by =
+                                                 #CREATED_BY#
+                                             and p1.pqd_faren = p.pqd_faren
+                                             and p1.pqd_chengshidengji =
+                                                 p.pqd_chengshidengji
+                                             and p1.pqd_shengfen =
+                                                 p.pqd_shengfen
+                                             and p1.pqd_chengshimingcheng =
+                                                 p.pqd_chengshimingcheng
+                                             and p1.pqd_diqumingcheng =
+                                                 p.pqd_diqumingcheng)
+				]]>
+	</delete>
+
+	<insert id="insertPaiQianDiInfoFromTempInfo" parameterClass="linkMap">
+				<![CDATA[
+					insert into sy_dispatch
+						  (PQD_NO,
+						   PQD_FAREN,
+						   PQD_CHENGSHIDENGJI,
+						   PQD_SHENGFEN,
+						   PQD_CHENGSHIMINGCHENG,
+						   PQD_DIQUMINGCHENG,
+						   CREATE_DATE,
+						   CREATED_BY,
+						   UPDATE_DATE,
+						   UPDATED_BY,
+						   ORDERNO,
+						   ACTIVITY)
+						  select PQD_NO,
+						         PQD_FAREN,
+						         PQD_CHENGSHIDENGJI,
+						         PQD_SHENGFEN,
+						         PQD_CHENGSHIMINGCHENG,
+						         PQD_DIQUMINGCHENG,
+						         CREATE_DATE,
+						         CREATED_BY,
+						         UPDATE_DATE,
+						         UPDATED_BY,
+						         ORDERNO,
+						         ACTIVITY
+						    from sy_dispatch_temp p
+						   where p.CREATED_BY = #CREATED_BY#
+						     AND P.PQD_DAORU_RESULT = 'N'
+				]]>
+	</insert>
+
+	<delete id="deletePaiQianDiInfoTempOkInfo" parameterClass="linkMap">
+				<![CDATA[
+				        delete from sy_dispatch_temp s
+                                   where s.created_by = #CREATED_BY#
+                                     and s.pqd_daoru_result = 'N'
+				]]>
+	</delete>
+
+	<delete id="deleteYuTiDuiXiangGuanLiInfo" parameterClass="linkMap">
+				<![CDATA[
+					  delete from pa_withholding_obj s where s.pqd_no = #PQD_NO#
+				]]>
+	</delete>
+
+	<delete id="deletePaiQianDiJinTieBiaoZhunInfo" parameterClass="linkMap">
+				<![CDATA[
+					  delete from sy_dispatch_allow_std s where s.pqd_no = #PQD_NO#
+				]]>
+	</delete>
+
+	<delete id="deleteHaoFengSheZhiInfo" parameterClass="linkMap">
+		<![CDATA[
+		update PA_GRADE_HAOFENG b set b.activity = 0 where 1=1
+		]]>
+		<isNotEmpty prepend="AND" property="PQD_NO">
+							<![CDATA[
+								b.SEQ = #PQD_NO#
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_NOS">
+							<![CDATA[
+								b.SEQ IN($PQD_NOS$)
+						    ]]>
+
+		</isNotEmpty>
+	</delete>
+
+	<select id="getPaiQianDiGuanLiInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+            		 select count(*) cnt
+			        from sy_dispatch s 
+			          where   s.pqd_faren = #PQD_FR# 
+			            and   s.pqd_chengshidengji = #PQD_CSDJ#
+			          	and   s.pqd_shengfen  = #PQD_SF#
+			          	and   s.pqd_chengshimingcheng  = #PQD_CSMC#
+			            and   s.pqd_diqumingcheng  = #PQD_DQMC#
+				]]>
+	</select>
+	
+		<select id="getZuiDiGongZiBiaoZhunFeiCuXiaoYuanInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+						select count(*) cnt
+						  from pa_low_salary_unpromo p
+						 where p.pqd_faren = #PQD_FR#
+						   and p.pqd_fulidiqu = #PQD_FLDQ#
+						   and p.pqd_niandu = #PQD_ND#
+				]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+					select count(*) cnt
+					  from pa_low_salary_promo p
+					 where p.pqd_niandu = #PQD_ND#
+					   and p.pqd_city_cd = #seach_STATENM_p2#
+					   and p.pqd_chengshimingcheng = #seach_CITYNM_c2#
+				]]>
+	</select>
+
+	<select id="getErrorPqdJinTieBiaoZhunNos" parameterClass="linkMap"
+		resultClass="linkMap"> 
+				<![CDATA[
+            		              select p.pqd_no NO
+                from sy_dispatch_allow_std_temp p
+               where p.created_by = #CREATED_BY# and  p.pqd_faren not in (   select g.cpny_id
+              from hr_company g )
+              union
+              select p.pqd_no NO
+                from sy_dispatch_allow_std_temp p
+               where  p.created_by = #CREATED_BY# and  p.pqd_chengshidengji not in
+                     (select s.code_no from sy_code s where s.parent_code_no = 218067)
+                  union
+              select p.pqd_no NO
+                from sy_dispatch_allow_std_temp p
+               where p.created_by = #CREATED_BY# and   p.pqd_diqumingcheng not in
+                     (select s.code_no from sy_code s where s.parent_code_no = 218076)
+              union
+              select p.pqd_no NO
+                from sy_dispatch_allow_std_temp p
+               where p.created_by = #CREATED_BY# and   p.pqd_zhize not in
+                     ( select distinct e.position_no from hr_employee e where e.position_no is not null )
+				]]>
+	</select>
+
+	<select id="getErrorPqdNos" parameterClass="linkMap"
+		resultClass="linkMap"> 
+				<![CDATA[
+            		            select p.pqd_no NO
+                from sy_dispatch_temp p
+               where p.created_by = #CREATED_BY# and  p.pqd_faren not in (   select g.cpny_id
+						  from hr_company g )
+              union
+              select p.pqd_no NO
+                from sy_dispatch_temp p
+               where  p.created_by = #CREATED_BY# and  p.pqd_chengshidengji not in
+                     (select s.code_no from sy_code s where s.parent_code_no = 218067)
+              union
+              select p.pqd_no NO
+                from sy_dispatch_temp p
+               where p.created_by = #CREATED_BY# and   p.pqd_shengfen not in
+                     (select s.code_no from sy_code s where s.parent_code_no = 218071)
+              union
+              select p.pqd_no NO
+                from sy_dispatch_temp p
+               where p.created_by = #CREATED_BY# and   p.pqd_chengshimingcheng not in
+                     (select s.code_no from sy_code s where s.parent_code_no = 218074)
+              union
+              select p.pqd_no NO
+                from sy_dispatch_temp p
+               where p.created_by = #CREATED_BY# and   p.pqd_diqumingcheng not in
+                     (select s.code_no from sy_code s where s.parent_code_no = 218076)
+				]]>
+	</select>
+
+	<select id="getYuTiDuiXiangGuanLiInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+				            select count(*) cnt
+						  from pa_withholding_obj p
+						 where p.pqd_faren = #PQD_FR#
+						   and p.pqd_renyuanleixingzu = #PQD_RYLXZ#
+				]]>
+	</select>
+	
+	<select id="getYuTiDuiXiangGuanLiInfoLgech" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+				            select count(*) cnt
+						  from pa_withholding_obj p
+						 where p.pqd_faren = #PQD_FR#
+						   and p.pay_area_cd = #PQD_DQ#
+						   and p.pqd_renyuanleixingzu = #PQD_RYLXZ#
+				]]>
+	</select>
+
+	<select id="getNianZhongJiangYuTiInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+			             select count(*)
+							  from PA_ANNUAL_BONUS_PARAM p
+							  where p.cpny_id = #PQD_FR#
+							  and p.year_flag = #PQD_ND#
+				]]>
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+						 select count(*) cnt
+				        from sy_dispatch_allow_std s 
+				          where   s.pqd_faren = #PQD_FR# 
+				            and   s.pqd_zhize = #PQD_ZZ#
+				            and   s.pqd_chengshidengji = #PQD_CSDJ#
+				            and   s.pqd_diqumingcheng  = #PQD_DQMC#
+				]]>
+	</select>
+
+		<select id="checkPaiQianDiYesOrNoThisInfo" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+								select count(*) cnt
+							  from sy_dispatch s
+							 where s.pqd_faren = #PQD_FR#
+							   and s.pqd_chengshidengji = #PQD_CSDJ#
+							   and s.pqd_diqumingcheng = #PQD_DQMC#
+				            	]]>
+	</select>
+
+	<select id="getPaiQianDiGuanLiInfoUpdate" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+				              select count(*) cnt
+				        from sy_dispatch s 
+				          where   s.pqd_faren = (select p1.pqd_faren  from sy_dispatch p1 where p1.pqd_no = #PQD_NO#)
+				            and   s.pqd_chengshidengji = #PQD_CSDJ#
+				            and   s.pqd_shengfen  = (select p1.pqd_shengfen  from sy_dispatch p1 where p1.pqd_no = #PQD_NO#)
+				            and   s.pqd_chengshimingcheng  =  (select p1.pqd_chengshimingcheng  from sy_dispatch p1 where p1.pqd_no = #PQD_NO#)
+				            and   s.pqd_diqumingcheng  = (select p1.pqd_diqumingcheng  from sy_dispatch p1 where p1.pqd_no = #PQD_NO#)
+				            and   s.pqd_no not in (#PQD_NO#)
+				]]>
+	</select>
+	
+		<select id="getZuiDiGongZiBiaoZhunFeiCuXiaoYuanInfoUpdate" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+				           	  select count(*) cnt
+							   from pa_low_salary_unpromo p
+							  where p.pqd_faren = #PQD_FR#
+							    and p.pqd_fulidiqu = #PQD_FLDQ#
+							    and p.pqd_niandu = #PQD_ND#
+							    and p.pqd_no not in (#PQD_NO#)
+				]]>
+		</select>
+		
+		<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanInfoUpdate" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+				               select count(*) cnt
+								   from pa_low_salary_promo p
+								  where p.pqd_niandu = #PQD_ND#
+								    and p.pqd_city_cd = #seach_STATENM_p1#
+								    and p.pqd_chengshimingcheng = #seach_CITYNM_c1#
+								    and p.pqd_no not in (#PQD_NO#)
+
+				]]>
+		</select>
+
+	<select id="getYuTiDuiXiangGuanLiInfoUpdate" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+		            select count(*) cnt
+			        from pa_withholding_obj s 
+			          where   s.pqd_faren = #PQD_FR#
+			            and   s.pqd_renyuanleixingzu  =  #PQD_RYLXZ#
+			            and   s.pqd_no not in (#PQD_NO#)
+				]]>
+	</select>
+	
+	<select id="getYuTiDuiXiangGuanLiInfoUpdateLgech" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+		            select count(*) cnt
+			        from pa_withholding_obj s 
+			          where   s.pqd_faren = #PQD_FR#
+			            and   s.pqd_renyuanleixingzu  =  #PQD_RYLXZ#
+			            and   s.PAY_AREA_CD  =  #PQD_DQ#
+			            and   s.pqd_no not in (#PQD_NO#)
+				]]>
+	</select>
+
+	<select id="getNianZhongJiangYuTiInfoUpdate" parameterClass="linkMap"
+		resultClass="int"> 
+				<![CDATA[
+		                  select count(*) cnt
+				        from PA_ANNUAL_BONUS_PARAM s 
+				          where   s.cpny_id = (select p1.cpny_id  from PA_ANNUAL_BONUS_PARAM p1 where p1.pay_seq = #PQD_NO#)
+				            and  s.year_flag = (select p1.year_flag  from PA_ANNUAL_BONUS_PARAM p1 where p1.pay_seq = #PQD_NO#)
+				            and   s.pay_seq not in (#PQD_NO#)
+				]]>
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunInfoUpdate"
+		parameterClass="linkMap" resultClass="int"> 
+				<![CDATA[
+	      				          select count(*) cnt
+								   from sy_dispatch_allow_std s
+								  where s.pqd_zhize = #PQD_ZZ#
+								    and s.pqd_chengshidengji = #PQD_CSDJ#
+								    and s.pqd_diqumingcheng = #PQD_DQMC#
+								    and s.pqd_no not in (#PQD_NO#)
+				]]>
+	</select>
+	
+	<select id="getPaiQianDiJinTieBiaoZhunInfoUpdate_old"
+		parameterClass="linkMap" resultClass="int"> 
+				<![CDATA[
+	      				select count(*) cnt
+						        from PA_ANNUAL_BONUS_PARAM s 
+						          where   s.cpny_id = (select p1.cpny_id  from PA_ANNUAL_BONUS_PARAM p1 where p1.pay_seq = #PQD_NO#)
+						            and  s.year_flag = (select p1.year_flag  from PA_ANNUAL_BONUS_PARAM p1 where p1.pay_seq = #PQD_NO#)
+						            and   s.pay_seq not in (#PQD_NO#)
+				]]>
+	</select>
+	
+	<select id="getHaoFengDayMonAjax" parameterClass="linkMap" resultClass="int">	
+	<![CDATA[
+	
+		SELECT count(*) cnt from pa_grade_haofeng where cpny_id=#CPNY_ID#
+		AND  PAY_GRADE=#PAY_GRADE# AND PAY_STEP = #PAY_STEP#
+	
+	]]>
+	
+	
+	</select>
+
+	<select id="getPaiQianDiGuanLiInfoUpdatePqd" parameterClass="linkMap"
+		resultClass="string"> 
+				<![CDATA[
+			            select s.pqd_chengshidengji PQD_CSDJ from sy_dispatch s where s.pqd_no = #PQD_NO#
+				]]>
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunObjInfo" parameterClass="linkMap"
+		resultClass="linkMap"> 
+				<![CDATA[
+			                  select     s.pqd_no                NO1,
+                                		 s.pqd_faren             fr,
+                               		     s.pqd_zhize            zz,
+                       				     s.pqd_chengshidengji         csdj,
+				                         get_global_name(s.pqd_diqumingcheng,  #interLanguage#)     dqmc,
+				                         s.pqd_shuzhi sz, 
+				                         s.pqd_beizhu bz,
+				                         s.ACTIVITY     PQD_ACTIVITY
+				              from sy_dispatch_allow_std s
+				                where  s.pqd_no = #PQD_NO#
+
+				]]>
+	</select>
+
+
+	<select id="getHaoFengSheZhiInfo" parameterClass="linkMap"
+		resultClass="linkMap">
+		
+		 select b.seq,
+		       b.cpny_id,
+		       b.post_family,
+               b.post_grade_no,
+               b.pay_step,
+		       b.start_month,
+		       b.end_month,
+		       b.base_pay,
+		       b.base_allowance,
+		       b.grade_allowance,
+		       b.operating_allowance,
+		       b.activity,
+		       b.create_date,
+		       b.created_ip,
+		       b.created_by,
+		       b.update_date,
+		       b.updated_ip,
+		       b.updated_by
+               from PA_GRADE_HAOFENG b 
+               where b.SEQ=#PQD_NO#
+		
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunObjInfo1" parameterClass="linkMap"
+		resultClass="linkMap"> 
+						<![CDATA[
+			                  select     s.pqd_no                NO1,
+                                		 s.pqd_faren             fr,
+                               		     s.pqd_zhize            zz,
+                       				     s.pqd_chengshidengji         csdj,
+				                         s5.content      dqmc,
+				                         s.pqd_shuzhi sz, 
+				                         s.pqd_beizhu bz,
+				                         s.ACTIVITY     PQD_ACTIVITY
+				              from sy_dispatch_allow_std s,    sy_global_name s5
+				                where  s.pqd_zhize = #PQD_ZZ#
+				                and s.pqd_faren = #PQD_FR#
+				                   and   s.pqd_diqumingcheng  = s5.no
+				                       and s.pqd_no = #PQD_NO#
+				                       and s5.language = #interLanguage#
+							]]>
+	</select>
+
+	<select id="getPaiQianDiInfo" parameterClass="linkMap" resultClass="linkMap"> 
+		<![CDATA[
+			SELECT S.PQD_NO NO1,
+			       S.PQD_FAREN FR,
+			       S.PQD_CHENGSHIDENGJI CSDJ,
+			       M.STATE_CD SF_NO,
+			       M.STATE_NM SF,
+			       M.CITY_CD CS_NO,
+			       M.CITY_NM CSMC,
+			       M.REGION_CD DQ_NO,
+			       M.REGION_NM DQMC,
+			       S.ACTIVITY
+			  FROM SY_DISPATCH S, INC_CITY_TO_CITYLEVEL_MAPP_DIS M
+			 WHERE S.PQD_SHENGFEN = M.STATE_CD
+			   AND S.PQD_CHENGSHIMINGCHENG = M.CITY_CD
+			   AND S.PQD_DIQUMINGCHENG = M.REGION_CD
+			   AND S.PQD_NO = #PQD_NO#
+		]]>
+	</select>
+	
+		<select id="getZuiDiGongZiBiaoZhunFeiCuXiaoYuanObjInfo" parameterClass="linkMap"
+		resultClass="linkMap"> 
+				<![CDATA[
+					select p.pqd_no            NO1,
+				       p.pqd_faren         FR,
+				       p.pqd_niandu        ND,
+				       p.pqd_fulidiqu      FLDQ,
+				       p.pqd_zuidigongzi   ZDGZ,
+				       p.pqd_shepinggongzi SPGZ,
+				       p.pqd_zuixiaojishu  ZXJS,
+				       p.pqd_zuidajishu    ZDJS,
+				       p.pqd_qufen         QF
+				  from pa_low_salary_unpromo p
+				 where p.pqd_no = #PQD_NO#
+				]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanObjInfo" parameterClass="linkMap"
+		resultClass="linkMap"> 
+				<![CDATA[
+					 	select p.pqd_no                NO1,
+						       p.pqd_niandu            ND,
+						       p.pqd_city_cd           CITYCD,
+						       p.pqd_chengshimingcheng CSMC,
+						       p.pqd_zuidigongzi       ZDGZ,
+						       p.pqd_qufen             QF
+						  from pa_low_salary_promo p
+						 where p.pqd_no = #PQD_NO#
+				]]>
+	</select>
+
+	<select id="getYuTiDuiXiangGuanLiObjInfo" parameterClass="linkMap"
+		resultClass="linkMap"> 
+				<![CDATA[
+					  select p.pqd_no NO1,
+			                 p.pqd_faren FR,
+			                 p.pay_area_cd DQ,
+			                 p.pqd_renyuanleixingzu RYLXZ,
+			                 p.pqd_shifoucanyuyuti SFCYYT,
+			                 p.create_date CD,
+			                 p.update_date UD,
+			                 p.updated_by UY,
+			                 p.activity PQD_ACTIVITY
+			            from pa_withholding_obj p 
+			           where p.pqd_no = #PQD_NO#
+
+				]]>
+	</select>
+<select id="viewHaoFengSetListExcel" parameterClass="linkMap"
+		resultClass="linkMap">
+					<![CDATA[
+						 select b.seq,
+						       b.cpny_id,
+						       get_global_name(b.post_family,#interLanguage#) post_family,
+                               get_global_name(b.post_grade_no,#interLanguage#) post_grade_no,
+                               get_global_name(b.pay_step,#interLanguage#) pay_step,
+						       b.start_month,
+						       b.end_month,
+						       b.base_pay,
+						       b.base_allowance,
+						       b.grade_allowance,
+						       b.operating_allowance,
+						       b.activity,
+						       b.create_date,
+						       b.created_ip,
+						       b.created_by,
+						       b.update_date,
+						       b.updated_ip,
+						       b.updated_by
+                         from PA_GRADE_HAOFENG b 
+                         where b.cpny_id = #CPNY_ID#
+						    ]]>
+		<isNotEmpty prepend="AND" property="seach_ZHIJI">
+						      	<![CDATA[
+										b.post_grade_no = #seach_ZHIJI:VARCHAR#
+								    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_HAOFENG">
+								<![CDATA[
+									b.PAY_STEP = #seach_HAOFENG:VARCHAR#
+							    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_ACTIVITY">
+							<![CDATA[
+								b.activity = #seach_ACTIVITY:VARCHAR#
+						    ]]>
+		</isNotEmpty> 
+						<![CDATA[
+								order by b.post_grade_no asc
+						    ]]>
+	</select>
+
+	<select id="viewHaoFengSetList" parameterClass="linkMap"
+		resultClass="linkMap">
+					<![CDATA[
+						 select b.seq,
+						       b.cpny_id,
+						       get_global_name(b.post_family,#interLanguage#) post_family,
+                               get_global_name(b.post_grade_no,#interLanguage#) post_grade_no,
+                               get_global_name(b.pay_step,#interLanguage#) pay_step,
+                               b.pay_step PAY_STEP_NO,
+						       b.start_month,
+						       b.end_month,
+						       b.base_pay,
+						       b.base_allowance,
+						       b.grade_allowance,
+						       b.operating_allowance,
+						       b.activity,
+						       b.create_date,
+						       b.created_ip,
+						       b.created_by,
+						       b.update_date,
+						       b.updated_ip,
+						       b.updated_by
+                         from PA_GRADE_HAOFENG b 
+                         where b.cpny_id = #CPNY_ID#
+						    
+						    ]]>
+						    	 
+		<isNotEmpty prepend="AND" property="seach_ZHIJI">
+						      	<![CDATA[
+										b.post_grade_no = #seach_ZHIJI:VARCHAR#
+								    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="seach_HAOFENG">
+								<![CDATA[
+									b.PAY_STEP = #seach_HAOFENG:VARCHAR#
+							    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="seach_ACTIVITY">
+							<![CDATA[
+								b.activity = #seach_ACTIVITY:VARCHAR#
+						    ]]>
+		</isNotEmpty> 
+		  
+						
+						<![CDATA[
+								order by b.post_grade_no asc
+						    ]]>
+	</select>
+
+	<select id="getHaoFengSheZhiListCnt" parameterClass="linkMap"
+		resultClass="int">
+<![CDATA[
+
+		select
+		count(*)
+
+		from pa_grade_haofeng a
+		where 1=1
+		
+ 
+		     ]]>
+		 	<isNotEmpty prepend="AND" property="CPNY_ID">
+						      	<![CDATA[
+								  a.CPNY_ID =#CPNY_ID:VARCHAR#
+								    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_START_DATE">
+						      	<![CDATA[
+								  a.start_month >=
+										#seach_START_DATE#
+								    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="seach_END_DATE">
+						      	<![CDATA[
+								  a.end_month <=
+										#seach_END_DATE#
+								    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_ZHIQUN">
+						      	<![CDATA[
+										a.post_family = #seach_ZHIQUN:VARCHAR#
+								    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_ZHIJI">
+						      	<![CDATA[
+										a.post_grade_no = #seach_ZHIJI:VARCHAR#
+								    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_HAOFENG">
+							<![CDATA[
+								a.PAY_STEP = #seach_HAOFENG:VARCHAR#
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seach_ACTIVITY">
+							<![CDATA[
+								a.activity = #seach_ACTIVITy:VARCHAR#
+						    ]]>
+		</isNotEmpty> 
+						<![CDATA[
+								order by a.post_grade_no asc
+						    ]]>
+
+
+	</select>
+	<select id="viewHaoFengSetListGrade" parameterClass="linkMap"
+		resultClass="linkMap">
+
+		select DISTINCT(i.pay_grade) PAY_GRADE
+		from hr_emp_pa_info
+		i, hr_employee e
+		where i.person_id = e.person_id
+	 
+		and i.pay_grade is not null
+		AND E.CPNY_ID =#CPNY_ID:VARCHAR#
+		ORDER BY  I.PAY_GRADE
+		 
+				</select>
+	<select id="viewHaoFengSetListGradeNo" parameterClass="linkMap"
+		resultClass="linkMap">
+
+
+		select distinct(i.pay_step) PAY_STEP
+		from hr_emp_pa_info i,
+		hr_employee e
+		where i.person_id = e.person_id
+		 
+		and i.pay_step is not null
+		AND E.CPNY_ID =#CPNY_ID:VARCHAR#
+				ORDER BY I.PAY_STEP
+				</select>
+
+	<select id="getNianZhongJiangYuTiObjInfo" parameterClass="linkMap"
+		resultClass="linkMap"> 
+					<![CDATA[
+				select 	   p.pay_seq NO1,
+						   p.year_flag ND, 
+					       p.cpny_id FR, 
+					       p.pay_rat JTBL, 
+					       substr(p.payment_date, 1, 4) ZFYFYEAR,
+					       substr(p.payment_date, 5, 6) ZFYFMONTH
+					  from PA_ANNUAL_BONUS_PARAM p
+					 where  p.pay_seq = #PQD_NO#
+				]]>
+	</select>
+
+	<select id="getPqdNoAddOne" resultClass="BigDecimal">
+			<![CDATA[
+				select  nvl(max(to_number(p.pqd_no)), 0) + 1 NO1  
+					from sy_dispatch p 
+					]]>
+	</select>
+
+	<update id="updatePaiQianDiGuanLiInfo" parameterClass="linkMap">
+			<![CDATA[
+				update sy_dispatch s
+		             set s.pqd_chengshidengji = #PQD_CSDJ#, 
+		             s.update_date = sysdate,
+		             s.updated_by = #UPDATE_BY#,
+		               s.activity = #PQD_ACTIVITY#
+		                 where s.pqd_no = #PQD_NO#
+			]]>
+	</update>
+	
+		<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanInfo" parameterClass="linkMap">
+			<![CDATA[
+				 update pa_low_salary_unpromo p
+				    set p.pqd_fulidiqu      = #PQD_FLDQ#,
+				        p.pqd_niandu        = #PQD_ND#,
+				        p.pqd_zuidigongzi   = #PQD_ZDGZ#,
+				        p.pqd_shepinggongzi = #PQD_SPGZ#,
+				        p.pqd_zuixiaojishu  = #PQD_ZXJS#,
+				        p.pqd_zuidajishu    = #PQD_ZDJS#,
+				        p.pqd_qufen         = #PQD_QF#
+				  where p.pqd_no = #PQD_NO#
+			]]>
+		</update>
+		
+		<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanInfo" parameterClass="linkMap">
+			<![CDATA[
+				   update pa_low_salary_promo p
+					      set p.pqd_niandu            = #PQD_ND#,
+					          p.pqd_city_cd           = #seach_STATENM_p1#,
+					          p.pqd_chengshimingcheng = #seach_CITYNM_c1#,
+					          p.pqd_zuidigongzi       = #PQD_ZDGZ#,
+					          p.pqd_qufen             = #PQD_QF#
+					    where p.pqd_no = #PQD_NO#
+			]]>
+		</update>
+
+	<update id="updateYuTiDuiXiangGuanLiInfo" parameterClass="linkMap">
+			<![CDATA[
+				                update pa_withholding_obj s
+                         set s.PAY_AREA_CD         = #PQD_DQ#,
+                             s.pqd_renyuanleixingzu = #PQD_RYLXZ#,
+                             s.update_date          = sysdate,
+                             s.updated_by           = #UPDATE_BY#,
+                             s.activity             = #PQD_ACTIVITY#,
+                             s.pqd_shifoucanyuyuti  = #PQD_SFCYYT#
+                       where s.pqd_no = #PQD_NO#
+			]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempInfo" parameterClass="linkMap">
+			<![CDATA[
+				    update sy_dispatch_temp p 
+				    	set p.pqd_daoru_result = 'E' 
+				    	where p.pqd_no = #NO#
+				    	and p.created_by = #CREATED_BY#
+				    	]]>
+	</update>
+
+	<update id="updatePaiQianDiJinTieBiaoZhunTempInfo"
+		parameterClass="linkMap">
+			<![CDATA[
+				    update sy_dispatch_allow_std_temp p 
+              set p.pqd_daoru_result = 'E' 
+              where p.pqd_no = #NO#
+              and p.created_by = #CREATED_BY#
+				    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempJianChaJieGuoQingKongInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					   
+						update sy_dispatch_temp p set p.pqd_001 = '' where p.pqd_no = #NO#
+	
+					    	]]>
+	</update>
+
+	<update
+		id="updatePaiQianDiGuanLiTempJianChaJieGuoQingKongJinTieBiaoZhunInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					   
+						update sy_dispatch_allow_std_temp p set p.pqd_001 = '' where p.pqd_no = #NO#
+	
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempFaRenInfo" parameterClass="linkMap">
+				<![CDATA[
+					  
+				update sy_dispatch_temp p
+				   set p.pqd_001 = p.pqd_001 || '[法人ID不存在] '
+				 where p.pqd_no = #NO#
+				   and (select count(*)
+				          from sy_dispatch_temp t
+				         where t.pqd_no = #NO#
+				           and t.pqd_faren in (  select g.cpny_id
+						  from hr_company g)) = 0   
+	                                
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempFaRenJinTieBiaoZhunInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					  
+				update sy_dispatch_allow_std_temp p
+				   set p.pqd_001 = p.pqd_001 || '[法人ID不存在] '
+				 where p.pqd_no = #NO#
+				   and (select count(*)
+				          from sy_dispatch_allow_std_temp t
+				         where t.pqd_no = #NO#
+				           and t.pqd_faren in (  select g.cpny_id
+						  from hr_company g)) = 0   
+	                                
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempChengShiDengJiInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					                                
+				update sy_dispatch_temp p
+				   set p.pqd_001 = p.pqd_001 || '[城市等级不存在] '
+				 where p.pqd_no = #NO#
+				   and (select count(*)
+				          from sy_dispatch_temp t
+				         where t.pqd_no = #NO#
+				           and t.pqd_chengshidengji in (select s.code_no from sy_code s where s.parent_code_no = 218067)) = 0 
+				      
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempChengShiDengJiJinTieBiaoZhunInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					                                
+				update sy_dispatch_allow_std_temp p
+				   set p.pqd_001 = p.pqd_001 || '[城市等级不存在] '
+				 where p.pqd_no = #NO#
+				   and (select count(*)
+				          from sy_dispatch_allow_std_temp t
+				         where t.pqd_no = #NO#
+				           and t.pqd_chengshidengji in (select s.code_no from sy_code s where s.parent_code_no = 218067)) = 0 
+				      
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempShengFenInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					        
+					update sy_dispatch_temp p
+					   set p.pqd_001 = p.pqd_001 || '[省份不存在] '
+					 where p.pqd_no = #NO#
+					   and (select count(*)
+					          from sy_dispatch_temp t
+					         where t.pqd_no = #NO#
+					           and t.pqd_shengfen in (select s.code_no from sy_code s where s.parent_code_no = 218071)) = 0 
+					   
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempChengShiMIngChengInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					           
+					update sy_dispatch_temp p
+					   set p.pqd_001 = p.pqd_001 || '[城市名称不存在] '
+					 where p.pqd_no = #NO#
+					   and (select count(*)
+					          from sy_dispatch_temp t
+					         where t.pqd_no = #NO#
+					           and t.pqd_chengshimingcheng in (select s.code_no from sy_code s where s.parent_code_no = 218074)) = 0 
+					           
+	    
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempDiQuMingChengInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					        
+					update sy_dispatch_temp p
+					   set p.pqd_001 = p.pqd_001 || '[地区名称不存在] '
+					 where p.pqd_no = #NO#
+					   and (select count(*)
+					          from sy_dispatch_temp t
+					         where t.pqd_no = #NO#
+					           and t.pqd_diqumingcheng in (select s.code_no from sy_code s where s.parent_code_no = 218076)) = 0 
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempDiQuMingChengJinTieBiaoZhunInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					        
+					update sy_dispatch_allow_std_temp p
+					   set p.pqd_001 = p.pqd_001 || '[地区名称不存在] '
+					 where p.pqd_no = #NO#
+					   and (select count(*)
+					          from sy_dispatch_allow_std_temp t
+					         where t.pqd_no = #NO#
+					           and t.pqd_diqumingcheng in (select s.code_no from sy_code s where s.parent_code_no = 218076)) = 0 
+					    	]]>
+	</update>
+
+
+	<update id="updatePaiQianDiGuanLiTempZhiZeJinTieBiaoZhunInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					  update sy_dispatch_allow_std_temp p
+					   set p.pqd_001 = p.pqd_001 || '[职责不存在] '
+					 where p.pqd_no = #NO#
+					   and (select count(*)
+					          from sy_dispatch_allow_std_temp t
+					         where t.pqd_no = #NO#
+					           and t.pqd_zhize in ( select distinct e.position_no from hr_employee e where e.position_no is not null )) = 0 
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempShuZhiJinTieBiaoZhunInfo"
+		parameterClass="linkMap">
+				<![CDATA[
+					  update sy_dispatch_allow_std_temp p
+					   set p.pqd_001 = p.pqd_001 || '[数值不是数字类型] '
+					 where p.pqd_no = #NO#
+					   and checknumber(p.pqd_shuzhi) = 0
+					    	]]>
+	</update>
+
+	<update id="updatePaiQianDiGuanLiTempNoErrorInfo"
+		parameterClass="linkMap">
+				<![CDATA[	
+				            update sy_dispatch_temp pp 
+                    set pp.pqd_daoru_result = 'N' 
+                    where pp.pqd_no in (  select p.pqd_no
+                      from sy_dispatch_temp p
+                     where (p.pqd_daoru_result is null or p.pqd_daoru_result <> 'E')
+                       and p.created_by = #CREATED_BY# )
+				]]>
+	</update>
+
+	<update id="updatePaiQianDiJinTieBiaoZhunTempNoErrorInfo"
+		parameterClass="linkMap">
+				<![CDATA[	
+				                         update sy_dispatch_allow_std_temp pp 
+                    set pp.pqd_daoru_result = 'N' 
+                    where pp.pqd_no in (  select p.pqd_no
+                      from sy_dispatch_allow_std_temp p
+                     where (p.pqd_daoru_result is null or p.pqd_daoru_result <> 'E')
+                       and p.created_by = #CREATED_BY# )
+				]]>
+	</update>
+
+	<!--年终奖预提计算的存储 -->
+	<procedure id="callNianZhongJiangYuTiJiSuanProduce"
+		parameterClass="linkMap" resultClass="linkMap">
+			<![CDATA[	
+				{CALL  
+					pkg_annual_bonus.pr_annual_bonus_calc(#PERSONID#
+														,#CNPYID#
+														,#MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+														)}
+
+			]]>
+	</procedure>
+
+	<!--正规预提计算的存储 -->
+	<procedure id="callZhengGuiYuTiJiSuanProduce" parameterClass="linkMap"
+		resultClass="linkMap">
+			<![CDATA[	
+				{CALL  
+					AC_CAL_ACCRUAL_PAY_PROC()}
+			]]>
+	</procedure>
+	
+	<update id="updateNianZhongJiangYuTiInfo" parameterClass="linkMap">
+		update
+		PA_ANNUAL_BONUS_PARAM s
+		set s.pay_rat = #PQD_JTBL#,
+		s.payment_date =
+		#PQD_YF_YEAR# || #PQD_YF_MONTH#,
+		s.update_date = sysdate,
+		s.updated_by =
+		#UPDATE_BY#,
+		s.activity = #PQD_ACTIVITY#
+		where s.pay_seq = #PQD_NO#
+	</update>
+	
+	<update id="updateZuiDiGongZiBiaoZhunFeiCuXiaoYuanExcelResultToNos" parameterClass="linkMap">
+								update pa_low_salary_unpromo_temp p
+			   					set p.pqd_fulidiqu = nvl((select s.code_no
+			                              from sy_code s, sy_global_name sg
+			                             where sg.no = s.code_no
+			                               and s.parent_code_no = 216736
+			                               and sg.language = 'zh'
+			                               and sg.content = p.pqd_fulidiqu),
+			                            p.pqd_fulidiqu),
+			      				 p.pqd_qufen    = decode(p.pqd_qufen,
+			                               '应发',
+			                               'SQ',
+			                               '实得',
+			                               'SH',
+			                               p.pqd_qufen)
+			 				where p.created_by = #CREATED_BY#
+	</update>
+	
+		<update id="updatePaiQianDiGuanLiExcelResultToNos" parameterClass="linkMap">
+		 				  update sy_dispatch_temp p
+               set p.pqd_chengshidengji    = nvl((select s.code_no
+                                       from sy_code s, sy_global_name sg
+                                      where sg.no = s.code_no
+                                        and s.parent_code_no = '218067'
+                                        and sg.language = 'zh'
+                                        and sg.content =
+                                            p.pqd_chengshidengji),
+                                     p.pqd_chengshidengji),
+                 p.pqd_shengfen          = nvl((select distinct m.state_cd
+                                       from inc_city_to_citylevel_mapp m
+                                      where p.pqd_shengfen = m.state_nm),
+                                     p.pqd_shengfen),
+                 p.pqd_chengshimingcheng = nvl((select distinct m.city_cd
+                                       from inc_city_to_citylevel_mapp m
+                                      where p.pqd_chengshimingcheng = m.city_nm),
+                                     p.pqd_chengshimingcheng),
+                 p.pqd_diqumingcheng     = nvl((select distinct m.region_cd
+                                       from inc_city_to_citylevel_mapp m
+                                      where p.pqd_diqumingcheng = m.region_nm),
+                                     p.pqd_diqumingcheng)
+             where p.created_by = #CREATED_BY#
+
+	</update>
+	
+	<update id="updatePaiQianDiJinTieBiaoZhunExcelResultToNos" parameterClass="linkMap">
+		 					  update sy_dispatch_allow_std_temp p
+    							 set p.pqd_chengshidengji = nvl((select s.code_no
+                                      from sy_code s, sy_global_name sg
+                                     where sg.no = s.code_no
+                                       and s.parent_code_no = 218067
+                                       and sg.language = 'zh'
+                                       and sg.content = p.pqd_chengshidengji),
+                                    p.pqd_chengshidengji),
+        						 p.pqd_diqumingcheng  = nvl((select distinct t.region_cd
+                                      from inc_city_to_citylevel_mapp t
+                                     where t.region_nm = p.pqd_diqumingcheng),
+                                     p.pqd_diqumingcheng)
+   								 where p.created_by = #CREATED_BY#
+	</update>
+	
+		<update id="updateZuiDiGongZiBiaoZhunCuXiaoYuanExcelResultToNos" parameterClass="linkMap">
+		 						update pa_low_salary_promo_temp pp
+   									set pp.pqd_chengshimingcheng = nvl((select s.code_no
+                                        from sy_code s, sy_global_name sg
+                                       where sg.no = s.code_no
+                                         and s.parent_code_no = 218074
+                                         and sg.language = 'zh'
+                                         and sg.content =
+                                             pp.pqd_chengshimingcheng),
+                                      pp.pqd_chengshimingcheng),
+       								pp.pqd_city_cd           = nvl((select s.code_no
+                                        from sy_code s, sy_global_name sg
+                                       where sg.no = s.code_no
+                                         and s.parent_code_no = 219597
+                                         and sg.language = 'zh'
+                                         and sg.content = pp.pqd_city_cd),
+                                      pp.pqd_city_cd),
+      	 							pp.pqd_qufen             = decode(pp.pqd_qufen,
+                                         '应发',
+                                         'SQ',
+                                         '实得',
+                                         'SH',
+                                         pp.pqd_qufen)
+ 									where pp.created_by = #CREATED_BY#
+	</update>
+
+	<update id="updatePaiQianDiJinTieBiaoZhunInfo" parameterClass="linkMap">
+				  update sy_dispatch_allow_std s
+				     set s.pqd_chengshidengji = #PQD_CSDJ#,
+				         s.pqd_shuzhi         = #PQD_SZ#,
+				         s.pqd_zhize          = #PQD_ZZ#,
+				         s.pqd_diqumingcheng  = #PQD_DQMC#,
+				         s.pqd_beizhu         = #PQD_BZ#,
+				         s.update_date        = sysdate,
+				         s.updated_by         = #UPDATE_BY#,
+				         s.activity           = #PQD_ACTIVITY#
+				   where s.pqd_no = #PQD_NO#
+	</update>
+
+	<update id="updateHaoFengSheZhiInfo" parameterClass="linkMap">
+	
+	    <![CDATA[
+		update
+		PA_GRADE_HAOFENG b 
+		set
+		b.start_month = #START_MONTH#,
+		b.end_MONTH = #END_MONTH#,
+		b.base_pay = #BASE_PAY#,
+		b.base_allowance = #BASE_ALLOWANCE#,
+		b.grade_allowance = #GRADE_ALLOWANCE#,
+		b.operating_allowance = #OPERATING_ALLOWANCE#,
+		b.update_date = sysdate,
+        b.updated_ip = #UPDATED_IP:VARCHAR#,
+        b.updated_by = #UPDATED_BY:VARCHAR#
+        where b.seq = #SEQ#
+		]]>
+		</update>
+
+
+	<insert id="addNianZhongJiangYuTiInfo" parameterClass="linkMap">
+		insert
+		into PA_ANNUAL_BONUS_PARAM (
+		PAY_SEQ,
+		CPNY_ID ,
+		YEAR_FLAG ,
+		PAY_RAT ,
+		PAYMENT_DATE ,
+		CREATE_DATE ,
+		CREATED_BY ,
+		ACTIVITY,
+		remark )
+		values
+		(PA_ANNUAL_BONUS_PARAM_SEQ.nextval,
+		#PQD_FR#,
+		#PQD_ND#,
+		#PQD_JTBL#,
+		#PQD_YF_YEAR# || #PQD_YF_MONTH#,
+		sysdate,
+		#CREATED_BY#,
+		1,
+		#REMARK#)
+	</insert>
+
+
+	<insert id="addYuTiDuiXiangGuanLiInfo" parameterClass="linkMap">
+				insert into pa_withholding_obj
+		( PQD_NO,
+		PQD_FAREN ,
+		pay_area_cd ,
+		PQD_RENYUANLEIXINGZU ,
+		PQD_SHIFOUCANYUYUTI ,
+		CREATE_DATE ,
+		CREATED_BY ,
+		UPDATED_BY,
+		ACTIVITY)
+		values
+		(pa_withholding_obj_seq.nextval,
+		#PQD_FR#,
+		#PQD_DQ#,
+		#PQD_RYLXZ#,
+		#PQD_SFCYYT#,
+		sysdate,
+		#CREATED_BY#,
+		#CREATED_BY#,
+		#PQD_ACTIVITY#)
+			</insert>
+
+
+
+	<insert id="addPaiQianDiGuanLiInfo" parameterClass="linkMap">
+		insert into
+		sy_dispatch
+		( PQD_NO,
+		PQD_FAREN ,
+		PQD_CHENGSHIDENGJI ,
+		PQD_SHENGFEN ,
+		PQD_CHENGSHIMINGCHENG ,
+		PQD_DIQUMINGCHENG ,
+		CREATE_DATE ,
+		CREATED_BY ,
+		ACTIVITY)
+		values
+		(sy_dispatch_seq.nextval,
+		#PQD_FR#,
+		#PQD_CSDJ#,
+		#PQD_SF#,
+		#PQD_CSMC#,
+		#PQD_DQMC#,
+		sysdate,
+		#CREATED_BY#,
+		#PQD_ACTIVITY#)
+	</insert>
+	
+	<insert id="addZuiDiGongZiBiaoZhunFeiCuXiaoYuanInfo" parameterClass="linkMap">
+					insert into pa_low_salary_unpromo
+					  (PQD_NO,
+					   PQD_FAREN,
+					   PQD_NIANDU,
+					   PQD_FULIDIQU,
+					   PQD_ZUIDIGONGZI,
+					   PQD_SHEPINGGONGZI,
+					   PQD_ZUIXIAOJISHU,
+					   PQD_ZUIDAJISHU,
+					   PQD_QUFEN,
+					   CREATE_DATE,
+					   CREATED_BY)
+					values
+					  (pa_low_salary_unpromo_seq.nextval,
+					   #PQD_FR#,
+					   #PQD_ND#,
+					   #PQD_FLDQ#,
+					   #PQD_ZDGZ#,
+					   #PQD_SPGZ#,
+					   #PQD_ZXJS#,
+					   #PQD_ZDJS#,
+					   #PQD_QF#,
+					   sysdate,
+					   #CREATED_BY#)
+	</insert>
+	
+	<insert id="addZuiDiGongZiBiaoZhunCuXiaoYuanInfo" parameterClass="linkMap">
+			 insert into pa_low_salary_promo
+						  (PQD_NO,
+						   PQD_NIANDU,
+						   PQD_CITY_CD,
+						   PQD_CHENGSHIMINGCHENG,
+						   PQD_ZUIDIGONGZI,
+						   PQD_QUFEN,
+						   CREATE_DATE,
+						   CREATED_BY)
+						values
+						  (pa_low_salary_promo_seq.nextval,
+						   #PQD_ND#,
+						   #seach_STATENM_p2#,
+						   #seach_CITYNM_c2#,
+						   #PQD_ZDGZ#,
+						   #PQD_QF#,
+						   sysdate,
+						   #CREATED_BY#)
+	</insert>
+
+	<insert id="addPaiQianDiJinTieBiaoZhunInfo" parameterClass="linkMap">
+		insert into sy_dispatch_allow_std
+		( PQD_NO,
+		PQD_FAREN ,
+		PQD_ZHIZE,
+		PQD_CHENGSHIDENGJI ,
+		PQD_DIQUMINGCHENG ,
+		PQD_SHUZHI,
+		PQD_BEIZHU,
+		CREATE_DATE ,
+		CREATED_BY ,
+		ACTIVITY)
+		values
+		(sy_dispatch_allow_std_seq.nextval,
+		#PQD_FR#,
+		#PQD_ZZ#,
+		#PQD_CSDJ#,
+		#PQD_DQMC#,
+		#PQD_SZ#,
+		#PQD_BZ#,
+		sysdate,
+		#CREATED_BY#,
+		#PQD_ACTIVITY#)
+	</insert>
+
+
+	<insert id="addHaoFengGuanLiInfo" parameterClass="linkMap">
+
+
+		insert into PA_GRADE_HAOFENG b(b.seq,
+                                 b.cpny_id,
+                                 b.post_grade_no,
+                                 b.pay_step,
+                                 b.base_pay,
+                                 b.START_MONTH,
+                                 b.END_MONTH,
+                                 b.activity,
+                                 b.create_date,
+                                 b.created_ip,
+                                 b.created_by)
+                                 values(
+                                 PA_GRADE_HAOFENG_SEQ.nextval,
+                                 #CPNY_ID#,
+                                 #JIQUN#,
+                                 #HAOFENG#,
+                                 #BASE_PAY#,
+                                 #START_MONTH#,
+                                 #END_MONTH#,
+                                 #ACTIVITY#,
+                                 sysdate,
+                                 #CREATED_IP#,
+                                 #CREATED_BY#
+                                 )
+		
+	</insert>
+    
+    <select id="panDuanShiFouChongFu" parameterClass="linkMap" resultClass="int">
+    
+          select count(*) from PA_GRADE_HAOFENG b where 
+                                           b.cpny_id = #CPNY_ID#
+                                           AND b.post_family = #ZHIQUN#
+                                           AND b.post_grade_no = #JIQUN#
+                                           AND b.pay_step = #HAOFENG#
+                                           AND b.start_month = #START_MONTH#
+                                           AND b.activity = 1
+    
+    </select>
+	
+	<select id="getYuTiDuiXiangGuanListCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+							  select count(*) cnt
+					                  from pa_withholding_obj p , hr_employee e 
+								 where e.person_id(+) = p.updated_by
+								 and p.pqd_faren = #interCpnyID#
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								p.pqd_faren = #faren#
+						    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="daqu">
+							<![CDATA[
+								e.pay_area_cd in ($daqu$)
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="rylxz">
+							<![CDATA[
+								p.pqd_renyuanleixingzu = #rylxz#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="sfcyyt">
+							<![CDATA[
+								p.pqd_shifoucanyuyuti = #sfcyyt#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="act">
+							<![CDATA[
+								p.activity = #act#
+						    ]]>
+		</isNotEmpty> 
+						
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+	
+	<select id="getDaQuNamesList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+				        select distinct d.pay_area_cd DQ
+							   from hr_department d
+							  where d.dept_type = 'payarea'
+					]]>
+	</select>
+	
+	
+	<select id="getYuTiDuiXiangGuanList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+				                    select p.pqd_no NO1,
+					                       p.pqd_faren FR,
+					                       decode(p.pqd_faren, 'TSTO', p.pay_area_cd, ' ') DQ,
+					                       get_global_name(p.pqd_renyuanleixingzu, 'zh') RYLXZ,
+					                       p.pqd_shifoucanyuyuti SFCYYT,
+					                       p.create_date CD,
+					                       p.update_date UD,
+					                       e.local_name UY,
+					                       p.activity PQD_ACTIVITY
+					                  from pa_withholding_obj p , hr_employee e 
+								 where e.person_id(+) = p.updated_by
+								 and p.pqd_faren = #interCpnyID#
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								p.pqd_faren = #faren#
+						    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="daqu">
+							<![CDATA[
+								e.pay_area_cd in ($daqu$)
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="rylxz">
+							<![CDATA[
+								p.pqd_renyuanleixingzu = #rylxz#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="sfcyyt">
+							<![CDATA[
+								p.pqd_shifoucanyuyuti = #sfcyyt#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="act">
+							<![CDATA[
+								p.activity = #act#
+						    ]]>
+		</isNotEmpty> 
+						
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+
+
+	<select id="getPaiQianDiJtBzList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+
+					<![CDATA[
+					   select s.pqd_no NO1,
+					        s.pqd_faren fr,
+					        s.pqd_zhize zz,
+					        get_global_name(s.pqd_chengshidengji, 'zh') csdj,
+					        m.region_nm dqmc,
+					        s.pqd_shuzhi sz,
+					        s.pqd_beizhu bz,
+					        s.ACTIVITY PQD_ACTIVITY
+					   from sy_dispatch_allow_std s, INC_CITY_TO_CITYLEVEL_MAPP_DIS m
+					     where m.region_cd(+) = s.pqd_diqumingcheng
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								s.pqd_faren = #faren#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="zhize">
+							<![CDATA[
+								s.pqd_zhize = #zhize#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="csdj">
+							<![CDATA[
+								get_global_name(s.pqd_chengshidengji, #interLanguage#) = #csdj#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dqmc">
+							<![CDATA[
+								s.pqd_diqumingcheng = #dqmc#
+						    ]]>
+		</isNotEmpty> 
+							<![CDATA[
+								order by s.pqd_no asc
+						    ]]>
+	</select>
+
+	<select id="getNianZhongJiangJiTiJiSuanList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+					select p.cpny_id        FR,
+					        p.PAYMENT_DATE   ZFYF,
+					        d.org_name_local BM,
+					        e.empid          SH,
+					        e.local_name     XM,
+					        p.BASE_SALARY    JSJS,
+					        p.pay_rat || '%'        JTBL,
+					        p.BONUS_PAY      JTJE,
+					        P.AU_CODE,
+					        P.EMPTYPE_GROUP_NAME,
+					        p.bonus_month
+					  from PA_ANNUAL_BONUS p, hr_department d, hr_employee e
+					 where p.person_id = e.person_id
+					   and d.deptno = e.deptno
+					   and p.cpny_id = #interCpnyID#
+			]]>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			<![CDATA[
+				e.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="zhifunian">
+			<isNotEmpty prepend="AND" property="zhifuyue">
+									<![CDATA[
+										p.bonus_month = #zhifunian# || #zhifuyue#
+								    ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+					P.PAY_AREA_NO IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="shehaoxingming">
+			<![CDATA[
+		 		  (E.LOCAL_NAME LIKE '%' || #shehaoxingming:VARCHAR# || '%' 
+		 		  OR E.EMPID LIKE upper('%' || #shehaoxingming:VARCHAR# || '%')
+		 		   OR E.CHINESE_PINYIN LIKE upper('%'||#shehaoxingming#||'%'))
+			]]>
+		</isNotEmpty> 
+	</select>
+
+	<select id="getNianZhongJiangJiTiJiSuanListCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+							select count(1) cnt
+					  from PA_ANNUAL_BONUS p, hr_department d, hr_employee e
+					 where p.person_id = e.person_id
+					   and d.deptno = e.deptno
+					   and p.cpny_id = #interCpnyID#
+					]]>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			<![CDATA[
+				e.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="zhifunian">
+			<isNotEmpty prepend="AND" property="zhifuyue">
+									<![CDATA[
+										p.bonus_month = #zhifunian# || #zhifuyue#
+								    ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+					P.PAY_AREA_NO IN ($PAY_AREA_CD$)
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="shehaoxingming">
+			<![CDATA[
+		 		  (E.LOCAL_NAME LIKE '%' || #shehaoxingming:VARCHAR# || '%' 
+		 		  OR E.EMPID LIKE upper('%' || #shehaoxingming:VARCHAR# || '%')
+		 		   OR E.CHINESE_PINYIN LIKE upper('%'||#shehaoxingming#||'%'))
+			]]>
+		</isNotEmpty> 
+	</select>
+
+	<select id="getNianZhongJiangJiTiList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+						select     p.pay_seq NO1, 
+								   p.year_flag ND, 
+							       p.cpny_id FR, 
+							       p.pay_rat JTBL, 
+							       p.payment_date ZFYF,
+							       p.activity PQD_ACTIVITY,
+							       REMARK,
+							       to_char(p.create_date,'yyyy-mm-dd') CREATE_DATE,
+							       HR.LOCAL_NAME,
+							       HR.EMPID,
+							       (SELECT FORMULA FROM pa_annual_bonus_formula WHERE CPNY_ID = P.CPNY_ID) FORMULA
+							  from PA_ANNUAL_BONUS_PARAM p,
+							  HR_EMPLOYEE HR
+							 where P.CREATED_BY = HR.PERSON_ID
+					]]>
+		<isNotEmpty prepend="AND" property="niandu">
+							<![CDATA[
+								p.year_flag = #niandu#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								p.cpny_id = #faren#
+						    ]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+							<![CDATA[
+								p.ACTIVITY = #ACTIVITY#
+						    ]]>
+		</isNotEmpty> 
+						
+							<![CDATA[
+								order by p.create_date desc
+						    ]]>
+	</select>
+
+	<select id="getNianZhongJiangJiTiListCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+						select   count(*) CNT
+							  from PA_ANNUAL_BONUS_PARAM p
+							 where 1 = 1
+					]]>
+		<isNotEmpty prepend="AND" property="niandu">
+							<![CDATA[
+								p.year_flag = #niandu#
+						    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								p.cpny_id = #faren#
+						    ]]>
+		</isNotEmpty> 
+						
+							<![CDATA[
+								order by p.pay_seq asc
+						    ]]>
+	</select>
+
+	<select id="viewZhengGuiYuTiJiSuanList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">				 
+				<![CDATA[
+							select /*+ index  (t SYS_CAIWU) */ t.legal_entity_name CPNY_ID,
+							       t.period_name PERIOD_NAME,
+							       t.department_code DEPTNO,
+							       d.org_name_local BM,
+							        e.local_name LOCAL_NAME,
+							       t.employee_no EMPNO,
+							             T.ATTRIBUTE4        ATTRIBUTE4,  
+                 T.ATTRIBUTE5         ATTRIBUTE5,  
+							       t.salary_amount SALARY_AMOUNT,
+							       t.transfer_flag TRANSFER_FLAG,
+							       g.content LEIXING,
+							       t.attribute14 ACC_DIV_CODE
+							  from XXACF_CHRS_SALARY_S_IF t,hr_employee e,hr_department d, HR_JOB_TYPE_SETUP ht, sy_global_name g
+							 where  t.legal_entity_name=e.cpny_id
+							  and e.empid=t.employee_no
+							  and t.USER_JE_CATEGORY_NAME='SALARY_TOTAL_SUBSIDIARY'
+							  
+							  	 and e.deptno=d.deptno 
+							and  e.emp_type_code = ht.jobtype_no
+			                 and e.cpny_id = ht.cpny_id
+			                 and ht.jobtype_no = g.no
+			                 and g.language='zh'
+							
+						  
+
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								e.cpny_id = #faren#
+						    ]]>
+
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="leixing">
+
+							<![CDATA[
+								E.EMP_TYPE_CODE	= #leixing#
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = E.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="rylxz">
+							<![CDATA[
+								p.pqd_renyuanleixingzu = #rylxz#
+						    ]]>
+
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="zhifunian">
+			<![CDATA[
+										t.period_name = substr(TO_CHAR(SYSDATE,'YYYYMM'),1,4)||'-'||substr(TO_CHAR(SYSDATE,'YYYYMM'),5,6) 
+								    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="zhifunian">
+			1 = 1
+			<isNotEmpty prepend="AND" property="zhifuyue">
+									<![CDATA[
+										t.period_name = #zhifunian# ||'-'|| #zhifuyue#
+								    ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="shehaoxingming">
+
+							<![CDATA[
+								(e.local_name like '%' || #shehaoxingming# || '%' or e.empid like '%' || #shehaoxingming# || '%')
+						    ]]>
+		</isNotEmpty> 
+							 
+	</select>
+
+	<select id="viewZhengGuiYuTiJiSuanListCn" parameterClass="linkMap"
+		resultClass="int">
+	 		 
+				<![CDATA[
+							select /*+ index  (t SYS_CAIWU) */ count(*)
+						   from XXACF_CHRS_SALARY_S_IF t,hr_employee e,hr_department d, HR_JOB_TYPE_SETUP ht, sy_global_name g
+							 where  t.legal_entity_name=e.cpny_id
+							  and e.empid=t.employee_no
+						  
+							 and e.deptno=d.deptno 
+							and  e.emp_type_code = ht.jobtype_no
+			                 and e.cpny_id = ht.cpny_id
+			                  and t.USER_JE_CATEGORY_NAME='SALARY_TOTAL_SUBSIDIARY'
+			                 and ht.jobtype_no = g.no
+			                 and g.language='zh'
+							 
+
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								e.cpny_id = #faren#
+						    ]]>
+
+		</isNotEmpty>
+		
+		<isEmpty prepend="AND" property="zhifunian">
+			<![CDATA[
+										t.period_name = substr(TO_CHAR(SYSDATE,'YYYYMM'),1,4)||'-'||substr(TO_CHAR(SYSDATE,'YYYYMM'),5,6) 
+								    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="leixing">
+
+							<![CDATA[
+								E.EMP_TYPE_CODE	= #leixing#
+						    ]]>
+		</isNotEmpty>
+	 
+		
+			<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = E.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPT_NO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="rylxz">
+							<![CDATA[
+								p.pqd_renyuanleixingzu = #rylxz#
+						    ]]>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="zhifunian">
+			1 = 1
+			<isNotEmpty prepend="AND" property="zhifuyue">
+									<![CDATA[
+										t.period_name = #zhifunian# ||'-'|| #zhifuyue#
+								    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="bumen">
+
+							<![CDATA[
+								d.org_name_local like '%' || #bumen# || '%'
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="shehaoxingming">
+							<![CDATA[
+								(e.local_name like '%' || #shehaoxingming# || '%' or e.empid like '%' || #shehaoxingming# || '%')
+						    ]]>
+		</isNotEmpty> 
+						
+							<![CDATA[
+								order by t.period_name desc
+						    ]]>
+	</select>
+
+	<select id="getPaiQianDiTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SY.PQD_NO NO1,
+			       SY.PQD_FAREN FR,
+			       SY.PQD_CHENGSHIDENGJI CSDJ,
+			       SY.PQD_SHENGFEN SF,
+			       SY.PQD_CHENGSHIMINGCHENG CSMC,
+			       SY.PQD_DIQUMINGCHENG DQMC,
+			       SY.ACTIVITY PQD_ACTIVITY,
+			       SY.PQD_001 RESULT
+			  FROM SY_DISPATCH_TEMP SY
+			  WHERE 1 = 1        
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SY.PQD_FAREN = #CPNY_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				SY.PQD_DAORU_RESULT = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty> 
+		<![CDATA[
+			ORDER BY SY.PQD_NO	
+		]]>
+	</select>
+	
+	<select id="getPaiQianDiTempCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) FROM (
+			  SELECT SY.PQD_NO NO1,
+			       SY.PQD_FAREN FR,
+			       SY.PQD_CHENGSHIDENGJI CSDJ,
+			       SY.PQD_SHENGFEN SF,
+			       SY.PQD_CHENGSHIMINGCHENG CSMC,
+			       SY.PQD_DIQUMINGCHENG DQMC,
+			       SY.ACTIVITY PQD_ACTIVITY,
+			       SY.PQD_001 RESULT
+			  FROM SY_DISPATCH_TEMP SY
+			  WHERE 1 = 1        
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SY.PQD_FAREN = #CPNY_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				SY.PQD_DAORU_RESULT = #RESULT_FLAG#
+			]]>
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+				) TT 
+		]]>
+	</select>
+	
+	<select id="getPaiQianDiTempErrorCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*) CNT
+              from SY_DISPATCH_TEMP SY
+			 where SY.PQD_DAORU_RESULT = 'E'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SY.PQD_FAREN = #CPNY_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CREATED_BY">
+			<![CDATA[
+				SY.CREATED_BY = #CREATED_BY#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunFeiCuXiaoYuanTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select p.pqd_no NO1,
+		           p.pqd_faren FR,
+		           p.pqd_niandu ND,
+		           nvl(get_global_name(p.pqd_fulidiqu, #interLanguage#),
+		           p.pqd_fulidiqu) FLDQ,
+		           p.pqd_zuidigongzi ZDGZ,
+		           p.pqd_shepinggongzi SPGZ,
+		           p.pqd_zuixiaojishu ZXJS,
+		           p.pqd_zuidajishu ZDJS,
+		           decode(p.pqd_qufen, 'SQ', '应发', 'SH', '实得', p.pqd_qufen) QF,
+		           p.pqd_update_yz_result YZJG
+		      from pa_low_salary_unpromo_temp p
+		     where 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				p.pqd_yz_result = #RESULT_FLAG# or p.pqd_yz_result = 'R'
+			]]>
+		</isNotEmpty> 
+		<![CDATA[
+			order by p.pqd_no asc
+		]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanTempList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+								<![CDATA[
+						        select p.pqd_no NO1,
+							       p.pqd_niandu ND,
+							       nvl(get_global_name(p.pqd_city_cd, #interLanguage#), p.pqd_city_cd) CITYCD,
+							       nvl(get_global_name(p.pqd_chengshimingcheng, #interLanguage#),
+							           p.pqd_chengshimingcheng) CSMC,
+							       p.pqd_zuidigongzi ZDGZ,
+							       decode(p.pqd_qufen, 'SQ', '应发', 'SH', '实得', p.pqd_qufen) QF,
+							       p.pqd_update_yz_result YZJG
+							  from pa_low_salary_promo_temp p
+							 where 1 = 1
+                ]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+							<![CDATA[
+								p.pqd_yz_result = #RESULT_FLAG# or p.pqd_yz_result = 'R'
+						    ]]>
+		</isNotEmpty> 
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanTempListCnt" parameterClass="linkMap"
+		resultClass="int">
+								<![CDATA[
+						           select count(*) cnt
+								     from pa_low_salary_promo_temp p
+								    where p.created_by = #CREATED_BY#
+                ]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+							<![CDATA[
+								p.pqd_yz_result = #RESULT_FLAG# or p.pqd_yz_result = 'R'
+						    ]]>
+		</isNotEmpty> 
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+	
+	
+		<select id="getZuiDiGongZiBiaoZhunFeiCuXiaoYuanTempListCnt" parameterClass="linkMap" resultClass="int" >
+								<![CDATA[
+            
+					 select count(*) cnt
+						  from pa_low_salary_unpromo_temp p
+						 where 1 = 1
+ 
+                ]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+							<![CDATA[
+								p.pqd_yz_result = #RESULT_FLAG# or p.pqd_yz_result = 'R'
+						    ]]>
+		</isNotEmpty> 
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunTempList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+      	                     select s.pqd_no NO1,
+                     s.pqd_faren fr,
+                     s.pqd_zhize zz,
+                     nvl(get_global_name(s.pqd_chengshidengji, 'zh'),
+                         s.pqd_chengshidengji) csdj,
+                     nvl(get_region_name (s.pqd_diqumingcheng),
+                         s.pqd_diqumingcheng) dqmc,
+                     s.pqd_shuzhi sz,
+                     s.ACTIVITY PQD_ACTIVITY,
+                     s.pqd_001 yzjg
+                from sy_dispatch_allow_std_temp s
+               where 1 = 1
+                ]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+							<![CDATA[
+								s.pqd_daoru_result = #RESULT_FLAG#
+						    ]]>
+		</isNotEmpty> 
+							<![CDATA[
+								order by s.pqd_no asc
+						    ]]>
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunTempListCnt"
+		parameterClass="linkMap" resultClass="int">
+					<![CDATA[
+      	      select   count(*)
+              	from sy_dispatch_allow_std_temp s 
+                	where 1 = 1    
+                ]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+							<![CDATA[
+								s.pqd_daoru_result = #RESULT_FLAG#
+						    ]]>
+		</isNotEmpty> 
+							<![CDATA[
+								order by s.pqd_no asc
+						    ]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunFeiCuXiaoYuanTempErrorCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+				 select count(*) cnt
+					  from pa_low_salary_unpromo_temp p
+					 where p.pqd_yz_result in ('E', 'R')
+					 and p.created_by = #CREATED_BY#
+						    ]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanTempErrorCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+				 select count(*) cnt
+					  from pa_low_salary_promo_temp p
+					 where p.pqd_yz_result in ('E', 'R')
+					 and p.created_by = #CREATED_BY#
+						    ]]>
+	</select>
+
+	<select id="getPaiQianDiJinTieBiaoZhunTempErrorCnt"
+		parameterClass="linkMap" resultClass="int">
+					<![CDATA[
+				 select count(*) cnt
+					   from sy_dispatch_allow_std_temp s
+					  where s.pqd_daoru_result = 'E'
+						    ]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+						 select p.pqd_no NO1,
+					        p.pqd_faren FR,
+					        p.pqd_niandu ND,
+					        get_global_name(p.pqd_fulidiqu, #interLanguage#) FLDQ,
+					        p.pqd_zuidigongzi ZDGZ,
+					        p.pqd_shepinggongzi SPGZ,
+					        p.pqd_zuixiaojishu ZXJS,
+					        p.pqd_zuidajishu ZDJS,
+					        decode(p.pqd_qufen, 'SQ', '应发', 'SH', '实得', 'NONE')   QF
+					   from pa_low_salary_unpromo p
+					  where 1 = 1
+						and	p.pqd_faren = #interCpnyID#
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								p.pqd_faren = #faren#
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="niandu">
+							<![CDATA[
+								p.pqd_niandu = #niandu#
+						    ]]>
+		</isNotEmpty>
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+	
+		<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+					<![CDATA[
+							select p.pqd_no                NO1,
+			                   p.pqd_niandu            ND,
+			                   GET_STATE_CITY_REGION_NAME(p.pqd_city_cd , 'STATE') CITYCD,
+			                   GET_STATE_CITY_REGION_NAME(p.pqd_chengshimingcheng , 'CITY') CSMC ,
+			                            p.pqd_zuidigongzi       ZDGZ,
+			                   decode(p.pqd_qufen, 'SQ', '应发', 'SH', '实得', 'NONE')   QF
+			              from pa_low_salary_promo p
+			              where 1 = 1
+					]]>
+		<isNotEmpty prepend="AND" property="niandu">
+							<![CDATA[
+								p.pqd_niandu = #niandu#
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="STATENM_p">
+			<![CDATA[
+			P.PQD_CITY_CD = #STATENM_p#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITYNM_c">
+			<![CDATA[
+			p.PQD_CHENGSHIMINGCHENG = #CITYNM_c#
+			]]>
+		</isNotEmpty>
+		
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+	
+	<select id="getZuiDiGongZiBiaoZhunCuXiaoYuanListCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+						select count(*) cnt
+						  from pa_low_salary_promo p
+						 where 1 = 1
+					]]>
+		<isNotEmpty prepend="AND" property="niandu">
+							<![CDATA[
+								p.pqd_niandu = #niandu#
+						    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="and" property="STATENM_p">
+			<![CDATA[
+			P.PQD_CITY_CD = #STATENM_p#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="CITYNM_c">
+			<![CDATA[
+			p.PQD_CHENGSHIMINGCHENG = #CITYNM_c#
+			]]>
+		</isNotEmpty>
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+	
+	<select id="geZuiDiGongZiBiaoZhunListCnt" parameterClass="linkMap" resultClass="int">
+					<![CDATA[
+						 select count(*) cnt
+							  from pa_low_salary_unpromo p
+							  where 1 = 1
+					]]>
+		<isNotEmpty prepend="AND" property="faren">
+							<![CDATA[
+								p.pqd_faren = #faren#
+						    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="niandu">
+							<![CDATA[
+								p.pqd_niandu = #niandu#
+						    ]]>
+		</isNotEmpty>
+							<![CDATA[
+								order by p.pqd_no asc
+						    ]]>
+	</select>
+
+	<!-- 派遣地管理信息列表查询 -->
+	<!-- @Create date: 2014.06.10 -->
+	<select id="getPaiQianDiList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT s.pqd_no no1,
+			       s.pqd_faren faren,
+			       M.STATE_CD,
+			       M.STATE_NM,
+			       M.CITY_CD,
+			       M.CITY_NM,
+			       M.REGION_CD,
+			       M.REGION_NM,
+			       M.CITY_LEVEL CITY_LEVEL_EN,
+			       nvl((SELECT n.content
+			             FROM sy_code s, sy_global_name n
+			            WHERE s.code_no = n.no
+			              AND s.code_no = s.pqd_chengshidengji
+			              AND n.language = #language#
+			              AND ROWNUM = 1),
+			           s.pqd_chengshidengji) CITY_LEVEL,
+			       s.ACTIVITY PQD_ACTIVITY
+			  FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS M, sy_dispatch s
+			 WHERE 1 = 1
+			   and M.STATE_CD = s.pqd_shengfen
+			   and M.CITY_CD = s.pqd_chengshimingcheng
+			   and M.REGION_CD = s.pqd_diqumingcheng
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				s.pqd_faren = #CPNY_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="COMPANYID">
+			<![CDATA[
+				s.pqd_faren = #COMPANYID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATENM">
+			<![CDATA[
+				s.pqd_shengfen = #STATENM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CITYNM">
+			<![CDATA[
+				s.pqd_chengshimingcheng = #CITYNM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REGION">
+			<![CDATA[
+				s.pqd_diqumingcheng = #REGION#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CITYLEVEL">
+			<![CDATA[
+				s.pqd_chengshidengji = #CITYLEVEL#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<!-- 派遣地管理信息列表查询总条数 -->
+	<!-- @Create date: 2014.06.10 -->
+	<select id="getPaiQianDiCnt" parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+			SELECT count(*)
+			 FROM  INC_CITY_TO_CITYLEVEL_MAPP_DIS M , sy_dispatch s
+			 WHERE 1 = 1
+			   AND M.STATE_CD = s.pqd_shengfen
+			   AND M.CITY_CD = s.pqd_chengshimingcheng
+			   AND M.REGION_CD = s.pqd_diqumingcheng
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				s.pqd_faren = #CPNY_ID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="COMPANYID">
+			<![CDATA[
+				s.pqd_faren = #COMPANYID#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STATENM">
+			<![CDATA[
+				s.pqd_shengfen = #STATENM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CITYNM">
+			<![CDATA[
+				s.pqd_chengshimingcheng = #CITYNM#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REGION">
+			<![CDATA[
+				s.pqd_diqumingcheng = #REGION#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CITYLEVEL">
+			<![CDATA[
+				s.pqd_chengshidengji = #CITYLEVEL#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getPaiQianDiListBak" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select s.pqd_no    NO1,
+			       s.pqd_faren fr,
+			       s2.content  csdj,
+			       s3.content  sf,
+			       s4.content  csmc,
+			       s5.content  dqmc,
+			       s.ACTIVITY  PQD_ACTIVITY
+			  from sy_dispatch    s,
+			       sy_global_name s2,
+			       sy_global_name s3,
+			       sy_global_name s4,
+			       sy_global_name s5
+			 where s.pqd_chengshidengji = s2.no(+)
+			   and s.pqd_shengfen = s3.no(+)
+			   and s.pqd_chengshimingcheng = s4.no(+)
+			   and s.pqd_diqumingcheng = s5.no(+)
+			   and s2.language = #interLanguage#
+			   and s3.language = #interLanguage#
+			   and s4.language = #interLanguage#
+			   and s5.language = #interLanguage#						 	
+		]]>
+		<isNotEmpty prepend="AND" property="faren">
+			<![CDATA[
+				s.pqd_faren = #faren#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="csdj">
+			<![CDATA[
+				get_global_name(s.pqd_chengshidengji, #interLanguage#) = #csdj#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="dqmc">
+			<![CDATA[
+				get_global_name(s.pqd_diqumingcheng, #interLanguage#) like  '%' || #dqmc#  || '%' 
+			]]>
+		</isNotEmpty> 
+		<![CDATA[
+			order by s.pqd_no asc
+		]]>
+	</select>
+	
+	<select id="getPaiQianDiCntBak" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			select count(*)
+			  from sy_dispatch    s,
+			       sy_global_name s2,
+			       sy_global_name s3,
+			       sy_global_name s4,
+			       sy_global_name s5
+			 where s.pqd_chengshidengji = s2.no
+			   and s.pqd_shengfen = s3.no
+			   and s.pqd_chengshimingcheng = s4.no
+			   and s.pqd_diqumingcheng = s5.no
+			   and s2.language = #interLanguage#
+			   and s3.language = #interLanguage#
+			   and s4.language = #interLanguage#
+			   and s5.language = #interLanguage#				 
+		]]>
+		<isNotEmpty prepend="AND" property="faren">
+			<![CDATA[
+				s.pqd_faren = #faren#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="csdj">
+			<![CDATA[
+				get_global_name(s.pqd_chengshidengji, #interLanguage#) = #csdj#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="dqmc">
+			<![CDATA[
+				get_global_name(s.pqd_diqumingcheng, #interLanguage#) like  '%' || #dqmc#  || '%' 
+			]]>
+		</isNotEmpty> 
+		<![CDATA[
+			order by s.pqd_no asc
+		]]>
+	</select>
+	
+	<select id="getPaiQianDiJtBzCnt" parameterClass="linkMap"
+		resultClass="int">
+					<![CDATA[
+						   select count(*) cnt
+					   from sy_dispatch_allow_std s, INC_CITY_TO_CITYLEVEL_MAPP_DIS m
+					     where m.region_cd(+) = s.pqd_diqumingcheng
+								]]>
+		<isNotEmpty prepend="AND" property="faren">
+										<![CDATA[
+											s.pqd_faren = #faren#
+									    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="zhize">
+										<![CDATA[
+											s.pqd_zhize = #zhize#
+									    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="csdj">
+										<![CDATA[
+											get_global_name(s.pqd_chengshidengji, #interLanguage#) = #csdj#
+									    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dqmc">
+										<![CDATA[
+											s.pqd_diqumingcheng = #dqmc#
+									    ]]>
+		</isNotEmpty> 
+										<![CDATA[
+											order by s.pqd_no asc
+									    ]]>
+	</select>
+	
+	
+	<update id="updateOldBonus"
+		parameterClass="linkMap">
+			<![CDATA[
+				    update pa_annual_bonus_param p 
+              set p.activity = '0' 
+              where p.PAY_SEQ = #PQD_NO#
+				    	]]>
+	</update>
+	
+	<select id="checkAnnualBonusParamSetup" parameterClass="linkMap"
+		resultClass="string">
+		<![CDATA[
+			select   CPNY_ID
+			from PA_ANNUAL_BONUS_FORMULA p
+			where NOT EXISTS (
+				SELECT 1 FROM PA_ANNUAL_BONUS_PARAM B
+				WHERE P.CPNY_ID = B.CPNY_ID
+				AND B.YEAR_FLAG = TO_CHAR(SYSDATE,'YYYY')
+				AND B.ACTIVITY = 1
+			)
+		]]>
+	</select>
+	
+	<select id="getFrCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT HC.CPNY_ID CODE_NO,HC.CPNY_ID CONTENT FROM HR_COMPANY HC WHERE 1 = 1
+		]]>		   
+		<isNotEmpty prepend="AND" property="PQD_FAREN_CHECK">
+			<![CDATA[			   
+	   	       CPNY_ID = #PQD_FAREN_CHECK#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_FAREN">
+			<![CDATA[			   
+	   	       CPNY_ID = #PQD_FAREN#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getCsdjCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT T.CODE_NO, NVL(U.CONTENT, ' ') CONTENT
+			  FROM SY_CODE T, SY_GLOBAL_NAME U
+			 WHERE T.CODE_NO = U.NO(+)
+			   AND U.LANGUAGE(+) = 'zh'
+			   AND T.PARENT_CODE_NO = '218067'
+		]]>		   
+		<isNotEmpty prepend="AND" property="PQD_CHENGSHIDENGJI_CHECK">
+			<![CDATA[			   
+	   	       U.CONTENT = #PQD_CHENGSHIDENGJI_CHECK#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_CHENGSHIDENGJI">
+			<![CDATA[			   
+	   	       U.CONTENT = #PQD_CHENGSHIDENGJI#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getSfCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT DISTINCT T.STATE_CD CODE_NO, T.STATE_NM CONTENT
+			          FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS T
+			         GROUP BY T.STATE_CD, T.STATE_NM) SS
+			 WHERE 1 = 1
+		]]>  		
+		<isNotEmpty prepend="AND" property="PQD_SHENGFEN_CHECK">
+			<![CDATA[			   
+	   	       CONTENT = #PQD_SHENGFEN_CHECK#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_SHENGFEN">
+			<![CDATA[			   
+	   	       CONTENT = #PQD_SHENGFEN#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getCsCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT DISTINCT T.CITY_CD CODE_NO, T.CITY_NM CONTENT
+			          FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS T
+			         GROUP BY T.CITY_CD, T.CITY_NM) SS
+			 WHERE 1 = 1			         
+		]]>  		
+		<isNotEmpty prepend="AND" property="PQD_CHENGSHIMINGCHENG_CHECK">
+			<![CDATA[			   
+	   	       CONTENT = #PQD_CHENGSHIMINGCHENG_CHECK#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_CHENGSHIMINGCHENG">
+			<![CDATA[			   
+	   	       CONTENT = #PQD_CHENGSHIMINGCHENG#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDqCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT DISTINCT T.REGION_CD CODE_NO, T.REGION_NM CONTENT
+			          FROM INC_CITY_TO_CITYLEVEL_MAPP_DIS T
+			         GROUP BY T.REGION_CD, T.REGION_NM) SS
+             WHERE 1 = 1
+		]]>  		
+		<isNotEmpty prepend="AND" property="PQD_DIQUMINGCHENG_CHECK">
+			<![CDATA[			   
+	   	       CONTENT = #PQD_DIQUMINGCHENG_CHECK#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_DIQUMINGCHENG">
+			<![CDATA[			   
+	   	       CONTENT = #PQD_DIQUMINGCHENG#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getCsSfCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT T.STATE_NM CODE_NO, T.CITY_NM CONTENT
+			          FROM INC_CITY_TO_CITYLEVEL_MAPP T
+             	     WHERE 1 = 1
+		]]>  		
+		<isNotEmpty prepend="AND" property="PQD_SHENGFEN">
+			<![CDATA[			   
+				T.STATE_NM = #PQD_SHENGFEN#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_CHENGSHIMINGCHENG">
+			<![CDATA[			   
+				T.CITY_NM = #PQD_CHENGSHIMINGCHENG#
+			]]>   
+		</isNotEmpty>
+		<![CDATA[			   
+	   			GROUP BY T.STATE_NM, T.CITY_NM
+				ORDER BY T.STATE_NM, T.CITY_NM
+			) TT
+		]]> 
+	</select>
+	
+	<select id="getDqCsCodeNoCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT T.CITY_NM CODE_NO, T.REGION_NM CONTENT
+			          FROM INC_CITY_TO_CITYLEVEL_MAPP T
+			         WHERE 1 = 1
+		]]>  		
+		<isNotEmpty prepend="AND" property="PQD_CHENGSHIMINGCHENG">
+			<![CDATA[			   
+	   	       T.CITY_NM = #PQD_CHENGSHIMINGCHENG#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PQD_DIQUMINGCHENG">
+			<![CDATA[			   
+	   	       T.REGION_NM = #PQD_DIQUMINGCHENG#
+			]]>   
+		</isNotEmpty>
+		<![CDATA[			   
+	   			 GROUP BY T.CITY_NM, T.REGION_NM
+			     ORDER BY T.CITY_NM, T.REGION_NM
+			) TT
+		]]> 
+	</select>
+	
+	<select id="getPaiQianDiInfoExistTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT *
+			  FROM SY_DISPATCH_TEMP SY
+			 WHERE SY.PQD_FAREN = #PQD_FAREN#
+			   AND SY.PQD_SHENGFEN = #PQD_SHENGFEN#
+			   AND SY.PQD_CHENGSHIMINGCHENG = #PQD_CHENGSHIMINGCHENG#
+			   AND SY.PQD_DIQUMINGCHENG = #PQD_DIQUMINGCHENG#
+			   AND SY.PQD_NO <> #PQD_NO#
+		]]>
+	</select>
+	
+	<select id="getPaiQianDiInfoExistList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SY.*
+		      FROM SY_DISPATCH SY,INC_CITY_TO_CITYLEVEL_MAPP MM
+		     WHERE SY.PQD_SHENGFEN = MM.STATE_CD
+		       AND SY.PQD_CHENGSHIMINGCHENG = MM.CITY_CD
+		       AND SY.PQD_DIQUMINGCHENG = MM.REGION_CD
+		       AND SY.PQD_FAREN = #PQD_FAREN#
+		       AND MM.STATE_NM = #PQD_SHENGFEN#
+		       AND MM.CITY_NM = #PQD_CHENGSHIMINGCHENG#
+		       AND MM.REGION_NM = #PQD_DIQUMINGCHENG#
+		]]>
+	</select>
+	
+	<select id="getPaiQianDiImportInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT TT.PQD_NO,
+			       TT.PQD_FAREN,
+			       TT.PQD_CHENGSHIDENGJI,
+			       TT.PQD_SHENGFEN,
+			       TT.PQD_CHENGSHIMINGCHENG,
+			       TT.PQD_DIQUMINGCHENG,
+			       TT.ACTIVITY,
+			       TT.PQD_DAORU_RESULT,
+			       TT.PQD_001 CHECK_ERROR
+			  FROM SY_DISPATCH_TEMP TT
+			  WHERE TT.CREATED_BY = #CREATED_BY#
+			 ORDER BY TT.PQD_NO
+		]]>
+	</select>
+	
+	<!-- 导入的派遣地插入正式表之前要删除临时表里的数据 -->
+	<delete id="delPaiQianDiDataImportBatch" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM SY_DISPATCH_TEMP SS 
+			 WHERE PQD_FAREN = #PQD_FAREN#
+			   AND PQD_NO = #PQD_NO# 
+		]]>
+	</delete>
+	
+	<!-- 导入的派遣地插入到正式表中 -->
+	<insert id="addPaiQianDiDataImport" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_DISPATCH
+				(
+				  PQD_NO,
+       			  PQD_FAREN,
+       			  PQD_CHENGSHIDENGJI,
+       			  PQD_SHENGFEN,
+       			  PQD_CHENGSHIMINGCHENG,
+       			  PQD_DIQUMINGCHENG,
+       			  
+       			  ACTIVITY,
+       			  CREATE_DATE,
+       			  CREATED_BY
+				)
+			VALUES
+				(
+			      #PQD_NO#,
+			      #PQD_FAREN#,
+			      #PQD_CHENGSHIDENGJI#,
+			      #PQD_SHENGFEN#,
+			      #PQD_CHENGSHIMINGCHENG#,
+			      #PQD_DIQUMINGCHENG#,
+			        		
+			      #ACTIVITY#,
+			      SYSDATE,
+			      #CREATED_BY#
+			    )
+		]]>		
+	</insert>	
+	
+	<update id="updatePaiQianDiDataCheckResult" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE SY_DISPATCH_TEMP T
+			   SET T.PQD_001 = T.PQD_001 || #ERROR_CONTENT#,
+			       T.PQD_DAORU_RESULT = 'E'
+			 WHERE T.PQD_NO = #PQD_NO#
+		]]>
+	</update>
+	
+	<select id="viewHaoFeng" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+            		  SELECT PAY_STEP, 
+            		  		GET_GLOBAL_NAME(PAY_STEP, #interLanguage:VARCHAR#) PAY_STEP_NAME
+          				FROM PA_GRADE_HAOFENG
+         				WHERE CPNY_ID = #CPNY_ID#
+           					AND POST_GRADE_NO = #POST_GRADE_NO:VARCHAR#
+           					AND ACTIVITY = '1'
+				]]>
+	</select>
+	
+	<select id="viewHaoFengNAME" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+            		    SELECT S.CONTENT
+						  FROM SY_GLOBAL_NAME S
+						 WHERE S.NO = #seach_HAOFENG#
+						   AND S.LANGUAGE = #interLanguage#
+				]]>
+	</select>
+</sqlMap>

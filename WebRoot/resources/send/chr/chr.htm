@@ -1,0 +1,1576 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0049)http://118.190.94.147:8072/login/home_partner.do -->
+<!-- /WEB-INF/view/login/home_partner.jsp --><HTML
+xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>CHR-Partner</TITLE>
+<META content=IE=edge http-equiv=X-UA-Compatible>
+<META content=IE=EmulateIE7 http-equiv=X-UA-Compatible>
+<META content="text/html; charset=utf-8"
+http-equiv=Content-Type><!-- 【HMTC】 --><LINK rel=stylesheet type=text/css
+href="chr_files/core.css"><LINK rel=stylesheet type=text/css
+href="chr_files/uploadify.css"><LINK rel=stylesheet type=text/css
+href="chr_files/zTreeStyle.css"><LINK rel=stylesheet type=text/css
+href="chr_files/style.css"><!--[if IE]><LINK rel=stylesheet type=text/css
+href="chr_files/ieHack.css" media=screen><![endif]--><!--[if lte IE 9]>
+<SCRIPT type=text/javascript src="chr_files/speedup.js"></SCRIPT>
+<![endif]--><!-- jquery -->
+<SCRIPT type=text/javascript src="chr_files/jquery.all.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/StringUtil.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.cookie.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.validate.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.bgiframe.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.uploadify.js"></SCRIPT>
+
+<SCRIPT type=text/javascript
+src="chr_files/xheditor-1.1.9-zh-cn.min.js"></SCRIPT>
+<!-- ztree -->
+<SCRIPT type=text/javascript src="chr_files/jquery.ztree.all-3.1.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.core.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.util.date.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.validate.method.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.barDrag.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.drag.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.tree.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.accordion.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.ui.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.theme.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.switchEnv.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.alertMsg.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.contextmenu.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.navTab.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.tab.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.resize.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.dialog.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.dialogDrag.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.cssTable.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.stable.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.taskBar.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.ajax.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.pagination.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.database.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.datepicker.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.effects.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.panel.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.checkbox.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.history.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dwz.combox.js"></SCRIPT>
+<!--
+<script src="/resources/js/dwzUI/dwz.min.js" type="text/javascript"></script>
+-->
+<SCRIPT type=text/javascript src="chr_files/dwz.regional.zh.js"></SCRIPT>
+<!-- ligerUI -->
+<SCRIPT type=text/javascript src="chr_files/ligerui.min.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/ligerComboBox.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/meizzDate.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.treeTable.js"></SCRIPT>
+<!-- <script src="/resources/js/jquery/jquery.dataTables.min.js" type="text/javascript"></script> -->
+<SCRIPT type=text/javascript src="chr_files/sortable_table.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/fixed_table_rc.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/WdatePicker.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.jeditable.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/jquery.jqprint-0.3.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/togglebar.js"></SCRIPT>
+<LINK rel=stylesheet type=text/css
+href="chr_files/dataTables.jqueryui.min.css"><LINK rel=stylesheet type=text/css
+href="chr_files/buttons.dataTables.min.css"><LINK rel=stylesheet type=text/css
+href="chr_files/scroller.dataTables.min.css"><LINK rel=stylesheet type=text/css
+href="chr_files/fixedColumns.dataTables.min.css">
+<SCRIPT type=text/javascript src="chr_files/jquery.dataTables.min.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dataTables.buttons.min.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/buttons.flash.min.js"></SCRIPT>
+
+<SCRIPT type=text/javascript
+src="chr_files/dataTables.scroller.min.js"></SCRIPT>
+
+<SCRIPT type=text/javascript
+src="chr_files/dataTables.fixedColumns.min.js"></SCRIPT>
+
+<SCRIPT type=text/javascript src="chr_files/dataTables.order.js"></SCRIPT>
+
+<SCRIPT type=text/javascript><!--
+
+$(function(){
+	DWZ.init("/resources/dwz.frag.xml", {
+		loginUrl:"login_dialog.html", loginTitle:"登录",	// 弹出登录对话框
+//		loginUrl:"login.html",	// 跳到登录页面
+		statusCode:{ok:200, error:300, timeout:301}, //【可选】
+		pageInfo:{pageNum:"pageNum", numPerPage:"numPerPage", orderField:"orderField", orderDirection:"orderDirection"}, //【可选】
+		debug:false,	// 调试模式 【true|false】
+		callback:function(){
+			initEnv();
+			$("#themeList").theme({themeBase:"/resources/css/dwzUI/themes"}); // themeBase 相对于index页面的主题base路径
+		}
+	});
+});
+function menuControl(menu_code,menu_name){
+
+	$.each($("#navMenu_MyHome ul li"), function(i,val){
+		$(val).removeClass();
+		$(val).addClass("noselected");
+	});
+
+	$("#nav_"+menu_code).removeClass("noselected");
+	$("#nav_"+menu_code).addClass("selected");
+
+	$.each($("div.t1"), function(i,val){
+		val.style.display = "none";
+	});
+
+	var viewMenu = document.getElementById("view_"+menu_code);
+	viewMenu.style.display = "block";
+	//$("#maincoll h2").text(menu_name);
+//	$("#maincoll div").
+	$("#maincoll .toggleCollapse div").trigger("click");
+
+
+}
+
+function alertMsgControl(alertID){
+	var idLength=alertID.length;
+	$.each($("#main_top_nav_id ul li"), function(i,val){
+		$(val).removeClass();
+		$(val).addClass("main_top_nav_off");
+		document.getElementById(alertID.substring(0,idLength-1)+(i+1)+"_content").style.display = "none";
+	});
+	document.getElementById(alertID+"_content").style.display = "";
+	$("#"+alertID).removeClass("main_top_nav_off");
+	$("#"+alertID).addClass("main_top_nav_on");
+}
+/*
+function for HR
+*/
+
+
+var hrTheTypeJosn = { "hr0210": "transferOrder",
+					  "hr0202": "upGrade",
+					  "hr0211": "transferPromote",
+					  "hr0204": "plurality",
+					  "hr0203": "suspend",
+					  "hr0209": "hortation",
+					  "hr0208": "punishMent",
+					  "hr0206": "resign",
+					  "hr0214": "payrise",
+					  "hr0216": "agent"
+
+} ;
+
+var hrSaveUrlJosn = { "hr0210": "/hrm/transferOrder/viewTransferNormal",
+					  "hr0202": "/hrm/transferOrder/viewUpgrade",
+					  "hr0211": "/hrm/transferOrder/viewTransferPromote",
+					  "hr0204": "/hrm/transferOrder/viewPlurality",
+					  "hr0203": "/hrm/transferOrder/viewSuspend",
+					  "hr0209": "/hrm/transferOrder/viewHortation",
+					  "hr0208": "/hrm/transferOrder/viewPunishMent",
+					  "hr0206": "/hrm/transferOrder/viewResign",
+					  "hr0214": "/hrm/transferOrder/viewPayrise",
+					  "hr0216": "/hrm/transferOrder/viewAgent"
+
+} ;
+
+
+
+function showSearch(navTabId){
+	var theType = hrTheTypeJosn[navTabId] ;
+	document.getElementById("searchEmp").href = "/hrm/transferOrder/viewEmpSearchList?pageNum=1&navTabId=" +navTabId + "&theType=" + theType;
+	document.getElementById("searchEmp").click();
+}
+
+
+function validateCallbackEmpSearch(navTabId) {
+
+	var eids = $("#searchForm").find("input[name='eidsForSearch']").val();
+	//var url = "/hrm/transferOrder/viewTransferNormal?eids="+eids+"&&pageNum=1&&navTabId=" + navTabId;
+	var url = hrSaveUrlJosn[navTabId]+ "?eids=" + eids + "&&pageNum=1&&navTabId=" + navTabId;
+	dialogAjaxDone({
+			"statusCode":"200",
+			"forwardUrl":url,
+			"navTabId": navTabId
+    });
+	return false ;
+}
+
+
+var hrUrlJosn = { "hr0101": "/hrm/empinfo/viewPersonalInfo","hr0102": "/hrm/empinfo/viewPromote","hr0103": "/hrm/empinfo/viewEvaluate",
+				  "hr0104": "/hrm/empinfo/viewReward","hr0105": "/hrm/empinfo/viewTranslate","hr0106": "/hrm/empinfo/viewTraining",
+				  "hr0107": "/hrm/empinfo/viewRelation","hr0108": "/hrm/empinfo/viewHealth","hr0109": "/hrm/empinfo/viewWorkInfo",
+				  "hr0110": "/hrm/empinfo/viewAdditional","hr0112": "/hrm/empinfo/viewAccount","hr0111": "/hrm/empinfo/viewCompetence",
+				  "hr0114": "/hrm/empinfo/viewContract","hr0115": "/hrm/empinfo/viewGoAbroad","hr0116": "/hrm/empinfo/viewCredential" } ;
+
+function F_HR_ShowMore(obj, navTabId){
+		var turn_to_url = hrUrlJosn[navTabId] ;
+
+		if(turn_to_url.length > 0){
+			dialogAjaxDone(
+	   	    	{
+	   	    		"statusCode":"200",
+					"forwardUrl":turn_to_url + "?navTabId=" + navTabId + "&PERSON_ID=" + obj,
+					"navTabId":navTabId
+	   	    	}
+	   	    ) ;
+	   }
+	}
+
+function F_HR_SubmitKeyClick(empid,localName,idcardNo,navTabId){
+
+   	if(event.keyCode==13){
+
+		var turn_to_url = hrUrlJosn[navTabId] ;
+   		$.ajax({
+			type: 'POST',
+			url: encodeURI('/hrm/empinfo/getPersonCnt?navTabId=' + navTabId + '&EMPID='+empid+'&LOCAL_NAME='+localName+'&IDCARD_NO='+idcardNo+'&EMP_OFFICE=15119'),//15119设置默认查找在职员工
+			dataType:"json",
+			cache: false,
+			success: function(jsonObject){
+
+						if (jsonObject.perCnt==0){
+							alert("查无此人");
+						}
+
+						if(jsonObject.perCnt>1 ){
+							//15119设置默认查找在职员工
+							document.getElementById("onck").href=encodeURI(encodeURI("/hrm/empinfo/viewEmpIdList?pageNum=1&navTabId=" + navTabId + "&seach_EMPID="+empid+'&seach_LOCAL_NAME='+localName+'&seach_IDCARD_NO='+idcardNo+'&seach_EMP_OFFICE=15119' ));
+
+							document.getElementById("onck").click();
+
+						}
+
+						if(jsonObject.perCnt==1){
+
+							 navTabAjaxDone(
+				    	    	{
+				    	    		"statusCode":"200",
+									"forwardUrl":turn_to_url + "?navTabId=" + navTabId + "&PERSON_ID=" + jsonObject.personId,
+									"callbackType":"forward"
+				    	    	}
+				    	    ) ;
+						}
+					},
+			error: DWZ.ajaxError
+		});
+    }
+ }
+
+
+function seachByDept(navTabId){
+	document.getElementById("onck").href = "/hrm/empinfo/viewEmpIdList?pageNum=1&navTabId="+navTabId;
+	document.getElementById("onck").click();
+}
+
+//function changeLanguage(flag){
+//if(flag == 'zh'){
+//	$.ajax({
+// 		type:'GET',
+// 		url:"/login/changeLanguage?language="+flag,
+// 		cache: false,
+// 		success: location.reload()
+//
+// 	});
+//}else{
+//	alert("暂不支持国际化！");
+//	return;
+//}
+//}
+
+function changeLanguage(flag){
+    var temp="";
+    if(flag=='zh'){
+    	temp='zh_CN';
+    }else if(flag=='en'){
+        temp='en_US';
+    }else{
+    	temp='ko_KR';
+    }
+ $.cookie('language_cookie',flag ,{expires:365,path:'/'});
+ $.cookie('locale_cookie',temp ,{expires:365,path:'/'});
+
+ $("#tabsPageHeaderContent li").each(function (i) {
+ 	if("selected"==$(this).attr("class").replace(/^\s+|\s+$/g, "")){
+ 		//alert($(this).attr("url"));
+ 		var url=decodeURIComponent($(this).attr("url"));
+ 		$.cookie('openUrl',url);
+ 	}
+ });
+  $.ajax({
+		type:'GET',
+		url:"/login/changeLanguage?language="+flag+"&locale="+temp,
+		cache: false,
+		async:false,
+		success: location.reload()
+	});
+
+}
+
+ var i  = 1;//定义一个全局变量 ，控制下拉收回。
+function showUL(liID){
+		if( i==0 )
+		{
+		$("#quick_menu_MyHome .ulss").slideUp();
+		$("#showUL"+liID).slideDown("slow");
+			i=1;
+		}else{
+			$("#quick_menu_MyHome .ulss").slideUp();
+		i=0;
+  	  }
+}
+$(document).bind("click",function(e){
+    var target  = $(e.target);
+    if(target.closest("#manual_button").length == 0){
+        $("#manual_info #manual").slideUp();
+    }
+    else
+    {
+        $("#manual_info #manual").slideDown();
+    }
+	//待裁决下拉框
+    if(target.closest("#tab4_viewInfo").length == 0){
+        $("#quick_menu_MyHome .ulss").slideUp();
+    }
+    else
+    {
+        $("#quick_menu_MyHome .ulss").slideDown();
+    }
+	//语言选择下拉框
+    if(target.closest("#Language_button").length == 0){
+        $("#Language_info #Language_ul").slideUp();
+    }
+    else
+    {
+        $("#Language_info #Language_ul").slideDown();
+    }
+	//角色选择下拉框
+    if(target.closest("#roleGroup_button").length == 0){
+        $("#roleGroup_info #roleGroup_ul").slideUp();
+    }
+    else
+    {
+        $("#roleGroup_info #roleGroup_ul").slideDown();
+    }
+});
+
+
+$(window).load(function () {
+
+var quick_width = $("#quick_menu_MyHome").width();
+var quick_height = $("#quick_menu_MyHome").height();
+var quick_right = 10 - $("#quick_menu_MyHome").width();
+$("#quick_menu_MyHome").css({right:0});
+
+
+$("#quick_menu_MyHome").show();
+$("#quick_menu_MyHome ul li").show();
+$("#quick_menu_MyHome ul li ul").show();
+
+	$("#quick_menu_MyHome ul span").toggle(
+      function () {
+       getTips();
+       $("#quick_menu_MyHome ul li").fadeOut();
+       $("#quick_menu_MyHome").animate({
+    			right: 0
+ 			}, 500, function() {
+ 				$("#quick_menu_MyHome ul span").removeClass();
+   				$("#quick_menu_MyHome ul span").addClass("show");
+  			});
+      },
+      function () {
+        //初始化提示信息
+
+      	$("#quick_menu_MyHome ul li ul").slideUp();
+ 		$("#quick_menu_MyHome ul li").fadeIn();
+        $("#quick_menu_MyHome").animate({
+    			right: 0
+ 			}, 500, function() {
+ 				$("#quick_menu_MyHome ul span").removeClass();
+   				$("#quick_menu_MyHome ul span").addClass("hide");
+  			});
+      }
+    );
+
+    if($("#qMenuHideFlag").val() == "show"){
+    	// show 인 경우(결재건수가 한건이라도 있는 경우)는 퀵메뉴를 클릭해준다.
+    	setTimeout(function(){
+    	      $("#quick_menu_MyHome ul span").trigger("click");
+    	 },1000);
+    }
+    $("#showUL4").blur(function(){
+    	$("#showUL4").slideUp();
+  	});
+});
+
+
+
+
+function getTips(){
+	$.ajaxSettings.global=false;
+	$.ajax({
+    	type:'get',
+    	cache:false,
+    	contentType:'application/json',
+    	url:'/myhome/getTips',
+    	dataType:'json',
+    	success:function(data){
+    		getTipsAfter(data);
+    		if(data.total_count_viewInfo>0){
+	    		$("#quick_menu_MyHome").show();
+	    		$("#quick_menu_MyHome ul li").show();
+	    		$("#quick_menu_MyHome ul li ul").show();
+    		}
+    	}
+	});
+	$.ajaxSettings.global=true;
+}
+
+function getTipsAfter(data){
+        $("#tab4_viewInfo a b").html(data.total_count_viewInfo);
+        if(typeof (data['ess0601']) != "undefined"){
+            $("#tab4 #showUL4 #tab4_viewInfo_1 a b").html(data.ess0601);
+        }
+		if(typeof (data['ess3436']) != "undefined"){
+            $("#tab4 #showUL4 #tab4_viewInfo_2 a b").html(data.ess3436);
+        }
+		if(typeof (data['ess3438']) != "undefined"){
+            $("#tab4 #showUL4 #tab4_viewInfo_2 a b").html(data.ess3438);
+        }
+		if(typeof (data['ess3444']) != "undefined"){
+            $("#tab4 #showUL4 #tab4_viewInfo_3 a b").html(data.ess3444);
+        }
+
+}
+
+$(function(){
+    //refresh approval count! //300초(1000 * 5 * 60) =>5분
+    //setInterval("getTips()",1000 * 1 * 60);
+});
+
+//var iapp=0;
+//function checkApprovalCount(){
+//    if(iapp==0){
+       // alert("here & qMenuHideFlag:::" + parent.document.getElementById("qMenuHideFlag").value);
+//        getTips();
+       // alert("data:::"+data);
+        //parent.document.getTipsAfter(data);
+//        iapp=1;
+//    }
+//}
+
+function goTab(menuCode,menuNo,menuUrl){
+
+}
+
+function openNavTab(url){
+
+	if($("#esstransform").val()!="0000"){
+		$("#maincoll h2").text($("#esstransform").val());
+		}
+	var a=url.indexOf("&");
+	var b=url.lastIndexOf("&");
+	var title_name=url.substring(a+1,b);
+	var title="";
+	var menu_code="";
+	var menu_name="";
+	$.ajax({
+    	type:"post",
+    	cache:false,
+    	url:'/login/titleName',
+    	data:title_name,
+    	dataType:"json",
+    	async:false,
+    	success:function(data){
+			title=data.TATLENAME,
+			menu_code=data.MENU_CODE,
+			menu_name=data.MENU_NAME
+		}
+    	});
+	navTab.init();
+	navTab.openTab("open_Id",url,{title:title,frech:true,date:{}});
+	$.cookie('openUrl',null);
+	if(typeof(menu_code)!="undefined" && typeof(menu_name)!="undefined" && menu_code!="" && menu_name!=""){
+	$("#maincoll h2").text(menu_name);
+	menuControl(menu_code,menu_name);}
+}
+$(document).ready(function(){
+	//navTab.openTab(tabid,url)
+	if($.cookie('openUrl')!=null){
+		openNavTab($.cookie('openUrl'));
+	}
+});
+
+	//navTab 最多可以打开10个
+function navTabNum(url,param,menuCode,name){
+	var num=0;
+		$(".navTab-tab li[tabid]").each(function(){
+			if($(this).attr("tabid")!=menuCode){
+				num++;
+			}
+		});
+	if(num>=22){
+		//最多只能打开20个选项卡
+		alertMsg.info("最多只能打开10个选项卡");
+		return false;
+	}else{
+		if(url.indexOf(',')!=-1){
+			var targets = url.split(',');
+			if(targets[1]=='_blank'){
+				window.open(targets[0]);
+				return;
+			}
+		}else
+			$("#home_open").attr("target",'navTab');
+		if(url.indexOf('?')!=-1)
+			url+='&'+param;
+		else
+			url+='?'+param;
+		$("#home_open").attr("href",url);
+		$("#home_open").attr("rel",menuCode);
+		$("#home_open").text(name);
+		$("#home_open").click();
+	}
+}
+--></SCRIPT>
+
+<META name=GENERATOR content="MSHTML 8.00.7601.19104"></HEAD>
+<BODY scroll=no>
+<DIV style="DISPLAY: none"><A style="VISIBILITY: hidden" id=home_open
+target=navTab></A></DIV>
+<DIV id=layout>
+<DIV id=header>
+<DIV class=logo></DIV>
+<DIV style="BACKGROUND-COLOR: #363636" class=headerNav>
+<UL style="BACKGROUND-COLOR: #363636" class=nav_MyHome>
+  <LI
+  class=personnel_info>欢迎&nbsp;&nbsp;&nbsp;&nbsp;[11111111]admin&nbsp;&nbsp;&nbsp;&nbsp;中国技术研究所
+  </LI>
+  <LI id=roleGroup_info class=personnel_info><A style="TEXT-DECORATION: none"
+  id=roleGroup_button>个人</A>
+  <UL
+  style="BACKGROUND-IMAGE: url(/resources/css/dwzUI/themes/partner/images/top/info_MyHome.png); BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: left bottom"
+  id=roleGroup_ul>
+    <LI><A style="TEXT-DECORATION: none"
+    href="http://118.190.94.147:8072/login/home_partner.do?defaultRoleGroupId=00003&amp;defaultRoleGroupName=Coordinator&amp;defaultRoleGroupNameDis=总务">总务</A>
+    </LI>
+    <LI><A style="TEXT-DECORATION: none"
+    href="http://118.190.94.147:8072/login/home_partner.do?defaultRoleGroupId=00004&amp;defaultRoleGroupName=Management&amp;defaultRoleGroupNameDis=部门长">部门长</A>
+    </LI>
+    <LI><A style="TEXT-DECORATION: none"
+    href="http://118.190.94.147:8072/login/home_partner.do?defaultRoleGroupId=00005&amp;defaultRoleGroupName=Administrator&amp;defaultRoleGroupNameDis=管理员">管理员</A>
+    </LI></UL></LI>
+  <LI id=manual_info class=personnel_info><A style="TEXT-DECORATION: none"
+  id=manual_button>用户手册下载</A>
+  <UL
+  style="BACKGROUND-IMAGE: url(/resources/css/dwzUI/themes/partner/images/top/info_MyHome.png); BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: left bottom"
+  id=manual>
+    <LI><A style="TEXT-DECORATION: none"
+    href="http://118.190.94.147:8072/ess/infoApplyLeave/downloadFile?fileName=/resources/manual/HMTC/ESS-MyHome-manual-HMTC.pptx&amp;file=ESS-MyHome-manual-HMTC.pptx">使用手册-MyHome</A>
+    </LI></UL></LI>
+  <LI id=Language_info class=personnel_info><A style="TEXT-DECORATION: none"
+  id=Language_button>Language</A>
+  <UL
+  style="BACKGROUND-IMAGE: url(/resources/css/dwzUI/themes/partner/images/top/info_MyHome.png); BACKGROUND-REPEAT: no-repeat; BACKGROUND-POSITION: left bottom"
+  id=Language_ul>
+    <LI><A style="TEXT-DECORATION: none" onclick="changeLanguage('zh');"
+    href="http://118.190.94.147:8072/login/home_partner.do#">中文</A></LI><!-- <li><a href="#" onclick="changeLanguage('en');" style="">English</a></li> -->
+    <LI><A style="TEXT-DECORATION: none" onclick="changeLanguage('ko');"
+    href="http://118.190.94.147:8072/login/home_partner.do#">한국어</A></LI></UL></LI>
+  <LI id=logout><A style="TEXT-DECORATION: none"
+  href="http://118.190.94.147:8072/login/out">logout</A></LI></UL></DIV><!-- navMenu -->
+<DIV style="BACKGROUND-COLOR: #363636" id=navMenu_MyHome><!-- <div id="navMenu_MyHome" style="background-color: #363636"> -->
+<UL>
+  <LI id=nav_ess0100 class=selected><A onclick="menuControl('ess0100','人事信息');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>人事信息
+  </SPAN></A></LI>
+  <LI id=nav_ess3100 class=noselected><A
+  onclick="menuControl('ess3100','工资信息');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>工资信息
+  </SPAN></A></LI>
+  <LI id=nav_ess0200 class=noselected><A
+  onclick="menuControl('ess0200','个人考勤');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>个人考勤
+  </SPAN></A></LI>
+  <LI id=nav_ess0610 class=noselected><A
+  onclick="menuControl('ess0610','人事申请');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>人事申请
+  </SPAN></A></LI>
+  <LI id=nav_ess0500 class=noselected><A
+  onclick="menuControl('ess0500','业绩评价');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>业绩评价
+  </SPAN></A></LI>
+  <LI id=nav_ess0510 class=noselected><A
+  onclick="menuControl('ess0510','能力评价');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>能力评价
+  </SPAN></A></LI>
+  <LI id=nav_ess1100 class=noselected><A
+  onclick="menuControl('ess1100','总务申请');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>总务申请
+  </SPAN></A></LI>
+  <LI id=nav_ess0600 class=noselected><A onclick="menuControl('ess0600','审批箱');"
+  href="http://118.190.94.147:8072/login/home_partner.do#"><SPAN>审批箱
+  </SPAN></A></LI></UL></DIV></DIV><INPUT id=esstransform value=人事信息 type=hidden>
+<DIV id=leftside>
+<DIV style="TOP: 12px" id=sidebar_s>
+<DIV class=collapse>
+<DIV class=toggleCollapse>
+<DIV></DIV></DIV></DIV></DIV>
+<DIV style="TOP: 12px" id=sidebar>
+<DIV id=maincoll class=toggleCollapse>
+<H2>CHRS-ESS</H2>
+<DIV></DIV></DIV>
+<DIV class=accordion fillSpace="sidebar">
+<DIV style="DISPLAY: block" id=view_ess0100 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewPersonalInfoForEss?pageNum=1&menuNo=14013692&navTabId=ess3001"  target="navTab" rel="ess3001">基本信息@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewPersonalInfoForEss','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013692&amp;navTabId=ess3001','ess3001','基本信息');">基本信息</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssPersonalInfo?pageNum=1&menuNo=14013693&navTabId=ess3002"  target="navTab" rel="ess3002">工作信息@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssPersonalInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013693&amp;navTabId=ess3002','ess3002','工作信息');">工作信息</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssBusinessInfo?pageNum=1&menuNo=81000817&navTabId=ess3006"  target="navTab" rel="ess3006">负责业务@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssBusinessInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000817&amp;navTabId=ess3006','ess3006','负责业务');">负责业务</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewQualificationInfo?pageNum=1&menuNo=14013694&navTabId=ess3003"  target="navTab" rel="ess3003">能力信息@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewQualificationInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013694&amp;navTabId=ess3003','ess3003','能力信息');">能力信息</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssRewardPunish?pageNum=1&menuNo=81000820&navTabId=ess3008"  target="navTab" rel="ess3008">奖惩信息@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssRewardPunish','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000820&amp;navTabId=ess3008','ess3008','奖惩信息');">奖惩信息</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssDocument?pageNum=1&menuNo=81000821&navTabId=ess3009"  target="navTab" rel="ess3009">证件信息@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssDocument','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000821&amp;navTabId=ess3009','ess3009','证件信息');">证件信息</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssContract?pageNum=1&menuNo=81000822&navTabId=ess3010"  target="navTab" rel="ess3010">合同信息@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssContract','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000822&amp;navTabId=ess3010','ess3010','合同信息');">合同信息</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssApplyInfo?pageNum=1&menuNo=14013695&navTabId=ess3004"  target="navTab" rel="ess3004">变更申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssApplyInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013695&amp;navTabId=ess3004','ess3004','变更申请明细');">变更申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/empinfo/viewEssInsuranceInfo?pageNum=1&menuNo=81000800&navTabId=ess3005"  target="navTab" rel="ess3005">保险基数查看@@</a>  --><A
+  onclick="navTabNum('/ess/empinfo/viewEssInsuranceInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000800&amp;navTabId=ess3005','ess3005','保险基数查看');">保险基数查看</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess3100 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/pa/salary/viewPaMonthPersonInfoEssList?pageNum=1&menuNo=299017&navTabId=ess3101"  target="navTab" rel="ess3101">月工资查询@@</a>  --><A
+  onclick="navTabNum('/pa/salary/viewPaMonthPersonInfoEssList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=299017&amp;navTabId=ess3101','ess3101','月工资查询');">月工资查询</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/pa/salary/viewPaYearMonthList?pageNum=1&menuNo=81000801&navTabId=ess3102"  target="navTab" rel="ess3102">年工资查询@@</a>  --><A
+  onclick="navTabNum('/pa/salary/viewPaYearMonthList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000801&amp;navTabId=ess3102','ess3102','年工资查询');">年工资查询</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/pa/salary/viewPaYearBonusList?pageNum=1&menuNo=81000802&navTabId=ess3103"  target="navTab" rel="ess3103">年终奖查询@@</a>  --><A
+  onclick="navTabNum('/pa/salary/viewPaYearBonusList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000802&amp;navTabId=ess3103','ess3103','年终奖查询');">年终奖查询</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess0200 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApplyAttendance/viewSSTApplyAttendance?pageNum=1&menuNo=587&navTabId=ess0214"  target="navTab" rel="ess0214">考勤申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApplyAttendance/viewSSTApplyAttendance','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=587&amp;navTabId=ess0214','ess0214','考勤申请');">考勤申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewSSTOtApplyInfo?pageNum=1&menuNo=526&navTabId=ess0234"  target="navTab" rel="ess0234">加班申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewSSTOtApplyInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=526&amp;navTabId=ess0234','ess0234','加班申请');">加班申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewSSTOtApplyInfoTx?pageNum=1&menuNo=585&navTabId=ess0212"  target="navTab" rel="ess0212">预加班(周末/法定)申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewSSTOtApplyInfoTx','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=585&amp;navTabId=ess0212','ess0212','预加班(周末/法定)申请');">预加班(周末/法定)申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewShowCwaAbnormalApply?pageNum=1&menuNo=218302&navTabId=ess3205"  target="navTab" rel="ess3205">考勤异常申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewShowCwaAbnormalApply','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=218302&amp;navTabId=ess3205','ess3205','考勤异常申请');">考勤异常申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApplyAttendance/viewApplyAttendanceInfoList?pageNum=1&menuNo=14013899&navTabId=ess3211"  target="navTab" rel="ess3211">考勤申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApplyAttendance/viewApplyAttendanceInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013899&amp;navTabId=ess3211','ess3211','考勤申请明细');">考勤申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewPOtApplyInfoList?pageNum=1&menuNo=532&navTabId=ess3204"  target="navTab" rel="ess3204">加班申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewPOtApplyInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=532&amp;navTabId=ess3204','ess3204','加班申请明细');">加班申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewSSTOtApplyInfoList?pageNum=1&menuNo=533&navTabId=ess0237"  target="navTab" rel="ess0237">预加班申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewSSTOtApplyInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=533&amp;navTabId=ess0237','ess0237','预加班申请明细');">预加班申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApplyLeave/viewApplyLeaveInfoList?pageNum=1&menuNo=14013699&navTabId=ess3206"  target="navTab" rel="ess3206">考勤异常申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApplyLeave/viewApplyLeaveInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013699&amp;navTabId=ess3206','ess3206','考勤异常申请明细');">考勤异常申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/viewDept/viewEmpCalendar?pageNum=1&menuNo=14013701&navTabId=ess3208"  target="navTab" rel="ess3208">工作日历@@</a>  --><A
+  onclick="navTabNum('/ess/viewDept/viewEmpCalendar','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013701&amp;navTabId=ess3208','ess3208','工作日历');">工作日历</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApplyAttendance/viewAttendancePersonalInfoList?pageNum=1&menuNo=80000077&navTabId=ess3213"  target="navTab" rel="ess3213">日考勤明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApplyAttendance/viewAttendancePersonalInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=80000077&amp;navTabId=ess3213','ess3213','日考勤明细');">日考勤明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/viewDept/viewArPersonalYearList?pageNum=1&menuNo=14013702&navTabId=ess3209"  target="navTab" rel="ess3209">月考勤汇总@@</a>  --><A
+  onclick="navTabNum('/ess/viewDept/viewArPersonalYearList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013702&amp;navTabId=ess3209','ess3209','月考勤汇总');">月考勤汇总</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/viewDept/yearUseInfo?pageNum=1&menuNo=14013703&navTabId=ess3210"  target="navTab" rel="ess3210">年假使用现况@@</a>  --><A
+  onclick="navTabNum('/ess/viewDept/yearUseInfo','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14013703&amp;navTabId=ess3210','ess3210','年假使用现况');">年假使用现况</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess0610 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApplyOnPostProve?pageNum=1&menuNo=81000804&navTabId=ess0611"  target="navTab" rel="ess0611">在职证明申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApplyOnPostProve','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000804&amp;navTabId=ess0611','ess0611','在职证明申请');">在职证明申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApplyOnPostProveInfoList?pageNum=1&menuNo=81000834&navTabId=ess0615"  target="navTab" rel="ess0615">在职证明申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApplyOnPostProveInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000834&amp;navTabId=ess0615','ess0615','在职证明申请明细');">在职证明申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewGiftApply?pageNum=1&menuNo=81000805&navTabId=ess0612"  target="navTab" rel="ess0612">结婚礼金申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewGiftApply','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000805&amp;navTabId=ess0612','ess0612','结婚礼金申请');">结婚礼金申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewPersonalEquitiesPrint?pageNum=1&menuNo=81000807&navTabId=ess0614"  target="navTab" rel="ess0614">个人权益打印@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewPersonalEquitiesPrint','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000807&amp;navTabId=ess0614','ess0614','个人权益打印');">个人权益打印</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApplyWeddingGiftInfoList?pageNum=1&menuNo=81000835&navTabId=ess0616"  target="navTab" rel="ess0616">结婚礼金申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApplyWeddingGiftInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000835&amp;navTabId=ess0616','ess0616','结婚礼金申请明细');">结婚礼金申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApplyFund?pageNum=1&menuNo=81000806&navTabId=ess0613"  target="navTab" rel="ess0613">公积金申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApplyFund','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000806&amp;navTabId=ess0613','ess0613','公积金申请');">公积金申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApplyFundInfoList?pageNum=1&menuNo=81000836&navTabId=ess0617"  target="navTab" rel="ess0617">公积金申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApplyFundInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000836&amp;navTabId=ess0617','ess0617','公积金申请明细');">公积金申请明细</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess0500 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewRegPersonalTarget?evsType=performance&seach_LIMIT=14015066?pageNum=1&menuNo=14015333&navTabId=ess0501"  target="navTab" rel="ess0501">目标设定@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewRegPersonalTarget?evsType=performance&amp;seach_LIMIT=14015066','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015333&amp;navTabId=ess0501','ess0501','目标设定');">目标设定</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewConfirmTarget1?evsType=performance&AFFIRM_LEVEL=1&seach_LIMIT=14015084?pageNum=1&menuNo=14015334&navTabId=ess0502"  target="navTab" rel="ess0502">目标确认@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewConfirmTarget1?evsType=performance&amp;AFFIRM_LEVEL=1&amp;seach_LIMIT=14015084','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015334&amp;navTabId=ess0502','ess0502','目标确认');">目标确认</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewRegPersonalTargetTSTO?evsType=performance&seach_LIMIT=14015085?pageNum=1&menuNo=14015434&navTabId=ess0521"  target="navTab" rel="ess0521">目标变更(中间检查)@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewRegPersonalTargetTSTO?evsType=performance&amp;seach_LIMIT=14015085','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015434&amp;navTabId=ess0521','ess0521','目标变更(中间检查)');">目标变更(中间检查)</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewConfirmTarget2?evsType=performance&AFFIRM_LEVEL=1&seach_LIMIT=14015432?pageNum=1&menuNo=14015335&navTabId=ess0503"  target="navTab" rel="ess0503">目标变更确认@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewConfirmTarget2?evsType=performance&amp;AFFIRM_LEVEL=1&amp;seach_LIMIT=14015432','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015335&amp;navTabId=ess0503','ess0503','目标变更确认');">目标变更确认</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewEvsBySelfHTSV?evsType=performance&seach_LIMIT=14015069?pageNum=1&menuNo=14015367&navTabId=ess0508"  target="navTab" rel="ess0508">自我评价@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewEvsBySelfHTSV?evsType=performance&amp;seach_LIMIT=14015069','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015367&amp;navTabId=ess0508','ess0508','自我评价');">自我评价</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewAffirmTarget1?evsType=performance&AFFIRM_LEVEL=1&seach_LIMIT=14015070?pageNum=1&menuNo=14015337&navTabId=ess0505"  target="navTab" rel="ess0505">1次评价@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewAffirmTarget1?evsType=performance&amp;AFFIRM_LEVEL=1&amp;seach_LIMIT=14015070','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015337&amp;navTabId=ess0505','ess0505','1次评价');">1次评价</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewAffirmTarget2?evsType=performance&AFFIRM_LEVEL=2&seach_LIMIT=14015071?pageNum=1&menuNo=14015338&navTabId=ess0506"  target="navTab" rel="ess0506">2次评价@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewAffirmTarget2?evsType=performance&amp;AFFIRM_LEVEL=2&amp;seach_LIMIT=14015071','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015338&amp;navTabId=ess0506','ess0506','2次评价');">2次评价</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess0510 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewEvsBySelfSSTAbility?evsType=ability&seach_LIMIT=14015069?pageNum=1&menuNo=14015340&navTabId=ess0511"  target="navTab" rel="ess0511">本人评价@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewEvsBySelfSSTAbility?evsType=ability&amp;seach_LIMIT=14015069','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015340&amp;navTabId=ess0511','ess0511','本人评价');">本人评价</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewAffirmTarget1Ability?evsType=ability&AFFIRM_LEVEL=1&seach_LIMIT=14015070?pageNum=1&menuNo=14015341&navTabId=ess0512"  target="navTab" rel="ess0512">1次评价@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewAffirmTarget1Ability?evsType=ability&amp;AFFIRM_LEVEL=1&amp;seach_LIMIT=14015070','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015341&amp;navTabId=ess0512','ess0512','1次评价');">1次评价</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/evs/manage/viewAffirmTarget2Ability?evsType=ability&AFFIRM_LEVEL=2&seach_LIMIT=14015071?pageNum=1&menuNo=14015342&navTabId=ess0513"  target="navTab" rel="ess0513">2次评价@@</a>  --><A
+  onclick="navTabNum('/evs/manage/viewAffirmTarget2Ability?evsType=ability&amp;AFFIRM_LEVEL=2&amp;seach_LIMIT=14015071','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=14015342&amp;navTabId=ess0513','ess0513','2次评价');">2次评价</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess1100 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/affirmApplyGeneralAffairs/viewReceipt?pageNum=1&menuNo=81000537&navTabId=ess1110"  target="navTab" rel="ess1110">入库确认申请@@</a>  --><A
+  onclick="navTabNum('/ga/affirmApplyGeneralAffairs/viewReceipt','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000537&amp;navTabId=ess1110','ess1110','入库确认申请');">入库确认申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/affirmApplyGeneralAffairs/viewReceiptList?pageNum=1&menuNo=81000538&navTabId=ess1120"  target="navTab" rel="ess1120">入库确认书申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/affirmApplyGeneralAffairs/viewReceiptList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000538&amp;navTabId=ess1120','ess1120','入库确认书申请明细');">入库确认书申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/affirmApplyGeneralAffairs/viewProcurement?pageNum=1&menuNo=81000539&navTabId=ess1130"  target="navTab" rel="ess1130">采购申请决裁撤销是由申请@@</a>  --><A
+  onclick="navTabNum('/ga/affirmApplyGeneralAffairs/viewProcurement','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000539&amp;navTabId=ess1130','ess1130','采购申请决裁撤销是由申请');">采购申请决裁撤销是由申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/affirmApplyGeneralAffairs/viewProcurementList?pageNum=1&menuNo=81000540&navTabId=ess1140"  target="navTab" rel="ess1140">采购申请决裁撤销是由申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/affirmApplyGeneralAffairs/viewProcurementList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000540&amp;navTabId=ess1140','ess1140','采购申请决裁撤销是由申请明细');">采购申请决裁撤销是由申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyGeneralAffairs/gaPersonalApplication?pageNum=1&menuNo=81000541&navTabId=ess1150"  target="navTab" rel="ess1150">工服申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyGeneralAffairs/gaPersonalApplication','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000541&amp;navTabId=ess1150','ess1150','工服申请');">工服申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyGeneralAffairs/gaPersonalApplicationDetail?pageNum=1&menuNo=81000542&navTabId=ess1160"  target="navTab" rel="ess1160">工服申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyGeneralAffairs/gaPersonalApplicationDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000542&amp;navTabId=ess1160','ess1160','工服申请明细');">工服申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyConsumables/viewApplyConsumables?pageNum=1&menuNo=81000543&navTabId=ess1170"  target="navTab" rel="ess1170">办公用品申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyConsumables/viewApplyConsumables','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000543&amp;navTabId=ess1170','ess1170','办公用品申请');">办公用品申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyConsumables/viewConsumablesApplication?pageNum=1&menuNo=81000544&navTabId=ess1180"  target="navTab" rel="ess1180">办公用品申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyConsumables/viewConsumablesApplication','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000544&amp;navTabId=ess1180','ess1180','办公用品申请明细');">办公用品申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyConsumables/viewApplyShieldingGoods?pageNum=1&menuNo=81000545&navTabId=ess1190"  target="navTab" rel="ess1190">防护用品申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyConsumables/viewApplyShieldingGoods','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000545&amp;navTabId=ess1190','ess1190','防护用品申请');">防护用品申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyConsumables/viewApplyShieldingGoodsDetail?pageNum=1&menuNo=81000546&navTabId=ess1200"  target="navTab" rel="ess1200">防护用品申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyConsumables/viewApplyShieldingGoodsDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000546&amp;navTabId=ess1200','ess1200','防护用品申请明细');">防护用品申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApplyGeneralAffairs/OvertimeMealRequest?pageNum=1&menuNo=81000547&navTabId=ess1210"  target="navTab" rel="ess1210">加班餐申请@@</a>  --><A
+  onclick="navTabNum('/ess/infoApplyGeneralAffairs/OvertimeMealRequest','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000547&amp;navTabId=ess1210','ess1210','加班餐申请');">加班餐申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApplyGeneralAffairs/gaPersonalOTMApplicationDetail?pageNum=1&menuNo=81000548&navTabId=ess1220"  target="navTab" rel="ess1220">加班餐申请明细@@</a>  --><A
+  onclick="navTabNum('/ess/infoApplyGeneralAffairs/gaPersonalOTMApplicationDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000548&amp;navTabId=ess1220','ess1220','加班餐申请明细');">加班餐申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyGeneralAffairs/viewApplyExpress?pageNum=1&menuNo=81000549&navTabId=ess1230"  target="navTab" rel="ess1230">快递申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyGeneralAffairs/viewApplyExpress','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000549&amp;navTabId=ess1230','ess1230','快递申请');">快递申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyGeneralAffairs/viewApplyExpressInfoList?pageNum=1&menuNo=81000550&navTabId=ess1240"  target="navTab" rel="ess1240">快递申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyGeneralAffairs/viewApplyExpressInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000550&amp;navTabId=ess1240','ess1240','快递申请明细');">快递申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyGeneralAffairs/viewApplyCard?pageNum=1&menuNo=81000551&navTabId=ess1250"  target="navTab" rel="ess1250">名片申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyGeneralAffairs/viewApplyCard','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000551&amp;navTabId=ess1250','ess1250','名片申请');">名片申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoApplyGeneralAffairs/viewApplyCardInfoList?pageNum=1&menuNo=81000552&navTabId=ess1260"  target="navTab" rel="ess1260">名片申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoApplyGeneralAffairs/viewApplyCardInfoList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000552&amp;navTabId=ess1260','ess1260','名片申请明细');">名片申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/affirmApplyGeneralAffairs/viewUpProcurement?pageNum=1&menuNo=81000823&navTabId=ess1270"  target="navTab" rel="ess1270">采购变更事由申请@@</a>  --><A
+  onclick="navTabNum('/ga/affirmApplyGeneralAffairs/viewUpProcurement','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000823&amp;navTabId=ess1270','ess1270','采购变更事由申请');">采购变更事由申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/affirmApplyGeneralAffairs/viewUpProcurementList?pageNum=1&menuNo=81000826&navTabId=ess1280"  target="navTab" rel="ess1280">采购变更事由申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/affirmApplyGeneralAffairs/viewUpProcurementList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000826&amp;navTabId=ess1280','ess1280','采购变更事由申请明细');">采购变更事由申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewApplySetCollege?pageNum=1&menuNo=81000844&navTabId=ess1290"  target="navTab" rel="ess1290">社团成立申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewApplySetCollege','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000844&amp;navTabId=ess1290','ess1290','社团成立申请');">社团成立申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewApplySetCollegeList?pageNum=1&menuNo=81000845&navTabId=ess1291"  target="navTab" rel="ess1291">社团成立申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewApplySetCollegeList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000845&amp;navTabId=ess1291','ess1291','社团成立申请明细');">社团成立申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewApplyJoinCollege?pageNum=1&menuNo=81000846&navTabId=ess1292"  target="navTab" rel="ess1292">入会申请@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewApplyJoinCollege','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000846&amp;navTabId=ess1292','ess1292','入会申请');">入会申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewApplyJoinCollegeList?pageNum=1&menuNo=81000847&navTabId=ess1293"  target="navTab" rel="ess1293">入会申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewApplyJoinCollegeList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000847&amp;navTabId=ess1293','ess1293','入会申请明细');">入会申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewCollegeList?pageNum=1&menuNo=81000848&navTabId=ess1294"  target="navTab" rel="ess1294">社团明细查询@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewCollegeList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000848&amp;navTabId=ess1294','ess1294','社团明细查询');">社团明细查询</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewCollegeCostApply?pageNum=1&menuNo=81000849&navTabId=ess1295"  target="navTab" rel="ess1295">社团费用结算@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewCollegeCostApply','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000849&amp;navTabId=ess1295','ess1295','社团费用结算');">社团费用结算</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/infoCollegeApply/viewCollegeCostList?pageNum=1&menuNo=81000850&navTabId=ess1296"  target="navTab" rel="ess1296">社团费用结算明细@@</a>  --><A
+  onclick="navTabNum('/ga/infoCollegeApply/viewCollegeCostList','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000850&amp;navTabId=ess1296','ess1296','社团费用结算明细');">社团费用结算明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applySingleDormitory?pageNum=1&menuNo=81000860&navTabId=ess1349"  target="navTab" rel="ess1349">单身宿舍申请@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applySingleDormitory','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000860&amp;navTabId=ess1349','ess1349','单身宿舍申请');">单身宿舍申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applySingleDormitoryDetail?pageNum=1&menuNo=81000861&navTabId=ess1350"  target="navTab" rel="ess1350">单身宿舍申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applySingleDormitoryDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000861&amp;navTabId=ess1350','ess1350','单身宿舍申请明细');">单身宿舍申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyMarriedDormitory?pageNum=1&menuNo=81000862&navTabId=ess1351"  target="navTab" rel="ess1351">已婚宿舍申请@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyMarriedDormitory','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000862&amp;navTabId=ess1351','ess1351','已婚宿舍申请');">已婚宿舍申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyMarriedDormitoryDetail?pageNum=1&menuNo=81000866&navTabId=ess1352"  target="navTab" rel="ess1352">已婚宿舍申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyMarriedDormitoryDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000866&amp;navTabId=ess1352','ess1352','已婚宿舍申请明细');">已婚宿舍申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyBusinessDormitory?pageNum=1&menuNo=81000867&navTabId=ess1353"  target="navTab" rel="ess1353">出差宿舍申请@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyBusinessDormitory','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000867&amp;navTabId=ess1353','ess1353','出差宿舍申请');">出差宿舍申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyBusinessDormitoryDetail?pageNum=1&menuNo=81000868&navTabId=ess1354"  target="navTab" rel="ess1354">出差宿舍申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyBusinessDormitoryDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000868&amp;navTabId=ess1354','ess1354','出差宿舍申请明细');">出差宿舍申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyParking?pageNum=1&menuNo=81000869&navTabId=ess1355"  target="navTab" rel="ess1355">车位申请@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyParking','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000869&amp;navTabId=ess1355','ess1355','车位申请');">车位申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyParkingDetail?pageNum=1&menuNo=81000870&navTabId=ess1356"  target="navTab" rel="ess1356">车位申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyParkingDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000870&amp;navTabId=ess1356','ess1356','车位申请明细');">车位申请明细</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyRetireDormitory?pageNum=1&menuNo=81000871&navTabId=ess1357"  target="navTab" rel="ess1357">退宿申请@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyRetireDormitory','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000871&amp;navTabId=ess1357','ess1357','退宿申请');">退宿申请</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ga/viewApplyGeneralAffairs/applyRetireDormitoryDetail?pageNum=1&menuNo=81000872&navTabId=ess1358"  target="navTab" rel="ess1358">退宿申请明细@@</a>  --><A
+  onclick="navTabNum('/ga/viewApplyGeneralAffairs/applyRetireDormitoryDetail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=81000872&amp;navTabId=ess1358','ess1358','退宿申请明细');">退宿申请明细</A>
+  </LI>
+  <LI style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV>
+<DIV style="DISPLAY: none" id=view_ess0600 class=t1>
+<DIV class=accordionContent>
+<UL class="tree treeFolder">
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApprovalEmail?pageNum=1&menuNo=2439&navTabId=ess0601"  target="navTab" rel="ess0601">未审批@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApprovalEmail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=2439&amp;navTabId=ess0601','ess0601','未审批');">未审批</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewApprovaledEmail?pageNum=1&menuNo=2440&navTabId=ess0607"  target="navTab" rel="ess0607">已审批@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewApprovaledEmail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=2440&amp;navTabId=ess0607','ess0607','已审批');">已审批</A>
+  </LI>
+  <LI style="HEIGHT: 35px"><!-- 														  	      <a href="/ess/infoApply/viewNoticeedEmail?pageNum=1&menuNo=124822&navTabId=ess0223"  target="navTab" rel="ess0223">通知@@</a>  --><A
+  onclick="navTabNum('/ess/infoApply/viewNoticeedEmail','defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=124822&amp;navTabId=ess0223','ess0223','通知');">通知</A>
+  </LI>
+  <LI
+style="BORDER-BOTTOM: 0px; HEIGHT: 35px"></LI></UL></DIV></DIV></DIV></DIV></DIV>
+<DIV id=container>
+<DIV id=navTab class=tabsPage>
+<DIV class=tabsPageHeader>
+<DIV id=tabsPageHeaderContent class=tabsPageHeaderContent><!-- 显示左右控制时添加 class="tabsPageHeaderMargin" -->
+<UL class=navTab-tab>
+  <LI class=main url="/login/home2" tabid="main"><A
+  href="javascript:;"><SPAN><SPAN class=home_icon>我的主页</SPAN></SPAN></A></LI>
+  <DIV style="DISPLAY: none" id=open_id_div>
+  <LI url="/login/home2" tabid="open_Id"><A href="javascript:;"><SPAN
+  class=open_id_namne>标签名称</SPAN></A></LI></DIV></UL></DIV></DIV>
+<UL class=tabsMoreList>
+  <LI><A href="javascript:;">我的主页</A></LI></UL>
+<DIV id=quick_menu_MyHome class=quick_menu_MyHome>
+<UL>
+  <LI style="PADDING-RIGHT: 30px">
+  <DIV id=tab4>
+  <DIV id=tab4_viewInfo><A
+  href="http://118.190.94.147:8072/login/home_partner.do#"><!-- 待审批信息  -->待审批信息(<B>53</B>)</A></DIV>
+  <UL style="WIDTH: 140px; BACKGROUND-REPEAT: repeat" id=showUL4 class=ulss>
+    <LI id=tab4_viewInfo_1><A title=待决裁
+    href="http://118.190.94.147:8072/ess/infoApply/viewApprovalEmail?defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=2439&amp;navTabId=ess0601"
+    rel=ess0601 target=navTab>待决裁(<B>53</B>)</A><!-- 待决裁加班 -->
+  </LI></UL></DIV></LI><SPAN class=show></SPAN></UL></DIV><!-- /WEB-INF/view/login/home_partner.jsp -->
+<SCRIPT type=text/javascript>
+var icon = 0;
+var loggedAccount = null;
+//定时触发验证方法
+$(document).ready(
+		function() {
+			var tempCookie = document.cookie.split(";");
+			for ( var i = 0; i < tempCookie.length; i++) {
+				if (tempCookie[i].indexOf(",") != -1) {
+					loggedAccount = tempCookie[i].substring(tempCookie[i]
+							.indexOf("=") + 1, tempCookie[i].indexOf(","))
+				}
+			}
+
+			setInterval("checkSession()", 1000 * 1860);
+		});
+//验证session是否失效
+function checkSession() {
+
+	if (icon == 0) {
+		$.ajax( {
+			type : 'POST',
+			url : "/login/validateSession/checkSession",
+			cache : false,
+			dataType : "text",
+			success : function(result) {
+				if (result !== "0") {
+					//$("#loginAgain").css("display","block");
+			alert('session已失效 请重新登陆！');
+			window.opener = null;
+			window.open("", "_self");
+			window.close();
+			icon = 1;
+		}
+	}
+		});
+	}
+}
+
+var flag = 1;
+$(document).ready(function() {
+
+	try {
+		var arrCookie = document.cookie.split(';');
+		var userId = '';
+		var company = '';
+
+		for ( var i = 0; i < arrCookie.length; i++) {
+
+			if (arrCookie[i].indexOf(",") != -1) {
+				var array = arrCookie[i].split(",");
+				var arr_user = array[0].split("=");
+				var arr_company = array[1].split("=");
+
+				if (arr_user[0].indexOf("sysAdmin.account") != -1) {
+					userId = arr_user[1];
+				}
+
+				if (arr_company[0].indexOf("sysAdmin.company") != -1) {
+					company = arr_company[1];
+				}
+
+				if (userId != '' && company != '') {
+					break;
+				}
+			}
+		}
+
+		//document.getElementById('language').value = language;
+		document.getElementById('COMPANY_ID').value = company;
+		document.getElementById('username').value = userId;
+		document.getElementById('saveBox').checked = true;
+	} catch (e) {
+
+	}
+	//	if(userId=='' && document.getElementById('username')){
+	//		document.getElementById('username').focus();
+	//	}else if(userId!='' && document.getElementById('password')){
+	//		document.getElementById('password').focus();
+	//	}
+
+});
+
+$(document)
+		.ready(function() {
+			//获取cookie字符串
+				var strCookie = document.cookie;
+				//将多cookie切割为多个名/值对
+				var arrCookie = strCookie.split(";");
+				var userId = null;
+				//alert(arrCookie);
+				//遍历cookie数组，处理每个cookie对
+				for ( var i = 0; i < arrCookie.length; i++) {
+					var arr = arrCookie[i].split("=");
+					//找到名称为userId的cookie，并返回它的值
+					if ("locale_cookie" == arr[0].replace(/^\s+|\s+$/g, "")) {
+						userId = arr[1];
+						break;
+					}
+				}
+				if (userId == null) {
+					userId = 'zh_CN';
+				}
+				$('#btn')
+						.click(function() {
+							//var arrCookie = document.cookie;
+
+								var mess = check();
+								if (flag == 1 && mess == null) {
+									$("#Tip").text("Loading...");
+									$
+											.ajax( {
+												type : 'POST',
+												url : '/login/in?locale=' + userId,
+												cache : false,
+												data : {
+													"username" : $("#username")
+															.val(),
+													"password" : $("#password")
+															.val(),
+													"COMPANY_ID" : $(
+															"#COMPANY_ID")
+															.val()
+												},
+												dataType : "text",
+												success : function(responseText) {
+													if (responseText == "1") {
+														//保存cookie
+														var date = new Date();
+														var checkb = document
+																.getElementById('saveBox')
+														if (checkb.checked) {
+															date.setTime(date
+																	.getTime()
+																	+ 365
+																	* 24
+																	* 3600
+																	* 1000);
+														} else {
+															date
+																	.setTime(date
+																			.getTime() - 1000);
+														}
+
+														document.cookie = 'sysAdmin.account1='
+																+ escape(document
+																		.getElementById('username').value)
+																+ ',sysAdmin.company1='
+																+ escape(document
+																		.getElementById('COMPANY_ID').value)
+																+ ';expires='
+																+ date
+																		.toGMTString();
+
+														var tempCookie = document.cookie
+																.split(";");
+														var account = tempCookie[0]
+																.substring(
+																		tempCookie[0]
+																				.indexOf("=") + 1,
+																		tempCookie[0]
+																				.indexOf(","));
+														icon = 0;
+														if (loggedAccount != account) {
+															alertMsg
+																	.warn(
+																			"\u60a8\u4e0d\u662f\u4e0a\u6b21\u767b\u5f55\u8005! \u70b9\u51fb\u8fd4\u56de\u767b\u5f55\u9875!",
+																			{
+																				okCall : function() {
+																					location.href = "/";
+
+																				}
+																			});
+														}
+														$("#loginAgain").css(
+																"display",
+																"none");
+														$('#Tip').html("");
+														$("#password").val("");
+													} else {
+														$('#Tip').html(
+																responseText);
+													}
+												}
+											});
+									return true;
+								} else {
+									$('#Tip').html(mess);
+									return false;
+								}
+							});
+			});
+
+function check() {
+	var u = $("#username").val();
+
+	var p = $("#password").val();
+
+	var company = $("#COMPANY_ID").val();
+
+	var msg = null;
+
+	if (company == '') {
+		msg = 'please choose company';
+	} else {
+		if (u.replace(/(^\s*)|(\s*$)/g, "").length == 0)
+			if (p.replace(/(^\s*)|(\s*$)/g, "").length == 0)
+				msg = 'ID and PASSWORD must input.'
+			else
+				msg = 'ID must input.'
+		else if (p.replace(/(^\s*)|(\s*$)/g, "").length == 0)
+			msg = 'PASSWORD must input.'
+	}
+
+	return msg;
+}
+
+$(function(){
+	//setTimeout('getBirthdayList()',"2000");
+});
+
+function getNotExistsContractList() {
+		$.ajaxSettings.global = false;
+		$.ajax( {
+			type : "POST",
+			url : "/login/getNotExistsContractList",
+			data : {},
+			dataType : "json",
+			success : function(data) {
+				$('#alertMsg3 a').html("未签合同(" + data['getNotExistsContractCnt'] + ")");
+				var html = '';
+				if (typeof (data['getNotExistsContractList']) != "undefined") {
+					$.each(data['getNotExistsContractList'], function(commentIndex, comment) {
+						var index = commentIndex + 1;
+						if(index%2==0){
+							html += '<tr class="tr_bg">';
+						}else{
+							html += '<tr>';
+						}
+						html += '<td>' + index + '</td>';
+						html += '<td style="text-align:left">';
+						html += '<a onclick="navTabNum(\'/hrm/contractInfo/viewNOContractInfo?pageNum=1&menuNo=5308&navTabId=hr0305&singlePerson_id=' + comment['PERSON_ID'] + '\',\'\',\'hr0305\',\'未签合同\');">' + comment['EMPID'] + '</a>';
+						html += '<td style="text-align:left">';
+						html += '<a onclick="navTabNum(\'/hrm/contractInfo/viewNOContractInfo?pageNum=1&menuNo=5308&navTabId=hr0305&singlePerson_id=' + comment['PERSON_ID'] + '\',\'\',\'hr0305\',\'未签合同\');">' + comment['LOCAL_NAME'] + '</a>';
+						html += '<td style="text-align:left">' + comment['DEPARTMENT_NAME'] + '</td>';
+						html += '<td>' + comment['START_DATE'] + '</td>';
+						html += '<td>' + comment['END_DATE'] + '</td>';
+						html += '<td style="text-align:left">' + comment['PROB_PAY_RAT'] + '</td></tr>';
+					});
+				}
+				$('#main_top_type_list_id3 table').append(html);
+			}
+		});
+		$.ajaxSettings.global = true;
+}
+function getContractList() {
+	$.ajaxSettings.global = false;
+	$.ajax( {
+		type : "POST",
+		url : "/login/getContractList",
+		data : {},
+		dataType : "json",
+		success : function(data) {
+			$('#alertMsg4 a').html("到期合同(" + data['getContractCnt'] + ")");
+			var html = '';
+			if (typeof (data['getContractList']) != "undefined") {
+				$.each(data['getContractList'], function(commentIndex, comment) {
+					var index = commentIndex + 1;
+					if(index%2==0){
+						html += '<tr class="tr_bg">';
+					}else{
+						html += '<tr>';
+					}
+					html += '<td>' + index + '</td>';
+					html += '<td style="text-align:left">';
+					html += '<a onclick="navTabNum(\'/hrm/contractInfo/viewExpiredContract?pageNum=1&menuNo=2558&navTabId=hr0301&singlePerson_id=' + comment['PERSON_ID'] + '\',\'\',\'hr0301\',\'续签合同\');">' + comment['EMPID'] + '</a>';
+					html += '<td style="text-align:left">';
+					html += '<a onclick="navTabNum(\'/hrm/contractInfo/viewExpiredContract?pageNum=1&menuNo=2558&navTabId=hr0301&singlePerson_id=' + comment['PERSON_ID'] + '\',\'\',\'hr0301\',\'续签合同\');">' + comment['LOCAL_NAME'] + '</a>';
+					html += '<td style="text-align:left">' + comment['DEPARTMENT_NAME'] + '</td>';
+					html += '<td style="text-align:left">' + comment['POSITION'] + '</td>';
+					html += '<td>' + comment['START_CONTRACT_DATE'] + '</td>';
+					html += '<td>' + comment['END_CONTRACT_DATE'] + '</td>';
+					html += '<td>' + comment['DAYS'] + '</td></tr>';
+				});
+			}
+			$('#main_top_type_list_id4 table').append(html);
+		}
+	});
+	$.ajaxSettings.global = true;
+}
+function getProbationList() {
+	$.ajaxSettings.global = false;
+	$.ajax( {
+		type : "POST",
+		url : "/login/getProbationList",
+		data : {},
+		dataType : "json",
+		success : function(data) {
+			$('#alertMsg2 a').html("预转正日期(" + data['getProbationCnt'] + ")");
+			var html = '';
+			if (typeof (data['getProbationList']) != "undefined") {
+				$.each(data['getProbationList'], function(commentIndex, comment) {
+					var index = commentIndex + 1;
+					if(index%2==0){
+						html += '<tr class="tr_bg">';
+					}else{
+						html += '<tr>';
+					}
+					html += '<td>' + index + '</td>';
+					html += '<td style="text-align:left">';
+					html += '<a onclick="navTabNum(\'/hrm/empinfo/viewPerConversionList?pageNum=1&menuNo=125243&navTabId=hr1100&singlePerson_id=' + comment['PERSON_ID'] + '\',\'\',\'hr1100\',\'预转正信息\');">' + comment['EMPID'] + '</a>';
+					html += '<td style="text-align:left">';
+					html += '<a onclick="navTabNum(\'/hrm/empinfo/viewPerConversionList?pageNum=1&menuNo=125243&navTabId=hr1100&singlePerson_id=' + comment['PERSON_ID'] + '\',\'\',\'hr1100\',\'预转正信息\');">' + comment['LOCAL_NAME'] + '</a>';
+					html += '<td style="text-align:left">' + comment['DEPT_NAME'] + '</td>';
+					html += '<td style="text-align:left">' + comment['POSITION'] + '</td>';
+					html += '<td>' + comment['BEFORE_END_PROBATION_DATE'] + '</td>';
+					html += '<td>' + comment['DAYS'] + '</td></tr>';
+				});
+			}
+			$('#main_top_type_list_id2 table').append(html);
+		}
+	});
+	$.ajaxSettings.global = true;
+}
+function getUpgradeList() {
+	$.ajaxSettings.global = false;
+	$.ajax( {
+		type : "POST",
+		url : "/login/getUpgradeList",
+		data : {},
+		dataType : "json",
+		success : function(data) {
+			$('#alertMsg5 a').html("一个月内人事令(" + data['getUpgradeCnt'] + ")");
+			var html = '';
+			if (typeof (data['getUpgradeList']) != "undefined") {
+				$.each(data['getUpgradeList'], function(commentIndex, comment) {
+					var index = commentIndex + 1;
+					if(index%2==0){
+						html += '<tr class="tr_bg">';
+					}else{
+						html += '<tr>';
+					}
+					html += '<td>' + index + '</td>';
+					html += '<td style="text-align:left">' + comment['EMPLOYEE_NUMBER'] + '</td>';
+					html += '<td style="text-align:left">' + comment['LOCAL_NAME'] + '</td>';
+					html += '<td style="text-align:left">' + comment['ORG_NAME_LOCAL'] + '</td>';
+					html += '<td style="text-align:left">' + comment['POSITION'] + '</td>';
+					html += '<td style="text-align:left">' + comment['EMP_TYPE_NAME'] + '</td>';
+					html += '<td style="text-align:left">' + comment['ASSIGNMENT_TYPE'] + '</td>';
+					html += '<td>' + comment['ASSIGNMENT_START_DATE'] + '</td></tr>';
+				});
+			}
+			$('#main_top_type_list_id5 table').append(html);
+		}
+	});
+	$.ajaxSettings.global = true;
+}
+function getBirthdayList() {
+	$.ajaxSettings.global = false;
+	$.ajax( {
+		type : "POST",
+		url : "/login/getBirthdayList",
+		data : {},
+		dataType : "json",
+		success : function(data) {
+			$('#alertMsg6 a').html("生日列表(" + data['getBirthdayListCnt'] + ")");
+			var html = '';
+			if (typeof (data['getBirthdayList']) != "undefined") {
+				$.each(data['getBirthdayList'], function(commentIndex, comment) {
+					var index = commentIndex + 1;
+					if(index%2==0){
+						html += '<tr class="tr_bg">';
+					}else{
+						html += '<tr>';
+					}
+					html += '<td>' + index + '</td>';
+					html += '<td style="text-align:left">' + '生日（阳）' + '</td>';
+					html += '<td style="text-align:left">' + comment['LOCAL_NAME'] + '</td>';
+					//html += '<td style="text-align:left">' + comment['DEPARTMENT_NAME'] + '</td>';
+					html += '<td style="text-align:left">' + comment['DOB'] + '</td>';
+
+					html += '<td><a  style="cursor: pointer"  onclick="clickEquip(\'/login/sendEmailPage?email='+comment['EMAIL'] +'&date='+comment['DOB']+'&name='+comment['LOCAL_NAME']+'\')"  target="dialog"    mask="true" ><img src="/resources/images/E_mail.jpg" height="25" width="36"  />' + '</td></tr>';
+				});
+			}
+			$('#main_top_type_list_id6 table').append(html);
+		}
+	});
+	$.ajaxSettings.global = true;
+}
+
+
+function  clickEquip(equipname){
+$('#yq1012').attr('href',equipname);//通向后台的目标链接
+ $('#yq1012').click();
+}
+
+$(function(){
+    $('.left_tab .tab_tit a').click(function(){
+        $(this).addClass('active').siblings().removeClass('active');
+        $('.left_tab .tab_sub .tab_con').eq($(this).index()).show().siblings().hide();
+    })
+})
+function changeColor_home(obj){
+	$(obj).css("color","black").css("font-weight","normal");
+}
+</SCRIPT>
+
+<STYLE type=text/css>* {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+BODY {
+	FONT-FAMILY: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", Tahoma, "Hiragino Sans GB", STHeiti, "Microsoft YaHei"; FONT-SIZE: 12px
+}
+OL {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+UL {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+LI {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+DD {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+DL {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+DT {
+	LIST-STYLE-TYPE: none; LIST-STYLE-IMAGE: none
+}
+*:focus {
+	OUTLINE-STYLE: none; OUTLINE-COLOR: invert; OUTLINE-WIDTH: 0px
+}
+EM {
+	FONT-STYLE: normal
+}
+I {
+	FONT-STYLE: normal
+}
+IMG {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+FIELDSET {
+	BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; BORDER-TOP: 0px; BORDER-RIGHT: 0px
+}
+A {
+	COLOR: #4d4d4d; CURSOR: pointer; TEXT-DECORATION: none
+}
+A:visited {
+	COLOR: #000
+}
+A:hover {
+	TEXT-DECORATION: none
+}
+A:active {
+	TEXT-DECORATION: none
+}
+.clearfix:after {
+	DISPLAY: block; HEIGHT: 0px; VISIBILITY: hidden; CLEAR: both; OVERFLOW: hidden; CONTENT: "."
+}
+TABLE {
+	BORDER-COLLAPSE: collapse
+}
+P {
+	WORD-WRAP: break-word
+}
+.ess_content {
+	BACKGROUND: url(/resources/images/ess_bg.jpg) no-repeat; background-size: 100% auto
+}
+.ess_content .tab_box {
+	PADDING-BOTTOM: 200px; PADDING-LEFT: 3%; PADDING-RIGHT: 60px; HEIGHT: 150px; PADDING-TOP: 30%
+}
+.ess_content .left_tab {
+	WIDTH: 360px; FLOAT: left
+}
+.ess_content .tab .tab_tit {
+	HEIGHT: 40px
+}
+.ess_content .tab .tab_tit A {
+	BORDER-BOTTOM: #999999 1px solid; TEXT-ALIGN: center; BORDER-LEFT: #999999 1px solid; LINE-HEIGHT: 40px; WIDTH: 98px; DISPLAY: inline-block; BACKGROUND: #ffffff; HEIGHT: 40px; BORDER-TOP: #999999 1px solid; MARGIN-RIGHT: 3px; BORDER-RIGHT: #999999 1px solid; TEXT-DECORATION: none
+}
+.ess_content .tab .tab_tit A.active {
+	BACKGROUND: #265c93; COLOR: #fff
+}
+.ess_content .tab .tab_con {
+	BORDER-BOTTOM: #959595 1px solid; BORDER-LEFT: #959595 1px solid; HEIGHT: 176px; BORDER-TOP: #959595 1px solid; BORDER-RIGHT: #959595 1px solid
+}
+.tab_con {
+	BACKGROUND: #ffffff
+}
+.tab_con UL {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-SIZE: 13px; PADDING-TOP: 0px
+}
+.tab_con UL LI {
+	LINE-HEIGHT: 23px; HEIGHT: 23px
+}
+.tab_con UL LI A {
+	PADDING-LEFT: 10px; DISPLAY: block; FONT-SIZE: 13px
+}
+.tab_con UL LI A:hover {
+	BACKGROUND: #dcdcdc
+}
+.notice_box {
+	POSITION: absolute; WIDTH: 400px; BACKGROUND: url(/resources/images/notice_bg.png) no-repeat; HEIGHT: 400px; OVERFLOW: hidden; TOP: 0px; RIGHT: 0px
+}
+.notice_box UL {
+	MARGIN: 117px 100px 0px 68px
+}
+.notice_box UL LI {
+	LINE-HEIGHT: 30px; TEXT-OVERFLOW: ellipsis; WHITE-SPACE: nowrap; HEIGHT: 30px; OVERFLOW: hidden
+}
+.notice_box UL LI A {
+	COLOR: #000000; FONT-SIZE: 13px
+}
+.notice_box UL P {
+	TEXT-ALIGN: right; MARGIN-TOP: 40px
+}
+.notice_box UL P A {
+	COLOR: #0581b9; FONT-SIZE: 13px
+}
+.more {
+	PADDING-RIGHT: 10px; PADDING-TOP: 10px
+}
+</STYLE>
+<!-- 浮动登录框  --><A id=yq1012 title=编辑邮件 href="http://118.190.94.147:8072/login/"
+target=dialog mask="true" height="400" width="1000"></A>
+<DIV style="DISPLAY: none" id=loginAgain>
+<DIV class=white_content>
+<FORM onkeydown="if(event.keyCode==&#9;13) $('#btn').click();" id=loginForm>
+<DIV class=login_top>
+<TABLE id=infoTB border=0 cellSpacing=0 cellPadding=0 width="70%">
+  <TBODY>
+  <TR>
+    <TD class=l-table-edit-td><IMG src="chr_files/company.jpg"></TD>
+    <TD align=left><SELECT id=COMPANY_ID class=select
+        name=COMPANY_ID><OPTION selected value="">请选择</OPTION><OPTION
+        value=HMTC>HMTC</OPTION></SELECT></TD>
+    <TD vAlign=center rowSpan=3 align=left><IMG id=btn class=l-button-submit
+      title=提交 src="chr_files/btn.jpg"> <SPAN style="DISPLAY: none">提交
+  </SPAN></TD></TR>
+  <TR>
+    <TD class=l-table-edit-td><IMG src="chr_files/userid.jpg"> <SPAN
+      style="DISPLAY: none">用户名:</SPAN></TD>
+    <TD align=left><INPUT id=username class=l-input onkeyup=check() type=text
+      name=username></TD></TR>
+  <TR>
+    <TD class=l-table-edit-td><IMG src="chr_files/pw.jpg"> <SPAN
+      style="DISPLAY: none">密码:</SPAN></TD>
+    <TD align=left><INPUT id=password class=l-input onkeyup=check()
+      type=password name=password> <INPUT id=language value=zh type=hidden
+      name=language></TD></TR>
+  <TR>
+    <TD class=l-table-edit-td>&nbsp;</TD>
+    <TD align=left><INPUT id=saveBox class=che value=checkbox type=checkbox
+      name=checkbox> Save ID</TD>
+    <TD class=l-table-edit-td>&nbsp;</TD></TR>
+  <TR>
+    <TD colSpan=3 align=middle><FONT color=red size=2><SPAN
+      id=Tip></SPAN></FONT></TD></TR></TBODY></TABLE></DIV></FORM></DIV>
+<DIV class=black_overlay></DIV></DIV>
+<DIV class="navTab-panel tabsPageContent layoutBox">
+<DIV class="page unitBox">
+<DIV class=main_type><!-- 3333333 --><!-- <div width="500px" style="padding: 10px"> -->
+<DIV class=ess_content>
+<DIV class=tab_box><!--第一个tab-->
+<DIV class="tab left_tab">
+<DIV class="tab tab_tit"><!-- <a href="javascript:void(0)">待确认</a> --><A
+class=active href="javascript:void(0)"><!--个人查看 -->考勤异常</A> <A
+href="javascript:void(0)"><!--考勤异常 -->个人查看</A></DIV>
+<DIV class=tab_sub>
+<DIV class=tab_con>
+<P style="TEXT-ALIGN: right" class=more><A style="COLOR: blue" title=考勤异常申请
+href="http://118.190.94.147:8072/ess/infoApply/viewShowCwaAbnormalApply"
+rel=ess3205 target=navTab ref="218302">更多&gt;&gt;</A></P><BR>
+<UL>
+  <LI><A title=考勤异常申请 onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ess/infoApply/viewShowCwaAbnormalApply?seach_eDate=2017-06-08&amp;seach_sDate=2017-06-08&amp;navTabId=ess3205"
+  rel=ess3205 target=navTab height="600" width="1000"
+  ref="218302">1.2017-06-08&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;旷工</A></LI>
+  <LI><A title=考勤异常申请 onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ess/infoApply/viewShowCwaAbnormalApply?seach_eDate=2017-06-07&amp;seach_sDate=2017-06-07&amp;navTabId=ess3205"
+  rel=ess3205 target=navTab height="600" width="1000"
+  ref="218302">2.2017-06-07&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;旷工</A></LI>
+  <LI><A title=考勤异常申请 onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ess/infoApply/viewShowCwaAbnormalApply?seach_eDate=2017-06-06&amp;seach_sDate=2017-06-06&amp;navTabId=ess3205"
+  rel=ess3205 target=navTab height="600" width="1000"
+  ref="218302">3.2017-06-06&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;旷工</A></LI>
+  <LI><A title=考勤异常申请 onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ess/infoApply/viewShowCwaAbnormalApply?seach_eDate=2017-06-05&amp;seach_sDate=2017-06-05&amp;navTabId=ess3205"
+  rel=ess3205 target=navTab height="600" width="1000"
+  ref="218302">4.2017-06-05&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;旷工</A></LI></UL></DIV>
+<DIV style="DISPLAY: none" class=tab_con>
+<P style="TEXT-ALIGN: right" class=more><A style="COLOR: blue" title=个人查看
+href="http://118.190.94.147:8072/ess/infoApply/viewNoticeedEmail?defaultRoleGroupName=MyHome&amp;pageNum=1&amp;menuNo=124822&amp;navTabId=ess0223"
+rel=ess0223 target=navTab ref="124822">更多&gt;&gt;</A></P><BR>
+<UL>
+  <LI><A title=个人查看 onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ga/viewApplyGeneralAffairs/applySingleDormitoryInfo?seach_SEQ=627322&amp;READ_FLAG=1&amp;seach_APPLY_NO=33996039&amp;seach_APPLY_TYPE=81000855&amp;APPLY_FLAG=0&amp;seach_ACTIVITY=1"
+  rel=ess0223 target=dialog mask="true" height="600"
+  width="1000">1.单身宿舍申请(admin)[日期：2017.06.09]</A></LI>
+  <LI><A style="COLOR: blue; FONT-WEIGHT: bold" title=个人查看
+  onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ga/viewApplyGeneralAffairs/applySingleDormitoryInfo?seach_SEQ=627320&amp;READ_FLAG=1&amp;seach_APPLY_NO=33996038&amp;seach_APPLY_TYPE=81000855&amp;APPLY_FLAG=0&amp;seach_ACTIVITY=1"
+  rel=ess0223 target=dialog mask="true" height="600"
+  width="1000">2.单身宿舍申请(admin)[日期：2017.06.09]</A></LI>
+  <LI><A style="COLOR: blue; FONT-WEIGHT: bold" title=个人查看
+  onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/ga/infoApplyGeneralAffairs/viewGaPersonalApplicated?seach_SEQ=627314&amp;READ_FLAG=1&amp;seach_APPLY_NO=33996035&amp;seach_APPLY_TYPE=81000734&amp;APPLY_FLAG=0&amp;seach_ACTIVITY=1"
+  rel=ess0223 target=dialog mask="true" height="600"
+  width="1000">3.工服申请(admin)[日期：2017.06.09]</A></LI>
+  <LI><A style="COLOR: blue; FONT-WEIGHT: bold" title=个人查看
+  onclick=changeColor_home(this)
+  href="http://118.190.94.147:8072/login/home_partner.do?seach_SEQ=627302&amp;READ_FLAG=1&amp;seach_APPLY_NO=33996016&amp;seach_APPLY_TYPE=81000842&amp;APPLY_FLAG=0&amp;seach_ACTIVITY=1"
+  rel=ess0223 target=dialog mask="true" height="600"
+  width="1000">4.入会申请(admin)[日期：2017.06.08]</A></LI></UL></DIV></DIV></DIV><!--第二个tab-->
+<DIV class=notice_box>
+<UL><!--无 -->无
+  <P class=more><A title=公告
+  href="http://118.190.94.147:8072/sys/notice/viewNoticeInfo?cpnyId=HMTC&amp;pageNum=1&amp;menuNo=124977&amp;navTabId=gg0101"
+  rel=gg0101 target=navTab mask="true" height="300" width="600"
+  ref="124977">更多&gt;&gt;</A></P></UL></DIV></DIV></DIV></DIV></DIV></DIV></DIV></DIV></DIV><!-- <div id="footer"><span>Copyright&copy;2015 TSTO SST All Rights Reserved.</span></div> --><INPUT
+id=qMenuHideFlag type=hidden name=qMenuHideFlag> <IFRAME height=0 border=0
+src="chr_files/home_partner.htm" width=0></IFRAME></BODY></HTML>

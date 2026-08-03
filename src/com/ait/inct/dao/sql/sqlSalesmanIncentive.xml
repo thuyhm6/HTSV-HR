@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="inct.salesman">
+
+	<select id="getSalesIncCalculateList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+		SELECT  T.SUBSD_CD,
+				GET_DEPT_NAME(E.DEPTNO,#interLanguage:VARCHAR#) ORG_NM,
+		        T.EMPNO,
+		        GET_EMP_LOCAL_NAME(t.empno, t.subsd_cd) EMP_NM,
+		        T.INCTV_MON,
+		        NVL(T.VARB_INCTV_AMT,0) VARB_INCTV_AMT,
+		        NVL(T.ACHV_RAT,0) ACHV_RAT,
+		        NVL(T.VARB_INCTV_AMT*T.ACHV_RAT,0) BASE_PAY,
+		        NVL(T.ADJST_AMT,0) ADJST_AMT,
+		        NVL(T.DEDUT_AMT,0) DEDUT_AMT,
+		        NVL(T.TOT_INCTV_AMT,0) TOT_INCTV_AMT,
+		        T.REMARK,
+		        T.ACCRUAL_YN,
+		        TO_CHAR(T.RGST_DTIME,'yyyy-mm-dd') AS RGST_DTIME,
+          	    TO_CHAR(T.UPDT_DTIME,'yyyy-mm-dd') AS UPDT_DTIME,
+	            T.RGST_USER,
+	            T.UPDT_USER,
+	            T.USE_YN
+		  FROM  INC_INCTV_CALC T,
+		        HR_EMPLOYEE  E
+		 WHERE T.SUBSD_CD       = E.CPNY_ID
+		   AND T.EMPNO          = E.EMPID   
+		   AND T.SUBSD_CD       = #SUBSD_CD#
+		   AND T.ACCRUAL_YN		= #ACCRUAL_YN#
+		   AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+	        E.PAY_AREA_CD    IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)  
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="YEAR">
+			        T.INCTV_MON   = #SALS_MON:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPNO">
+		            (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR T.EMPNO = #EMPNO:VARCHAR#)
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		            E.DEPTNO IN(
+                                SELECT DEPTID 
+                                  FROM HR_DEPARTMENT 
+                                 WHERE CPNY_ID = #SUBSD_CD#
+                               CONNECT BY PRIOR
+                                      DEPTID    = PARENT_DEPT_NO
+                                 START WITH 
+                                      DEPTID    = #DEPTNO#
+                                )
+	    </isNotEmpty>
+		ORDER BY E.DEPTNO ,T.EMPNO
+	</select>
+	
+	<select id="getSalesIncCalculateListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT count(*)
+			  FROM  INC_INCTV_CALC T,
+			        HR_EMPLOYEE  E
+			 WHERE T.SUBSD_CD       = E.CPNY_ID
+			   AND T.EMPNO          = E.EMPID   
+			   AND T.SUBSD_CD       = #SUBSD_CD#
+			   AND T.ACCRUAL_YN		= #ACCRUAL_YN#
+			   AND F_CHECK_USER_DEPT_AUTH(E.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>		
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+		<![CDATA[
+	        E.PAY_AREA_CD    IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)  
+		]]>  
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="YEAR">
+			        T.INCTV_MON   = #SALS_MON:VARCHAR#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPNO">
+		            (E.LOCAL_NAME LIKE '%' || #EMPNO:VARCHAR# || '%' OR T.EMPNO = #EMPNO:VARCHAR#)
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+		            E.DEPTNO IN(
+                                SELECT DEPTID 
+                                  FROM HR_DEPARTMENT 
+                                 WHERE CPNY_ID = #SUBSD_CD#
+                               CONNECT BY PRIOR
+                                      DEPTID    = PARENT_DEPT_NO
+                                 START WITH 
+                                      DEPTID    = #DEPTNO#
+                                )
+	    </isNotEmpty>
+	</select>
+	
+	<select id="getIncentiveCalcByItem" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+		SELECT  T.SUBSD_CD,
+				GET_DEPT_NAME(E.DEPTNO,#interLanguage:VARCHAR#) ORG_NM,
+		        T.EMPNO,
+		        E.LOCAL_NAME EMP_NM,
+		        T.INCTV_MON,
+		        NVL(T.VARB_INCTV_AMT,0) VARB_INCTV_AMT,
+		        NVL(T.ACHV_RAT,0) ACHV_RAT,
+		        NVL(T.VARB_INCTV_AMT*T.ACHV_RAT,0) BASE_PAY,
+		        NVL(T.ADJST_AMT,0) ADJST_AMT,
+		        NVL(T.DEDUT_AMT,0) DEDUT_AMT,
+		        NVL(T.TOT_INCTV_AMT,0) TOT_INCTV_AMT,
+		        T.REMARK,
+		        T.ACCRUAL_YN,
+		        T.RGST_USER,
+		        TO_CHAR(T.RGST_DTIME,'yyyy-mm-dd') AS RGST_DTIME,
+          	    TO_CHAR(T.UPDT_DTIME,'yyyy-mm-dd') AS UPDT_DTIME,
+	            T.UPDT_USER,
+	            T.USE_YN,
+	            E.PAY_AREA_CD
+		  FROM  INC_INCTV_CALC T,
+		        HR_EMPLOYEE  E
+		 WHERE T.SUBSD_CD       = E.CPNY_ID
+		   AND T.EMPNO          = E.EMPID   
+		   AND T.SUBSD_CD       = #SUBSD_CD#
+		   AND T.ACCRUAL_YN		= #ACCRUAL_YN#
+		   AND T.INCTV_MON   	= #INCTV_MON:VARCHAR#
+		   AND T.EMPNO 			= #EMPNO:VARCHAR#
+		]]>
+	</select>
+	
+	<!-- EXCEL导入结果查询  -->	
+	<select id="getSalesIncCalculateImportList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[		
+		     SELECT T.LINE_ID,
+		     		T.SUBSD_CD,
+			        T.INCTV_MON,
+			        T.EMPNO,			        
+			        NVL(T.ADJST_AMT,0) ADJST_AMT,
+			        T.REMARK,
+			        T.UPLOAD_ERROR_MSG
+			 FROM INC_INCTV_CALC_EXCEL_IMP T,
+			      HR_EMPLOYEE E
+			WHERE T.SUBSD_CD       = E.CPNY_ID
+			  AND T.EMPNO          = E.EMPID
+			  AND T.SUBSD_CD       = #CPNY_ID#
+			  AND T.IMP_EMPNO      = #IMP_EMPNO#
+			  AND T.IMP_DATE       = #IMP_DATE#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			  T.RESULT_FLAG   = #RESULT_FLAG#
+		</isNotEmpty>
+		ORDER BY T.UPLOAD_ERROR_MSG	
+	</select>
+	<select id="getSalesIncCalculateImportListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		   SELECT COUNT(*)
+			 FROM INC_INCTV_CALC_EXCEL_IMP T,
+			      HR_EMPLOYEE E
+			WHERE T.SUBSD_CD       = E.CPNY_ID
+			  AND T.EMPNO          = E.EMPID
+			  AND T.SUBSD_CD       = #CPNY_ID#
+			  AND T.IMP_EMPNO      = #IMP_EMPNO#
+			  AND T.IMP_DATE       = #IMP_DATE#
+		]]>		
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			  T.RESULT_FLAG   = #RESULT_FLAG#
+		</isNotEmpty> 
+	</select>
+	<select id="getSalesIncCalculateImportErrCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		   SELECT COUNT(*)
+			 FROM INC_INCTV_CALC_EXCEL_IMP T,
+			      HR_EMPLOYEE E
+			WHERE T.SUBSD_CD       = E.CPNY_ID
+			  AND T.EMPNO          = E.EMPID
+			  AND T.SUBSD_CD       = #CPNY_ID#
+			  AND T.IMP_EMPNO      = #IMP_EMPNO#
+			  AND T.IMP_DATE       = #IMP_DATE#
+			  AND T.RESULT_FLAG    = 'E'
+		]]>		
+	</select>
+	
+	 <!-- 删除临时数据	-->
+	<delete id="deleteImportSalesInctTemp"  parameterClass="linkMap">
+	<![CDATA[
+	  DELETE INC_INCTV_CALC_EXCEL_IMP 
+	   WHERE SUBSD_CD   = #SUBSD_CD#
+	     AND IMP_EMPNO  = #IMP_EMPNO#
+	     AND IMP_DATE   = #IMP_DATE#
+	]]>
+	</delete>
+	
+	<!-- 按季度取工资关帐标志  -->
+	<!-- 检查是不是可以重新计算，在做了确认申请以后就不可以再重新计算了  -->
+	<select id="getSalesInctCalcClosFlagByQuarter" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_PROGRESS 
+			 WHERE TO_CHAR(TRUNC(ADD_MONTHS(TO_DATE(PA_MONTH_STR,'YYYYMM'),-1), 'Q') - 1, 'YYYY') = #YEAR#
+			   AND TO_CHAR(TRUNC(ADD_MONTHS(TO_DATE(PA_MONTH_STR,'YYYYMM'),-1), 'Q') - 1, 'Q') 	= #QUARTER#
+			   AND CPNY_ID 				= #interCpnyID:VARCHAR#
+			   AND PA_APPLY_LOCK_FLAG	= 1
+			   AND STAT_NO    			= '219946'
+			   AND AR_DEPT_NO      		IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)
+		]]>		 
+	</select>
+	
+	<!-- 按季度取工资关帐标志  -->
+	<!-- 预提提成计算已锁定，不能再进行本操作  -->
+	<select id="getSalesInctAccrualCalcClosFlagByQuarter" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_PROGRESS_WITHHOLDING 
+			 WHERE TO_CHAR(TRUNC(ADD_MONTHS(TO_DATE(PA_MONTH_STR,'YYYYMM'),-1), 'Q') - 1, 'YYYY') = #YEAR#
+			   AND TO_CHAR(TRUNC(ADD_MONTHS(TO_DATE(PA_MONTH_STR,'YYYYMM'),-1), 'Q') - 1, 'Q') 	  = #QUARTER#
+			   AND CPNY_ID 							= #interCpnyID:VARCHAR#
+			   AND Pa_Withholding_Apply_Lock_Flag	= '1'
+			   AND EMP_TYPE_NO='219946'
+			   AND AR_DEPT_NO      		IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)
+		]]>		 
+	</select>
+	
+	<!-- 按月取工资关帐标志  -->
+	<!-- 检查是不是可以重新计算，在做了确认申请以后就不可以再重新计算了  -->
+	<select id="getSalesInctCalcClosFlagByMonth" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_PROGRESS 
+			 WHERE PA_MONTH_STR			= TO_CHAR(ADD_MONTHS(TO_DATE(#SALS_MON:VARCHAR#,'YYYYMM'),1),'YYYYMM')
+			   AND CPNY_ID 				= #interCpnyID:VARCHAR#
+			   AND STAT_NO    			= '219946'
+			   AND AR_DEPT_NO      		IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)  
+			   AND PA_APPLY_LOCK_FLAG	= 1	  
+		]]>		 
+	</select>
+	
+	<!-- 按月取工资关帐标志  -->
+	<!-- 预提提成计算已锁定，不能再进行本操作 -->
+	<select id="getSalesInctAccrualCalcClosFlagByMonth" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) 
+		      FROM PA_PROGRESS_WITHHOLDING D
+		      WHERE Pa_Withholding_Apply_Lock_Flag=1
+		      AND  CPNY_ID      = #interCpnyID:VARCHAR#
+		      AND  EMP_TYPE_NO='219946'
+		      AND AR_DEPT_NO      		IN (select regexp_substr(#PAY_AREA_CD:VARCHAR#,'[^,]+',1,level) 
+								from dual
+						  connect by level<=length(#PAY_AREA_CD:VARCHAR#)-length(replace(#PAY_AREA_CD:VARCHAR#,','))+1
+	    		)  
+		      AND  PA_MONTH_STR = TO_CHAR(ADD_MONTHS(TO_DATE(#SALS_MON:VARCHAR#,'YYYYMM'),1),'YYYYMM')
+		]]>		 
+	</select>
+	
+	<!--营业员提成数据导入 -->
+	<procedure id="callSalesmanIncentiveCalcImport" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[	
+		{CALL 
+			PKG_SALESMAN_EXCEL_IMP.PR_IMPORT_INCT_DATA(
+												 #SUBSD_CD#
+												,#PAY_AREA_CD#
+												,#SALS_MON#
+												,#ACCRUAL_YN#
+												,#IMP_EMPNO#
+												,#IMP_DATE#
+												,#MESSAGE,jdbcType=VARCHAR,mode=INOUT#)}
+	]]>		
+	</procedure>
+
+	<!-- 更新个人别计算表的调整数据-->
+	<update id="updateSalesIncAdjustByEmp" parameterClass="linkMap">
+		<![CDATA[
+	  	UPDATE INC_INCTV_CALC 
+           SET ADJST_AMT          = #ADJST_AMT#,
+           	   REMARK			  = #REMARK#,
+		       UPDT_USER          = #UPDT_USER#,
+			   UPDT_DTIME         = SYSDATE	            
+ 		 WHERE SUBSD_CD       = #SUBSD_CD#
+		   AND INCTV_MON      = #INCTV_MON#
+		   AND EMPNO          = #EMPNO#
+		   AND ACCRUAL_YN     = #ACCRUAL_YN#
+		]]>
+	 </update>
+	 
+	<!-- 更新个人别计算表的调整数据的计算结果-->
+	<update id="updateSalesIncCalculateByEmp" parameterClass="linkMap">
+		<![CDATA[
+		UPDATE INC_INCTV_CALC MAIN
+           SET MAIN.TOT_INCTV_AMT = (  NVL(MAIN.VARB_INCTV_AMT,0) * NVL(MAIN.ACHV_RAT,0) ) - NVL(MAIN.DEDUT_AMT,0) + NVL(MAIN.ADJST_AMT,0),
+		       UPDT_USER          = #UPDT_USER#,
+			   UPDT_DTIME         = SYSDATE		            
+ 		 WHERE SUBSD_CD       = #SUBSD_CD#
+		   AND INCTV_MON      = #INCTV_MON#
+		   AND EMPNO          = #EMPNO#
+		   AND ACCRUAL_YN     = #ACCRUAL_YN#
+		]]>
+	 </update>
+	
+	<!--营业员提成计算 -->
+	<procedure id="callSalesmanIncentiveCalc" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[	
+		{CALL 
+			PKG_LGECH_SALESMAN_CALC.SALESMAN_INCTV_CALC(
+												 #SUBSD_CD#
+												,#SALS_MON#
+												,#PAY_AREA_CD#
+												,#UPDT_USER#
+												,#ACCRUAL_YN#
+												,#MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+												,#CNT,jdbcType=INTEGER,mode=INOUT#)}
+	]]>		
+	</procedure>
+	
+	<!--营业员提成 读取变动工资 -->
+	<procedure id="callSalesmanVariablePayRead" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[	
+		{CALL 
+			PKG_LGECH_SALESMAN_CALC.SALESMAN_VARIABLE_SALARY(
+												 #SUBSD_CD#
+												,#SALS_MON#
+												,#PAY_AREA_CD#
+												,#UPDT_USER#
+												,#ACCRUAL_YN#
+												,#MESSAGE,jdbcType=VARCHAR,mode=INOUT#
+												,#CNT,jdbcType=INTEGER,mode=INOUT#)}
+	]]>		
+	</procedure>
+	
+	<select id="getSalesIncCalcAdjuList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+		SELECT M.REQ_ID,
+			   M.ACCRUAL_YN,
+		       DECODE(M.ACCRUAL_YN,'Y','预提','提成') AS ACCRUAL_TYPE,
+		       M.REQ_TITLE,
+		       M.REQ_EMPNO,
+		       GET_EMP_LOCAL_NAME(M.REQ_EMPNO, M.SUBSD_CD) AS REQ_EMPNM,
+		       M.REQ_DATE,
+		       (SELECT COUNT(EMPNO)
+		       	  FROM INC_INCTV_CALC_ADJU_DTL D
+		       	 WHERE D.SUBSD_CD= M.SUBSD_CD
+		       	   AND D.REQ_ID  = M.REQ_ID) AS EMP_CNT,
+		       (SELECT SUM(NVL(ADJST_AMT,0))
+		       	  FROM INC_INCTV_CALC_ADJU_DTL D
+		       	 WHERE D.SUBSD_CD= M.SUBSD_CD
+		       	   AND D.REQ_ID  = M.REQ_ID) AS ADJST_AMT_TOT,
+		       M.SUBMIT_STATUS,
+		       M.CURRENT_AFFIRM_ID,
+		       GET_EMP_LOCAL_NAME(GET_EMPID(M.CURRENT_AFFIRM_ID),M.SUBSD_CD) AS CURRENT_AFFIRM_EMPNM,
+		       M.CURRENT_CHECK_ID,
+		       M.AFFIRM_FLAG,
+		       H.PERSON_ID,
+		       DECODE(M.AFFIRM_FLAG,0,'未决裁'
+                               ,1,'通过'
+                               ,2,'否决') AS AFFIRM_STATUS
+		  FROM INC_INCTV_CALC_ADJU_MST M,
+		  	   HR_EMPLOYEE  H
+		 WHERE M.SUBSD_CD = H.CPNY_ID
+		   AND M.REQ_EMPNO= H.EMPID
+		   AND M.SUBSD_CD       = #SUBSD_CD#
+		   AND F_CHECK_USER_DEPT_AUTH(H.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="ACCRUAL_YN">
+		<![CDATA[
+	        M.ACCRUAL_YN	= #ACCRUAL_YN#
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REQ_ID">
+		<![CDATA[
+	        M.REQ_ID		= #REQ_ID#
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REQ_EMPNO">
+		<![CDATA[
+	        M.REQ_EMPNO 	= #REQ_EMPNO#
+		]]>  
+		</isNotEmpty>
+		ORDER BY M.REQ_ID
+	</select>
+	
+	<select id="getSalesIncCalcAdjuListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[		
+		SELECT count(*)
+		  FROM INC_INCTV_CALC_ADJU_MST M,
+		  	   HR_EMPLOYEE  H
+		 WHERE M.SUBSD_CD = H.CPNY_ID
+		   AND M.REQ_EMPNO= H.EMPID
+		   AND M.SUBSD_CD       = #SUBSD_CD#
+		   AND F_CHECK_USER_DEPT_AUTH(H.PAY_AREA_CD, #USER_NO:VARCHAR#, 'pa') > 0
+		]]>
+		<isNotEmpty prepend="AND" property="ACCRUAL_YN">
+		<![CDATA[
+	        M.ACCRUAL_YN		= #ACCRUAL_YN#
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REQ_ID">
+		<![CDATA[
+	        M.REQ_ID		= #REQ_ID#
+		]]>  
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REQ_EMPNO">
+		<![CDATA[
+	        M.REQ_EMPNO 	= #REQ_EMPNO#
+		]]>  
+		</isNotEmpty>
+	</select>
+	
+	<select id="getSalesIncCalcAdjuDtlList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[		
+		SELECT D.REQ_ID,
+			   D.SUBSD_CD,
+		       D.EMPNO,
+		       D.INCTV_MON,
+		       D.ADJST_AMT,
+		       D.ADJST_REASON,
+		       D.RGST_DTIME,
+		       D.RGST_USER,
+		       D.UPDT_DTIME,
+		       D.UPDT_USER
+		  FROM INC_INCTV_CALC_ADJU_DTL D
+		 WHERE D.SUBSD_CD   = #SUBSD_CD#
+		   AND D.REQ_ID		= #REQ_ID#
+		]]>
+	</select>
+	
+	<select id="getSalesIncCalcAdjuDtlListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[		
+		SELECT count(*)
+		  FROM INC_INCTV_CALC_ADJU_DTL D
+		 WHERE D.SUBSD_CD   = #SUBSD_CD#
+		   AND D.REQ_ID		= #REQ_ID#
+		]]>
+	</select>
+	
+	<!-- 提成调整申请时 调整申请生成 -->
+	<select id="getIncCalcAdjuMstReqId" parameterClass="linkMap" resultClass="int">
+		<![CDATA[		
+		SELECT INC_INCTV_CALC_ADJU_MST_SEQ.NEXTVAL REQ_ID
+		  FROM DUAL
+		]]>
+	</select>
+	<insert id="insertIncCalcAdjuMst" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT INTO INC_INCTV_CALC_ADJU_MST
+				(REQ_ID,
+				REQ_TITLE,
+				SUBSD_CD,
+				ACCRUAL_YN,
+				REQ_EMPNO,
+				REQ_DATE,
+				SUBMIT_STATUS,
+				CURRENT_AFFIRM_ID,
+				CURRENT_CHECK_ID,
+				COMMON_EMPID,
+				AFFIRM_FLAG,
+				REMARK,
+				RGST_DTIME,
+				RGST_USER,
+				UPDT_DTIME,
+				UPDT_USER)
+		SELECT
+				#REQ_ID#,
+				#REQ_TITLE#,
+				#SUBSD_CD#,
+				#ACCRUAL_YN#,
+				#UPDT_USER#,
+				TO_CHAR(SYSDATE,'YYYYMMDD'),
+				#SUBMIT_STATUS#,
+				#CURRENT_AFFIRM_ID:VARCHAR#,
+				#CURRENT_CHECK_ID:VARCHAR#,
+				#COMMON_EMPID#,
+				#AFFIRM_FLAG#,
+				NULL,
+				SYSDATE,
+				#UPDT_USER#,
+				SYSDATE,
+				#UPDT_USER#
+		  FROM DUAL
+	    ]]>
+	</insert>
+	<insert id="insertIncCalcAdjuDtl" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT INTO INC_INCTV_CALC_ADJU_DTL
+				(REQ_ID,
+				SUBSD_CD,
+				EMPNO,
+				INCTV_MON,
+				ADJST_AMT,
+				ADJST_REASON,
+				RGST_DTIME,
+				RGST_USER,
+				UPDT_DTIME,
+				UPDT_USER)
+		SELECT
+				#REQ_ID#,
+				#SUBSD_CD#,
+				#EMPNO#,
+				#INCTV_MON#,
+				#ADJST_AMT#,
+				#REMARK#,
+				SYSDATE,
+				#UPDT_USER#,
+				SYSDATE,
+				#UPDT_USER#
+		  FROM DUAL
+	    ]]>
+	</insert>
+	
+	<!-- 提成调整申请时决裁线生成 -->
+	<insert id="insertAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY,
+				APPLY_TYPE
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #REQ_ID#,
+				0, 
+				#AFFIRM_LEVEL#, 
+				#AFFIRMOR_ID#, 
+				SYSDATE, 
+				#PERSON_ID#, 
+				0,
+				#APPLY_TYPE_NO:VARCHAR#
+				)
+	    ]]>
+	</insert>
+	<!-- 修改决裁线 -->
+	<update id="updateEssAffirm" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE ESS_AFFIRM SET
+			 		AFFIRM_FLAG = #FLAG#,
+			 		AFFIRM_CONTENT = #AFFIRM_CONTENT#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		]]>
+	</update> 
+	
+	<!-- 删除决裁者 -->
+	<delete id="deleteAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+	    DELETE FROM ESS_AFFIRM
+	    	WHERE APPLY_NO = #REQ_ID#
+	    	AND APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+	    	AND AFFIRM_FLAG = 0
+	    	
+	    ]]>
+	    <isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				ESS_AFFIRM_NO <> #ESS_AFFIRM_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	<!-- 修改check线 -->
+	<update id="updateCheckFlagByEssAffirmNo" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE ESS_CHECK SET
+			 		CHECK_FLAG = 1,
+					UPDATED_BY = 'AUTO'
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		]]>
+	</update> 
+	
+	<!-- 修改审批线状态 -->
+	<update id="affirmSalesmanInctCalcAdju" parameterClass="linkMap" >
+		<![CDATA[
+			 UPDATE ESS_AFFIRM SET
+			 		ACTIVITY 		= #FLAG:VARCHAR#,
+			 		AFFIRM_FLAG 	= #FLAG#,
+					UPDATE_DATE 	= SYSDATE,
+					UPDATED_BY 		= #UPDATED_BY:VARCHAR#,
+					AFFIRM_CONTENT 	= #AFFIRM_CONTENT:VARCHAR#
+			WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+		]]>
+	</update>
+	
+	<!-- 审批 -->
+	<update id="approveSalesmanInctCalcAdju" parameterClass="linkMap">
+		<![CDATA[	
+		  UPDATE INC_INCTV_CALC_ADJU_MST
+		  	 SET 	AFFIRM_FLAG = #FLAG:VARCHAR#,
+				  	CURRENT_AFFIRM_ID = #CURRENT_AFFIRM_ID#,
+				  	UPDT_DTIME = SYSDATE,
+				  	UPDT_USER = #UPDT_USER#
+		   WHERE REQ_ID 	= #REQ_ID:VARCHAR#
+		   	 AND SUBSD_CD	= #SUBSD_CD:VARCHAR#
+	  	 ]]>
+	</update>
+	
+	<select id="getAffirmorList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	    SELECT ESS.ESS_AFFIRM_NO,
+	 	    	   ESS.APPLY_NO,
+			       ESS.AFFIRMOR_ID,
+			       ESS.AFFIRM_LEVEL,
+			       ESS.AFFIRM_FLAG,
+			       ESS.AFFIRM_CONTENT,
+			       TO_CHAR(ESS.UPDATE_DATE,'YYYY-MM-DD') UPDATE_DATE,
+			       HR.EMPID,
+			       HR.LOCAL_NAME,
+			       ESS.ACTIVITY
+			FROM ESS_AFFIRM ESS,
+			     HR_EMPLOYEE HR
+			WHERE ESS.AFFIRMOR_ID = HR.PERSON_ID
+			AND ESS.APPLY_NO = #REQ_ID:VARCHAR#
+			AND ESS.APPLY_TYPE = #APPLY_TYPE_NO:VARCHAR#
+		]]>
+	<isNotEmpty prepend="AND" property="ACTIVITY">
+		<![CDATA[ 
+			ESS.AFFIRM_FLAG = #ACTIVITY#
+		]]>
+	</isNotEmpty>
+		ORDER BY ESS.AFFIRM_LEVEL
+	</select>  
+	
+	<select id="getCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT A.ESS_CHECK_NO,
+		       A.ESS_AFFIRM_NO,
+		       C.PERSON_ID PERSON_ID_R,
+		       C.EMPID EMPID_R,
+		       C.LOCAL_NAME LOCAL_NAME_R,
+		       C.POSITION_NO POSITION_NO_R,
+		       get_dept_name(C.DEPTNO , #interLanguage:VARCHAR#) DEPTNAME_R,
+		       A.CHECK_REASON,
+		       TO_CHAR(A.CREATED_DATE,'YYYY-MM-DD') DATE_R,
+		       D.PERSON_ID PERSON_ID_C,
+		       D.EMPID EMPID_C,
+		       A.CHECKOR_ID,
+		       D.LOCAL_NAME LOCAL_NAME_C,
+		       D.POSITION_NO POSITION_NO_C,
+		       get_dept_name(C.DEPTNO , #interLanguage:VARCHAR#) DEPTNAME_C,
+		       A.CHECK_CONTENT,
+		       A.CHECK_FLAG,
+		       TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') DATE_C
+		       FROM  ESS_CHECK A,
+		             ESS_AFFIRM B,
+		             HR_EMPLOYEE C,
+		             HR_EMPLOYEE D
+		       WHERE A.ESS_AFFIRM_NO= B.ESS_AFFIRM_NO
+		       AND   A.CHECKOR_ID 	= D.PERSON_ID
+		       AND   B.AFFIRMOR_ID 	= C.PERSON_ID
+		       AND   B.APPLY_NO 	= #REQ_ID:VARCHAR#
+		       AND   B.APPLY_TYPE 	= #APPLY_TYPE_NO:VARCHAR#
+		       ORDER BY A.CREATED_DATE
+		]]>
+	</select>
+</sqlMap>

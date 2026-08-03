@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusInputItemParam">
+    <sql id="getBonusInputItemParamListCondition" >
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO  = #PARAM_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+        <isNotEmpty prepend="AND" property="ALIAS">
+			<![CDATA[
+		 		  SY3.CONTENT LIKE '%' || #ALIAS:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+					
+		<isNotEmpty prepend="AND" property="PARAM_ITEM_ID">
+			<![CDATA[
+		 		  IPI.PARAM_ITEM_ID LIKE '%' || #PARAM_ITEM_ID:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>		
+	</sql>
+	
+	<select id="getPaBonusInputItemParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+         SELECT    T.PARAM_NO,
+			       T.PARAM_ITEM_NO,
+			       SY0.CONTENT          AS CPNY_NAME,
+			       T.DISTINCT_FIELD,
+			       T.DISTINCT_FIELD_2ND,
+			       SY1.CONTENT          DISTINCT_FIELD_NAME,
+			       SY2.CONTENT          DISTINCT_FIELD_2ND_NAME,
+			       T.DEFAULT_VAL,
+			       SY3.CONTENT          ALIAS_NAME,
+			       IPI.PARAM_ITEM_ID,
+			       T.CPNY_ID,
+			       T.ACTIVITY,
+			       GET_ITEM_ID(IPI.PARAM_ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#) ISCHECKED,
+			       GET_ITEM_ORDERNO(IPI.PARAM_ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#) ORDERNO
+			  FROM BN_PARAM_ITEM_PARAM T,
+			  	   BN_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+		 		T.ACTIVITY = #ACTIVITY:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<include refid="getBonusInputItemParamListCondition"/>
+		 
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PARAM_NO
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getPaBonusInputItemParamCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(T.PARAM_NO)
+				   FROM BN_PARAM_ITEM_PARAM T,
+			  	   BN_PARAM_ITEM       IPI,
+			       HR_COMPANY          HR,
+			       SY_GLOBAL_NAME      SY0,
+			       SY_GLOBAL_NAME      SY1,
+			       SY_GLOBAL_NAME      SY2,
+			       SY_GLOBAL_NAME      SY3,
+			       PA_DISTINCT_LIST    PA1,
+			       PA_DISTINCT_LIST    PA2
+			 WHERE T.PARAM_ITEM_NO = IPI.PARAM_ITEM_NO
+			   AND T.CPNY_ID = HR.CPNY_ID
+			   AND HR.CPNY_NO = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA1.CPNY_ID(+)
+			   AND PA1.ID = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+			   AND T.CPNY_ID = PA2.CPNY_ID(+)
+			   AND PA2.ID = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PARAM_ITEM_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		
+		<include refid="getBonusInputItemParamListCondition"/>
+	 
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.PARAM_NO
+			]]>
+		</isEmpty>
+		
+	</select>
+	
+	<select id="checkAddPaBonusInputItemParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(T.PARAM_ITEM_NO)
+			        FROM BN_PARAM_ITEM_PARAM T,
+			             BN_PARAM_ITEM       P
+			       WHERE  T.PARAM_ITEM_NO = P.PARAM_ITEM_NO
+			            AND  P.PARAM_ITEM_NO = #PARAM_ITEM_NO:NUMERIC#
+			            AND  T.CPNY_ID       = #CPNY_ID:VARCHAR#
+		]]>
+		
+	</select>
+	
+	<insert id="addPaBonusInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_PARAM_ITEM_PARAM
+				(
+					PARAM_NO,
+					PARAM_ITEM_NO,
+					CPNY_ID,
+					DISTINCT_FIELD,
+					DISTINCT_FIELD_2ND,
+					DEFAULT_VAL,
+					CREATE_DATE,
+					ACTIVITY,
+					CREATED_BY
+				)
+			VALUES(
+					BN_PARAM_ITEM_PARAM_SEQ.NEXTVAL,
+					#PARAM_ITEM_NO:NUMERIC#,
+					#CPNY_ID:VARCHAR#,
+					#DISTINCT_FIELD:VARCHAR#,
+					#DISTINCT_FIELD_2ND:VARCHAR#,
+					#DEFAULT_VAL:VARCHAR#,
+					SYSDATE,
+					#ACTIVITY:VARCHAR#,
+					#CREATED_BY:VARCHAR#
+				)
+	      ]]>
+	</insert>
+	
+	<update id="updatePaBonusInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_PARAM_ITEM_PARAM SET
+					CPNY_ID= #CPNY_ID:VARCHAR#,
+					DISTINCT_FIELD= #DISTINCT_FIELD:VARCHAR#,
+					DISTINCT_FIELD_2ND= #DISTINCT_FIELD_2ND:VARCHAR#,
+					DEFAULT_VAL= #DEFAULT_VAL:VARCHAR#,
+					ACTIVITY= #ACTIVITY:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+					
+		]]>
+	</update>
+	
+	<delete id="deletePaBonusInputItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+		    DELETE BN_PARAM_ITEM_PARAM WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+		]]>
+	</delete>
+
+	<select id="checkDeletePaBonusInputItemParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		     SELECT COUNT(*)
+		        FROM BN_PARAM_ITEM_PARAM T
+                  WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+		]]>		
+	</select>
+	
+	<select id="checkPaBonusInputItemParamByParamItemNo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		     SELECT COUNT(T.PARAM_ITEM_NO)
+		        FROM BN_PARAM_ITEM_PARAM T
+                  WHERE PARAM_ITEM_NO = #NO:NUMERIC#
+		]]>		
+	</select>
+	
+</sqlMap>

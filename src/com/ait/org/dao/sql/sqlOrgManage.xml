@@ -1,0 +1,3610 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="org.manage">
+
+	<select id="getDeptTopLevel" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+			<![CDATA[
+				  SELECT HR_DEPARTMENT.DEPTNO,
+						 HR_DEPARTMENT.PARENT_DEPT_NO,
+						 N.CONTENT,
+						 HR_DEPARTMENT.DEPT_LEVEL
+				FROM HR_DEPARTMENT,HR_DEPARTMENT_NAME N
+			 WHERE HR_DEPARTMENT.DEPT_LEVEL > 1 AND HR_DEPARTMENT.DEPTNO=N.DEPTNO(+) 
+			   AND N.LANGUAGE(+)=#interLanguage:VARCHAR#  
+		]]>	 
+		<![CDATA[
+				 AND (HR_DEPARTMENT.DATE_CREATED < SYSDATE AND
+						 HR_DEPARTMENT.DATE_ENDED > SYSDATE OR
+						 HR_DEPARTMENT.DATE_ENDED IS NULL)
+		]]>
+		<isNotEmpty prepend="AND" property="specialParam">
+			<![CDATA[
+				HR_DEPARTMENT.DEPTNO IN
+			]]>
+			<include refid="sys.include.getDataPermission" />
+
+		</isNotEmpty>
+		 
+		<![CDATA[ and rownum=1 order by HR_DEPARTMENT.DEPT_LEVEL]]>
+
+	</select>
+	<select id="getDeptInfo" resultClass="linkMap" parameterClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+		SELECT * FROM (
+			 SELECT D.DEPTNO,
+			       LEVEL AS D_LEVEL,
+			       DEPT_LEVEL,
+			       MANAGER_EMP_ID AS MANAGER_ID,
+			       D.PARENT_DEPT_NO,
+			       D.CPNY_ID,
+			       D.ORDERNO,
+			       get_dept_name(D.DEPTNO, #interLanguage:VARCHAR#) PNAME,
+			       ROWNUM AS DEPTORDER,
+			       HRE.EMPID MANAGER_EMPID,
+			       NVL(HRE.LOCAL_NAME,'Vacancy') LOCAL_NAME,
+			       nvl(get_global_name(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#),' ') POST_GRADE_NAME,
+			       nvl(GET_GLOBAL_NAME(HRE.POSITION_NO, #interLanguage:VARCHAR#),' ') POSITION_NO_NAME,
+			       nvl(HRP.PHOTO_PATH,'/resources/photo/default.jpg') PHOTO_PATH,
+			       PKG_RESUME_PROCESS.GET_EMP_CNT(#interCpnyID:VARCHAR#,D.DEPTNO) EMP_CNT
+			  FROM (SELECT A.DEPTNO,
+			               A.DEPT_LEVEL,
+			               A.MANAGER_EMP_ID,
+			               A.PARENT_DEPT_NO,
+			               A.CPNY_ID,
+			               A.ORDERNO
+			          FROM HR_DEPARTMENT A
+			         WHERE  A.CPNY_ID = #interCpnyID:VARCHAR#) D, HR_EMPLOYEE HRE,HR_PERSONAL_INFO HRP
+			 WHERE MANAGER_EMP_ID = HRE.PERSON_ID(+)
+			   AND MANAGER_EMP_ID = HRP.PERSON_ID(+)
+			   AND D.CPNY_ID = #interCpnyID:VARCHAR#
+	    ]]>
+		<isEmpty  property="DEPTNO">
+		 <![CDATA[
+				 START WITH PARENT_DEPT_NO = '0'
+		        CONNECT BY PRIOR D.DEPTNO = PARENT_DEPT_NO
+		         ORDER SIBLINGS BY D.ORDERNO, D.DEPT_LEVEL DESC, D.DEPTNO 
+		]]>
+		</isEmpty>
+	    <isNotEmpty  property="DEPTNO">
+			 <![CDATA[
+				 
+				  START WITH D.DEPTNO=#DEPTNO:VARCHAR#
+		        CONNECT BY PRIOR D.DEPTNO = PARENT_DEPT_NO
+		         ORDER SIBLINGS BY D.ORDERNO, D.DEPT_LEVEL DESC, D.DEPTNO 
+			 ]]>
+		</isNotEmpty>
+			 <![CDATA[
+			 	)  where 1 = 1
+			 ]]>
+	</select>
+
+	<select id="getDeptInfoTree" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT D.DEPTID,
+			       D.DEPTNO,
+			       D.PARENT_DEPT_NO,
+			       TO_CHAR(D.DATE_CREATED,'DD/MM/YYYY') AS DATE_CREATED,
+			       NVL((SELECT HD2.CONTENT
+			          FROM HR_DEPARTMENT D2, HR_DEPARTMENT_NAME HD2
+			         WHERE D2.DEPTNO = D.PARENT_DEPT_NO
+			          AND D2.CPNY_ID=#interCpnyID:VARCHAR#
+			           AND HD2.DEPTNO(+) = D2.DEPTNO
+			           AND HD2.LANGUAGE(+) =#interLanguage:VARCHAR#) ,' ')   AS PARENT_DEPT_NAME,
+			       NVL(HD.CONTENT,' ')  AS DEPTNAME,
+			       D.DEPT_LEVEL,
+			       (CASE
+			         WHEN D.DEPT_LEVEL > 2 THEN
+			          'false'
+			         ELSE
+			          'true'
+			       END) AS ISEXPAND,
+			       (
+			       CASE WHEN (SELECT COUNT(*) FROM HR_DEPARTMENT WHERE PARENT_DEPT_NO=D.DEPTNO) >0
+			       THEN 'false'
+			       ELSE 'true'
+			       end
+			       ) as isParent,
+            NVL(SG1.CONTENT,' ')  WORK_AREA_NAME,
+             NVL(SG2.CONTENT,' ') DEPT_DISTINGUISH_NO_NAME,
+            NVL( SG3.CONTENT,' ') DEPT_TYPE_NAME
+			
+			  FROM HR_DEPARTMENT D, HR_DEPARTMENT_NAME HD,
+        SY_GLOBAL_NAME SG1,SY_GLOBAL_NAME SG2,SY_GLOBAL_NAME SG3
+			 WHERE 
+			
+			    HD.DEPTNO(+) = D.DEPTNO
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND D.CPNY_ID=#interCpnyID:VARCHAR#
+			    AND SG1.NO(+)=D.WORK_AREA
+           AND SG2.NO(+)=D.DEPT_DISTINGUISH_NO
+             AND SG3.NO(+)=D.DEPT_TYPE
+             AND SG1.LANGUAGE(+)=#interLanguage:VARCHAR#
+             AND SG2.LANGUAGE(+)=#interLanguage:VARCHAR#
+             AND SG3.LANGUAGE(+)=#interLanguage:VARCHAR#
+						 
+		]]>
+		<isNotEmpty prepend="AND" property="endEddate">
+			 <![CDATA[
+				 (D.DATE_CREATED <= to_date(#endEddate#,'DD/MM/YYYY')  AND D.DATE_ENDED >= to_date(#endEddate#,'DD/MM/YYYY')  OR
+			       D.DATE_ENDED IS NULL)
+			 ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="endEddate">
+			 <![CDATA[
+				  (D.DATE_CREATED < SYSDATE AND D.DATE_ENDED > SYSDATE OR
+			       D.DATE_ENDED IS NULL)
+			 ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="PARENT_DEPT_NO">
+			(D.PARENT_DEPT_NO=#PARENT_DEPT_NO# or D.DEPTNO=#PARENT_DEPT_NO#)
+		</isNotEmpty>
+		<![CDATA[
+				 START WITH D.PARENT_DEPT_NO = '0'
+		        CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO
+		         ORDER SIBLINGS BY D.ORDERNO, D.DEPT_LEVEL DESC, D.DEPTNO 
+		]]>
+	</select>
+
+	<select id="getDeptLevel" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT DISTINCT (D_LEVEL)
+				  FROM (SELECT LEVEL AS D_LEVEL
+				          FROM HR_DEPARTMENT D
+				         WHERE (D.DATE_CREATED < SYSDATE AND D.DATE_ENDED > SYSDATE OR
+				               D.DATE_ENDED IS NULL)
+				           AND D.CPNY_ID = #interCpnyID:VARCHAR#
+				         START WITH PARENT_DEPT_NO = '0'
+				        CONNECT BY PRIOR D.DEPTNO = PARENT_DEPT_NO
+				         ORDER SIBLINGS BY D.PARENT_DEPT_NO)
+				 ORDER BY D_LEVEL
+		]]>
+	</select>
+
+	<select id="searchOrganizationInfo" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+ 			SELECT c.DEPTID,
+			       c.DEPTNAME,
+			       c.DEPTNO,
+			       c.CPNY_ID,
+			       c.DATE_CREATED,
+			       (select HDN.CONTENT
+			        	from HR_DEPARTMENT p,HR_DEPARTMENT_NAME HDN
+			         where p.DEPTNO = c.PARENT_DEPT_NO 
+				         AND p.DEPTNO=HDN.DEPTNO(+) 
+				         AND HDN.LANGUAGE(+)=#interLanguage:VARCHAR#
+			        ) PDEPTNAME,
+			       (select LOCAL_NAME from HR_EMPLOYEE e where e.EMPID = c.CREATED_BY) EMPname,
+			       c.CREATE_DATE,
+			       c.DEPT_LEVEL     deptLevel,
+			       c.DATE_ENDED
+			  from HR_DEPARTMENT c
+				 
+			 ]]>
+		<dynamic prepend="WHERE">
+			<isEmpty property="DEPTID">
+						 <![CDATA[
+						 c.deptid like '%%'
+						 or c.deptname like '%%'
+						 	]]>
+			</isEmpty>
+			<isNotEmpty property="DEPTID">
+						 <![CDATA[
+						 c.deptid like '%'||#DEPTID#||'%'
+						 or c.deptname like '%'||#DEPTID#||'%'
+						 	]]>
+			</isNotEmpty>
+		</dynamic> 
+		<![CDATA[
+			 START WITH c.PARENT_DEPT_NO IN (SELECT CPNY_ID FROM HR_COMPANY)
+			CONNECT BY PRIOR c.deptno = c.parent_dept_no
+			 ORDER SIBLINGS BY c.deptid
+		]]>
+
+	</select>
+
+	<select id="searchOrganizationInfoCnt" resultClass="int"
+		remapResults="true" parameterClass="linkMap">
+		<![CDATA[
+			SELECT  COUNT(*)
+		  from HR_DEPARTMENT c
+		 
+		 ]]>
+		<dynamic prepend="WHERE">
+			<isEmpty property="EDPTID">
+			 <![CDATA[
+			 c.deptid like '%%'
+			 or c.deptname like '%%'
+			 	]]>
+			</isEmpty>
+			<isNotEmpty property="EDPTID">
+			 <![CDATA[
+			 c.deptid like '%'||#EDPTID#||'%'
+			 or c.deptname like '%'||#EDPTID#||'%'
+			 	]]>
+			</isNotEmpty>
+		</dynamic>
+		<![CDATA[
+			 START WITH c.PARENT_DEPT_ID IN (SELECT CPNY_ID FROM HR_COMPANY)
+			CONNECT BY PRIOR c.deptno = c.parent_dept_no
+			 ORDER SIBLINGS BY c.deptid
+		]]>
+	</select>
+	<select id="getOrganizationInfoByendDate" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT c.DATE_ENDED 
+				from HR_DEPARTMENT c 
+				where c.deptid = #deptid:VARCHAR#
+			]]>
+	</select>
+	<update id="updateOrganizationInfo" parameterClass="linkMap">
+		<![CDATA[
+  			   UPDATE HR_DEPARTMENT
+			      SET DEPT_TYPE = #DEPT_TYPE#,
+			          UPDATE_DATE = SYSDATE,
+                      UPDATED_BY = #adminid:VARCHAR#
+				WHERE deptid =  #deptid:VARCHAR#
+			  ]]>
+	</update>
+	<select id="getPostForChoose" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.POST_NO,
+				       TO_CHAR(T.CREATE_DATE, 'DD/MM/YYYY') CREATE_DATE,
+				       SG.CONTENT AS POST_NAME,
+				       (CASE
+				         WHEN POST_NO IN (SELECT P.POST_NO
+				                            FROM HR_DEPARTMENT_POST P
+				                           WHERE P.DEPTNO = #deptNo:VARCHAR# or P.DEPTNO=#DEPTNO:VARCHAR#) THEN
+				          '1'
+				         ELSE
+				          '0'
+				       END) ISCHOOSE
+				       
+				       FROM HR_POST T,
+				       SY_GLOBAL_NAME SG
+				 WHERE T.POST_NO = SG.NO(+)
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+				   				 
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTL">
+			<![CDATA[
+		 		  HR_DEPARTMENT.DEPT_LEVEL <= #DEPTL:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+				 order by POST_NO
+		]]>
+	</select>
+
+	<select id="getCpnyNameForChoose" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT   G.CONTENT CONTENT,C.CPNY_ID
+			  FROM HR_COMPANY C, SY_GLOBAL_NAME G
+			 WHERE CPNY_NO = G.NO(+)
+			   AND G.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+			 	C.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY TO_NUMBER(CPNY_NO)
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getSelectDept" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT 
+				   distinct
+				   HD1.DEPTID,
+				   HDN.CONTENT CONTENT,
+				   HDN.CONTENT DEPTNAME,
+				   HD1.DEPT_LEVEL,
+				   HD1.DEPTNO,
+				   HD1.PARENT_DEPT_NO,
+				   LEVEL DLEVEL,
+				   HD1.Orderno			   
+				FROM HR_DEPARTMENT HD1,
+					HR_DEPARTMENT HD2,
+					HR_DEPARTMENT_NAME HDN
+			 WHERE HD1.PARENT_DEPT_NO = HD2.DEPTNO(+)
+				 AND (HD1.DATE_CREATED < SYSDATE AND
+							 HD1.DATE_ENDED > SYSDATE OR
+							 HD1.DATE_ENDED IS NULL)
+				 AND HD1.DEPTNO = HDN.DEPTNO(+) 
+				 AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+				 AND HD1.CPNY_ID=#interCpnyID:VARCHAR#
+				
+		]]>	 
+		<![CDATA[ START WITH HD1.PARENT_DEPT_NO='0'
+				CONNECT BY PRIOR HD1.DEPTNO = HD1.PARENT_DEPT_NO		
+				ORDER BY HD1.Orderno	]]>
+	</select>
+
+	<select id="getDeptById" resultClass="linkMap" parameterClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT c.DEPTID,
+			       HDN.CONTENT,
+			       c.DEPTNO,
+			       c.CPNY_ID,
+			       c.DATE_CREATED,
+			       (SELECT HD.CONTENT
+			          FROM HR_DEPARTMENT H, HR_DEPARTMENT_NAME HD
+			         WHERE HD.DEPTNO(+) = H.DEPTNO
+			           AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			           AND H.DEPTID = C.PARENT_DEPT_NO
+			        ) PDEPTNAME,
+			       c.PARENT_DEPT_NO PDEPTNAMEID,
+			       (select LOCAL_NAME from HR_EMPLOYEE e where e.EMPID = c.CREATED_BY) EMPname,
+			       c.CREATE_DATE,
+			       c.DATE_ENDED
+			  FROM HR_DEPARTMENT c, HR_DEPARTMENT_NAME HDN
+			 WHERE c.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND c.DEPTID = #deptId:VARCHAR#
+
+			]]>
+	</select>
+	<select id="getOrganizationById" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT c.DEPTID,c.DEPTNO,
+				       c.CREATE_DATE,
+				       c.DATE_ENDED 
+				  FROM HR_DEPARTMENT c
+				 WHERE c.DEPTNO=#DEPTNO#
+			]]>
+	</select>
+	<update id="updateOrganization" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE HR_DEPARTMENT
+	      	   SET DATE_ENDED        = to_date(#endEddate:VARCHAR#,'DD/MM/YYYY'),
+	      	       PARENT_DEPT_NO    = #PARENT_DEPT_NO:VARCHAR#,
+	      	       UPDATE_DATE       = SYSDATE,		
+	      	       UPDATED_BY        = #UPDATED_BY:VARCHAR#,
+	      	       USE_YN            = #USE_YN:VARCHAR#,
+	      	       FOR_PACAL         = #FOR_PACAL:VARCHAR#,
+	      	       DEPT_FUNCTION     = #DEPT_FUNCTION:VARCHAR#,
+	      	       DEPT_PAYAREA      = #DEPT_PAYAREA:VARCHAR#,
+	      	       DEPT_BRANCH       = #DEPT_BRANCH:VARCHAR#,
+	      	       ORDERNO           = #ORDERNO1:VARCHAR#
+		           WHERE DEPTNO      = #DEPTNO:VARCHAR#
+		  ]]>
+	</update>
+
+	<update id="updateOrganizationNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE HR_DEPARTMENT D
+	      	   SET D.ORDERNO           = #ORDERNO:VARCHAR#,
+	      	       D.UPDATED_BY   =#UPDATED_BY:VARCHAR#,
+	      	       D.UPDATE_DATE   =SYSDATE
+		     WHERE D.DEPTNO      = #DEPTNO:VARCHAR#
+		       AND D.CPNY_ID     = #CPNY_ID:VARCHAR#
+		  ]]>
+	</update>
+	<delete id="delDeptPosts" parameterClass="linkMap">
+		<![CDATA[
+			   DELETE HR_DEPARTMENT_POST WHERE DEPTNO=#DEPTNO#
+			]]>
+	</delete>
+	<insert id="addHrPartPostR" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO HR_DEPARTMENT_POST
+				(DEPTNO,
+				 POST_NO,
+				 CREATE_DATE,
+				 CREATED_BY,
+				 ACTIVITY)
+			VALUES
+				(#PART_NO:VARCHAR#, 
+				#POST_NO:VARCHAR#, 
+				SYSDATE, 
+				#ADMIN:VARCHAR#,
+				1)
+	]]>
+	</insert>
+	<select id="getDeptPost" resultClass="linkMap" parameterClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+				SELECT c.POST_NO  
+				  FROM HR_PART_POST_R c
+				 WHERE c.PART_ID=#deptid#
+			]]>
+	</select>
+
+	<select id="getOrganizationInfoList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+		select K.DEPTID,
+                       K.CONTENT,
+                       K.ORG_TYPE,
+                       K.DEPT_LEVEL,
+                       K.DATE_CREATED,
+                       K.CREATE_DATE,
+                       K.DATE_ENDED,
+                       K.UPDATED_BY,
+                       K.ACTIVITY,
+                       K.DEPTNO,
+                       K.PARENT_DEPT_NO,
+                       K.DEPTID PARENT_DEPTID,
+                       K.PARENT_DEPT_NAME_ZH,
+                       K.PARENT_DEPT_LEVEL,
+                       K.LOCAL_NAME,
+                       K.CPNY_ID,
+                       K.CPNY_NAME ,
+                       K.DEPT_TYPE_NAME,
+                       K.DEPT_DISTINGUISH_NAME,
+                       K.WORK_AREA_NAME,
+                       K.DEPT_TYPE,
+                       K.DEPT_DISTINGUISH_NO,
+                       K.WORK_AREA,
+                       K.ORDERNO,
+                       K.ACC_DIV_CODE,
+                       K.ACC_ORG_CODE,
+                       K.MANAGER_EMP_NAME,
+                       K.COST_CENTER,
+                       K.DEPT_FUNCTION,
+                       K.DEPT_FUNCTION_NAME,
+                       K.FOR_PACAL,
+                       K.DEPT_PAYAREA,
+                       K.MANAGER_EMP_ID,
+                       K.DEPT_BRANCH
+                       from (
+	  		    SELECT A.DEPTID,
+                       D.CONTENT,
+                       A.ORG_TYPE,
+                       A.DEPT_LEVEL,
+                       TO_CHAR(A.DATE_CREATED, 'DD/MM/YYYY') DATE_CREATED,
+                       TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') CREATE_DATE,
+                       TO_CHAR(A.DATE_ENDED, 'DD/MM/YYYY') DATE_ENDED,
+                       A.UPDATED_BY,
+                       A.ACTIVITY,
+                       A.DEPTNO,
+                       A.PARENT_DEPT_NO,
+                       B.DEPTID PARENT_DEPTID,
+                       D2.CONTENT PARENT_DEPT_NAME_ZH,
+                       B.DEPT_LEVEL PARENT_DEPT_LEVEL,
+                       C.LOCAL_NAME,
+                       A.CPNY_ID,
+                       F.CONTENT CPNY_NAME ,
+                       H1.CONTENT DEPT_TYPE_NAME,
+                       H2.CONTENT DEPT_DISTINGUISH_NAME,
+                       H3.CONTENT WORK_AREA_NAME,
+                       A.DEPT_TYPE,
+                       A.DEPT_DISTINGUISH_NO,
+                       A.WORK_AREA,
+                       A.ORDERNO,
+                       A.ACC_DIV_CODE,
+                       A.ACC_ORG_CODE,
+                       A.MANAGER_EMP_ID,
+                       A.COST_CENTER,
+                       F1.LOCAL_NAME MANAGER_EMP_NAME,
+                       GET_DEPT_NAME(A.FOR_PACAL,#interLanguage:VARCHAR#) FOR_PACAL,
+                       GET_DEPT_NAME(A.DEPT_PAYAREA,#interLanguage:VARCHAR#) DEPT_PAYAREA,
+                       A.DEPT_BRANCH,
+                       SY.CONTENT DEPT_FUNCTION_NAME,
+                       A.DEPT_FUNCTION
+                  FROM HR_DEPARTMENT      A,
+                       HR_DEPARTMENT      B,
+                       HR_EMPLOYEE        C,
+                       HR_DEPARTMENT_NAME D,
+                       HR_COMPANY         E,
+                       HR_EMPLOYEE        F1,
+                       HR_DEPARTMENT_NAME D2,
+                       SY_GLOBAL_NAME F,
+                       SY_GLOBAL_NAME H1,  
+                       SY_GLOBAL_NAME H2,
+                       SY_GLOBAL_NAME H3,
+                       SY_GLOBAL_NAME SY
+                 WHERE A.PARENT_DEPT_NO = B.DEPTNO(+)  
+                   AND D2.DEPTNO(+)=B.DEPTNO 
+                   AND D2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND F.NO(+)=E.CPNY_NO 
+                   AND F.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.CREATED_BY = C.PERSON_ID(+)
+                   AND A.DEPTNO = D.DEPTNO(+)
+                   AND D.LANGUAGE(+) =#interLanguage:VARCHAR#
+                   AND E.CPNY_ID = A.CPNY_ID
+                   AND A.MANAGER_EMP_ID = F1.PERSON_ID
+                   AND H1.NO(+)=A.DEPT_TYPE
+                   AND H2.NO(+)=A.DEPT_DISTINGUISH_NO
+                   AND H3.NO(+)=A.WORK_AREA
+                   AND SY.NO(+)=A.DEPT_FUNCTION
+                   AND H1.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H3.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND SY.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  (A.DEPTNO =#DEPTNO:VARCHAR# )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="dept_id">
+			<![CDATA[
+				(A.DEPTID like '%'|| #dept_id:VARCHAR# ||'%'
+				OR
+		 		  D.CONTENT LIKE '%' || #dept_id:VARCHAR# || '%'
+				)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #deptId:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #deptId:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #DEPTID:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #DEPTID:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTL">
+			<![CDATA[
+		 		  DEPT.DEPT_LEVEL <= #DEPTL:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTNO_TYPE">
+			<![CDATA[
+				A.DEPTID IN (
+					SELECT DEPTNO
+						FROM HR_DEPARTMENT HD
+						START WITH DEPTNO = #DEPTNO_TYPE#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( F1.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(F1.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR F1.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ORDERNO">
+			<![CDATA[
+		 		 A.ORDERNO > #ORDERNO:VARCHAR#
+		 		 AND A.DEPTNO <> #DEPTNO1:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			) K
+			CONNECT BY PRIOR K.DEPTNO = K.PARENT_DEPT_NO
+			ORDER SIBLINGS BY K.ORDERNO, K.DEPT_LEVEL DESC, K.DEPTNO		
+		]]>
+
+	</select>
+
+	<select id="getOrganizationInfoCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+	  		     SELECT COUNT(0) 
+                  FROM HR_DEPARTMENT      A,
+                       HR_DEPARTMENT      B,
+                       HR_EMPLOYEE        C,
+                       HR_DEPARTMENT_NAME D,
+                       HR_COMPANY         E,
+                       HR_EMPLOYEE        F1,
+                       HR_DEPARTMENT_NAME D2,
+                       SY_GLOBAL_NAME F,
+                       SY_GLOBAL_NAME H1,  
+                       SY_GLOBAL_NAME H2,
+                       SY_GLOBAL_NAME H3,
+                       SY_GLOBAL_NAME SY
+                 WHERE A.PARENT_DEPT_NO = B.DEPTNO(+)  
+                   AND D2.DEPTNO(+)=B.DEPTNO 
+                   AND D2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND F.NO(+)=E.CPNY_NO 
+                   AND F.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.CREATED_BY = C.PERSON_ID(+)
+                   AND A.DEPTNO = D.DEPTNO(+)
+                   AND D.LANGUAGE(+) =#interLanguage:VARCHAR#
+                   AND E.CPNY_ID = A.CPNY_ID
+                   AND A.MANAGER_EMP_ID = F1.PERSON_ID
+                   AND H1.NO(+)=A.DEPT_TYPE
+                   AND H2.NO(+)=A.DEPT_DISTINGUISH_NO
+                   AND H3.NO(+)=A.WORK_AREA
+                   AND SY.NO(+)=A.DEPT_FUNCTION
+                   AND H1.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H3.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND SY.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  (A.DEPTNO =#DEPTNO:VARCHAR# )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="dept_id">
+			<![CDATA[
+				(A.DEPTID like '%'|| #dept_id:VARCHAR# ||'%'
+				OR
+		 		  D.CONTENT LIKE '%' || #dept_id:VARCHAR# || '%'
+				)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #deptId:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #deptId:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #DEPTID:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #DEPTID:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( F1.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(F1.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR F1.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TYPE">
+			<![CDATA[
+				A.DEPTID IN (
+					SELECT DEPTNO
+						FROM HR_DEPARTMENT HD
+						START WITH DEPTNO = #DEPTNO_TYPE#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTL">
+			<![CDATA[
+		 		  DEPT.DEPT_LEVEL <= #DEPTL:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		
+		
+	 <![CDATA[
+	         
+		    CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+			ORDER SIBLINGS BY A.ORDERNO, A.DEPT_LEVEL DESC, A.DEPTNO		
+		]]>
+	</select>
+	<select id="getMaxNumber" resultClass="int" parameterClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT MAX(TO_NUMBER(T.DEPTID)) + 1
+			  FROM HR_DEPARTMENT T
+			 WHERE NVL2(TRANSLATE((DEPTID), '\1234567890', '\'),
+			            'Y',
+			            'N') = 'N'   
+			   AND T.CPNY_ID LIKE #interCpnyID:VARCHAR# ||'%'
+			            
+		]]>
+	</select>
+	<delete id="deleteDepartmentNameInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_DEPARTMENT_NAME   WHERE  DEPTNO  = #DEPTNO:VARCHAR#
+		]]>
+	</delete>
+	<delete id="deleteDepartmentName" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_DEPARTMENT_NAME WHERE DEPTNO = #DEPTNO:VARCHAR#
+		]]>
+	</delete>
+
+	<insert id="addDeptmentNameInfo" parameterClass="linkMap">
+		<![CDATA[
+			 INSERT INTO HR_DEPARTMENT_NAME(
+				 SEQ,
+				 DEPTNO,
+				 LANGUAGE,
+				 CONTENT,
+				 ACTIVITY,
+				 ORDERNO,
+				 CREATE_DATE,
+				 CREATED_BY
+			 ) VALUES(
+			 	HR_DEPARTMENT_NAME_SEQ.NEXTVAL,
+				#DEPTNO#,
+				#LANGUAGE:VARCHAR#,
+				#CONTENT:VARCHAR#,
+				1,
+				#ORDERNO:VARCHAR#,
+				SYSDATE,
+				#adminid:VARCHAR#
+			 )
+		]]>
+	</insert>
+
+	<insert id="addOrganizationInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  HR_DEPARTMENT
+				(
+				  DEPTID,
+				  CPNY_ID,
+				  DATE_CREATED,
+				  DEPTNO,
+				  PARENT_DEPT_NO,
+				  CREATE_DATE,
+				  CREATED_BY,
+				  ACTIVITY,
+				  DEPT_LEVEL,
+				  DEPT_TYPE,
+				  USE_YN
+				)
+				VALUES
+				(
+				  #deptId:NUMERIC#,
+				  #interCpnyID:VARCHAR#,      
+				  to_date(#createdDate:VARCHAR#,'DD/MM/YYYY'),
+				  #deptId:NUMERIC#,
+				  #PARENT_DEPT_NO:VARCHAR#, 
+				  SYSDATE,
+				  #adminid:VARCHAR#,
+				  1,
+				  #DEPT_LEVEL:VARCHAR#,
+				  #DEPT_TYPE:VARCHAR#,
+				  #USE_YN:VARCHAR#
+				)
+		]]>
+	</insert>
+	<select id="getDeptNameListByActivity" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT LANGUAGE,
+				   DESCRIPTION,
+				   '' CONTENT
+			FROM SY_LANGUAGE			
+			WHERE ACTIVITY = 1
+		]]>
+	</select>
+	<select id="getDeptNameNameListByActivity" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT SY_LANGUAGE.LANGUAGE,
+				   SY_LANGUAGE.DESCRIPTION,
+				   HR_DEPARTMENT_NAME.SEQ,
+				   HR_DEPARTMENT_NAME.DEPTNO,
+				   HR_DEPARTMENT_NAME.CONTENT
+			FROM SY_LANGUAGE,
+			     HR_DEPARTMENT_NAME
+			WHERE SY_LANGUAGE.LANGUAGE = HR_DEPARTMENT_NAME.LANGUAGE(+)
+				AND SY_LANGUAGE.ACTIVITY = 1
+			     
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  HR_DEPARTMENT_NAME.DEPTNO(+) = #DEPTNO:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HR_DEPARTMENT_NAME.DEPTNO
+		]]>
+	</select>
+
+	<update id="deleteOrganizationInfo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_DEPARTMENT 
+				   SET DATE_ENDED = TO_DATE(TO_CHAR(SYSDATE,'YYYY/MM/DD'),'YYYY/MM/DD'),
+				       SYSDATE,
+				       #adminid:VARCHAR#
+					WHERE DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+	</update>
+	<select id="getChildCodeList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT A.CODE_NO, C.CONTENT AS CODE_NAME
+				  FROM SY_CODE A, SY_CODE_PARAM B, SY_GLOBAL_NAME C
+				 WHERE A.CODE_NO = C.NO(+)
+				   AND C.LANGUAGE(+) =#interLanguage:VARCHAR#
+				   AND A.CODE_NO = B.CODE_NO
+				   AND B.CPNY_ID =#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="parentNo">
+			<![CDATA[
+			 	A.PARENT_CODE_NO =#parentNo:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getEmpInfoInOrg" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT * FROM HR_EMPLOYEE WHERE STATUS_CODE <> '1375' AND DEPTNO =#DEPTNO:VARCHAR#
+		]]>
+	</select>
+
+	<select id="getOrderNoByCpnyId" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT NVL(MAX(ORDERNO),0) + 1
+			  FROM HR_DEPARTMENT
+			 WHERE CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+	</select>
+	<select id="viewStructure" resultClass="linkMap" parameterClass="linkMap"
+		remapResults="true">
+		<![CDATA[
+			SELECT  A.EMPID                 empID,
+	 		     	b.parent_empid               parent_empid,
+              		B.CHINESENAME                chineseName,
+              		B.DEPTID                     deptID,
+		            PHOTOPATH                    photoPath,
+		            hr_getBusiness(A.EMPID)      business,
+		            C.POST_GRADE_NAME            postGradeName,
+		            A.OFFICE_PHONE               cellPhone,
+		            get_code_name(B.POSITION_CODE) position,
+		            hr_get_level_deptname(B.DEPTID,4) deptName
+         		FROM HR_PERSONAL_INFO A,
+             HR_EMPLOYEE B,
+             hr_post_grade C
+        WHERE  A.EMPID = B.EMPID(+)
+        AND B.ACTIVITY =1 
+        AND B.POST_GRADE_CODE=C.POST_GRADE_ID(+)
+        AND B.STATUS_CODE <> 'EmpStatus3'
+        AND B.EMPID IN(
+            SELECT EMP.EMPID
+            FROM HR_EMPLOYEE EMP
+           WHERE EMP.DEPTID IN
+                 (SELECT T.DEPTID
+                    FROM HR_DEPARTMENT T
+                   START WITH DEPTID = '1'
+                  CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID)
+           AND EMP.ACTIVITY =1 
+		]]>
+	</select>
+	<select id="getHrEmployeeByCpnyAndDeptNo" parameterClass="linkMap"
+		resultClass="linkMap">
+	<![CDATA[
+		 
+		 select  
+		 	h.local_name name,
+		 	h.deptno deptno,
+		 	h.person_id pid ,
+		 	h.cpny_id cpnyid,
+      		h.empid empid  
+		 from hr_employee h,sy_user s   
+		 where h.cpny_id=#cpnyno# and h.deptno=#deptno# and s.person_id=h.person_id
+		 ]]>
+	</select>
+
+	<select id="getSyGlobleNamesList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+		   select s.code_no DEPTNO, sg.content DEPTNAME
+	          from sy_code s, sy_global_name sg
+	         where sg.no = s.code_no
+	           and s.parent_code_no = #parentNo#
+	           AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+	          AND (SG.CONTENT LIKE '%$deptName$%' or SG.NO like '%$deptName$%')
+	          ORDER BY SG.Create_Date desc
+		 ]]>
+	</select>
+
+	<select id="getPayAreaInfoList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+		 SELECT A.DEPTNO,SY.CONTENT DEPTNAME ,A.COST_CENTER
+		 FROM HR_DEPARTMENT A, HR_DEPARTMENT_NAME SY
+			WHERE A.DEPTNO = SY.DEPTNO(+)
+			AND A.DEPT_LEVEL = 2
+			AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			AND A.CPNY_ID = #CPNYID:VARCHAR#
+			AND A.ACTIVITY = 1
+		 ]]>
+		ORDER BY A.DEPTNO
+	</select>
+
+	<update id="updatePayAreaInfo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_DEPARTMENT 
+				   SET COST_CENTER = #COST_CENTER:VARCHAR#,
+				   UPDATE_DATE = SYSDATE,
+				   UPDATED_BY = #adminid:VARCHAR#
+				WHERE DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+	</update>
+
+	<update id="updateEmpPayAreaInfo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE HR_EMPLOYEE HR
+				   SET COST_CENTER 
+				    = ( select COST_CENTER 
+				    		from hr_department
+       						where deptno = get_divcode_by_deptno(hr.deptno))
+					WHERE HR.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+	</update>
+
+	<select id="getSyCodeList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT SC.CODE_NO CODENO, GG.CONTENT CODENAME
+			  FROM SY_CODE SC, SY_CODE_PARAM SCP, SY_GLOBAL_NAME GG
+			 WHERE SC.CODE_NO = SCP.CODE_NO
+			   AND SC.CODE_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				SCP.CPNY_ID = #CPNY_ID#
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARENT_CODE_NO">
+			<![CDATA[
+				SC.PARENT_CODE_NO = #PARENT_CODE_NO#  
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEFAULT_CODE_NAME">
+			<![CDATA[
+				( GG.CONTENT LIKE '%' || #DEFAULT_CODE_NAME# || '%' OR SC.CODE_NO LIKE '%' || #DEFAULT_CODE_NAME# || '%' )  
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CODE_NAME">
+			<![CDATA[
+				( GG.CONTENT LIKE '%' || #CODE_NAME# || '%' OR SC.CODE_NO LIKE '%' || #CODE_NAME# || '%' )  
+	        ]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY GG.CONTENT,SC.CODE_NO
+		]]>
+	</select>
+
+	<select id="getOrgInfoOrderList" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+		        select K.DEPTID,
+                       K.CONTENT,
+                       K.ORG_TYPE,
+                       K.DEPT_LEVEL,
+                       K.DATE_CREATED,
+                       K.CREATE_DATE,
+                       K.DATE_ENDED,
+                       K.UPDATED_BY,
+                       K.ACTIVITY,
+                       K.DEPTNO,
+                       K.PARENT_DEPT_NO,
+                       K.DEPTID PARENT_DEPTID,
+                       K.PARENT_DEPT_NAME_ZH,
+                       K.PARENT_DEPT_LEVEL,
+                       K.CPNY_ID,
+                       K.CPNY_NAME ,
+                       K.DEPT_TYPE_NAME,
+                       K.DEPT_DISTINGUISH_NAME,
+                       K.WORK_AREA_NAME,
+                       K.DEPT_TYPE,
+                       K.DEPT_DISTINGUISH_NO,
+                       K.WORK_AREA,
+                       K.ORDERNO,
+                       K.ACC_DIV_CODE,
+                       K.ACC_ORG_CODE,
+                       K.COST_CENTER,
+                       K.DEPT_FUNCTION,
+                       K.DEPT_FUNCTION_NAME,
+                       K.FOR_PACAL,
+                       K.DEPT_PAYAREA,
+                       K.MANAGER_EMP_ID,
+                       K.DEPT_BRANCH,
+                       K.USE_YN
+                       from (
+	  		    SELECT A.DEPTID,
+                       D.CONTENT,
+                       A.ORG_TYPE,
+                       A.DEPT_LEVEL,
+                       TO_CHAR(A.DATE_CREATED, 'DD/MM/YYYY') DATE_CREATED,
+                       TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') CREATE_DATE,
+                       TO_CHAR(A.DATE_ENDED, 'DD/MM/YYYY') DATE_ENDED,
+                       A.UPDATED_BY,
+                       A.ACTIVITY,
+                       A.DEPTNO,
+                       A.PARENT_DEPT_NO,
+                       B.DEPTID PARENT_DEPTID,
+                       D2.CONTENT PARENT_DEPT_NAME_ZH,
+                       B.DEPT_LEVEL PARENT_DEPT_LEVEL,
+                       A.CPNY_ID,
+                       F.CONTENT CPNY_NAME ,
+                       H1.CONTENT DEPT_TYPE_NAME,
+                       H2.CONTENT DEPT_DISTINGUISH_NAME,
+                       H3.CONTENT WORK_AREA_NAME,
+                       A.DEPT_TYPE,
+                       A.DEPT_DISTINGUISH_NO,
+                       A.WORK_AREA,
+                       A.ORDERNO,
+                       A.ACC_DIV_CODE,
+                       A.ACC_ORG_CODE,
+                       A.MANAGER_EMP_ID,
+                       A.COST_CENTER,
+                       GET_DEPT_NAME(A.FOR_PACAL,#interLanguage:VARCHAR#) FOR_PACAL,
+                       GET_DEPT_NAME(A.DEPT_PAYAREA,#interLanguage:VARCHAR#) DEPT_PAYAREA,
+                       A.DEPT_BRANCH,
+                       SY.CONTENT DEPT_FUNCTION_NAME,
+                       A.DEPT_FUNCTION,
+                       A.USE_YN 
+                  FROM HR_DEPARTMENT      A,
+                       HR_DEPARTMENT      B,
+                       HR_DEPARTMENT_NAME D,
+                       HR_COMPANY         E,
+                       HR_DEPARTMENT_NAME D2,
+                       SY_GLOBAL_NAME F,
+                       SY_GLOBAL_NAME H1,  
+                       SY_GLOBAL_NAME H2,
+                       SY_GLOBAL_NAME H3,
+                       SY_GLOBAL_NAME SY
+                 WHERE A.PARENT_DEPT_NO = B.DEPTNO(+)  
+                   AND D2.DEPTNO(+)=B.DEPTNO 
+                   AND D2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND F.NO(+)=E.CPNY_NO 
+                   AND F.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.DEPTNO = D.DEPTNO(+)
+                   AND D.LANGUAGE(+) =#interLanguage:VARCHAR#
+                   AND E.CPNY_ID = A.CPNY_ID
+                   AND H1.NO(+)=A.DEPT_TYPE
+                   AND H2.NO(+)=A.DEPT_DISTINGUISH_NO
+                   AND H3.NO(+)=A.WORK_AREA
+                   AND SY.NO(+)=A.DEPT_FUNCTION
+                   AND H1.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H3.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND SY.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  (A.DEPTNO =#DEPTNO:VARCHAR# )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USE_YN">
+			<![CDATA[
+				(A.USE_YN = #USE_YN:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dept_id">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #dept_id:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #dept_id:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #DEPTID:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #DEPTID:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTL">
+			<![CDATA[
+		 		  DEPT.DEPT_LEVEL <= #DEPTL:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTNO_TYPE">
+			<![CDATA[
+				A.DEPTID IN (
+					SELECT DEPTNO
+						FROM HR_DEPARTMENT HD
+						START WITH DEPTNO = #DEPTNO_TYPE#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( F1.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(F1.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR F1.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			) K
+			CONNECT BY PRIOR K.DEPTNO = K.PARENT_DEPT_NO
+			ORDER SIBLINGS BY K.ORDERNO, K.DEPT_LEVEL DESC, K.DEPTNO		
+		]]>
+
+	</select>
+
+	<select id="getOrgOrgInfoOrderCnt" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+	  		     select count(0)
+                       from (
+	  		    SELECT A.DEPTID,
+                       D.CONTENT,
+                       A.ORG_TYPE,
+                       A.DEPT_LEVEL,
+                       TO_CHAR(A.DATE_CREATED, 'DD/MM/YYYY') DATE_CREATED,
+                       TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') CREATE_DATE,
+                       TO_CHAR(A.DATE_ENDED, 'DD/MM/YYYY') DATE_ENDED,
+                       A.UPDATED_BY,
+                       A.ACTIVITY,
+                       A.DEPTNO,
+                       A.PARENT_DEPT_NO,
+                       B.DEPTID PARENT_DEPTID,
+                       D2.CONTENT PARENT_DEPT_NAME_ZH,
+                       B.DEPT_LEVEL PARENT_DEPT_LEVEL,
+                       A.CPNY_ID,
+                       F.CONTENT CPNY_NAME ,
+                       H1.CONTENT DEPT_TYPE_NAME,
+                       H2.CONTENT DEPT_DISTINGUISH_NAME,
+                       H3.CONTENT WORK_AREA_NAME,
+                       A.DEPT_TYPE,
+                       A.DEPT_DISTINGUISH_NO,
+                       A.WORK_AREA,
+                       A.ORDERNO,
+                       A.ACC_DIV_CODE,
+                       A.ACC_ORG_CODE,
+                       A.MANAGER_EMP_ID,
+                       A.COST_CENTER,
+                       GET_DEPT_NAME(A.FOR_PACAL,#interLanguage:VARCHAR#) FOR_PACAL,
+                       GET_DEPT_NAME(A.DEPT_PAYAREA,#interLanguage:VARCHAR#) DEPT_PAYAREA,
+                       A.DEPT_BRANCH,
+                       SY.CONTENT DEPT_FUNCTION_NAME,
+                       A.DEPT_FUNCTION,
+                       A.USE_YN 
+                  FROM HR_DEPARTMENT      A,
+                       HR_DEPARTMENT      B,
+                       HR_DEPARTMENT_NAME D,
+                       HR_COMPANY         E,
+                       HR_DEPARTMENT_NAME D2,
+                       SY_GLOBAL_NAME F,
+                       SY_GLOBAL_NAME H1,  
+                       SY_GLOBAL_NAME H2,
+                       SY_GLOBAL_NAME H3,
+                       SY_GLOBAL_NAME SY
+                 WHERE A.PARENT_DEPT_NO = B.DEPTNO(+)  
+                   AND D2.DEPTNO(+)=B.DEPTNO 
+                   AND D2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND F.NO(+)=E.CPNY_NO 
+                   AND F.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.DEPTNO = D.DEPTNO(+)
+                   AND D.LANGUAGE(+) =#interLanguage:VARCHAR#
+                   AND E.CPNY_ID = A.CPNY_ID
+                   AND H1.NO(+)=A.DEPT_TYPE
+                   AND H2.NO(+)=A.DEPT_DISTINGUISH_NO
+                   AND H3.NO(+)=A.WORK_AREA
+                   AND SY.NO(+)=A.DEPT_FUNCTION
+                   AND H1.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H2.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND H3.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND SY.LANGUAGE(+)=#interLanguage:VARCHAR#
+                   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  (A.DEPTNO =#DEPTNO:VARCHAR# )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="USE_YN">
+			<![CDATA[
+				(A.USE_YN = #USE_YN:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="dept_id">
+			<![CDATA[
+				(A.DEPTID like '%'|| #dept_id:VARCHAR# ||'%'
+				OR
+		 		  D.CONTENT LIKE '%' || #dept_id:VARCHAR# || '%'
+				)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #deptId:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #deptId:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+		 		  (A.DEPTID LIKE '%' || #DEPTID:VARCHAR# || '%'
+		 		  	OR
+		 		  D.CONTENT LIKE '%' || #DEPTID:VARCHAR# || '%')
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( F1.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(F1.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR F1.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TYPE">
+			<![CDATA[
+				A.DEPTID IN (
+					SELECT DEPTNO
+						FROM HR_DEPARTMENT HD
+						START WITH DEPTNO = #DEPTNO_TYPE#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO_TREE">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = A.DEPTNO AND HR_DEPARTMENT.ACTIVITY = 1
+					 START WITH (HR_DEPARTMENT.DEPTNO = #DEPTNO_TREE:VARCHAR# OR #DEPTNO_TREE:VARCHAR# = '')
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTL">
+			<![CDATA[
+		 		  DEPT.DEPT_LEVEL <= #DEPTL:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+	 <![CDATA[
+	         
+		    ) K
+			CONNECT BY PRIOR K.DEPTNO = K.PARENT_DEPT_NO
+			ORDER SIBLINGS BY K.ORDERNO, K.DEPT_LEVEL DESC, K.DEPTNO		
+		]]>
+	</select>
+	<!-- 查看修改的orderno在数据表中是否有重复的数据如果有就提示不让修改 -->
+	<select id="checkOrganizationNo" resultClass="int"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(0) FROM HR_DEPARTMENT D 
+			 WHERE D.CPNY_ID = #CPNY_ID:VARCHAR# 
+			   AND D.ORDERNO = #ORDERNO:VARCHAR#
+			   AND D.DEPTNO <> #DEPTNO:VARCHAR#
+			
+		  ]]>
+	</select>
+
+	<select id="getDeptOrderImportTempList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT HT.CPNY_ID,
+                 HRN.CPNY_LOCATION,
+                 HT.DEPTNO,
+                 (SELECT HD.ORG_NAME_LOCAL FROM HR_DEPARTMENT HD WHERE HT.DEPTNO = HD.DEPTNO AND HD.CPNY_ID = HT.CPNY_ID) AS ORG_NAME_LOCAL,
+                 HT.ORDERNO,
+                 UPLOAD_ERROR_MSG,
+                 LINE_ID,
+                 RESULT_FLAG,
+                 HE.LOCAL_NAME UPLOAD_BY,
+                 TO_CHAR(UPLOAD_DATE, 'DD/MM/YYYY') UPLOAD_DATE
+            FROM HR_DEPARTMENT_TEMP HT,
+                 HR_COMPANY         HRN,
+                 HR_EMPLOYEE        HE
+           WHERE HT.CPNY_ID = HRN.CPNY_ID
+             AND HT.UPLOAD_BY = HE.PERSON_ID
+             AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getDeptOrderImportTempCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 	  SELECT COUNT(1)
+			FROM HR_DEPARTMENT_TEMP HT,
+                 HR_COMPANY         HRN,
+                 HR_EMPLOYEE        HE
+           WHERE HT.CPNY_ID = HRN.CPNY_ID
+             AND HT.UPLOAD_BY = HE.PERSON_ID
+             AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getDeptOrderImportTempErrorCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+	 	  SELECT COUNT(1)
+			FROM HR_DEPARTMENT_TEMP HT,
+                 HR_COMPANY         HRN,
+                 HR_EMPLOYEE        HE
+           WHERE HT.CPNY_ID = HRN.CPNY_ID
+             AND HT.UPLOAD_BY = HE.PERSON_ID
+             AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+			 AND RESULT_FLAG = 'E'
+		]]>
+	</select>
+
+
+	<!-- 写入excel临时表数据验证֤================================ -->
+	<procedure id="importDeptOrderFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call $PR_NAME$(
+						 #PERSON_ID:VARCHAR#
+						,#CPNY_ID#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<select id="getDeptList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		 SELECT A.DEPTNO,get_dept_name(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME FROM HR_DEPT_TREE_V A
+			WHERE A.CPNY_ID = #CPNY_ID:VARCHAR#
+			AND (A.ORG_NAME_ENG LIKE '%$deptName$%' or A.ORG_NAME_LOCAL LIKE '%$deptName$%'  or A.DEPTNO like '%$deptName$%' )
+			AND A.USE_YN = 'Y'		    
+		 ]]>
+		<isEqual prepend="" property="limit" compareValue="hr">
+			<isNotEmpty prepend="AND" property="specialParam">
+				<isNotEqual prepend="" property="specialParam"
+					compareValue="general">
+					<![CDATA[
+				   		A.DEPTNO IN  
+		             ]]>
+					<include refid="sys.include.getDataPermission" />
+				</isNotEqual>
+				<isEqual prepend="" property="specialParam" compareValue="general">
+					A.DEPTNO = #deptNo:VARCHAR#
+				</isEqual>
+			</isNotEmpty>
+		</isEqual>
+		<isEqual prepend="AND" property="limit" compareValue="ar">
+			<![CDATA[
+				  A.DEPTNO IN (
+				   	SELECT C.DEPTNO
+		               FROM AR_SUPERVISOR_INFO C
+		            WHERE C.DEPTNO = A.DEPTNO
+		            AND C.PERSON_ID = #ADMINID:VARCHAR#)
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="limit" compareValue="pa">
+			<![CDATA[
+				  A.DEPTNO IN (SELECT C.DEPTNO
+		                            FROM PA_SUPERVISOR_INFO C
+		                           WHERE C.DEPTNO = A.DEPTNO
+		                             AND C.PERSON_ID = #ADMINID:VARCHAR#)
+		    ]]>
+		</isEqual>
+		<isEqual prepend="AND" property="limit" compareValue="manager">
+			<![CDATA[
+				  EXISTS
+					 (SELECT B1.DEPTNO
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = A.DEPTNO
+					         START WITH B1.DEPTNO in
+					                    (SELECT HRD.DEPTID
+					                       FROM HR_DEPARTMENT HRD
+					                      WHERE HRD.MANAGER_EMP_ID = #ADMINID:VARCHAR#)
+					        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+					        UNION
+					    SELECT AR_SUPERVISOR_INFO.DEPTNO
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = A.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #ADMINID:VARCHAR#
+				       UNION
+				       SELECT SUD.DEPTNO
+							   FROM SY_USER SU,SY_USER_DEPT SUD
+							  WHERE SU.USER_NO = SUD.USER_NO
+							     AND SU.PERSON_ID = #ADMINID:VARCHAR#
+							     AND SUD.DEPTNO=A.DEPTNO)  
+		    ]]>
+		</isEqual>
+		ORDER BY A.DEPT_LEVEL,A.ORDERNO,A.DEPTNO
+	</select>
+	
+	
+	<select id="getResumeDeptList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		 SELECT A.DEPTNO,
+		        GET_DEPT_NAME_RESUME(A.DEPTNO,#interLanguage:VARCHAR#,#interCpnyID:VARCHAR#,#RESUME_NO:VARCHAR#) DEPTNAME 
+		   FROM ORG_INFO A
+		  WHERE A.RESUME_NO = #RESUME_NO:VARCHAR#
+		    AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			AND (A.ORG_NAME_ENG LIKE '%$deptName$%' or A.ORG_NAME_LOCAL LIKE '%$deptName$%'  or A.DEPTNO like '%$deptName$%' )
+			AND A.ACTIVITY = 1		    
+		ORDER BY A.DEPT_LEVEL,A.ORDERNO
+		 ]]>
+	</select>
+	
+	<select id="viewResumeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.NO,
+			       A.CHANGE_DATE,
+			       A.RESUME_NAME,
+			       A.IS_CURRENT_ORG,
+			       A.CHANGE_REASON,
+			       TO_CHAR(A.CREATE_DATE, 'dd/MM/yyyy HH24:MI') CREATE_DATE,
+			       B.LOCAL_NAME,
+			       TO_CHAR(A.UPDATE_DATE, 'dd/MM/yyyy HH24:MI') UPDATE_DATE,
+			       A.UPDATED_BY,
+			       A.ACTIVITY,
+			       GET_CODE_NAME(A.ACTIVITY,#interLanguage#) ACTIVITY_NAME,
+			       A.CPNY_ID,
+			       A.UPDATED_IP,
+			       A.FROM_NO,
+			       A.REMARK,
+			       A.EXPERIENCE_TYPE,
+			       GET_CODE_NAME( A.EXPERIENCE_TYPE,#interLanguage#) EXPERIENCE_TYPE_NAME
+			      
+			  FROM ORG_RESUME_INFO A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EXPERIENCE_TYPE">
+			<![CDATA[
+				A.EXPERIENCE_TYPE = #EXPERIENCE_TYPE#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<insert id="addResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_RESUME_INFO
+					  (SEQ,
+					   NO,
+					   CHANGE_DATE,
+					   RESUME_NAME,
+					   CHANGE_REASON,
+					   CREATE_DATE,
+					   CREATED_BY,
+					   UPDATE_DATE,
+					   UPDATED_BY,
+					   ACTIVITY,
+					   CPNY_ID,
+					   UPDATED_IP,
+					   CREATED_IP,
+					   REMARK,
+					   FROM_NO,
+					   EXPERIENCE_TYPE)
+					VALUES
+					  (ORG_RESUME_INFO_SEQ.NEXTVAL,
+					   #NO:VARCHAR#,
+					   #CHANGE_DATE:VARCHAR#,
+					   #RESUME_NAME:VARCHAR#,
+					   #CHANGE_REASON:VARCHAR#,
+					   SYSDATE,
+					   #adminID:VARCHAR#,
+					   SYSDATE,
+					   #adminID:VARCHAR#,
+					   '14013948',
+					   #interCpnyID:VARCHAR#,
+					   #adminIP:VARCHAR#,
+					   #adminIP:VARCHAR#,
+					   #REMARK:VARCHAR#,
+					   (SELECT NO FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND IS_CURRENT_ORG = 'Y' AND ACTIVITY = '14013947'),
+					   #EXPERIENCE_TYPE:VARCHAR#)
+	]]>
+	<selectKey resultClass="string" keyProperty="id" >
+    	SELECT ORG_RESUME_INFO_SEQ.CURRVAL AS ID FROM DUAL
+   	</selectKey>
+	</insert>
+	
+	
+	<update id="updateResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_RESUME_INFO
+		   SET CHANGE_DATE = #CHANGE_DATE:VARCHAR#,
+		       RESUME_NAME = #RESUME_NAME:VARCHAR#,
+		       CHANGE_REASON = #CHANGE_REASON:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#,
+		       REMARK = #REMARK:VARCHAR#,
+		       EXPERIENCE_TYPE = #EXPERIENCE_TYPE:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="deleteResumeInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_RESUME_INFO
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		   AND IS_CURRENT_ORG <> 'Y'
+		]]>
+	</update>
+	
+	<select id="getResumneNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT GET_RESUME_NO(#interCpnyID#,'O') NO,
+			       TO_CHAR(SYSDATE,'dd/MM/yyyy') CHANGE_DATE
+			  FROM DUAL
+		]]>
+	</select>
+	
+	<select id="getDeptNoMax" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			  SELECT GET_ORG_MAXDEPTNO(#parent_dept_no:varchar#,#resumeNo:VARCHAR#,#cpnyId:VARCHAR#) from dual 
+		]]>
+	</select>
+	
+	<select id="getDeptNoMax1" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			  SELECT  nvl(substr(max(deptno),3),0) FROM ORG_INFO WHERE RESUME_NO = #resumeNo:VARCHAR# AND CPNY_ID = #cpnyId:VARCHAR# AND ACTIVITY = '1'
+		]]>
+	</select>
+	
+	<procedure id="executeResumeProcess" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RESUME_PROCESS.PR_PROCESS_EXECUTE(
+						#RESUME_NO:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#type:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<insert id="executeMoveEmp" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ORG_EMPLOYEE 
+		       SET DEPTNO = #MOVE_DEPT_NO:VARCHAR#,
+		           UPDATE_DATE = SYSDATE,
+		           UPDATED_BY = #adminID:VARCHAR#,
+		           UPDATED_IP = #adminIP:VARCHAR#
+		     WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+		       AND CPNY_ID = #interCpnyID:VARCHAR#
+		       AND PERSON_ID IN (
+		           $empIds$
+		       )
+		]]>
+	</insert>
+	
+	<select id="viewResumeProcess" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.NO,
+			       B.COPY_FLAG,
+			       B.SCFL_FLAG,
+			       B.SCZZ_FLAG,
+			       B.QDZZ_FLAG,
+			       B.UPDATE_DATE,
+			       B.UPDATED_BY,
+			       B.UPDATED_IP,
+			       B.CPNY_ID,
+			       GET_CODE_NAME(A.ACTIVITY,#interLanguage#) ACTIVITY
+			  FROM ORG_RESUME_INFO A,ORG_RESUME_PROCESS B
+			 WHERE A.NO = B.NO(+)
+			   AND A.CPNY_ID = B.CPNY_ID(+)
+			   AND A.CPNY_ID = #interCpnyID#
+			   AND A.NO = #RESUME_NO#
+			   AND A.ACTIVITY <> 0
+		]]>
+	</select>
+	
+	<select id="getDefaultDeptNo" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT DEPTNO
+			  FROM ORG_INFO
+			 WHERE CPNY_ID = #interCpnyID#
+			   AND RESUME_NO = #RESUME_NO#
+			   AND PARENT_DEPT_NO = '0'
+		]]>
+	</select>
+	
+	<select id="viewResumeDeptList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.RESUME_NO,
+			       A.DEPTID,
+			       A.CPNY_ID,
+			       TO_CHAR(A.DATE_CREATED,'DD/MM/YYYY') DATE_CREATED,
+			       A.DATE_ENDED,
+			       A.DEPT_LEVEL,
+			       A.MANAGER_EMP_ID,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage#) DEPTNAME,
+			       A.PARENT_DEPT_NO,
+			       A.WORK_AREA,
+			       GET_WORK_AREA_NAME(A.CPNY_ID,A.WORK_AREA,#interLanguage#) WORK_AREA_NAME,
+			       A.DEPT_TYPE,
+			       GET_CODE_NAME(A.DEPT_TYPE,#interLanguage#) DEPT_TYPE_NAME,
+			       A.ORG_NAME_KO,
+			       A.ORG_NAME_LOCAL,
+			       A.ORG_NAME_VI,
+			       A.ORG_NAME_ENG,
+			       A.ORG_LEVEL,
+			       A.COST_CENTER,
+			       GET_COST_CENTER_NAME(A.CPNY_ID,A.COST_CENTER,#interLanguage#) COST_CENTER_NAME,
+			       A.USE_YN,
+			       TO_CHAR(A.CREATE_DATE,'DD/MM/YYYY') CREATE_DATE,
+			       A.CREATED_BY,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY') UPDATE_DATE,
+			       A.UPDATED_BY,
+			       A.UPDATED_IP,
+			       A.ORDERNO,
+			       A.ACTIVITY,
+			       A.IS_DEPT,
+			       A.IS_PART_TIME,
+			       A.PRODUCT_TYPE,
+			       GET_CODE_NAME(A.PRODUCT_TYPE,#interLanguage#) PRODUCT_NAME,
+			       GET_CODE_NAME(A.COST_CENTER,#interLanguage#) COST_CENTER_NAME,
+			       A.COST_CENTER,
+			       B.LOCAL_NAME,
+			       B.EMPID,
+			       GET_CODE_NAME(B.EMP_TYPE_CODE,#interLanguage#) EMP_TYPE_NAME,
+			       GET_CODE_NAME(B.EMP_OFFICE,#interLanguage#) EMP_OFFICE_NAME,
+			       FEE_STANDARD,
+			       DEPT_DISTINGUISH_STANDARD
+			  FROM ORG_INFO A,
+			  	   ORG_EMPLOYEE B
+			 WHERE A.MANAGER_EMP_ID = B.PERSON_ID(+)
+			 	AND A.RESUME_NO = B.RESUME_NO(+)
+			   AND A.RESUME_NO = #RESUME_NO#
+			   AND A.CPNY_ID = #interCpnyID#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_FLAG" compareValue="1">
+            	<![CDATA[
+					A.DEPTNO = #DEPTNO#
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="SON_FLAG" compareValue="0">
+            	<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO
+                          FROM ORG_INFO
+                         WHERE RESUME_NO = #RESUME_NO#
+                           AND CPNY_ID = #interCpnyID#
+                        AND (PARENT_DEPT_NO = #DEPTNO# OR DEPTNO = #DEPTNO#)
+					)
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_FLAG" compareValue="1">
+            	<![CDATA[
+						A.DEPTNO = (SELECT DEPTNO
+					  FROM ORG_INFO
+					 WHERE CPNY_ID = #interCpnyID#
+					   AND RESUME_NO = #RESUME_NO#
+					   AND PARENT_DEPT_NO = '0')
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="SON_FLAG" compareValue="0">
+            	<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO
+                          FROM ORG_INFO
+                         WHERE RESUME_NO = #RESUME_NO#
+                           AND CPNY_ID = #interCpnyID#
+					)
+			    ]]>
+			</isEqual>
+			<![CDATA[
+			]]>
+		</isEmpty>
+	</select>
+	
+	
+	<select id="viewResumeEmpList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT RESUME_NO,
+			       EMPID,
+			       CHINESE_PINYIN,
+			       ENGLISH_NAME,
+			       POSITION_NO,
+			       DUTY_NO,
+			       GET_GLOBAL_NAME(DUTY_NO,#interLanguage#) DUTY_NAME,
+			       POST_NO,
+			       POST_GRADE_NO,
+			       STATUS_CODE,
+			       DATE_STARTED,
+			       DATE_LEFT,
+			       END_PROBATION_DATE,
+			       EMP_TYPE_CODE,
+			       CPNY_ID,
+			       PERSON_ID,
+			       DEPTNO,
+			       LOCAL_NAME,
+			       WORK_AREA,
+			       ID_CARD_NO,
+			       SHIFT_NO,
+			       EMP_OFFICE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       ACTIVITY,
+			       MAIN_BUSINESS,
+			       EXPERIENCE,
+			       INCUMBENCY,
+			       substr(PROMOTION_DAY,0,7) PROMOTION_DAY,
+			       UPDATED_IP,
+			       CREATED_IP,
+			       KOREAN_NAME,
+			       STANDARD_POSITION,
+			       GET_DEPT_NAME(DEPTNO,#interLanguage#) DEPTNAME,
+			       GET_CODE_NAME(EMP_OFFICE,#interLanguage#) EMP_OFFICE_NAME,
+			       GET_CODE_NAME(POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			     	GET_GLOBAL_NAME(POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			     	GET_GLOBAL_NAME(POST_FAMILY, #interLanguage:VARCHAR#) POST_FAMILY_NAME
+			  FROM ORG_EMPLOYEE
+			 WHERE RESUME_NO = #RESUME_NO#
+			 	AND PERSON_ID NOT LIKE '111111%'
+			   AND CPNY_ID = #interCpnyID#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				DEPTNO = #DEPTNO#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				DEPTNO = (SELECT DEPTNO
+			  FROM ORG_INFO
+			 WHERE CPNY_ID = #interCpnyID#
+			   AND RESUME_NO = #RESUME_NO#
+			   AND PARENT_DEPT_NO = '0')
+			]]>
+		</isEmpty>
+		<![CDATA[
+			ORDER BY POSITION_NO,POST_GRADE_NO
+		]]>
+	</select>
+	
+	<insert id="addOrgInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_INFO
+	          (RESUME_NO,
+	           DEPTID,
+	           CPNY_ID,
+	           DATE_CREATED,
+	           DEPT_LEVEL,
+	           MANAGER_EMP_ID,
+	           DEPTNO,
+	           PARENT_DEPT_NO,
+	           WORK_AREA,
+	           DEPT_TYPE,
+	           ORG_NAME_KO,
+	           ORG_NAME_LOCAL,
+	           ORG_NAME_VI,
+	           ORG_NAME_ENG,
+	           ORG_LEVEL,
+	           COST_CENTER,
+	           USE_YN,
+	           CREATE_DATE,
+	           CREATED_BY,
+	           CREATED_IP,
+	           UPDATE_DATE,
+	           UPDATED_BY,
+	           UPDATED_IP,
+	           ORDERNO,
+	           ACTIVITY,
+	           IS_DEPT,
+	           IS_PART_TIME,
+	           PRODUCT_TYPE,
+	           CHANGE_TYPE,
+		       FEE_STANDARD,
+		       DEPT_DISTINGUISH_STANDARD)
+	        VALUES
+	          (#RESUME_NO:VARCHAR#,
+	           #DEPTNO:VARCHAR#,
+	           #interCpnyID:VARCHAR#,
+	           TO_DATE(#DATE_CREATED:VARCHAR#,'DD/MM/YYYY'),
+	           NVL((SELECT NVL(DEPT_LEVEL,0) + 1 FROM ORG_INFO WHERE DEPTNO = #PARENT_DEPT_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND RESUME_NO = #RESUME_NO:VARCHAR# AND ACTIVITY = 1),1),
+	           #dwzPersonId:VARCHAR#,
+	           #DEPTNO:VARCHAR#,
+	           #PARENT_DEPT_NO:VARCHAR#,
+	           #WORK_AREA:VARCHAR#,
+	           #DEPT_TYPE:VARCHAR#,
+	           #ORG_NAME_KO:VARCHAR#,
+	           #ORG_NAME_LOCAL:VARCHAR#,
+	           #ORG_NAME_VI:VARCHAR#,
+	           #ORG_NAME_ENG:VARCHAR#,
+	           #ORG_LEVEL:VARCHAR#,
+	           #COST_CENTER:VARCHAR#,
+	           'Y',
+	           SYSDATE,
+	           #adminID:VARCHAR#,
+	           #adminIP:VARCHAR#,
+	           SYSDATE,
+	           #adminID:VARCHAR#,
+	           #adminIP:VARCHAR#,
+	           (SELECT NVL(MAX(ORDERNO),0) + 1 FROM ORG_INFO WHERE PARENT_DEPT_NO = #PARENT_DEPT_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND RESUME_NO = #RESUME_NO:VARCHAR# AND ACTIVITY = 1),
+	           1,
+	           #IS_DEPT:VARCHAR#,
+	           #IS_PART_TIME:VARCHAR#,
+	           #PRODUCT_TYPE:VARCHAR#,
+	           '14013938',
+		       #FEE_STANDARD:VARCHAR#,
+		       #DEPT_DISTINGUISH_STANDARD:VARCHAR#)
+	]]>
+	</insert>
+	
+		<insert id="addOrgInfoHTSV" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_INFO
+	          (RESUME_NO,
+	           DEPTID,
+	           CPNY_ID,
+	           DATE_CREATED,
+	           DEPT_LEVEL,
+	           MANAGER_EMP_ID,
+	           DEPTNO,
+	           PARENT_DEPT_NO,
+	           WORK_AREA,
+	           DEPT_TYPE,
+	           ORG_NAME_KO,
+	           ORG_NAME_LOCAL,
+	           ORG_NAME_VI,
+	           ORG_NAME_ENG,
+	           ORG_LEVEL,
+	           COST_CENTER,
+	           USE_YN,
+	           CREATE_DATE,
+	           CREATED_BY,
+	           CREATED_IP,
+	           UPDATE_DATE,
+	           UPDATED_BY,
+	           UPDATED_IP,
+	           ORDERNO,
+	           ACTIVITY,
+	           IS_DEPT,
+	           IS_PART_TIME,
+	           PRODUCT_TYPE,
+	           CHANGE_TYPE,
+		       FEE_STANDARD,
+		       DEPT_DISTINGUISH_STANDARD)
+	        VALUES
+	          (#RESUME_NO:VARCHAR#,
+	           #DEPTNO:VARCHAR#,
+	           #interCpnyID:VARCHAR#,
+	           TO_DATE(#DATE_CREATED:VARCHAR#,'DD/MM/YYYY'),
+	           NVL((SELECT NVL(DEPT_LEVEL,0) + 1 FROM ORG_INFO WHERE DEPTNO = #PARENT_DEPT_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND RESUME_NO = #RESUME_NO:VARCHAR# AND ACTIVITY = 1),1),
+	           #dwzPersonId:VARCHAR#,
+	           #DEPTNO:VARCHAR#,
+	           #PARENT_DEPT_NO:VARCHAR#,
+	           #WORK_AREA:VARCHAR#,
+	           #DEPT_TYPE:VARCHAR#,
+	           #ORG_NAME_ENG:VARCHAR#,
+	           #ORG_NAME_ENG:VARCHAR#,
+	           #ORG_NAME_ENG:VARCHAR#,
+	           #ORG_NAME_ENG:VARCHAR#,
+	           #ORG_LEVEL:VARCHAR#,
+	           #COST_CENTER:VARCHAR#,
+	           'Y',
+	           SYSDATE,
+	           #adminID:VARCHAR#,
+	           #adminIP:VARCHAR#,
+	           SYSDATE,
+	           #adminID:VARCHAR#,
+	           #adminIP:VARCHAR#,
+	           (SELECT NVL(MAX(ORDERNO),0) + 1 FROM ORG_INFO WHERE PARENT_DEPT_NO = #PARENT_DEPT_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND RESUME_NO = #RESUME_NO:VARCHAR# AND ACTIVITY = 1),
+	           1,
+	           #IS_DEPT:VARCHAR#,
+	           #IS_PART_TIME:VARCHAR#,
+	           #PRODUCT_TYPE:VARCHAR#,
+	           '14013938',
+		       #FEE_STANDARD:VARCHAR#,
+		       #DEPT_DISTINGUISH_STANDARD:VARCHAR#)
+	]]>
+	</insert>
+	
+	<update id="updateOrgInfo" parameterClass="linkMap">
+		<![CDATA[
+  			UPDATE ORG_INFO
+			   SET DATE_CREATED = TO_DATE(#DATE_CREATED:VARCHAR#,'DD/MM/YYYY'),
+			       DEPT_LEVEL = NVL((SELECT NVL(DEPT_LEVEL,0) + 1 FROM ORG_INFO WHERE DEPTNO = #PARENT_DEPT_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND RESUME_NO = #RESUME_NO:VARCHAR# AND ACTIVITY = 1),1),
+			       MANAGER_EMP_ID = #dwzPersonId:VARCHAR#,
+			       PARENT_DEPT_NO = NVL(#PARENT_DEPT_NO:VARCHAR#,0),
+			       WORK_AREA = #WORK_AREA:VARCHAR#,
+			       DEPT_TYPE = #DEPT_TYPE:VARCHAR#,
+			       ORG_NAME_KO = #ORG_NAME_KO:VARCHAR#,
+			       ORG_NAME_LOCAL = #ORG_NAME_LOCAL:VARCHAR#,
+			       ORG_NAME_VI = #ORG_NAME_VI:VARCHAR#,
+			       ORG_NAME_ENG = #ORG_NAME_ENG:VARCHAR#,
+			       ORG_LEVEL = #ORG_LEVEL:VARCHAR#,
+			       COST_CENTER = #COST_CENTER:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#,
+			       IS_DEPT = #IS_DEPT:VARCHAR#,
+			       IS_PART_TIME = #IS_PART_TIME:VARCHAR#,
+			       PRODUCT_TYPE = #PRODUCT_TYPE:VARCHAR#,
+			       FEE_STANDARD = #FEE_STANDARD:VARCHAR#,
+			       DEPT_DISTINGUISH_STANDARD = #DEPT_DISTINGUISH_STANDARD:VARCHAR#,
+			       CHANGE_TYPE = CASE WHEN ORG_NAME_ENG <> #ORG_NAME_ENG:VARCHAR# OR ORG_NAME_LOCAL <> #ORG_NAME_LOCAL:VARCHAR# OR ORG_NAME_VI <> #ORG_NAME_VI:VARCHAR# OR ORG_NAME_KO <> #ORG_NAME_KO:VARCHAR# THEN
+			       							'14013940'
+			       					  WHEN ORG_LEVEL <> #ORG_LEVEL:VARCHAR# THEN
+			       					  		'14013944'
+			       					  WHEN DEPT_TYPE <> #DEPT_TYPE:VARCHAR# THEN
+			       					  		'14013943'
+			       					  WHEN PARENT_DEPT_NO <> NVL(#PARENT_DEPT_NO:VARCHAR#,0) THEN
+			       					  		'14014438'
+			       					  END 
+			 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND DEPTNO = #DEPTNO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = 1
+		]]>
+	</update>
+	
+		<update id="updateOrgInfoHTSV" parameterClass="linkMap">
+		<![CDATA[
+  			UPDATE ORG_INFO
+			   SET DATE_CREATED = TO_DATE(#DATE_CREATED:VARCHAR#,'DD/MM/YYYY'),
+			       DEPT_LEVEL = NVL((SELECT NVL(DEPT_LEVEL,0) + 1 FROM ORG_INFO WHERE DEPTNO = #PARENT_DEPT_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND RESUME_NO = #RESUME_NO:VARCHAR# AND ACTIVITY = 1),1),
+			       MANAGER_EMP_ID = #dwzPersonId:VARCHAR#,
+			       PARENT_DEPT_NO = NVL(#PARENT_DEPT_NO:VARCHAR#,0),
+			       WORK_AREA = #WORK_AREA:VARCHAR#,
+			       DEPT_TYPE = #DEPT_TYPE:VARCHAR#,
+			       ORG_NAME_KO = #ORG_NAME_ENG:VARCHAR#,
+			       ORG_NAME_LOCAL = #ORG_NAME_ENG:VARCHAR#,
+			       ORG_NAME_VI = #ORG_NAME_ENG:VARCHAR#,
+			       ORG_NAME_ENG = #ORG_NAME_ENG:VARCHAR#,
+			       ORG_LEVEL = #ORG_LEVEL:VARCHAR#,
+			       COST_CENTER = #COST_CENTER:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#,
+			       IS_DEPT = #IS_DEPT:VARCHAR#,
+			       IS_PART_TIME = #IS_PART_TIME:VARCHAR#,
+			       PRODUCT_TYPE = #PRODUCT_TYPE:VARCHAR#,
+			       FEE_STANDARD = #FEE_STANDARD:VARCHAR#,
+			       DEPT_DISTINGUISH_STANDARD = #DEPT_DISTINGUISH_STANDARD:VARCHAR#,
+			       CHANGE_TYPE = CASE WHEN ORG_NAME_ENG <> #ORG_NAME_ENG:VARCHAR# OR ORG_NAME_LOCAL <> #ORG_NAME_LOCAL:VARCHAR# OR ORG_NAME_VI <> #ORG_NAME_VI:VARCHAR# OR ORG_NAME_KO <> #ORG_NAME_KO:VARCHAR# THEN
+			       							'14013940'
+			       					  WHEN ORG_LEVEL <> #ORG_LEVEL:VARCHAR# THEN
+			       					  		'14013944'
+			       					  WHEN DEPT_TYPE <> #DEPT_TYPE:VARCHAR# THEN
+			       					  		'14013943'
+			       					  WHEN PARENT_DEPT_NO <> NVL(#PARENT_DEPT_NO:VARCHAR#,0) THEN
+			       					  		'14014438'
+			       					  END 
+			 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND DEPTNO = #DEPTNO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = 1
+		]]>
+	</update>
+	
+	<procedure id="deleteOrgInfo" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RESUME_PROCESS.PR_DELETE_ORG(
+						#RESUME_NO:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#DEPTNO:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	
+	<select id="viewModifyOrgOrderNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DEPTNO,
+				   ORG_NAME_LOCAL,
+				   GET_DEPT_NAME(DEPTNO,#interLanguage#) DEPTNAME,
+				   GET_DEPT_NAME(PARENT_DEPT_NO,#interLanguage#) PARENT_DEPT_NAME,
+				   PARENT_DEPT_NO,
+				   ORDERNO
+			  FROM ORG_INFO
+			 WHERE RESUME_NO = #RESUME_NO#
+			   AND CPNY_ID = #interCpnyID#
+			   AND PARENT_DEPT_NO = #PARENT_DEPT_NO#
+			   AND ACTIVITY = '1'
+			 ORDER BY ORDERNO
+		]]>
+	</select>
+	
+	
+	<update id="modifyOrgOrderNo" parameterClass="linkMap">
+		<![CDATA[
+  			UPDATE ORG_INFO
+			   SET UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#,
+			       CHANGE_TYPE = CASE WHEN ORDERNO <> #ORDER_NO# THEN
+			       							'14013942'
+			       					  END ,
+			       ORDERNO = #ORDER_NO#
+			 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND DEPTNO = #ORDER_DEPTNO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = 1
+		]]>
+	</update>
+	
+	<!-- 部门合并 -->
+	<procedure id="modifyOrgMerge" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RESUME_PROCESS.PR_MERGE_ORG(
+						#RESUME_NO:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#UP_DEPTNOS:VARCHAR#,
+						#downDept:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<!-- 部门分割 -->
+	<procedure id="modifyOrgSplit" parameterClass="linkMap">
+		<![CDATA[
+			{call PKG_RESUME_PROCESS.PR_SPLIT_ORG(
+						#RESUME_NO:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#interCpnyID:VARCHAR#,
+						#DEPTNO:VARCHAR#,
+						#EMPIDS:VARCHAR#,
+						#TYPE:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<select id="viewDeptManagerCheck" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT * FROM (
+			SELECT A.DEPTNO,
+				   A.PARENT_DEPT_NO,
+				   GET_DEPT_NAME_RESUME(A.DEPTNO,#interLanguage:VARCHAR#,#interCpnyID:VARCHAR#,CASE WHEN #RESUME_NO# IS NULL THEN (SELECT MAX( NO ) FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0) ELSE #RESUME_NO# END) DEPTNAME,
+	               NVL(B.LOCAL_NAME,'Trống') LOCAL_NAME,
+	               A.MANAGER_EMP_ID,
+	               NVL(A.MANAGER_EMP_ID,'VACANCY') VACANCY,
+	               NVL(B.EMPID,'Trống') EMPID,
+			       get_global_name(B.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       get_global_name(B.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+			       B.STATUS_CODE,
+			       get_global_name(B.STATUS_CODE,#interLanguage:VARCHAR#) STATUS_CODE_NAME,
+			       GET_GLOBAL_NAME(B.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       A.IS_PART_TIME,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP UPDATED_BY,
+			       A.DEPT_LEVEL,
+			       A.ORDERNO
+			  FROM ORG_INFO A,
+			       ORG_EMPLOYEE B
+			 WHERE A.MANAGER_EMP_ID = B.PERSON_ID(+)
+			   AND A.RESUME_NO = B.RESUME_NO(+)
+			   AND A.CPNY_ID = B.CPNY_ID(+)
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = #RESUME_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = (SELECT MAX( NO ) FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0)
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="ERROR_TYPE">
+			<isEqual prepend="" property="ERROR_TYPE" compareValue="D">
+				<![CDATA[
+					A.MANAGER_EMP_ID IN (
+						SELECT MANAGER_EMP_ID
+						  FROM ORG_INFO 
+						 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+						   AND CPNY_ID = #interCpnyID:VARCHAR#
+						   AND IS_PART_TIME <> '1'
+						   AND MANAGER_EMP_ID IS NOT NULL
+						   AND ACTIVITY = 1
+						 GROUP BY MANAGER_EMP_ID HAVING COUNT(1) > 1
+					) ORDER BY MANAGER_EMP_ID
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="ERROR_TYPE" compareValue="N">
+				<![CDATA[
+					A.MANAGER_EMP_ID IS NULL ORDER BY DEPTNO
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="ERROR_TYPE" compareValue="F">
+				<![CDATA[
+					A.MANAGER_EMP_ID IN ( 
+						SELECT MANAGER_EMP_ID
+						  FROM ORG_INFO ORG
+						 WHERE ORG.RESUME_NO = #RESUME_NO:VARCHAR#
+						   AND ORG.CPNY_ID = #interCpnyID:VARCHAR# 
+						   AND ORG.IS_PART_TIME = 1
+						   AND ORG.ACTIVITY = 1
+						   AND ORG.MANAGER_EMP_ID NOT IN (
+						       SELECT MANAGER_EMP_ID
+						          FROM ORG_INFO ORG1
+						         WHERE ORG1.RESUME_NO = #RESUME_NO:VARCHAR#
+						           AND ORG1.CPNY_ID = #interCpnyID:VARCHAR# 
+						           AND ORG1.IS_PART_TIME <> 1
+						   		   AND ACTIVITY = 1
+					   )
+					) ORDER BY MANAGER_EMP_ID
+				]]>
+			</isEqual>
+			)
+		</isNotEmpty>
+		<isEmpty prepend="" property="ERROR_TYPE">
+			<isNotEmpty prepend="" property="DEPTNO">
+				<![CDATA[
+				 )  START WITH DEPTNO = #DEPTNO:VARCHAR#
+				CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+				]]>
+			</isNotEmpty>
+			<isEmpty prepend="" property="DEPTNO">
+				<![CDATA[
+				 )  START WITH PARENT_DEPT_NO = '0'
+				CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+				ORDER SIBLINGS BY ORDERNO
+				]]>
+			</isEmpty>
+		</isEmpty>
+	</select>
+	
+	<!-- 发令核查 -->
+	<select id="viewOrgExperirnceInsideList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.RESUME_NO,
+			       A.CPNY_ID,
+			       A.PERSON_ID,
+			       A.EMPID,
+			       A.LOCAL_NAME,
+			       A.DEPTNO,
+			       A.OLD_DEPTNO,
+			       A.OLD_DEPTNAME,
+			       A.COST_CENTER,
+			       A.OLD_COST_CENTER,
+			       get_cost_center_name(#interCpnyID:VARCHAR#,A.COST_CENTER, #interLanguage:VARCHAR#) COST_CENTER_NAME,
+			       get_cost_center_name(#interCpnyID:VARCHAR#,A.OLD_COST_CENTER, #interLanguage:VARCHAR#) OLD_COST_CENTER_NAME,
+			       GET_WORK_AREA_NAME(#interCpnyID:VARCHAR#,A.OLD_WORD_AREA, #interLanguage:VARCHAR#) OLD_WORD_AREA,
+			       GET_WORK_AREA_NAME(#interCpnyID:VARCHAR#,A.WORK_AREA, #interLanguage:VARCHAR#) WORD_AREA,
+			       GET_WORK_AREA_NAME(#interCpnyID:VARCHAR#,A.OLD_WORD_AREA, #interLanguage:VARCHAR#) OLD_WORD_AREA,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       GET_DEPT_NAME(A.OLD_DEPTNO,#interLanguage:VARCHAR#) OLD_DEPTNAME,
+			       A.EXPERIENCE_TYPE,
+			       get_global_name( A.EXPERIENCE_TYPE, #interLanguage:VARCHAR#) EXPERIENCE_TYPE_NAME,
+			       A.BUSINESS_ID,
+			       GET_GLOBAL_NAME( A.BUSINESS_ID, #interLanguage:VARCHAR#) BUSINESS_NAME,
+			       A.POST_GRADE_NO,
+			       A.POST_GRADE_NAME,
+			       B.EMPID UP_EMPID,
+			       B.LOCAL_NAME UP_LOCAL_NAME,
+			       A.EMP_OFFICE,
+			       get_global_name(A.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+			       A.START_DATE,
+			       A.REMARK,
+			       A.IS_CONFIRM,
+			       TO_CHAR(B.DATE_STARTED,'DD/MM/YYYY') DATE_STARTED,
+			       B.POST_NO,
+			       A.DUTY_NO,
+			       GET_GLOBAL_NAME(B.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       GET_GLOBAL_NAME(A.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+			       A.OLD_DUTY_NO,
+			       GET_GLOBAL_NAME(A.OLD_DUTY_NO, #interLanguage:VARCHAR#) OLD_DUTY_NAME,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP UPDATED_BY
+			  FROM ORG_EXPERIRNCE_INSIDE A, HR_EMPLOYEE B
+			 WHERE A.PERSON_ID = B.PERSON_ID(+)
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.PERSON_ID(+) NOT LIKE '111111%'
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		 EXISTS(
+		 		  	SELECT *
+					  FROM ORG_INFO
+				     WHERE ORG_INFO.DEPTNO = A.DEPTNO AND ORG_INFO.ACTIVITY = 1
+					 START WITH (ORG_INFO.DEPTNO = #DEPTNO:VARCHAR# )
+					CONNECT BY PRIOR ORG_INFO.DEPTNO = ORG_INFO.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = #RESUME_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EXPERIENCE_TYPE_NO">
+			<![CDATA[
+				A.EXPERIENCE_TYPE = #EXPERIENCE_TYPE_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="SEQ">
+			<isEmpty prepend="AND" property="RESUME_NO">
+				<![CDATA[
+					A.RESUME_NO = (SELECT MAX( NO ) FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0)
+				]]>
+			</isEmpty>
+		</isEmpty>
+	</select>
+	
+	<update id="updateOrgExperirnceInsideInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_EXPERIRNCE_INSIDE
+		   SET REMARK = #REMARK:VARCHAR#,
+		       DEPTNO = #DEPTNO:VARCHAR#,
+		       DEPTNAME = GET_RESUME_DEPT_NAME(RESUME_NO,#DEPTNO:VARCHAR#,#interLanguage:VARCHAR#),
+		       EXPERIENCE_TYPE = #EXPERIENCE_TYPE:VARCHAR#,
+		       COST_CENTER = #COST_CENTER:VARCHAR#,
+		       WORK_AREA = #WORK_AREA:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#,
+		       DUTY_NO = #DUTY_NO:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="deleteOrgExperirnceInsideInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_EXPERIRNCE_INSIDE
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<!-- 组织变更履历 -->
+	<select id="viewOrgChangeInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SEQ,
+			       RESUME_NO,
+			       CPNY_ID,
+			       START_DATE,
+			       DEPTNO,
+			       GET_DEPT_NAME(DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       DEPTNAME,
+			       CURRENT_DEPTNO,
+			       GET_DEPT_NAME(CURRENT_DEPTNO,#interLanguage:VARCHAR#) CURRENTDEPTNAME,
+			       CURRENT_DEPTNAME,
+			       EXPERIENCE_TYPE,
+			       get_global_name(EXPERIENCE_TYPE,#interLanguage:VARCHAR#) EXPERIENCE_NAME,
+			       REMARK,
+			       TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       UPDATED_BY,
+			       UPDATED_IP
+			  FROM ORG_EXPERIRNCE_INSIDE_DEPT A
+			 WHERE A.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="FLAG" compareValue="1">
+				<![CDATA[
+					A.DEPTNO= #DEPTNO#
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="FLAG" compareValue="0">
+				<![CDATA[
+					A.CURRENT_DEPTNO = #DEPTNO#
+				]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EXPERIENCE_TYPE">
+			<![CDATA[
+				A.EXPERIENCE_TYPE = #EXPERIENCE_TYPE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = #RESUME_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = (SELECT MAX( NO ) FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0)
+			]]>
+		</isEmpty>
+		<![CDATA[
+			ORDER BY A.EXPERIENCE_TYPE DESC,A.ORDER_NO_TYPE,A.ORDER_NO
+		]]>
+	</select>
+	
+	<select id="viewChangeDetailOrgInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.DEPTNO,
+			       A.ORG_NAME_LOCAL,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       get_global_name(A.DEPT_TYPE,#interLanguage:VARCHAR#) DEPT_TYPE,
+			       A.COST_CENTER,
+			       get_cost_center_name(#interCpnyID:VARCHAR#,A.COST_CENTER,#interLanguage:VARCHAR#) COST_CENTER_NAME,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       GET_DEPT_MANAGER_INFO(A.DEPTNO) HEAD_DEPARTMENT,
+			       get_work_area_name(#interCpnyID:VARCHAR#,A.WORK_AREA,#interLanguage:VARCHAR#) WORK_AREA,
+			       get_global_name(A.PRODUCT_TYPE,#interLanguage:VARCHAR#) PRODUCT_TYPE,
+			       A.CPNY_ID,
+			       A.IS_PART_TIME,
+			       A.UPDATED_IP,
+			       TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY') UPDATE_DATE
+			  FROM ORG_INFO A, ORG_EMPLOYEE B
+			 WHERE A.MANAGER_EMP_ID = B.PERSON_ID(+)
+			 AND A.MANAGER_EMP_ID NOT LIKE '111111%'
+			 AND B.PERSON_ID NOT LIKE '111111%'
+			   AND A.RESUME_NO = B.RESUME_NO(+)
+			   AND A.CPNY_ID = B.CPNY_ID(+)
+			   AND A.RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.DEPTNO IN (
+			   		SELECT DEPTNO 
+			   		  FROM ORG_INFO 
+			   		 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   		   AND CPNY_ID = #interCpnyID:VARCHAR#
+		             AND DEPTNO LIKE '%$DEPTNO$%'
+			   )
+			   AND A.ACTIVITY = 1
+			   ORDER BY A.DEPTNO
+		]]>
+	</select>
+	
+	<select id="viewChangeDetailEmpInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DISTINCT
+			       A.EMPID,
+			       A.LOCAL_NAME,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+			       GET_DEPT_MANAGER_INFO(A.DEPTNO) HEAD_DEPARTMENT,
+			       A.DEPTNAME,
+			       A.BUSINESS_ID,
+			       get_global_name(A.BUSINESS_ID,#interLanguage:VARCHAR#) BUSINESS_NAME,
+			       A.POST_GRADE_NO,
+			       A.POST_GRADE_NAME,
+			       A.EMP_OFFICE,
+			       get_global_name(A.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+			       A.IS_CONFIRM,
+			       A.DUTY_NO,
+			       GET_GLOBAL_NAME(A.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NAME,
+			       HR.POSITION_NO,
+			       GET_GLOBAL_NAME(HR.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NO_NAME,
+			       A.COST_CENTER,
+			       get_cost_center_name(#interCpnyID:VARCHAR#,A.COST_CENTER,#interLanguage:VARCHAR#) COST_CENTER_NAME
+			  FROM ORG_EXPERIRNCE_INSIDE A ,ORG_EMPLOYEE HR
+			 WHERE A.PERSON_ID = HR.PERSON_ID AND
+			 	A.RESUME_NO = #RESUME_NO:VARCHAR#
+			 	AND A.RESUME_NO = HR.RESUME_NO
+			 AND A.PERSON_ID NOT LIKE '111111%'
+			 AND HR.PERSON_ID NOT LIKE '111111%'
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.DEPTNO IN (
+			   		SELECT DEPTNO 
+			   		  FROM ORG_INFO 
+			   		 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   		   AND CPNY_ID = #interCpnyID:VARCHAR#
+		            AND DEPTNO LIKE '%$DEPTNO$%'
+			   )
+			  AND A.ACTIVITY = 1
+			 ORDER BY A.DEPTNO
+		]]>
+	</select>
+	
+	<!-- 工作地管理 -->
+	<select id="viewWorkAreaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.CPNY_ID,
+			       A.CODE_NO,
+			       get_global_name(A.CODE_NO,#interLanguage:VARCHAR#) CODE_NO_NAME,
+			       A.CODE_NAME,
+			       A.REMARK,
+			       A.START_DATE,
+			       A.END_DATE,
+			       get_global_name(A.COUNTRY,#interLanguage:VARCHAR#) COUNTRY_NAME,
+			       A.ADDRESS,
+			       A.ACTIVITY,
+			       get_global_name(A.ACTIVITY,#interLanguage:VARCHAR#) ACTIVITY_NAME,
+			       A.ORDERNO,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP
+			  FROM ORG_WORK_AREA A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CODE_NO">
+			<![CDATA[
+				A.CODE_NO LIKE '%$CODE_NO$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CODE_NAME">
+			<![CDATA[
+				A.CODE_NAME LIKE '%$CODE_NAME$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				A.ACTIVITY = #ACTIVITY#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<insert id="addWorkAreaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_WORK_AREA
+				  (SEQ,
+				   CPNY_ID,
+				   CODE_NO,
+				   CODE_NAME,
+				   REMARK,
+				   START_DATE,
+				   END_DATE,
+				   COUNTRY,
+				   ADDRESS,
+				   ACTIVITY,
+				   ORDERNO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP)
+				VALUES
+				  (ORG_WORK_AREA_SEQ.NEXTVAL,
+				   #interCpnyID:VARCHAR#,
+				   #CODE_NO:VARCHAR#,
+				   #CODE_NAME:VARCHAR#,
+				   #REMARK:VARCHAR#,
+				   #START_DATE:VARCHAR#,
+				   #END_DATE:VARCHAR#,
+				   #COUNTRY:VARCHAR#,
+				   #ADDRESS:VARCHAR#,
+				   #ACTIVITY:VARCHAR#,
+				   (SELECT NVL(MAX(ORDERNO),0) + 1 FROM ORG_WORK_AREA WHERE CPNY_ID = #interCpnyID:VARCHAR#),
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#)
+		]]>
+		<selectKey resultClass="string" keyProperty="id" >
+	    	SELECT ORG_WORK_AREA_SEQ.CURRVAL AS ID FROM DUAL
+	   	</selectKey>
+	</insert>
+	
+	
+	<update id="updateWorkAreaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_WORK_AREA
+		   SET REMARK = #REMARK:VARCHAR#,
+		       END_DATE = #END_DATE:VARCHAR#,
+		       COUNTRY = #COUNTRY:VARCHAR#,
+		       ADDRESS = #ADDRESS:VARCHAR#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="deleteWorkAreaInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_WORK_AREA
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<!-- 成本中心管理 -->
+	<select id="viewCostCenterList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.CPNY_ID,
+			       A.CODE_NO,
+			       A.CODE_NAME,
+			       A.CODE_ENG_NAME,
+			       A.CODE_KOREAN_NAME,
+			       A.CODE_VIETNAMESE_NAME,
+			       A.START_DATE,
+			       A.END_DATE,
+			       A.ACTIVITY,
+			       get_global_name(A.ACTIVITY,#interLanguage:VARCHAR#) ACTIVITY_NAME,
+			       A.ORDERNO,
+			       TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP,
+			       A.BUSINESS_SCOPE,
+			       A.PROFIT_CENTER
+			  FROM ORG_COST_CENTER A,
+			       HR_EMPLOYEE B
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.CPNY_ID = #interCpnyID#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CODE_NO">
+			<![CDATA[
+				A.CODE_NO LIKE '%$CODE_NO$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CODE_NAME">
+			<![CDATA[
+				( A.CODE_NAME LIKE '%$CODE_NAME$%'
+					OR A.CODE_ENG_NAME LIKE '%$CODE_NAME$%' )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				A.ACTIVITY = #ACTIVITY#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.CODE_NO
+		]]>
+	</select>
+	
+	<insert id="addCostCenterInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_COST_CENTER
+				  (SEQ,
+				   CPNY_ID,
+				   CODE_NO,
+				   CODE_NAME,
+				   CODE_ENG_NAME,
+				   CODE_KOREAN_NAME,
+				   CODE_VIETNAMESE_NAME,
+				   START_DATE,
+				   END_DATE,
+				   ACTIVITY,
+				   ORDERNO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   PROFIT_CENTER,
+				   BUSINESS_SCOPE)
+				VALUES
+				  (ORG_COST_CENTER_SEQ.NEXTVAL,
+				   #interCpnyID:VARCHAR#,
+				   #CODE_NO:VARCHAR#,
+				   #CODE_NAME:VARCHAR#,
+				   #CODE_ENG_NAME:VARCHAR#,
+				   #CODE_KOREAN_NAME:VARCHAR#,
+				   #CODE_VIETNAMESE_NAME:VARCHAR#,
+				   #START_DATE:VARCHAR#,
+				   #END_DATE:VARCHAR#,
+				   #ACTIVITY:VARCHAR#,
+				   (SELECT NVL(MAX(ORDERNO),0) + 1 FROM ORG_WORK_AREA WHERE CPNY_ID = #interCpnyID:VARCHAR#),
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   #PROFIT_CENTER:VARCHAR#,
+				   #BUSINESS_SCOPE:VARCHAR#)
+		]]>
+		<selectKey resultClass="string" keyProperty="id" >
+	    	SELECT ORG_COST_CENTER_SEQ.CURRVAL AS ID FROM DUAL
+	   	</selectKey>
+	</insert>
+	
+	<insert id="addCostCenterInfoHTSV" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_COST_CENTER
+				  (SEQ,
+				   CPNY_ID,
+				   CODE_NO,
+				   CODE_NAME,
+				   CODE_ENG_NAME,
+				   CODE_KOREAN_NAME,
+				   CODE_VIETNAMESE_NAME,
+				   START_DATE,
+				   END_DATE,
+				   ACTIVITY,
+				   ORDERNO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATED_IP,
+				   UPDATE_DATE,
+				   UPDATED_BY,
+				   UPDATED_IP,
+				   PROFIT_CENTER,
+				   BUSINESS_SCOPE)
+				VALUES
+				  (ORG_COST_CENTER_SEQ.NEXTVAL,
+				   #interCpnyID:VARCHAR#,
+				   #CODE_NO:VARCHAR#,
+				   #CODE_ENG_NAME:VARCHAR#,
+				   #CODE_ENG_NAME:VARCHAR#,
+				   #CODE_ENG_NAME:VARCHAR#,
+				   #CODE_ENG_NAME:VARCHAR#,
+				   #START_DATE:VARCHAR#,
+				   #END_DATE:VARCHAR#,
+				   #ACTIVITY:VARCHAR#,
+				   (SELECT NVL(MAX(ORDERNO),0) + 1 FROM ORG_WORK_AREA WHERE CPNY_ID = #interCpnyID:VARCHAR#),
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   SYSDATE,
+				   #adminID:VARCHAR#,
+				   #adminIP:VARCHAR#,
+				   #PROFIT_CENTER:VARCHAR#,
+				   #BUSINESS_SCOPE:VARCHAR#)
+		]]>
+		<selectKey resultClass="string" keyProperty="id" >
+	    	SELECT ORG_COST_CENTER_SEQ.CURRVAL AS ID FROM DUAL
+	   	</selectKey>
+	</insert>
+	
+	<update id="updateCostCenterInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_COST_CENTER
+		   SET START_DATE = #START_DATE:VARCHAR#,
+		       END_DATE = #END_DATE:VARCHAR#,
+		       CODE_NAME = #CODE_NAME:VARCHAR#,
+		       CODE_ENG_NAME = #CODE_ENG_NAME:VARCHAR#,
+		       CODE_KOREAN_NAME = #CODE_KOREAN_NAME#,
+		       CODE_VIETNAMESE_NAME = #CODE_VIETNAMESE_NAME#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#,
+		       PROFIT_CENTER = #PROFIT_CENTER:VARCHAR#,
+		       BUSINESS_SCOPE = #BUSINESS_SCOPE:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="updateCostCenterInfoHTSV" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_COST_CENTER
+		   SET START_DATE = #START_DATE:VARCHAR#,
+		       END_DATE = #END_DATE:VARCHAR#,
+		       CODE_NAME = #CODE_ENG_NAME:VARCHAR#,
+		       CODE_ENG_NAME = #CODE_ENG_NAME:VARCHAR#,
+		       CODE_KOREAN_NAME = #CODE_ENG_NAME:VARCHAR#,
+		       CODE_VIETNAMESE_NAME = #CODE_ENG_NAME:VARCHAR#,
+		       ACTIVITY = #ACTIVITY:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#,
+		       PROFIT_CENTER = #PROFIT_CENTER:VARCHAR#,
+		       BUSINESS_SCOPE = #BUSINESS_SCOPE:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="deleteCostCenterInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_COST_CENTER
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	
+	<!-- 部门业务管理 -->
+	<select id="viewBusinessList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.RESUME_NO,
+			       A.CPNY_ID,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(C.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME, 
+			       A.CODE_NO,
+			       get_global_name(A.CODE_NO, #interLanguage:VARCHAR#) CODE_NAME,
+			       A.IS_DEFAULT,
+			       A.ACTIVITY,
+			       A.ORDERNO,
+			       TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       B.EMPID,
+			       B.LOCAL_NAME,
+			       A.UPDATED_IP
+			  FROM ORG_BUSINESS_RELATION A, HR_EMPLOYEE B, ORG_INFO C
+			 WHERE A.UPDATED_BY = B.PERSON_ID(+)
+			   AND A.CPNY_ID = C.CPNY_ID
+			   AND A.DEPTNO = C.DEPTNO
+			   AND C.RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="SEQ">
+			<![CDATA[
+				A.SEQ = #SEQ:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CODE_NO">
+			<![CDATA[
+				A.CODE_NO LIKE '%$CODE_NO$%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.DEPTNO = DECODE(#interCpnyID#,'TSTO', 'D11EQ000', 'D11AR000')
+			]]>
+		</isEmpty>
+		<![CDATA[
+			 ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<insert id="addBusinessInfo" parameterClass="linkMap">
+		<![CDATA[
+		  INSERT INTO ORG_BUSINESS_RELATION
+			      (SEQ,
+			      RESUME_NO,
+			      CPNY_ID,
+			      DEPTNO,
+			      CODE_NO,
+			      IS_DEFAULT,
+			      ACTIVITY,
+			      ORDERNO,
+			      CREATE_DATE,
+			      CREATED_BY,
+			      CREATED_IP,
+			      UPDATE_DATE,
+			      UPDATED_BY,
+			      UPDATED_IP)
+			    VALUES
+			    (ORG_BUSINESS_RELATION_SEQ.NEXTVAL,
+			      #RESUME_NO:VARCHAR#,
+			      #interCpnyID:VARCHAR#,
+			      #DEPTNO:VARCHAR#,
+			      #CODE_NO:VARCHAR#,
+			      0,
+			      1,
+			      (SELECT NVL(MAX(ORDERNO),0)+1
+			          FROM ORG_BUSINESS_RELATION
+			          WHERE CPNY_ID = #interCpnyID:VARCHAR#
+			            AND RESUME_NO = #RESUME_NO:VARCHAR#
+			            AND DEPTNO = #DEPTNO:VARCHAR#),
+			      SYSDATE,
+			      #adminID:VARCHAR#,
+			      #adminIP:VARCHAR#,
+			      SYSDATE,
+			      #adminID:VARCHAR#,
+			      #adminIP:VARCHAR#)
+	]]>
+	</insert>
+	
+	
+	<update id="updateBusinessInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_BUSINESS_RELATION
+		   SET CODE_NO = GET_CODE_NO(#CODE_NAME:VARCHAR#,'400098',#interCpnyID:VARCHAR#,'MAIN_BUSINESS'),
+		       IS_DEFAULT = #IS_DEFAULT:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="deleteBusinessInfo" parameterClass="linkMap">
+		<![CDATA[
+		  UPDATE ORG_BUSINESS_RELATION
+		   SET UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       ACTIVITY = 0,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #SEQ:VARCHAR#
+		   AND CPNY_ID = #interCpnyID#
+		]]>
+	</update>
+	
+	<update id="deleteEmptyBusinessInfo" parameterClass="linkMap">
+		<![CDATA[
+		  DELETE ORG_BUSINESS_RELATION
+		 WHERE CPNY_ID = #interCpnyID#
+		   AND CODE_NO IS NULL
+		]]>
+	</update>
+	
+	<update id="saveDeptManager" parameterClass="linkMap">
+		<![CDATA[
+  			UPDATE ORG_INFO
+			   SET MANAGER_EMP_ID = #MANAGER_PERSON_ID:VARCHAR#,
+			       IS_PART_TIME = #IS_PART_TIME:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND DEPTNO = #DEPTNO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = 1
+		]]>
+	</update>
+	
+	<!-- 保存部门变更履历备注 -->
+	<update id="saveOrgChangeInfo" parameterClass="linkMap">
+		<![CDATA[
+  			UPDATE ORG_EXPERIRNCE_INSIDE_DEPT
+			   SET REMARK = #REMARK:VARCHAR#,
+			       UPDATE_DATE = SYSDATE,
+			       UPDATED_BY = #adminID:VARCHAR#,
+			       UPDATED_IP = #adminIP:VARCHAR#
+			 WHERE SEQ = #SEQ:VARCHAR#
+		]]>
+	</update>
+	
+	<!-- 当前组织信息 -->
+	<select id="viewCurrentOrgDetailOrgInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.DEPTID,
+			       A.CPNY_ID,
+			       TO_CHAR(A.DATE_CREATED,'DD/MM/YYYY') DATE_CREATED,
+			       A.DATE_ENDED,
+			       A.DEPT_LEVEL,
+			       A.MANAGER_EMP_ID,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage#) DEPTNAME,
+			       A.PARENT_DEPT_NO,
+			       A.WORK_AREA,
+			       GET_WORK_AREA_NAME( #interCpnyID#, A.WORK_AREA,#interLanguage#) WORK_AREA_NAME,
+			       A.DEPT_TYPE,
+			       GET_CODE_NAME(A.DEPT_TYPE,#interLanguage#) DEPT_TYPE_NAME,
+			       A.ORG_NAME_ENG,
+			       A.ORG_NAME_LOCAL,
+			       A.COST_CENTER,
+			       GET_COST_CENTER_NAME( #interCpnyID#, A.COST_CENTER,#interLanguage#) COST_CENTER_NAME,
+			       A.USE_YN,
+			       A.CREATE_DATE,
+			       A.CREATED_BY,
+			       A.UPDATE_DATE,
+			       A.UPDATED_BY,
+			       A.UPDATED_IP,
+			       A.ORDERNO,
+			       A.ACTIVITY,
+			       A.IS_DEPT,
+			       A.IS_PART_TIME,
+			       A.PRODUCT_TYPE,
+			       GET_CODE_NAME(A.PRODUCT_TYPE,#interLanguage#) PRODUCT_NAME,
+			       B.LOCAL_NAME,
+			       B.EMPID,
+			       GET_CODE_NAME(B.EMP_OFFICE,#interLanguage#) EMP_OFFICE_NAME,
+			       GET_CODE_NAME(B.POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       PKG_RESUME_PROCESS.GET_EMP_CNT(#interCpnyID:VARCHAR#,A.DEPTNO) EMP_CNT,
+			       GET_GLOBAL_NAME(B.DUTY_NO,#interLanguage#) DUTY_NAME,
+			       GET_GLOBAL_NAME(B.POST_FAMILY,#interLanguage#) POST_FAMILY_NAME
+			  FROM HR_DEPARTMENT A,
+			  	   HR_EMPLOYEE B
+			 WHERE A.MANAGER_EMP_ID = B.PERSON_ID(+)
+			   AND A.CPNY_ID = #interCpnyID#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.DEPTNO = #DEPTNO#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.DEPTNO = (SELECT DEPTNO
+			  FROM HR_DEPARTMENT
+			 WHERE CPNY_ID = #interCpnyID#
+			   AND PARENT_DEPT_NO = '0')
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- 当前组织下的人员信息 -->
+	<select id="viewCurrentOrgDetailEmpInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  
+			       EMPID,
+			       CHINESE_PINYIN,
+			       ENGLISH_NAME,
+			       POSITION_NO,
+			       DUTY_NO,
+			       POST_NO,
+			       POST_GRADE_NO,
+			       STATUS_CODE,
+			       DATE_STARTED,
+			       DATE_LEFT,
+			       END_PROBATION_DATE,
+			       EMP_TYPE_CODE,
+			       CPNY_ID,
+			       PERSON_ID,
+			       DEPTNO,
+			       LOCAL_NAME,
+			       WORK_AREA,
+			       ID_CARD_NO,
+			       SHIFT_NO,
+			       EMP_OFFICE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       ACTIVITY,
+			       MAIN_BUSINESS,
+			       EXPERIENCE,
+			       INCUMBENCY,
+			       substr(PROMOTION_DAY,0,7) PROMOTION_DAY,
+			       UPDATED_IP,
+			       CREATED_IP,
+			       KOREAN_NAME,
+			       STANDARD_POSITION,
+			       GET_CODE_NAME(EMP_OFFICE,#interLanguage#) EMP_OFFICE_NAME,
+			       GET_CODE_NAME(POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       GET_CODE_NAME(EMP_TYPE_CODE,#interLanguage#) EMP_TYPE_NAME,
+			       GET_GLOBAL_NAME(DUTY_NO,#interLanguage#)DUTY_NAME,
+			        GET_GLOBAL_NAME(POST_FAMILY,#interLanguage#)POST_FAMILY_NAME
+			  FROM HR_EMPLOYEE
+			 WHERE CPNY_ID = #interCpnyID# 
+			 AND EMP_OFFICE<>'15120'
+			 AND PERSON_ID NOT LIKE '111111%'
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				DEPTNO = #DEPTNO#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				DEPTNO = (SELECT DEPTNO
+			  FROM HR_DEPARTMENT
+			 WHERE CPNY_ID = #interCpnyID#
+			   AND PARENT_DEPT_NO = '0')
+			]]>
+		</isEmpty>
+		ORDER BY DEPTNO
+	</select>
+	
+	<select id="getHistoryResumneNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PKG_RESUME_PROCESS.GET_HISTORY_RESUME_NO(#interCpnyID#,#RESUME_DATE#) RESUME_NO,
+				   #RESUME_DATE# RESUME_DATE
+			  FROM DUAL
+		]]>
+	</select>
+	<!-- 获取部门历史信息 -->
+	<select id="viewHistoryResumeDeptList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.DEPTNO,
+			       A.ORG_NAME_LOCAL,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage#) DEPTNAME,
+			       GET_CODE_NAME(A.DEPT_TYPE, #interLanguage#) DEPT_TYPE_NAME,
+			       GET_WORK_AREA_NAME(#interCpnyID#, A.WORK_AREA, #interLanguage#) WORK_AREA_NAME,
+			       B.LOCAL_NAME,
+			       GET_COST_CENTER_NAME(#interCpnyID#, A.COST_CENTER, #interLanguage#) COST_CENTER_NAME,
+			       GET_CODE_NAME(A.PRODUCT_TYPE, #interLanguage#) PRODUCT_NAME
+			  FROM ORG_INFO A, ORG_EMPLOYEE B
+			 WHERE A.MANAGER_EMP_ID = B.PERSON_ID(+)
+			   AND A.RESUME_NO = B.RESUME_NO(+)
+			   AND A.RESUME_NO = #RESUME_NO#
+			   AND A.CPNY_ID = #interCpnyID#
+   			   AND A.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_FLAG" compareValue="1">
+            	<![CDATA[
+					A.DEPTNO = #DEPTNO#
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="SON_FLAG" compareValue="0">
+            	<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO
+                          FROM ORG_INFO
+                         WHERE RESUME_NO = #RESUME_NO#
+                           AND CPNY_ID = #interCpnyID#
+                        AND (PARENT_DEPT_NO = #DEPTNO# OR DEPTNO = #DEPTNO#)
+					)
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_FLAG" compareValue="1">
+            	<![CDATA[
+						A.DEPTNO = (SELECT DEPTNO
+					  FROM ORG_INFO
+					 WHERE CPNY_ID = #interCpnyID#
+					   AND RESUME_NO = #RESUME_NO#
+					   AND PARENT_DEPT_NO = '0')
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="SON_FLAG" compareValue="0">
+            	<![CDATA[
+					A.DEPTNO IN (
+						SELECT DEPTNO
+                          FROM ORG_INFO
+                         WHERE RESUME_NO = #RESUME_NO#
+                           AND CPNY_ID = #interCpnyID#
+					)
+			    ]]>
+			</isEqual>
+			<![CDATA[
+			]]>
+		</isEmpty>
+			 ORDER  BY A.DEPTNO
+	</select>
+	
+	<!-- 获取部门人员历史信息 -->
+	<select id="viewHistoryResumeEmpList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT RESUME_NO,
+			       EMPID,
+			       CHINESE_PINYIN,
+			       ENGLISH_NAME,
+			       POSITION_NO,
+			       DUTY_NO,
+			       POST_NO,
+			       POST_GRADE_NO,
+			       STATUS_CODE,
+			       DATE_STARTED,
+			       DATE_LEFT,
+			       END_PROBATION_DATE,
+			       EMP_TYPE_CODE,
+			       CPNY_ID,
+			       PERSON_ID,
+			       DEPTNO,
+			       LOCAL_NAME,
+			       WORK_AREA,
+			       ID_CARD_NO,
+			       SHIFT_NO,
+			       EMP_OFFICE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       UPDATE_DATE,
+			       UPDATED_BY,
+			       ACTIVITY,
+			       MAIN_BUSINESS,
+			       EXPERIENCE,
+			       INCUMBENCY,
+			       substr(PROMOTION_DAY,0,7) PROMOTION_DAY,
+			       UPDATED_IP,
+			       CREATED_IP,
+			       KOREAN_NAME,
+			       STANDARD_POSITION,
+			       GET_DEPT_NAME(DEPTNO,#interLanguage#) DEPTNAME,
+			       GET_CODE_NAME(EMP_OFFICE,#interLanguage#) EMP_OFFICE_NAME,
+			       GET_CODE_NAME(POST_GRADE_NO,#interLanguage#) POST_GRADE_NAME,
+			       GET_CODE_NAME(MAIN_BUSINESS,#interLanguage#) MAIN_BUSINESS_NAME,
+			       GET_CODE_NAME(POSITION_NO,#interLanguage#) POSITION_NO_NAME,
+			       GET_CODE_NAME(STANDARD_POSITION,#interLanguage#) STANDARD_POSITION_NAME,
+			       GET_GLOBAL_NAME(DUTY_NO,#interLanguage#) DUTY_NAME
+			  FROM ORG_EMPLOYEE
+			 WHERE RESUME_NO = #RESUME_NO#
+			   AND CPNY_ID = #interCpnyID#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_FLAG" compareValue="1">
+            	<![CDATA[
+					DEPTNO = #DEPTNO#
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="SON_FLAG" compareValue="0">
+            	<![CDATA[
+					DEPTNO IN (
+						SELECT DEPTNO
+                          FROM ORG_INFO
+                         WHERE RESUME_NO = #RESUME_NO#
+                           AND CPNY_ID = #interCpnyID#
+                        AND  (PARENT_DEPT_NO = #DEPTNO# OR DEPTNO = #DEPTNO#)
+					)
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="DEPTNO">
+			<isEqual prepend="" property="SON_FLAG" compareValue="1">
+            	<![CDATA[
+						DEPTNO = (SELECT DEPTNO
+					  FROM ORG_INFO
+					 WHERE CPNY_ID = #interCpnyID#
+					   AND RESUME_NO = #RESUME_NO#
+					   AND PARENT_DEPT_NO = '0')
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="SON_FLAG" compareValue="0">
+            	<![CDATA[
+					DEPTNO IN (
+						SELECT DEPTNO
+                          FROM ORG_INFO
+                         WHERE RESUME_NO = #RESUME_NO#
+                           AND CPNY_ID = #interCpnyID#
+					)
+			    ]]>
+			</isEqual>
+			<![CDATA[
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- 查询部门分割  人员临时信息 -->
+	<select id="viewOrgSplitTemp" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT EMPID,
+			       LOCAL_NAME,
+			       POST_GRADE_NAME,
+			       S_BAND_NAME,
+			       EMP_OFFICE_NAME,
+			       DUTY_NO,
+			       GET_GLOBAL_NAME(EMP_OFFICE, #interLanguage:VARCHAR#)EMP_OFFICE,
+			        GET_GLOBAL_NAME(DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+			      GET_GLOBAL_NAME(POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME
+			  FROM ORG_SPLIT_TEMP
+			 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND DEPTNO = #DEPTNO:VARCHAR#
+			   AND OP_PERSON_ID = #adminID:VARCHAR#
+		]]>
+	</select>
+	
+	<!-- 获取概要改编的状态 -->
+	<select id="getResumeActivity" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT ACTIVITY,
+				   GET_CODE_NAME(ACTIVITY,#interLanguage#) ACTIVITY_NAME
+			  FROM ORG_RESUME_INFO
+			 WHERE CPNY_ID = #interCpnyID#
+			   AND NO = #RESUME_NO#
+			   AND ACTIVITY <> 0
+		]]>
+	</select>
+	
+	<!-- 删除附件 -->
+	<delete id="deleteFile" parameterClass="linkMap">
+		<isNotEmpty property="fileNos">
+			<![CDATA[
+				DELETE FROM ESS_FILE
+  			   WHERE FILE_NO IN ($fileNos$)
+			]]>
+		</isNotEmpty>
+		<isEmpty property="fileNos">
+			<![CDATA[
+				DELETE FROM ESS_FILE
+  			   WHERE FILE_NO = #fileNos#
+			]]>
+		</isEmpty>
+	</delete>
+	
+	<!-- 发令核查 -->
+	<select id="viewEmpChangeInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.SEQ,
+			       A.RESUME_NO,
+			       A.CPNY_ID,
+			       A.PERSON_ID,
+			       A.EMPID,
+			       A.LOCAL_NAME,
+			       A.DEPTNO,
+			       get_dept_name(C.DEPTNO,#interLanguage:VARCHAR#) OLD_DEPTNAME,
+			       GET_RESUME_DEPT_NAME(A.RESUME_NO, A.DEPTNO, #interLanguage:VARCHAR#) DEPTNAME,
+			       A.EXPERIENCE_TYPE,
+			       get_global_name(A.EXPERIENCE_TYPE, #interLanguage:VARCHAR#) EXPERIENCE_TYPE_NAME,
+			       A.TRANS_REASON,
+			       get_global_name(TRANS_REASON, #interLanguage:VARCHAR#) TRANS_REASON_NAME,
+			       A.COST_CENTER,
+			       get_cost_center_name(#interCpnyID:VARCHAR#,A.COST_CENTER,#interLanguage:VARCHAR#) COST_CENTER_NAME,
+			       A.OLD_COST_CENTER,
+			       get_cost_center_name(#interCpnyID:VARCHAR#,A.OLD_COST_CENTER,#interLanguage:VARCHAR#) OLD_COST_CENTER_NAME,
+			       A.POST_GRADE_NO,
+			       A.POST_GRADE_NAME,
+			       A.BUSINESS_ID,
+			       GET_GLOBAL_NAME( A.BUSINESS_ID, #interLanguage:VARCHAR#) BUSINESS_NAME,
+			       TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+			       GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP UPDATED_BY,
+			       A.UPDATED_IP,
+			       A.EMP_OFFICE,
+			       get_global_name(A.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+			       A.START_DATE,
+			       A.REMARK,
+			       A.IS_CONFIRM,
+			      C.POST_NO,
+			      A.DUTY_NO,
+			      A.OLD_DUTY_NO OLD_DUTY_NO,
+			      GET_GLOBAL_NAME(A.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+			      GET_GLOBAL_NAME(A.OLD_DUTY_NO, #interLanguage:VARCHAR#) OLD_DUTY_NAME,
+			      GET_GLOBAL_NAME(C.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME
+			  FROM ORG_EXPERIRNCE_INSIDE A,HR_EMPLOYEE C
+			 WHERE A.PERSON_ID = C.PERSON_ID
+			   AND A.PERSON_ID NOT LIKE '111111%'
+			   AND C.PERSON_ID NOT LIKE '111111%'
+			   AND A.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.ACTIVITY <> 0
+		]]>
+		<isNotEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = #RESUME_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				A.RESUME_NO = (SELECT MAX( NO ) FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0)
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- 发令核查 -->
+	<select id="viewOrgPreExperirnceInsideList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			        SELECT A.SEQ,
+			               B.CPNY_ID,
+			               B.EMPID,
+			               B.LOCAL_NAME,
+               			   A.START_DATE,
+			               GET_GLOBAL_NAME(A.TRANS_CODE, #interLanguage:VARCHAR#) TRANS_CODE_NAME,
+			               A.DEPTNO,
+			               GET_DEPT_NAME(A.DEPTNO,  #interLanguage:VARCHAR#) DEPTNAME,
+			               TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY') UPDATE_DATE,
+			               A.UPDATED_BY,
+			               A.UPDATED_IP,
+			               C.EMPID UP_EMPID,
+			               C.LOCAL_NAME UP_LOCAL_NAME,
+			               C.POST_NO,
+			      			C.DUTY_NO,
+			      			GET_GLOBAL_NAME(C.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+			      			GET_GLOBAL_NAME(B.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+			      			A.POST_GRADE_NO,
+			      			GET_GLOBAL_NAME(A.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+			               'N' BATCH_YN,
+			               A.REMARK
+			          FROM HR_EXPERIENCE_INSIDE A, HR_EMPLOYEE C, HR_EMPLOYEE B
+			         WHERE A.PERSON_ID = B.PERSON_ID
+			           AND A.PERSON_ID = C.PERSON_ID(+)
+			           AND A.PERSON_ID NOT LIKE '111111%'
+			           AND B.PERSON_ID NOT LIKE '111111%'
+			           AND C.PERSON_ID NOT LIKE '111111%'
+			           AND B.CPNY_ID = #interCpnyID:VARCHAR#
+			           AND A.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				TO_DATE(A.START_DATE,'DD/MM/YYYY') > (
+			   		SELECT TO_DATE(CHANGE_DATE,'DD/MM/YYYY') FROM ORG_RESUME_INFO WHERE NO = #RESUME_NO:VARCHAR# AND CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0
+			   	)
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="RESUME_NO">
+			<![CDATA[
+				TO_DATE(A.START_DATE,'DD/MM/YYYY') > (
+			   		SELECT TO_DATE(CHANGE_DATE,'DD/MM/YYYY') FROM ORG_RESUME_INFO 
+			   		WHERE NO = (SELECT MAX( seq ) FROM ORG_RESUME_INFO WHERE CPNY_ID = #interCpnyID:VARCHAR# AND ACTIVITY <> 0)
+			   		  AND CPNY_ID = #interCpnyID:VARCHAR#
+			   	)
+			]]>
+		</isEmpty>
+	</select>
+	
+	<!-- 增加预发令到组织改编发令中  -->
+	<insert id="addPreExperirnceInsideInfo" parameterClass="linkMap">
+			<![CDATA[
+			   INSERT INTO ORG_EXPERIRNCE_INSIDE
+					  (SEQ,
+					   RESUME_NO,
+					   PERSON_ID,
+					   EMPID,
+					   LOCAL_NAME,
+					   DEPTNO,
+					   DEPTNAME,
+					   EXPERIENCE_TYPE,
+					   BUSINESS_ID,
+					   UPDATE_DATE,
+					   UPDATED_BY,
+					   UPDATED_IP,
+					   START_DATE,
+					   ACTIVITY,
+					   REMARK,
+					   EXP_NO)
+					  SELECT ORG_EXPERIRNCE_INSIDE_SEQ.NEXTVAL,
+					         #RESUME_NO#,
+					         B.PERSON_ID,
+					         B.EMPID,
+					         B.LOCAL_NAME,
+					         GET_CODE_NO(#DEPTNAME:VARCHAR#,'0',#interCpnyID:VARCHAR#,'DEPT'),
+					         #DEPTNAME:VARCHAR#,
+					         A.TRANS_CODE,
+					         B.MAIN_BUSINESS,
+					         SYSDATE,
+					         #adminID:VARCHAR#,
+							 #adminIP:VARCHAR#,
+					         TO_CHAR(TO_DATE(A.START_DATE,'YYYY.MM.DD'),'DD/MM/YYYY'),
+					         1,
+					         REMARK,
+					         A.SEQ
+					    FROM HR_EXPERIENCE_INSIDE A,
+					         HR_EMPLOYEE B
+					   WHERE A.PERSON_ID = B.PERSON_ID
+					     AND SEQ = #SEQ:VARCHAR#
+	       	]]>
+	</insert>
+	
+	<!-- 修改预发令信息  -->
+	<update id="modifyPreExperirnceInsideInfo" parameterClass="linkMap">
+			<![CDATA[
+			   UPDATE HR_EXPERIENCE_INSIDE
+				   SET DEPTNO = GET_CODE_NO(#DEPTNAME:VARCHAR#,'0',#interCpnyID:VARCHAR#,'DEPT'),
+				       UPDATE_DATE = SYSDATE,
+				       UPDATED_BY = #adminID:VARCHAR#,
+				       UPDATED_IP = #adminIP:VARCHAR#
+				 WHERE SEQ = #SEQ:VARCHAR#
+	       	]]>
+		
+	</update>
+	
+	<!-- 删除预发令信息  -->
+	<insert id="deletePreExperirnceInsideInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM ORG_EXPERIRNCE_INSIDE
+				WHERE EXP_NO = #SEQ:VARCHAR#
+	   	]]>
+	</insert>
+	
+	<!-- 组织履历  -->
+	<select id="viewOrgInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT B.CHANGE_DATE,
+	             get_global_name(A.CHANGE_TYPE,#interLanguage:VARCHAR#) EXPERIENCE_TYPE_NAME,
+	             A.DEPTNO,
+	             GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+	             A.ORG_NAME_LOCAL,
+	             C.LOCAL_NAME
+	        FROM ORG_INFO A, ORG_RESUME_INFO B, HR_EMPLOYEE C
+	       WHERE A.RESUME_NO = B.NO
+	         AND A.CPNY_ID = B.CPNY_ID
+	         AND A.MANAGER_EMP_ID = C.PERSON_ID(+)
+	         AND A.RESUME_NO <= #RESUME_NO:VARCHAR#
+	         AND A.DEPTNO = #DEPTNO:VARCHAR#
+	         AND B.ACTIVITY = '14013947'
+	        ORDER BY B.CHANGE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- 部门长履历  -->
+	<select id="viewOrgManagerList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT B.CHANGE_DATE,
+			       A.DEPTNO,
+			       GET_DEPT_NAME(A.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       A.ORG_NAME_LOCAL,
+			       C.LOCAL_NAME,
+			       C.EMPID,
+			       get_global_name(C.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME
+			  FROM ORG_INFO A, ORG_RESUME_INFO B, HR_EMPLOYEE C
+			 WHERE A.RESUME_NO = B.NO
+			   AND A.CPNY_ID = B.CPNY_ID
+			   AND A.MANAGER_EMP_ID = C.PERSON_ID
+	           AND A.RESUME_NO <= #RESUME_NO:VARCHAR#
+	           AND A.DEPTNO = #DEPTNO:VARCHAR#
+	           AND B.ACTIVITY = '14013947'
+			 ORDER BY B.CHANGE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- 部门id是否已经存在  -->
+	<select id="isHaveDeptNo" resultClass="int"
+		remapResults="true" parameterClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM ORG_INFO
+			 WHERE RESUME_NO = #RESUME_NO:VARCHAR#
+			   AND DEPTNO = #DEPTNO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = '1'
+		 ]]>
+	</select>
+	
+	<!-- 部门id是否已经存在  -->
+	<select id="isHaveCostCenterNo" resultClass="int"
+		remapResults="true" parameterClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM ORG_COST_CENTER
+			 WHERE CODE_NO = #CODE_NO:VARCHAR#
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND ACTIVITY = '14013912'
+		 ]]>
+	</select>
+	
+	<select id="checkDeptManager" resultClass="int"
+		remapResults="true" parameterClass="linkMap">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM ORG_INFO ORG
+			 WHERE ACTIVITY = 1
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND RESUME_NO = #RESUME_NO#
+			   AND ORG.MANAGER_EMP_ID = #dwzPersonId#
+			   AND DEPTNO <> #DEPTNO#
+			   AND (IS_PART_TIME IS NULL OR IS_PART_TIME = 0)
+		 ]]>
+	</select>
+	
+	<!-- 更新其他任职部门为兼职  -->
+	<insert id="updateOrgInfoParttime" parameterClass="linkMap">
+       	<![CDATA[
+            UPDATE ORG_INFO
+			   SET IS_PART_TIME = 1
+			 WHERE ACTIVITY = 1
+			   AND CPNY_ID = #interCpnyID:VARCHAR#
+			   AND RESUME_NO = #RESUME_NO#
+			   AND MANAGER_EMP_ID = #dwzPersonId#
+			   AND DEPTNO <> #DEPTNO#
+			   AND (IS_PART_TIME IS NULL OR IS_PART_TIME = 0)
+		]]>
+	</insert>
+	
+	<!-- 获取日考勤查看sql zyh end-->
+	<select id="getDeptTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  	SELECT ORG.RESUME_NO,
+			       ORG.DEPTNO,
+			       ORG.DATE_CREATED,
+			       ORG.MANAGER_EMP_ID,
+			       ORG.PARENT_DEPT_NO,
+			       GET_RESUME_DEPT_NAME(ORG.RESUME_NO, ORG.PARENT_DEPT_NO, 'zh') PARENT_DEPT_NAME,
+			       ORG.WORK_AREA,
+			       GET_WORK_AREA_NAME(ORG.CPNY_ID, ORG.WORK_AREA, 'zh') WORK_AREA_NAME,
+			       ORG.DEPT_TYPE,
+			       GET_GLOBAL_NAME(ORG.DEPT_TYPE, 'zh') DEPT_TYPE_NAME,
+			       ORG.ORG_NAME_LOCAL,
+			       ORG.ORG_NAME_KO,
+			       ORG.ORG_LEVEL,
+			       ORG.IS_PART_TIME,
+			       ORG.UPLOAD_ERROR_MSG,
+			       ORG.LINE_ID,
+			       ORG.RESULT_FLAG,
+			       ORG.CPNY_ID,
+			       TO_CHAR(ORG.UPLOAD_DATE, 'DD/MM/YYYY HH24:MI') UPLOAD_DATE,
+			       GET_UPDATED_INFO(ORG.UPLOAD_BY) UPLOAD_BY
+			  FROM ORG_INFO_EXCEL_TEMP ORG
+			 where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY LINE_ID
+		]]>
+	</select>
+	
+	<select id="getDeptTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from ORG_INFO_EXCEL_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDeptTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from ORG_INFO_EXCEL_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,21 @@
+TABLE.DTFC_Cloned THEAD {
+	BACKGROUND-COLOR: white
+}
+TABLE.DTFC_Cloned TFOOT {
+	BACKGROUND-COLOR: white
+}
+DIV.DTFC_Blocker {
+	BACKGROUND-COLOR: white
+}
+DIV.DTFC_LeftWrapper TABLE.dataTable {
+	Z-INDEX: 2; MARGIN-BOTTOM: 0px
+}
+DIV.DTFC_RightWrapper TABLE.dataTable {
+	Z-INDEX: 2; MARGIN-BOTTOM: 0px
+}
+DIV.DTFC_LeftWrapper TABLE.no-footer.dataTable {
+	BORDER-BOTTOM: medium none
+}
+DIV.DTFC_RightWrapper TABLE.no-footer.dataTable {
+	BORDER-BOTTOM: medium none
+}

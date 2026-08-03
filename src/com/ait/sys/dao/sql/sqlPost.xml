@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.post">
+
+	<select id="getPostListPerPage" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.POST_NO,
+				       T.ACTIVITY,
+				       T.CPNY_ID,
+				       TO_CHAR(T.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+				       TO_CHAR(T.UPDATE_DATE, 'YYYY-MM-DD') UPDATE_DATE,
+				       SG.CONTENT AS POST_NAME,
+				       EC.LOCAL_NAME AS CREATENAME,
+				       EU.LOCAL_NAME AS UPDATENAME
+				  FROM HR_POST T, SY_GLOBAL_NAME SG,HR_EMPLOYEE EC,HR_EMPLOYEE EU
+				 WHERE T.POST_NO = SG.NO(+)
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND EC.PERSON_ID(+)=T.CREATED_BY
+				   AND EU.PERSON_ID(+) =T.UPDATED_BY 
+				   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	
+			<isNotEmpty prepend="AND" property="POST_NAME">
+				<![CDATA[
+			 		  INSTR(SG.CONTENT, #POST_NAME:VARCHAR#) > 0
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="POST_NO">
+				<![CDATA[
+			 		  T.POST_NO = #POST_NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			 
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.ORDERNO
+			]]>
+		</isEmpty>
+	</select>
+
+
+	<select id="getPostListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			  SELECT COUNT(*)
+				  FROM HR_POST T, SY_GLOBAL_NAME SG
+				 WHERE T.POST_NO = SG.NO(+)
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	  
+			<isNotEmpty prepend="AND" property="POST_NO">
+				<![CDATA[
+			 		  T.POST_ID = #POST_NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="POST_NAME">
+				<![CDATA[
+			 		  SG.CONTENT LIKE '%' || #POST_NAME:VARCHAR# || '%'
+			    ]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  T.POST_NO = #NO:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			
+	</select>
+	
+    <select id="isPostIdExsit" parameterClass="linkMap"
+		resultClass="int">          
+		<![CDATA[  
+			  select  count(*) from hr_post where POST_ID=#POST_ID:VARCHAR#                 
+			]]>
+	</select>
+	
+	<insert id="InsertPost" parameterClass="linkMap">
+		<![CDATA[
+		 INSERT INTO HR_POST(
+							 POST_NO,
+							 CREATE_DATE,
+							 CREATED_BY ,
+							 ACTIVITY,
+							 CPNY_ID
+		 					) 
+							 VALUES(
+							 #NO:VARCHAR#,
+							 SYSDATE,
+							 #CREATED_BY:VARCHAR#,
+							 #ACTIVITY:NUMERIC#,
+							 #interCpnyID:VARCHAR#
+							 )
+	]]>
+	</insert>
+
+	<update id="UpdatePost" parameterClass="linkMap">
+		<![CDATA[  
+			   UPDATE HR_POST 
+				  SET
+				   UPDATE_DATE=SYSDATE,UPDATED_BY=#UPDATED_BY:VARCHAR#,
+				   ACTIVITY=#ACTIVITY:NUMERIC#
+				   WHERE POST_NO = #NO:VARCHAR#             
+			]]>
+	</update>  
+	<delete id="deletePost" parameterClass="linkMap">
+		<![CDATA[
+			   delete from hr_post where POST_NO=#POST_NO:VARCHAR#          
+			]]>
+	</delete>   
+
+	<select id="getPostGradeListPostGradeNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.POST_GRADE_NO,
+			       T.GRADE_LEVEL,
+			       T.CPNY_ID,
+			       TO_CHAR(T.CREATE_DATE, 'yyyy-MM-dd') AS CREATEDATE,
+			       T.CREATED_BY,
+			       E.LOCAL_NAME CREATENAME,
+			       SG.CONTENT AS GRADENAME,
+			       CS.CONTENT AS LEVELNAME,
+			       SG2.CONTENT AS POSTNAME,
+			       T.POST_NO,
+			       T.ACTIVITY
+			  FROM HR_POST_GRADE  T,
+			       HR_EMPLOYEE    E,
+			       SY_GLOBAL_NAME SG,
+			       SY_GLOBAL_NAME CS,
+			       SY_GLOBAL_NAME SG2
+			 WHERE T.POST_GRADE_NO = SG.NO(+)
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.CREATED_BY = E.PERSON_ID(+)
+			   AND T.GRADE_LEVEL = CS.NO(+)
+			   AND CS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SG2.NO(+)=T.POST_NO
+			   AND SG2.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.POST_GRADE_NO=#POSTGRADENO:VARCHAR#
+    ]]>
+    </select>
+	<select id="getPostGrade" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.POST_GRADE_NO,
+			       T.GRADE_LEVEL,
+			       T.CPNY_ID,
+			       TO_CHAR(T.CREATE_DATE, 'yyyy-MM-dd') AS CREATEDATE,
+			       T.CREATED_BY,
+			       E.LOCAL_NAME CREATENAME,
+			       SG.CONTENT AS GRADENAME,
+			       CS.CONTENT AS LEVELNAME,
+			       SG2.CONTENT AS POSTNAME,
+			       T.POST_NO,
+			       T.ACTIVITY
+			  FROM HR_POST_GRADE  T,
+			       HR_EMPLOYEE    E,
+			       SY_GLOBAL_NAME SG,
+			       SY_GLOBAL_NAME CS,
+			       SY_GLOBAL_NAME SG2
+			 WHERE T.POST_GRADE_NO = SG.NO(+)
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.CREATED_BY = E.PERSON_ID(+)
+			   AND T.GRADE_LEVEL = CS.NO(+)
+			   AND CS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SG2.NO(+)=T.POST_NO
+			   AND SG2.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+    ]]>
+    <isNotEmpty prepend="AND" property="GRADE_NAME">
+    	SG.CONTENT LIKE '%'|| #GRADE_NAME:VARCHAR# || '%'
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="POST_NAME">
+    	SG2.CONTENT LIKE '%'|| #POST_NAME:VARCHAR# || '%'
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="POST_GRADE_NO">
+    	T.POST_GRADE_NO= #POST_GRADE_NO:VARCHAR# 
+    </isNotEmpty>
+    <![CDATA[
+			  order by T.orderno    
+	]]>
+	</select>
+	<select id="getPostGradeItemListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			 SELECT  COUNT(*)
+			  FROM HR_POST_GRADE  T,
+			       HR_EMPLOYEE    E,
+			       SY_GLOBAL_NAME SG,
+			       SY_GLOBAL_NAME CS,
+			       SY_GLOBAL_NAME SG2
+			 WHERE T.POST_GRADE_NO = SG.NO(+)
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.CREATED_BY = E.PERSON_ID(+)
+			   AND T.GRADE_LEVEL = CS.NO(+)
+			   AND CS.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SG2.NO(+)=T.POST_NO
+			   AND SG2.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND T.CPNY_ID=#interCpnyID:VARCHAR#
+    ]]>
+    <isNotEmpty prepend="AND" property="GRADE_NAME">
+    	SG.CONTENT LIKE '%'|| #GRADE_NAME:VARCHAR# || '%'
+    </isNotEmpty>
+    <isNotEmpty prepend="AND" property="POST_NAME">
+    	SG2.CONTENT LIKE '%'|| #POST_NAME:VARCHAR# || '%'
+    </isNotEmpty>
+	</select>
+
+	
+
+	<select id="isPostGradeIdExsit" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[  
+			  select  count(*) from hr_post_grade where POST_GRADE_NO=#POST_GRADE_NO:VARCHAR#
+			]]>
+	</select>
+
+	<insert id="InsertPostGrade" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO HR_POST_GRADE
+				  (POST_GRADE_NO, 
+				  POST_GRADE_ID,
+				   GRADE_LEVEL,
+				   POST_NO,
+				   ACTIVITY, 
+				   CPNY_ID, 
+				   CREATE_DATE, 
+				   CREATED_BY)
+				VALUES
+				  (#NO:NUMERIC#,
+				   #NO:NUMERIC#,
+				   #GRADE_LEVEL:VARCHAR#,
+				   #POST_NO:VARCHAR#,
+				   #ACTIVITY:NUMERIC#, 
+				   #interCpnyID:VARCHAR#,
+				   SYSDATE, 
+				   #CREATED_BY#)
+	]]>              
+	</insert>
+	<update id="UpdatePostGrade" parameterClass="linkMap">
+		<![CDATA[  
+			   UPDATE HR_POST_GRADE    
+				  SET  POST_NO=#POST_NO#, 
+				   GRADE_LEVEL=#GRADE_LEVEL:VARCHAR#,
+				   CPNY_ID=#interCpnyID:VARCHAR#, 
+				   UPDATE_DATE=SYSDATE, 
+				   ACTIVITY=#ACTIVITY:NUMERIC#,
+				   UPDATED_BY=#UPDATED_BY:VARCHAR#
+				 WHERE POST_GRADE_NO = #POST_GRADE_NO#
+			]]>
+	</update>             
+	
+	<insert id="InsertPostGradeDutyRelation" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO HR_POST_GRADE_DUTY_RELATION
+				  (POST_GRADE_NO, 
+				   DUTY_NO,
+				   ACTIVITY, 
+				   CREATE_DATE, 
+				   CREATED_BY,
+				   CPNY_ID
+				   )
+				VALUES
+				  (#POST_GRADE_NO:NUMERIC#,
+				   #DUTY_NO:NUMERIC#,
+				   1, 
+				   SYSDATE, 
+				   #CREATED_BY:VARCHAR#,
+				   #interCpnyID:VARCHAR#
+				   )
+	]]>              
+	</insert>
+	<delete id="deletePostGradeDutyRelation" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_POST_GRADE_DUTY_RELATION WHERE POST_GRADE_NO=#POST_GRADE_NO:VARCHAR#
+		]]>      
+	</delete>
+	<delete id="deletePostGradePostRelation" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM HR_POST_GRADE_POST_RELATION WHERE POST_GRADE_NO=#POST_GRADE_NO:VARCHAR#
+		]]>      
+	</delete>
+	<insert id="InsertPostGradePostRelation" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO HR_POST_GRADE_POST_RELATION
+				  (POST_GRADE_NO, 
+				   POST_NO,
+				   ACTIVITY, 
+				   CREATE_DATE, 
+				   CREATED_BY)
+				VALUES
+				  (#POST_GRADE_NO:NUMERIC#,
+				   #POST_NO:NUMERIC#,
+				   1, 
+				   SYSDATE, 
+				   #CREATED_BY:VARCHAR#)
+	]]>              
+	</insert>
+
+	
+	<delete id="deletePostGrade" parameterClass="linkMap">
+		<![CDATA[   
+			   delete from hr_post_grade where POST_GRADE_NO=#POST_GRADE_NO:VARCHAR#    
+			]]>
+	</delete>
+	<!-- 职等GRADE_LEVEL,或者职类 -->
+	<select id="getCodeListByParentNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		 <![CDATA[
+			SELECT C.CODE_NO,C.PARENT_CODE_NO,SG.CONTENT AS CODE_NAME
+			  FROM SY_CODE C, SY_CODE_PARAM P, SY_GLOBAL_NAME SG
+			 WHERE C.CODE_NO = P.CODE_NO
+			   AND SG.NO(+) = C.CODE_NO
+			   AND SG.LANGUAGE =#interLanguage:VARCHAR#	
+			   AND P.CPNY_ID=#interCpnyID:VARCHAR#
+		 ]]>
+		 <!--职等3683 职类3324 -->	
+		 <isNotEmpty prepend="AND" property="PARENT_CODE_NO">
+		      C.PARENT_CODE_NO = #PARENT_CODE_NO#
+		 </isNotEmpty> 
+	</select>
+	
+	<update id="updateDutyInfo" parameterClass="linkMap">
+	<![CDATA[
+      UPDATE HR_DUTY SET   ACTIVITY=#ACTIVITY:VARCHAR#, 
+			   UPDATE_DATE=SYSDATE, 
+			   UPDATED_BY=#UPDATED_BY:VARCHAR# WHERE DUTY_NO=#NO:NUMERIC#
+	 ]]>	  
+	</update>
+	<!-- 职责HR_DUTY -->
+	<select id="getCheckDutyList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT A.POST_GRADE_NO, A.DUTY_NO, B.CONTENT AS DUTY_NAME
+			  FROM HR_POST_GRADE_DUTY_RELATION A, SY_GLOBAL_NAME B
+			 WHERE A.DUTY_NO = B.NO(+)
+			   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#	
+			   AND A.POST_GRADE_NO=#POST_GRADE_NO:VARCHAR#
+			   ORDER BY A.ORDERNO
+		 ]]>	     	
+	</select>
+	<!-- 职责HR_DUTY -->
+	<select id="getDutyList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+		  SELECT D.DUTY_NO,
+		          D.CPNY_ID,
+		          SG.CONTENT AS DUTY_NAME,
+		          (CASE
+		            WHEN DUTY_NO IN
+		                 (SELECT P.DUTY_NO
+		                    FROM HR_POST_GRADE_DUTY_RELATION P
+		                   WHERE P.Post_Grade_No = #POST_GRADE_NO:VARCHAR#) THEN
+		             '1'
+		            ELSE
+		             '0'
+		          END) ISCHOOSE
+		     FROM HR_DUTY D, SY_GLOBAL_NAME SG
+		    WHERE D.DUTY_NO = SG.NO(+)
+		      AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		      AND D.CPNY_ID=#interCpnyID:VARCHAR#
+		      AND D.ACTIVITY = 1
+		      ORDER BY D.ORDERNO
+		 ]]>
+		     	
+	</select>
+	<!-- 职责管理 -->
+	<select id="getDutyItemList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  SELECT D.DUTY_NO,
+		          D.CPNY_ID,
+		          SG.CONTENT AS DUTY_NAME,
+		          D.ACTIVITY
+		     FROM HR_DUTY D, SY_GLOBAL_NAME SG
+		    WHERE D.DUTY_NO = SG.NO(+)
+		      AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		      AND D.CPNY_ID=#interCpnyID:VARCHAR#
+		  ]]>
+		  <isNotEmpty prepend="AND" property="NO" >
+		  		D.DUTY_NO=#NO:NUMERIC#
+		  </isNotEmpty>
+		  <isNotEmpty prepend="AND" property="DUTY_NO" >
+		  		D.DUTY_NO=#DUTY_NO:NUMERIC#
+		  </isNotEmpty>
+		  <isNotEmpty prepend="AND" property="DUTY_NAME" >
+		  		SG.CONTENT LIKE '%' || #DUTY_NAME:VARCHAR# || '%'
+		  </isNotEmpty>
+			<![CDATA[ ORDER BY D.ORDERNO	]]>	
+	</select>
+	<!-- 职责管理 -->
+	<select id="getDutyItemListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		  SELECT COUNT(*)
+		     FROM HR_DUTY D, SY_GLOBAL_NAME SG
+		    WHERE D.DUTY_NO = SG.NO(+)
+		      AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+		      AND D.CPNY_ID=#interCpnyID:VARCHAR#
+		  ]]>
+		   <isNotEmpty prepend="AND" property="NO" >
+		  		D.DUTY_NO=#NO:NUMERIC#
+		  </isNotEmpty>
+		  <isNotEmpty prepend="AND" property="DUTY_NO" >
+		  		D.DUTY_NO=#DUTY_NO:NUMERIC#
+		  </isNotEmpty>
+		  <isNotEmpty prepend="AND" property="DUTY_NAME" >
+		  		SG.CONTENT LIKE '%' || #DUTY_NAME:VARCHAR# || '%'
+		  </isNotEmpty>				
+	</select>
+	<insert id="addDutyInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO HR_DUTY
+			  (DUTY_NO, 
+			   ACTIVITY, 
+			   CPNY_ID, 
+			   CREATE_DATE, 
+			   CREATED_BY)
+			VALUES
+			  (#NO:VARCHAR#,
+			   #ACTIVITY:NUMERIC#,
+			   #interCpnyID:VARCHAR#,
+			   SYSDATE,
+			   #CREATED_BY:VARCHAR#)
+	]]>              
+	</insert>
+	<delete id="deleteDutyInfo" parameterClass="linkMap">
+		<![CDATA[   
+			  DELETE FROM HR_DUTY HD WHERE HD.DUTY_NO=#NO:VARCHAR#
+		]]>
+	</delete>
+	    
+	<insert id="addPositionInfo" parameterClass="linkMap">
+		<![CDATA[
+				INSERT INTO HR_POSITION
+				  (POSITION_NO,
+				   ACTIVITY,
+				   CPNY_ID,
+				   POST_CATEGORY_NO,
+				   POST_GRADE_NO,
+				   CREATE_DATE,
+				   CREATED_BY)
+				VALUES
+				  (#NO:NUMERIC#,
+				   #ACTIVITY:NUMERIC#,
+				   #interCpnyID:VARCHAR#,
+				   #POST_CATEGORY_NO:VARCHAR#,
+				   #POST_GRADE_NO:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#
+				)
+	]]>              
+	</insert>
+	<update id="updatePositionInfo" parameterClass="linkMap">
+	<![CDATA[
+        UPDATE HR_POSITION 
+        	SET   ACTIVITY=#ACTIVITY:VARCHAR#, 
+		       POST_CATEGORY_NO=#POST_CATEGORY_NO:VARCHAR#,
+		       POST_GRADE_NO=#POST_GRADE_NO:VARCHAR#,
+			   UPDATE_DATE=SYSDATE, 
+			   UPDATED_BY=#UPDATED_BY:VARCHAR# WHERE POSITION_NO=#NO:NUMERIC#
+	 ]]>	  
+	</update>
+	
+	<select id="getPositionList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT A.POSITION_NO,
+			       A.ACTIVITY,
+			       A.CPNY_ID,
+			       A.POST_CATEGORY_NO,
+			       A.POST_GRADE_NO,
+			       A.CREATE_DATE,
+			       A.CREATED_BY,
+			       POSITION.CONTENT AS POSITION_NAME,
+			       CODE.CONTENT AS GATEGORY_NAME,
+			       POSTGRADE.CONTENT AS POST_GRADE_NAME
+			  FROM HR_POSITION    A,
+			       SY_GLOBAL_NAME POSITION,
+			       SY_GLOBAL_NAME CODE,
+			       SY_GLOBAL_NAME POSTGRADE
+			 WHERE A.POSITION_NO = POSITION.NO(+)
+			   AND A.POST_CATEGORY_NO = CODE.NO(+)
+			   AND A.POST_GRADE_NO = POSTGRADE.NO(+)
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSTGRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	
+			  <isNotEmpty prepend="AND" property="POSITION_NAME">
+			  POSITION.CONTENT like '%' || #POSITION_NAME:VARCHAR# ||'%'
+			 </isNotEmpty>
+			 <isNotEmpty prepend="AND" property="GATEGORY_NAME">
+			  CODE.CONTENT like '%' || #GATEGORY_NAME:VARCHAR# ||'%'
+			 </isNotEmpty>
+			 <isNotEmpty prepend="AND" property="POST_GRADE_NAME">
+			  POSTGRADE.CONTENT like '%' || #POST_GRADE_NAME:VARCHAR# ||'%'
+			 </isNotEmpty>
+			  <isNotEmpty prepend="AND" property="POSITION_NO">
+			  A.POSITION_NO=#POSITION_NO:VARCHAR# 
+			 </isNotEmpty>
+			<![CDATA[
+				 ORDER BY A.ORDERNO
+			]]>
+	</select>
+	<select id="getPositionListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_POSITION    A,
+			       SY_GLOBAL_NAME POSITION,
+			       SY_GLOBAL_NAME CODE,
+			       SY_GLOBAL_NAME POSTGRADE
+			 WHERE A.POSITION_NO = POSITION.NO(+)
+			   AND A.POST_CATEGORY_NO = CODE.NO(+)
+			   AND A.POST_GRADE_NO = POSTGRADE.NO(+)
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSTGRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			    AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	
+		   <isNotEmpty prepend="AND" property="POSITION_NAME">
+			  POSITION.CONTENT like '%' || #POSITION_NAME:VARCHAR# ||'%'
+			 </isNotEmpty>
+			 <isNotEmpty prepend="AND" property="GATEGORY_NAME">
+			  CODE.CONTENT like '%' || #GATEGORY_NAME:VARCHAR# ||'%'
+			 </isNotEmpty>
+			 <isNotEmpty prepend="AND" property="POST_GRADE_NAME">
+			  POSTGRADE.CONTENT like '%' || #POST_GRADE_NAME:VARCHAR# ||'%'
+			 </isNotEmpty>
+			  <isNotEmpty prepend="AND" property="POSITION_NO">
+			  A.POSITION_NO=#POSITION_NO:VARCHAR# 
+			 </isNotEmpty>
+	</select>
+	<delete id="deletePositionInfo" parameterClass="linkMap">
+		<![CDATA[   
+			  DELETE FROM HR_POSITION  WHERE POSITION_NO=#NO:VARCHAR#
+		]]>
+	</delete>
+	
+</sqlMap>

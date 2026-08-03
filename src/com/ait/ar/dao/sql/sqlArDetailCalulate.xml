@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arDetailCalulate">
+	<select id="getArSupervisorList"  resultClass="linkMap" >
+		<![CDATA[
+			SELECT AR_SUPERVISOR.PERSON_ID SUPERVISOR_ID,
+			       HR_EMPLOYEE.EMPID,
+			       HR_EMPLOYEE.LOCAL_NAME,
+			       GET_DEPT_NAME(HR_EMPLOYEE.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+			       TO_CHAR(AR_SUPERVISOR.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       HE.LOCAL_NAME CREATED_BY
+			  FROM AR_SUPERVISOR, HR_EMPLOYEE,  HR_EMPLOYEE HE
+			 WHERE AR_SUPERVISOR.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND AR_SUPERVISOR.CREATED_BY = HE.PERSON_ID(+)
+			   AND HR_EMPLOYEE.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR_EMPLOYEE.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR HR_EMPLOYEE.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	</select>
+    <procedure id="detailCalculate" parameterClass="linkMap">
+		<![CDATA[
+			{CALL AR_DETAIL_CAL_P(#from_date:VARCHAR#, #to_date:VARCHAR#, #caltype:VARCHAR#, #supervisorId:VARCHAR#, #deptid:VARCHAR#, #sonDeptFlag:VARCHAR#, #interCpnyID:VARCHAR#, 'ALL',#empid,jdbcType=VARCHAR,mode=INOUT#)}
+		]]>
+	</procedure>
+   <procedure id="detailShiHouCalculate" parameterClass="linkMap">
+		<![CDATA[
+			{CALL AR_DETAIL_SHIHOU_PROC( #interCpnyID:VARCHAR#, #VAR_OUTSTR,jdbcType=VARCHAR,mode=INOUT#)}
+		]]>
+	</procedure>
+	
+	  <procedure id="detailLastMonthCalculate" parameterClass="linkMap">
+		<![CDATA[
+			{CALL AR_DETAIL_LASTMONTH_PROC( #interCpnyID:VARCHAR#, #VAR_OUTSTR,jdbcType=VARCHAR,mode=INOUT#)}
+		]]>
+	</procedure>
+	
+	<select id="getardetailsendview"  resultClass="linkMap">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.local_name,
+          a.deptno,
+          a.dept_name,
+          h.email,
+		  a.local_name as chinesename,	
+          to_char(a.ACTUAL_WORK_DAYS) AS ACTUAL_WORK_DAYS ,
+          to_char(a.PAY_ZM_OT_ZS+a.PAY_ZM_OT_SY) AS PAY_ZM_OT_ZS,
+          to_char(a.ZS_CHIDAO_YIXIA+a.SY_CHIDAO_YIXIA) AS ZS_CHIDAO_YIXIA,
+          to_char(a.ZS_ZAOTUI_YIXIA+a.SY_ZAOTUI_YIXIA) AS ZS_ZAOTUI_YIXIA,
+          TO_CHAR(A.KUANGGONG_ZS+a.KUANGGONG_ZS) AS KUANGGONG_ZS,
+          TO_CHAR(A.PAY_ZM_OT_ZS+a.PAY_ZM_OT_SY) AS PAY_ZM_OT_ZS,
+          to_char(a.PAY_PINGSHI_OT_ZS+a.PAY_PINGSHI_OT_ZS) AS PAY_PINGSHI_OT_ZS,
+          TO_CHAR(A.PAY_FADING_OT_ZS_ZJ+a.PAY_FADING_OT_ZS_ZJ) AS PAY_FADING_OT_ZS_ZJ,
+          TO_CHAR(A.ZHOUMO_OT_TIAOXIU) AS ZHOUMO_OT_TIAOXIU,
+          TO_CHAR(A.SHIJIA_ZS+A.SHIJIA_SY) AS SHIJIA_ZS,
+          TO_CHAR(A.SHIYONG_NIANJIA_DAY) AS SHIYONG_NIANJIA_DAY,
+          TO_CHAR(a.SHIYONG_FULI_DAY) AS SHIYONG_FULI_DAY,
+          TO_CHAR(a.CHUCHAI_DAY) AS CHUCHAI_DAY,
+          to_char(a.BINGJIA_ZS+a.BINGJIA_ZS) AS BINGJIA_ZS,
+          to_char(a.HUNJIA_DAY) AS HUNJIA_DAY,
+          to_char(a.CHANJIA_DAY) AS CHANJIA_DAY,
+          to_char(a.SANGJIA_DAY) AS SANGJIA_DAY
+     from ar_summary_lgech a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+			and a.AR_MONTH = #arMonth:VARCHAR#
+         ]]>
+		
+	</select>
+</sqlMap>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.basic">
+	
+	<sql id="arSearchEmployeeListCondition" >
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND PERSON_ID = #AR_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="SELECT_TYPE">
+			 <isEqual property="SELECT_TYPE" compareValue="AR_SUPERVISOR" >
+	          	<![CDATA[
+		 		  	NOT EXISTS(SELECT * FROM AR_SUPERVISOR WHERE HR.PERSON_ID = AR_SUPERVISOR.PERSON_ID)
+		    	]]>
+	        </isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getArSearchEmployeeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HR.EMPID, 
+				   HR.PERSON_ID,
+			       HR.LOCAL_NAME, 
+			       HDNAME.CONTENT DEPTNAME
+			  FROM HR_EMPLOYEE HR, 
+			       HR_DEPARTMENT HD, 
+			       HR_DEPARTMENT_NAME HDNAME
+			 WHERE HR.DEPTNO = HD.DEPTNO
+			   AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 
+		]]>
+		
+		<include refid="arSearchEmployeeListCondition"/>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.DEPTNO, HR.EMPID
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getArSearchEmployeeCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE HR, HR_DEPARTMENT HD
+			 WHERE HR.DEPTID = HD.DEPTID
+			 
+		]]>
+		
+		<include refid="arSearchEmployeeListCondition"/>
+		 
+	</select>
+
+</sqlMap>

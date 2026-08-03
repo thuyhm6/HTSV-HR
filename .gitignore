@@ -1,0 +1,19 @@
+# Version control leftovers
+.svn/
+
+# Local Tomcat runtime (logs, work, temp, deployed webapps)
+.tomcat/
+
+# Build output (regenerated from src/ by the build)
+WebRoot/WEB-INF/classes/
+
+# Sensitive: DB dump/credential scripts
+database.sql
+
+# Sensitive: contains real DB credentials, excluded (see spring-servlet.xml for scrubbed version)
+WebRoot/WEB-INF/conf/spring-servlet_real.xml
+
+# Personal data: employee photos and personal data card documents
+WebRoot/resources/photo/
+WebRoot/resources/reportFile/
+*Personal Data Card*

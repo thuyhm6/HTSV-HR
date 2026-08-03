@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="edu.trainreport">
+
+		<select id="courseTrainList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select TRAIN_DIFF_CODE,
+			       get_global_name(t.TRAIN_TYPE_CODE,'zh') TRAINTYPECODE,
+			       TRAINFORMCODE,
+			       COURSE_NAME_CODE,
+			       COUNTS,
+			       NUMB,
+			       TOTALPT,
+			       ALLTIME,
+			       round(ALLTIME/NUMB,2)  AVGTIME,
+			       ALLCOST,
+			       ZHIJIECOUST,
+			       JIANJIECOUST,
+			       round(ALLCOST/NUMB,2) AVGCOST
+			       from (select p.TRAIN_DIFF_CODE,
+			       p.TRAIN_TYPE_CODE,
+			       p.COURSE_NAME_CODE,
+			       get_global_name(p.train_form_code,'zh') TRAINFORMCODE,
+			       count(p.plan_no) COUNTS,
+			       sum((select count(*)
+			             from edu_free_employee e
+			            where e.basic_no = b.basic_no)) NUMB,
+			       to_number(sum(case
+			             when IMPLE_CLASS_UNIT = 2 THEN
+			              IMPLE_CLASS_HOUR
+			             WHEN IMPLE_CLASS_UNIT = 1 THEN
+			              TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 8)
+			             WHEN IMPLE_CLASS_UNIT = 0 THEN
+			              TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 8)
+			             ELSE '0'  END)) ALLTIME,
+			        sum((select count(*)
+                     from edu_free_employee e
+                    where e.basic_no = b.basic_no)) *
+                    sum(case
+                     when IMPLE_CLASS_UNIT = 2 THEN
+                      IMPLE_CLASS_HOUR
+                     WHEN IMPLE_CLASS_UNIT = 1 THEN
+                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+                     WHEN IMPLE_CLASS_UNIT = 0 THEN
+                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+                     ELSE
+                      '0'
+                   END) TOTALPT,
+			       to_number(sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+			           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) ALLCOST,
+			       to_number(sum(TEACHER_COST+MATERIAL_COST+FIELD_COST)) ZHIJIECOUST,
+			       to_number(sum(FOOD_COST +
+			           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) JIANJIECOUST
+			  from edu_plan_manager p, edu_basic_information b, edu_cost_manager c
+			 where p.plan_no = b.plan_no
+			   and b.basic_no = c.basic_no
+			   and p.cpny_id = b.cpny_id
+			   and p.cpny_id = #CPNY_ID:VARCHAR#
+				
+		    ]]>
+		   <isNotEmpty prepend="AND" property="TRAIN_DIFF_CODE" >
+				<![CDATA[
+	    		   p.TRAIN_DIFF_CODE=#TRAIN_DIFF_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+		   <isNotEmpty prepend="AND" property="TRAIN_TYPE_CODE" >
+				<![CDATA[
+	    		   p.TRAIN_TYPE_CODE=#TRAIN_TYPE_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="COURSE_NAME_CODE" >
+				<![CDATA[
+	    		   p.COURSE_NAME_CODE like '%'||#COURSE_NAME_CODE:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+				 
+		    <![CDATA[
+			     group by p.TRAIN_DIFF_CODE, p.TRAIN_TYPE_CODE, p.COURSE_NAME_CODE,p.train_form_code) t
+			]]>
+		</select>
+		
+		<select id="postGradeTrainList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select get_global_name(t.post_grade_no, #interLanguage:VARCHAR#) grade_name,
+				       COUNTS,
+				       NUMB,
+				       AVGCOUTS,
+				       TRAINFORMCODE,
+				       ALLTIME,
+				       AVGTIME,
+				       ALLCOST,
+				       AVGCOST,
+				       TOTALPT,
+				       ZHIJIECOUST,
+				       JIANJIECOUST
+				  from (select h.post_grade_no,
+				               COUNT(*) COUNTS,
+				               count(e.empid) NUMB,
+				               count(e.empid)/COUNT(*) AVGCOUTS,
+				               get_global_name(p.train_form_code,'zh') TRAINFORMCODE,
+				               sum(IMPLE_CLASS_HOUR) ALLTIME,
+				               ROUND(sum(IMPLE_CLASS_HOUR) / count(e.empid),2) AVGTIME,
+				               ROUND(sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+				                   STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST) /
+				               count(e.empid) ,2)AVGCOST,
+				               count(e.empid)*sum(IMPLE_CLASS_HOUR)   TOTALPT,
+						       to_number(sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) ALLCOST,
+						       to_number(sum(TEACHER_COST+MATERIAL_COST+FIELD_COST)) ZHIJIECOUST,
+						       to_number(sum(FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) JIANJIECOUST
+				          from edu_basic_information b,
+				               edu_free_employee     e,
+				               edu_cost_manager      c,
+				               edu_plan_manager p,
+				               hr_employee h
+				         where b.basic_no = e.basic_no
+				           and b.basic_no = c.basic_no
+				           and b.cpny_id = h.cpny_id
+				           and p.plan_no = b.plan_no
+				           and e.empid = h.empid
+				           and b.cpny_id = #CPNY_ID:VARCHAR#
+				           
+			 ]]>
+			<isNotEmpty prepend="AND" property="POST_GRADE_NAME" >
+				<![CDATA[
+	    		   get_global_name(h.post_grade_no, #interLanguage:VARCHAR#) like '%'||#POST_GRADE_NAME:VARCHAR#||'%'
+				]]>
+			</isNotEmpty>
+			 <![CDATA[
+				 GROUP BY h.post_grade_no,p.train_form_code) t
+		      ]]>
+		</select>
+		
+		<select id="deptTrainList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select GET_DEPT_NAME(t.deptno, #interLanguage:VARCHAR#) dept_name,
+				       COUNTS,
+				       NUMB,
+				       TRAINFORMCODE,
+				       AVGCOUTS,
+				       ALLTIME,
+				       AVGTIME,
+				       ALLCOST,
+				       AVGCOST,
+				       TOTALPT,
+				       ZHIJIECOUST,
+				       JIANJIECOUST
+				  from (select h.deptno,
+				               COUNT(*) COUNTS,
+				               count(e.empid) NUMB,
+				               count(e.empid)/COUNT(*) AVGCOUTS,
+				               get_global_name(p.train_form_code,'zh') TRAINFORMCODE,
+				               sum(IMPLE_CLASS_HOUR) ALLTIME,
+				               ROUND(sum(IMPLE_CLASS_HOUR) / count(e.empid),2) AVGTIME,
+				               ROUND(sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+				                   STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST) /
+				               count(e.empid) ,2)AVGCOST,
+				               count(e.empid)*sum(IMPLE_CLASS_HOUR)   TOTALPT,
+						       to_number(sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) ALLCOST,
+						       to_number(sum(TEACHER_COST+MATERIAL_COST+FIELD_COST)) ZHIJIECOUST,
+						       to_number(sum(FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) JIANJIECOUST
+				          from edu_basic_information b,
+				               edu_free_employee     e,
+				               edu_cost_manager      c,
+				               edu_plan_manager p,
+				               hr_employee h
+				         where b.basic_no = e.basic_no
+				           and b.basic_no = c.basic_no
+				           and b.cpny_id = h.cpny_id
+				           and p.plan_no = b.plan_no
+				           and e.empid = h.empid
+				           and b.cpny_id = #CPNY_ID:VARCHAR#
+				           
+			 ]]>
+			<isNotEmpty prepend="AND" property="DEPTNO" >
+				<![CDATA[
+	    		   EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPTNO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+				]]>
+			</isNotEmpty>
+			 <![CDATA[
+				 GROUP BY h.deptno,p.train_form_code) t
+		      ]]>
+		</select>
+		
+		<select id="yearTrainList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				       select YEAR,
+					         COUNTS,
+					         NUMB,
+					         TRAINFORMCODE,
+					         round(COUNTS/NUMB,2) AVGCOUTS,
+					         ALLTIME,
+					         round(ALLTIME/NUMB,2) AVGTIME,
+					         ALLCOST,
+					         ZHIJIECOUST,
+					         JIANJIECOUST,
+					         round(ALLCOST/NUMB,2) AVGCOST
+					    FROM (select to_char(b.IMPLE_START_DATE, 'YYYY') YEAR,
+					                 COUNT(*) COUNTS,
+					                 get_global_name(p.train_form_code,'zh') TRAINFORMCODE,
+					                 sum((select count(*)
+					                       from edu_free_employee e
+					                      where e.basic_no = b.basic_no)) NUMB,
+					                 sum(CASE
+					                       WHEN IMPLE_CLASS_UNIT = '2' THEN
+					                        IMPLE_CLASS_HOUR
+					                       WHEN IMPLE_CLASS_UNIT = '1' THEN
+					                        TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+					                       WHEN IMPLE_CLASS_UNIT = '0' THEN
+					                        TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+					                       ELSE
+					                        '0'
+					                     END) ALLTIME,
+					                  sum((select count(*)
+					                       from edu_free_employee e
+					                      where e.basic_no = b.basic_no)) *
+					                 sum(CASE
+					                       WHEN IMPLE_CLASS_UNIT = '2' THEN
+					                        IMPLE_CLASS_HOUR
+					                       WHEN IMPLE_CLASS_UNIT = '1' THEN
+					                        TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+					                       WHEN IMPLE_CLASS_UNIT = '0' THEN
+					                        TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+					                       ELSE
+					                        '0'
+					                     END) TOTALPT,
+					                 sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+					                     STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST) ALLCOST,
+					           to_number(sum(TEACHER_COST+MATERIAL_COST+FIELD_COST)) ZHIJIECOUST,
+						       to_number(sum(FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) JIANJIECOUST
+					            from edu_basic_information b, edu_cost_manager c ,edu_plan_manager p
+					           where b.basic_no = c.basic_no
+					                 and p.plan_no = b.plan_no
+					                 and b.cpny_id=#CPNY_ID:VARCHAR#
+					
+				]]>
+				<isNotEmpty prepend="AND" property="COURSE_DATE" >
+					<![CDATA[
+		    		   to_char(b.IMPLE_START_DATE, 'YYYY') = #COURSE_DATE:VARCHAR#
+					]]>
+			    </isNotEmpty>
+			    <![CDATA[
+					   GROUP BY to_char(b.IMPLE_START_DATE, 'YYYY'),p.train_form_code)t 
+				 ]]>
+		</select>
+		
+		<select id="monthTrainList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select MONTH,
+				       COUNTS,
+				       TRAINFORMCODE,
+				       NUMB,
+				       round(COUNTS / NUMB, 2) AVGCOUTS,
+				       ALLTIME,
+				       round(ALLTIME / NUMB, 2) AVGTIME,
+				       ALLCOST,
+				       TOTALPT,
+				       ZHIJIECOUST,
+				       JIANJIECOUST,
+				       round(ALLCOST / NUMB, 2) AVGCOST
+				  from (select to_char(b.IMPLE_START_DATE, 'MMYYYY') MONTH,
+				           get_global_name(p.train_form_code,'zh') TRAINFORMCODE,
+				               COUNT(*) COUNTS,
+				               sum((select count(*)
+				                     from edu_free_employee e
+				                    where e.basic_no = b.basic_no)) NUMB,
+				               sum(CASE
+				                     WHEN IMPLE_CLASS_UNIT = '2' THEN
+				                      IMPLE_CLASS_HOUR
+				                     WHEN IMPLE_CLASS_UNIT = '1' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+				                     WHEN IMPLE_CLASS_UNIT = '0' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+				                     ELSE
+				                      '0'
+				                   END) ALLTIME,
+				                   sum((select count(*)
+				                     from edu_free_employee e
+				                    where e.basic_no = b.basic_no)) *
+				               sum(CASE
+				                     WHEN IMPLE_CLASS_UNIT = '2' THEN
+				                      IMPLE_CLASS_HOUR
+				                     WHEN IMPLE_CLASS_UNIT = '1' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+				                     WHEN IMPLE_CLASS_UNIT = '0' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+				                     ELSE
+				                      '0'
+				                   END) TOTALPT,
+				               sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+				                   STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST) ALLCOST,
+				                    to_number(sum(TEACHER_COST+MATERIAL_COST+FIELD_COST)) ZHIJIECOUST,
+						       to_number(sum(FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) JIANJIECOUST
+				          from edu_basic_information b, edu_cost_manager c,edu_plan_manager p
+				         where b.basic_no = c.basic_no
+				               and p.plan_no = b.plan_no
+					           and b.cpny_id=#CPNY_ID:VARCHAR#
+					   
+			    ]]>
+				<isNotEmpty prepend="AND" property="COURSE_DATE" >
+					<![CDATA[
+		    		   to_char(b.IMPLE_START_DATE, 'MMYYYY')=#COURSE_DATE:VARCHAR#
+					]]>
+			    </isNotEmpty>
+			    <![CDATA[
+					  GROUP BY to_char(b.IMPLE_START_DATE, 'MMYYYY'),p.train_form_code) t
+				]]>
+		</select>
+		
+		<select id="formTrainList" parameterClass="linkMap"
+				resultClass="linkMap" remapResults="true"> 
+				<![CDATA[
+				select get_global_name(t.train_form_code, 'zh') train_form_code,
+				       COUNTS,
+				       NUMB,
+				       round(COUNTS / NUMB, 2) AVGCOUTS,
+				       ALLTIME,
+				       round(ALLTIME / NUMB, 2) AVGTIME,
+				       ALLCOST,
+				        TOTALPT,
+				       ZHIJIECOUST,
+				       JIANJIECOUST,
+				       round(ALLCOST / NUMB, 2) AVGCOST
+				  from (select p.train_form_code,
+				               COUNT(*) COUNTS,
+				               SUM((select count(*)
+				                     from edu_free_employee e
+				                    where e.basic_no = b.basic_no)) NUMB,
+				               sum(CASE
+				                     WHEN IMPLE_CLASS_UNIT = '2' THEN
+				                      IMPLE_CLASS_HOUR
+				                     WHEN IMPLE_CLASS_UNIT = '1' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+				                     WHEN IMPLE_CLASS_UNIT = '0' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+				                     ELSE
+				                      '0'
+				                   END) ALLTIME,
+				               SUM((select count(*)
+				                     from edu_free_employee e
+				                    where e.basic_no = b.basic_no)) *
+				               sum(CASE
+				                     WHEN IMPLE_CLASS_UNIT = '2' THEN
+				                      IMPLE_CLASS_HOUR
+				                     WHEN IMPLE_CLASS_UNIT = '1' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 24)
+				                     WHEN IMPLE_CLASS_UNIT = '0' THEN
+				                      TO_CHAR(TO_NUMBER(IMPLE_CLASS_HOUR) * 30 * 24)
+				                     ELSE
+				                      '0'
+				                   END) TOTALPT,
+				               sum(TEACHER_COST + MATERIAL_COST + FIELD_COST + FOOD_COST +
+				                   STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST) ALLCOST,
+				                         to_number(sum(TEACHER_COST+MATERIAL_COST+FIELD_COST)) ZHIJIECOUST,
+						       to_number(sum(FOOD_COST +
+						           STAY_COST + TRAFFIC_COST + VISA_COST + OTHER_COST)) JIANJIECOUST
+				          from edu_basic_information b,
+				               edu_plan_manager      p,
+				               edu_cost_manager      c
+				         where b.basic_no = c.basic_no
+				           and b.plan_no = p.plan_no
+				           and b.cpny_id = p.cpny_id
+				           and b.cpny_id = #CPNY_ID:VARCHAR#
+				]]>
+				<isNotEmpty prepend="AND" property="TRAIN_FORM_CODE" >
+				<![CDATA[
+	    		   p.train_form_code=#TRAIN_FORM_CODE:VARCHAR#
+				]]>
+			</isNotEmpty>
+			<![CDATA[
+				        GROUP BY p.train_form_code) t
+				]]>
+		</select>
+		
+		
+</sqlMap>		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

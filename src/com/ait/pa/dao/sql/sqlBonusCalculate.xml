@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusCalculate">
+	<!-- calculate bonus  -->
+	<procedure id="bonusCalculate" parameterClass="linkMap">
+		<![CDATA[
+			{call BN_PACAL_P_NEW(#PA_BASIC_MONTH:VARCHAR#, #BN_MONTH:VARCHAR#, #BONUS_TYPE_ID:VARCHAR#, #GIVE_DATE:VARCHAR#, #ADMINID:VARCHAR#,#CPNY_ID:VARCHAR#, 'NORMAL','NONE',#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	
+	</procedure>
+	
+	<select id="getCheckPaCalculateType" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_HISTORY T
+			 WHERE T.PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND T.PA_CALCULATE_TYPE_ID = #PA_CALCULATE_TYPE:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getSalaryProvideDateBn" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		  SELECT DISTINCT TO_CHAR(T.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE 
+		  FROM BN_CALC_OBJECT T
+		  WHERE T.PA_MONTH =#paMonth:VARCHAR#
+		  AND T.CPNY_ID =#CPNY_ID:VARCHAR#
+	</select>
+</sqlMap>

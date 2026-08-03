@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.cardAssociate">
+
+	<select id="getEatCardAssociateList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+     SELECT 
+				   HR.EMPID,
+				   HR.PERSON_ID,
+			       HR.LOCAL_NAME,
+			       HR.DEPTNO,
+			       AR_CARD.CARD_NO,
+			       HDNAME.CONTENT DEPT_NAME
+		  FROM HR_EMPLOYEE   HR,
+		  	   AR_DINING_CARD_ASSOCIATE   AR_CARD,
+		       HR_DEPARTMENT_NAME HDNAME
+		 WHERE HR.PERSON_ID = AR_CARD.PERSON_ID(+)
+		   AND HR.DEPTNO = HDNAME.DEPTNO(+)
+		   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		   
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HR.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					 FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		HR.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			  <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.DEPTNO, HR.EMPID
+			]]>
+		</isEmpty>
+	</select>
+
+	<select id="getEatCardAssociateCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT 
+				   COUNT(*)
+			  FROM HR_EMPLOYEE   HR,
+			  	   AR_DINING_CARD_ASSOCIATE   AR_CARD,
+			       HR_DEPARTMENT_NAME HDNAME
+			 WHERE HR.PERSON_ID = AR_CARD.PERSON_ID(+)
+			   AND HR.DEPTNO = HDNAME.DEPTNO(+)
+			   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HR.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam"
+				compareValue="general">
+				<![CDATA[
+			   		HR.DEPTNO IN  
+	             ]]>
+				<include refid="sys.include.getDataPermission" />
+			</isNotEqual>
+			<isEqual prepend="" property="specialParam" compareValue="general">
+				HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+	</select>
+
+	<delete id="deleteEatCardAssociateInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM AR_DINING_CARD_ASSOCIATE WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete>
+
+	<insert id="insertEatCardAssociateInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  AR_DINING_CARD_ASSOCIATE ( 
+				   PERSON_ID,
+			       CARD_NO,
+			       CPNY_ID,
+			       CREATE_DATE,
+			       CREATE_BY
+			 ) VALUES
+			 (
+			 	   #PERSON_ID:VARCHAR#,
+			       #CARD_NO:VARCHAR#,
+			       #CPNY_ID:VARCHAR#,
+			       SYSDATE,
+			       #CREATE_BY:VARCHAR#
+			 )   
+    	]]>
+	</insert>
+</sqlMap>		

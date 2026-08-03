@@ -1,0 +1,716 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.email">
+	<select id="getArEmailLgech"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.pay_area_no,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.PAY_ZM_OT_ZS_ZJ+a.PAY_ZM_OT_SY_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.zhoumo_ot_tx_zj,0) AS PAY_ZM_OT_ZS_Z,
+          NVL(a.ZS_CHIDAO_YIXIA+a.SY_CHIDAO_YIXIA,0) AS ZS_CHIDAO_YIXIA,
+          NVL(a.ZS_ZAOTUI_YIXIA+a.SY_ZAOTUI_YIXIA,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.KUANGGONG_ZS+a.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.PAY_PINGSHI_OT_ZONGJI+a.PAY_PINGSHI_OT_SY_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ+a.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(a.z_Pay_Zhoumo_Ot_Zs+a.z_Pay_Zhoumo_Ot_Sy,0) AS Z_PAY_ZM_OT_ZS,
+          NVL(a.z_Pay_Pingshi_Ot_Zs+a.z_Pay_Pingshi_Ot_Sy,0) AS Z_PAY_PINGSHI_OT_ZS,
+          NVL(A.Z_PAY_FADING_OT_ZS+a.z_Pay_Fading_Ot_Sy,0) AS Z_PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS+A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          NVL(a.SHIYONG_FULI_DAY,0) AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.BINGJIA_ZS+a.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY
+     from ar_summary_lgech a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PAY_AREA_NO">
+			<![CDATA[
+		 	   A.PAY_AREA_NO IN ($PAY_AREA_NO$)
+		    ]]>
+	</isNotEmpty>   
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    (A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+               AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#))
+		    ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+                A.DEPTNO = #DEPTNO:VARCHAR#
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgeta"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.PAY_ZM_OT_ZS_ZJ+a.PAY_ZM_OT_SY_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.zs_chidao_one+a.sy_chidao_one+a.zs_chidao_two+a.sy_chidao_two+a.zs_chidao_three+a.sy_chidao_three,0) AS ZS_CHIDAO_YIXIA,
+          NVL(a.zs_zaotui_ten+a.sy_zaotui_ten+a.zs_zaotui_ele+a.sy_zaotui_ele,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.KUANGGONG_ZS+a.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.PAY_PINGSHI_OT_SY_ZJ+a.PAY_PINGSHI_OT_ZONGJI,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ+a.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS+A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          NVL(a.SHIYONG_FULI_DAY,0) AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.BINGJIA_ZS+a.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU
+     from ar_summary_lgeta a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+               AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgetr"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     
+          select    
+          a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.PAY_ZM_OT_ZS_ZJ+a.PAY_ZM_OT_SY_ZJ+A.S_ZHOUMO_OT_ZS+A.S_ZHOUMO_OT_SY,0) AS PAY_ZM_OT_ZS,
+          NVL(a.zs_chidao_cishu+a.sy_chidao_cishu,0) AS ZS_CHIDAO_YIXIA,
+          NVL(a.zs_zaotui_cishu+a.sy_zaotui_cishu,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.KUANGGONG_ZS+a.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.PAY_PINGSHI_OT_ZONGJI+a.PAY_PINGSHI_OT_SY_ZJ+A.S_PINGSHI_OT_ZS+A.S_PINGSHI_OT_SY,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ+a.PAY_FADING_OT_SY_ZJ+A.S_FADING_OT_ZS+A.S_FADING_OT_SY,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS+A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.BINGJIA_ZS+a.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU
+     from ar_summary_lgeTR a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]> 
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+               AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	 
+	<select id="getArEmailLgend"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.pay_zhoumo_zj,0) AS PAY_ZM_OT_ZS,
+          NVL(a.zaotui_cishu,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(a.chidao_cishu,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.Kuanggong_Days,0) AS KUANGGONG_ZS,
+          NVL(a.pay_pingshi_ot_zj,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.Pay_Fading_Ot,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_HOURS,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Bingjia_Hours,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeND a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+               AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgehn"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.PAY_ZM_OT_SY_ZJ+A.PAY_ZM_OT_ZS_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Cishu+A.SY_ZAOTUI_CISHU,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(a.Zs_Chidao_Cishu+A.SY_CHIDAO_CISHU,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.ZS_KUANGGONG_HOURS+A.SY_KUANGGONG_HOURS,0) AS KUANGGONG_ZS,
+          NVL(a.PAY_PINGSHI_OT_ZONGJI+A.PAY_PINGSHI_OT_SY_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ+A.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.ZS_SHIJIA_HOURS+A.SY_SHIJIA_HOURS,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Zs_Bingjia_Hours+A.SY_BINGJIA_HOURS,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BULUJIA,
+          0 AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeHN a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+     <select id="getArEmailLgehz"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.Pay_Zhoumo_Zj,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zaotui_Cishu,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(a.Chidao_Cishu,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_DAYS,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zj,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_HOURS,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Bingjia_Days,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeHZ a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgeks"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.Pay_Zm_Ot_Zs_Zj,0)+NVL(A.PAY_ZM_OT_SY_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Cishu,0)+NVL(A.SY_ZAOTUI_CISHU,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_CISHU,0)+NVL(A.SY_CHIDAO_CISHU,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_ZS,0)+NVL(A.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zongji,0)+ NVL(a.pay_pingshi_ot_sy_zj,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ,0)+NVL(A.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS,0)+NVL(A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          NVL(A.SHIYONG_FULI_DAY,0) AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Bingjia_Zs,0)+NVL(A.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeKS a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgepn"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.pay_zm_ot_zs_zj+a.pay_zm_ot_sy_zj,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zaotui_Cishu_Onehours,0)+NVL(A.ZAOTUI_CISHU_TWOHOURS,0)+NVL(A.ZAOTUI_CISHU_THREEHOURS,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.CHIDAO_CISHU_ONEHOURS,0)+NVL(A.CHIDAO_CISHU_TWOHOURS,0)+NVL(A.CHIDAO_CISHU_THREEHOURS,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_DAYS,0) AS KUANGGONG_ZS,
+          NVL(a.pay_pingshi_ot_zongji+a.pay_pingshi_ot_sy_zj,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.Pay_Fading_Ot_Zs_Zj+a.pay_fading_ot_sy_zj,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_HOURS,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Bingjia_Days,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgePN a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgeqa"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS ,
+          NVL(a.Pay_Zm_Ot_Zs_Zj,0)+NVL(A.PAY_ZM_OT_SY_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Hours,0)+NVL(A.SY_ZAOTUI_HOURS,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_HOURS,0)+NVL(A.SY_CHIDAO_HOURS,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_ZS,0)+NVL(A.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zongji,0)+NVL(A.PAY_PINGSHI_OT_SY_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ,0)+NVL(A.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS,0)+NVL(A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.bingjia_zs,0)+nvl(A.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeQA a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgeqh"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.Pay_Zm_Ot_Zs,0)+NVL(A.PAY_ZM_OT_SY,0)+NVL(A.S_ZHOUMO_OT_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Cishu,0)+NVL(A.SY_ZAOTUI_CISHU,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_CISHU,0)+NVL(A.SY_CHIDAO_CISHU,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_ZS,0)+NVL(A.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zs,0)+NVL(A.PAY_PINGSHI_OT_SY,0)+NVL(A.S_PINGSHI_OT_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS,0)+NVL(A.PAY_FADING_OT_SY,0)+NVL(A.S_FADING_OT_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS,0)+NVL(A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.bingjia_zs,0)+nvl(A.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_HOURS,0) AS BURUJIA,
+          0 AS LIUCHANJIA,
+          0 AS YEBAN_CISHU 
+     from ar_summary_lgeQH a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgeqd"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.Pay_Zm_Ot_Zs_Zj,0)+NVL(A.PAY_ZM_OT_SY_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Cishu,0)+NVL(A.SY_ZAOTUI_CISHU,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_CISHU,0)+NVL(A.SY_CHIDAO_CISHU,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.ZS_KUANGGONG_HOURS,0)+NVL(A.SY_KUANGGONG_HOURS,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zongji,0)+NVL(A.PAY_PINGSHI_OT_SY_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ,0)+NVL(A.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.ZS_BINGJIA_HOURS,0)+NVL(A.SY_SHIJIA_HOURS,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Sy_Bingjia_Hours,0)+nvl(A.ZS_BINGJIA_HOURS,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          0 AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeQD a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgesy"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.Pay_Zm_Ot_Zs_Zj,0)+NVL(A.PAY_ZM_OT_SY_ZJ,0)+NVL(A.S_ZHOUMO_OT_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Cishu,0)+NVL(A.SY_ZAOTUI_CISHU,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_CISHU,0)+NVL(A.SY_CHIDAO_CISHU,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_ZS,0)+NVL(A.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zongji,0)+NVL(A.PAY_PINGSHI_OT_SY_ZJ,0)+NVL(A.S_PINGSHI_OT_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS,0)+NVL(A.PAY_FADING_OT_SY,0)+NVL(A.S_FADING_OT_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS,0)+NVL(A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.bingjia_zs,0)+nvl(A.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeSY a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgeyt"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.Pay_Zm_Ot_Zs_Zj,0)+NVL(A.PAY_ZM_OT_SY_ZJ,0)+NVL(A.S_ZHOUMO_OT_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Cishu,0)+NVL(A.SY_ZAOTUI_CISHU,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_CISHU,0)+NVL(A.SY_CHIDAO_CISHU,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.SY_KUANGGONG_HOURS,0)+NVL(A.ZS_KUANGGONG_HOURS,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zongji,0)+NVL(A.PAY_PINGSHI_OT_SY_ZJ,0)+NVL(A.S_PINGSHI_OT_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ,0)+NVL(A.PAY_FADING_OT_SY_ZJ,0)+NVL(A.S_FADING_OT_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SY_SHIJIA_HOURS,0)+NVL(A.ZS_SHIJIA_HOURS,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Sy_Bingjia_Hours,0)+nvl(A.ZS_BINGJIA_HOURS,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          0 AS LIUCHANJIA,
+          NVL(A.YEBAN_CISHU,0) AS YEBAN_CISHU 
+     from ar_summary_lgeyt a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getArEmailLgecr"  parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+     select a.AR_MONTH,
+          a.empid,
+          a.deptno,
+          a.dept_name,
+          h.email,
+          a.local_name as LOCAL_NAME,
+          A.PERSON_ID,
+          TO_CHAR(GET_AR_START_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS START_DATE,
+          TO_CHAR(GET_AR_END_DATE(#AR_MONTH#, #CPNY_ID#, #STAT_NO#),'YYYY-MM-DD') AS END_DATE,
+          NVL(a.Pay_Zm_Ot_Zs_Zj,0)+NVL(A.PAY_ZM_OT_SY_ZJ,0) AS PAY_ZM_OT_ZS,
+          NVL(a.Zs_Zaotui_Yixia,0)+NVL(A.SY_ZAOTUI_YIXIA,0) AS ZS_ZAOTUI_YIXIA,
+          NVL(A.ZS_CHIDAO_YIXIA,0)+NVL(A.SY_CHIDAO_YIXIA,0) AS ZS_CHIDAO_YIXIA,
+          NVL(A.KUANGGONG_ZS,0)+NVL(A.KUANGGONG_SY,0) AS KUANGGONG_ZS,
+          NVL(a.Pay_Pingshi_Ot_Zongji,0)+NVL(A.PAY_PINGSHI_OT_SY_ZJ,0) AS PAY_PINGSHI_OT_ZS,
+          NVL(A.PAY_FADING_OT_ZS_ZJ,0)+NVL(A.PAY_FADING_OT_SY_ZJ,0) AS PAY_FADING_OT_ZS_ZJ,
+          NVL(A.SHIJIA_ZS,0)+NVL(A.SHIJIA_SY,0) AS SHIJIA_ZS,
+          NVL(A.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+          0 AS SHIYONG_FULI_DAY,
+          NVL(a.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+          NVL(a.Bingjia_Zs,0)+nvl(A.BINGJIA_SY,0) AS BINGJIA_ZS,
+          NVL(a.HUNJIA_DAY,0) AS HUNJIA_DAY,
+          NVL(a.CHANJIA_DAY,0) AS CHANJIA_DAY,
+          NVL(a.SANGJIA_DAY,0) AS SANGJIA_DAY,
+          NVL(A.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA,
+          NVL(A.PEICHANJIA_DAYS,0) AS PEICHANJIA,
+          NVL(A.BULUJIA_DAY,0) AS BURUJIA,
+          NVL(A.LIUCHANJIA_DAY,0) AS LIUCHANJIA,
+          0 AS YEBAN_CISHU
+     from ar_summary_lgecr a, hr_personal_info h
+          WHERE h.Person_Id = A.PERSON_ID
+          and a.AR_MONTH = #AR_MONTH#
+          AND A.STAT_NO = #STAT_NO#
+       ]]>
+    <isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    A.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND A.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	
+	
+	
+	<select id="getArDetailListEmail" resultClass="linkMap"
+		parameterClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT AR_DETAIL.PK_NO,
+			       AR_DETAIL.PERSON_ID,
+			       AR_DETAIL.AR_DATE_STR,
+			       AR_DETAIL.DATE_TYPE,
+			       AR_DETAIL.AR_MONTH_STR,
+			       AR_DETAIL.ITEM_NO,
+			       AR_DETAIL.SHIFT_NO,
+			       AR_DETAIL.QUANTITY,
+			       AR_DETAIL.UNIT UNIT,
+			       AR_DETAIL.LOCK_YN,
+			       HH.EMAIL,
+			       GET_DAILY_STATUS(AR_DETAIL.AR_DATE_STR,#CPNY_ID:VARCHAR#,AR_DETAIL.PERSON_ID) status,
+			       HR_EMPLOYEE.EMPID,
+                   HR_EMPLOYEE.LOCAL_NAME,
+                   HR_EMPLOYEE.DEPTNO,
+                   get_dept_name(HR_EMPLOYEE.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME,
+                   get_global_name(AR_DETAIL.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME,
+			       get_global_name(AR_DETAIL.ITEM_NO,#interLanguage:VARCHAR#) ITEM_NAME
+		      FROM AR_DETAIL_HTSV AR_DETAIL,
+		           HR_EMPLOYEE,
+		           HR_PERSONAL_INFO HH
+			   WHERE AR_DETAIL.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			     AND AR_DETAIL.PERSON_ID = HH.PERSON_ID
+			     AND AR_DETAIL.PK_NO NOT IN (SELECT APPLY_NO FROM ESS_CARD_APPLY_TB)
+                 AND HR_EMPLOYEE.LOCAL_NAME<>'admin'
+                 AND ITEM_NO IN ('141443','141441','141442')
+                 AND AR_DETAIL.AR_DATE_STR = to_char(sysdate-1,'yyyy/mm/dd')
+		]]>
+	<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+		 	    HR_EMPLOYEE.DEPTNO IN(SELECT DEPTNO FROM AR_SUPERVISOR_INFO AR_INFO WHERE AR_INFO.PERSON_ID = #PERSON_ID:VARCHAR# )
+                AND HR_EMPLOYEE.EMP_TYPE_CODE IN (SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO AF WHERE AF.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+	</isNotEmpty>
+	</select>
+	
+	<select id="getAttKeeperList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT 
+					HR.EMPID,
+					T.PERSON_ID,
+			       HR.LOCAL_NAME AS HRNAME,
+			       HDNAME.CONTENT DEPT_NAME,
+			       TO_CHAR(T.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+			       CR_EMP.LOCAL_NAME AS CREATED_NAME,
+			       T.MODIFY_YN 
+		  FROM AR_SUPERVISOR T,
+		       HR_EMPLOYEE   HR,
+		       HR_DEPARTMENT HD,
+		       HR_DEPARTMENT_NAME HDNAME,
+		       HR_EMPLOYEE   CR_EMP
+		 WHERE T.PERSON_ID = HR.PERSON_ID
+		   AND HR.DEPTNO = HD.DEPTNO(+)
+		   AND HR.CPNY_ID = HD.CPNY_ID(+)
+		   AND HD.DEPTNO = HDNAME.DEPTNO(+)
+		   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND T.CREATED_BY = CR_EMP.PERSON_ID(+)
+		   AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getOrgDeptList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT 
+         HR.EMPID,
+         HR.PERSON_ID,
+         HR.LOCAL_NAME AS HRNAME,
+         HDNAME.CONTENT DEPT_NAME,
+         HD.DEPTNO
+      FROM HR_EMPLOYEE   HR,
+           HR_DEPARTMENT HD,
+           HR_DEPARTMENT_NAME HDNAME
+     WHERE HD.MANAGER_EMP_ID = HR.PERSON_ID
+       AND HR.DEPTNO = HD.DEPTNO(+)
+       AND HR.CPNY_ID = HD.CPNY_ID
+       AND HD.USE_YN = 'Y'
+       AND HD.DEPTNO = HDNAME.DEPTNO(+)
+       AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+       AND HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

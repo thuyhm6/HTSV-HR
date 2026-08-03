@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusInputItem">
+	<sql id="getPaBonusInputItemListCondition">
+		<isNotEmpty prepend="AND" property="PARAM_ITEM_NO">
+			<![CDATA[
+		 		  T.PARAM_ITEM_NO  = #PARAM_ITEM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.PARAM_ITEM_NO  = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  TP.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_ITEM_ID">
+			<![CDATA[
+		 		  T.PARAM_ITEM_ID LIKE '%' || #PARAM_ITEM_ID:VARCHAR# || '%'  		 		                   
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_NAME">
+			<![CDATA[
+		 		  (SY.CONTENT LIKE '%' || #PARAM_NAME:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+
+	</sql>
+	
+	<!-- 奖金:输入项目参数 (添加:项目名称),输入项目 -->
+	<select id="getPaBonusInputItemList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	        SELECT T.PARAM_ITEM_NO,
+			       TP.PARAM_NO,
+			       T.PARAM_ITEM_ID,
+			       SY.CONTENT PARAM_NAME,
+			       T.DATA_TYPE,
+			       T.DESCR,
+			       GET_ITEM_ID(T.PARAM_ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)  ISCHECKED,
+			       GET_ITEM_ORDERNO(T.PARAM_ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)  ORDERNO
+			  FROM BN_PARAM_ITEM T, BN_PARAM_ITEM_PARAM TP, SY_GLOBAL_NAME SY
+			 WHERE T.PARAM_ITEM_NO = TP.PARAM_ITEM_NO(+)
+			   AND T.PARAM_ITEM_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   ]]>
+			   <isNotEmpty prepend="" property="BONUS_IMPORT_PARAMETER">
+					<![CDATA[	   
+						   AND T.PARAM_ITEM_NO NOT IN (SELECT P.PARAM_ITEM_NO FROM BN_PARAM_ITEM_PARAM P WHERE P.CPNY_ID =#interCpnyID:VARCHAR#)
+					]]>
+		</isNotEmpty>
+
+		<include refid="getPaBonusInputItemListCondition" />
+
+	
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY SY.CONTENT
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getPaBonusInputItemCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(T.PARAM_ITEM_NO) 
+			FROM BN_PARAM_ITEM T, SY_GLOBAL_NAME SY
+					 WHERE T.PARAM_ITEM_NO = SY.NO(+)
+					   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#		
+		]]>
+
+		<include refid="getPaBonusInputItemListCondition" />
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.PARAM_ITEM_NO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="checkAddPaBonusInputItemInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM BN_PARAM_ITEM  
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+				<![CDATA[
+			 		  PARAM_ITEM_ID = #ITEM_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  PARAM_ITEM_NO <> #NO:NUMERIC#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<insert id="addPaBonusInputItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_PARAM_ITEM
+				(
+					PARAM_ITEM_NO,
+					PARAM_ITEM_ID,
+					DATA_TYPE,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY,
+					DESCR
+				)
+			VALUES(
+					#NO:VARCHAR#,
+					#ITEM_ID:VARCHAR#,
+					#DATA_TYPE:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCAHR#,
+					1,
+					#DESCR:VARCHAR#
+				)
+		]]>
+	</insert>
+
+	<update id="updatePaBonusInputItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_PARAM_ITEM SET
+					PARAM_ITEM_ID = #ITEM_ID:VARCHAR#,					
+					DATA_TYPE = #DATA_TYPE:VARCHAR#,
+					DESCR = #DESCR:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY   = #UPDATED_BY:VARCHAR#	 
+			WHERE PARAM_ITEM_NO = #NO:VARCHAR#
+					
+		]]>
+	</update>
+
+	<delete id="deletePaBonusInputItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE BN_PARAM_ITEM WHERE PARAM_ITEM_NO  = #NO:NUMERIC#
+		]]>
+	</delete>
+
+	<select id="checkCountPaBonusInputItemByParamItemNo"
+		parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM BN_PARAM_ITEM T
+			 WHERE PARAM_ITEM_NO  = #NO:NUMERIC#
+		]]>
+	</select>
+</sqlMap>

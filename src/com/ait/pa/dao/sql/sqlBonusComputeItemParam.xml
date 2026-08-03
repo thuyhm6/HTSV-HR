@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.bonusComputeItemParam">
+	
+	<sql id="getBonusComputeItemParamListCondition" >
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	                 
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID like '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+		
+			                 
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="ALIAS">
+			<![CDATA[
+		 		  SY1.CONTENT LIKE '%' || #ALIAS:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>         
+	</sql>
+	
+	<select id="getBonusComputeItemParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT T.PARAM_NO,
+				       T.ITEM_NO,
+		               T.CPNY_ID,
+		               SY0.CONTENT CPNY_NAME,
+		               SY1.CONTENT ALIAS_NAME,
+		               CASE  T.PA_RELEVANCE_FLAG
+		                    WHEN 1 THEN '是'
+		                    ELSE '否' END PA_RELEVANCE_FLAG,
+		               T.PA_RELEVANCE_FLAG  PA_RELEVANCE_FLAG_S,
+		               T.CALCU_ORDER,
+		               T.PRICISION,
+		               T.CARRY_BIT,
+		               T.PA_BONUS_MONTH,
+		               B.ITEM_ID,
+		               GET_ITEM_ID(B.ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)   ISCHECKED,
+		               GET_ITEM_ORDERNO(B.ITEM_ID,#PERSON_ID:VARCHAR#,#USERNAME:VARCHAR#,#FUNCTIONFLAG:VARCHAR#,#DISTINGUISH:VARCHAR#)   ORDERNO
+		          FROM BN_ITEM_PARAM T,
+		               HR_COMPANY    HR,
+		               BN_ITEM       B,
+		               SY_GLOBAL_NAME SY0,
+		               SY_GLOBAL_NAME SY1
+		         WHERE T.CPNY_ID = HR.CPNY_ID
+		           AND B.ITEM_NO = T.ITEM_NO
+		           AND HR.CPNY_NO = SY0.NO(+)
+		           AND SY0.LANGUAGE = #interLanguage:VARCHAR#
+		           AND T.ITEM_NO = SY1.NO(+)
+		           AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+		]]>
+		
+	    <include refid="getBonusComputeItemParamListCondition"/>
+	 
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.CALCU_ORDER
+			]]>
+		</isEmpty>
+		 
+	</select>
+	<!--
+	<select id="getBonusComputeItemParamCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(T.PARAM_NO) 
+				  FROM BN_ITEM_PARAM T,
+				  SY_GLOBAL_NAME SY1
+				  WHERE T.PARAM_NO = SY1.NO(+)
+		           AND SY1.LANGUAGE = #interLanguage:VARCHAR#
+				  
+		]]>
+		
+			<include refid="getBonusComputeItemParamListCondition"/>
+		
+	</select>
+	  -->
+	<select id="checkAddBonusComputeItemParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+                 SELECT COUNT(T.PARAM_NO) 
+                  FROM  BN_ITEM_PARAM T,
+				        HR_COMPANY    HR
+				 WHERE  T.CPNY_ID = HR.CPNY_ID
+				  AND   T.ITEM_NO = #ITEM_NO:NUMERIC#
+                  AND   T.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+			  T.PARAM_NO <> #PARAM_NO:NUMERIC#
+		    ]]>
+	    </isNotEmpty>                 
+
+	</select>
+	
+	<insert id="addBonusComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO BN_ITEM_PARAM
+			    (  PARAM_NO,
+				   ITEM_NO,
+				   CPNY_ID,
+				   PA_RELEVANCE_FLAG,
+				   CALCU_ORDER,
+				   PRICISION,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY,
+				   CARRY_BIT,
+				   PA_BONUS_MONTH
+				 )
+			VALUES(
+					BN_ITEM_PARAM_SEQ.NEXTVAL,
+					#ITEM_NO:NUMERIC#,
+					#CPNY_ID:VARCHAR#,				
+					#PA_RELEVANCE_FLAG:VARCHAR#,
+					(SELECT NVL(MAX(T.CALCU_ORDER), 0) + 1 FROM BN_ITEM_PARAM T WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#),
+					#PRICISION:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1,
+					#CARRY_BIT:VARCHAR#,
+					#PA_BONUS_MONTH:VARCHAR#
+				  )
+		]]>
+	</insert>
+	
+	<update id="updateBonusComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+				   UPDATE BN_ITEM_PARAM
+				      SET CPNY_ID           = #CPNY_ID:VARCHAR#,
+				          PA_RELEVANCE_FLAG = #PA_RELEVANCE_FLAG:VARCHAR#,
+				          PRICISION         = #PRICISION:NUMERIC#,
+				          UPDATE_DATE       = SYSDATE,
+				          UPDATED_BY        = #UPDATED_BY#,
+				          CARRY_BIT         = #CARRY_BIT:NUMERIC#,
+				          PA_BONUS_MONTH    = #PA_BONUS_MONTH:VARCHAR#
+				    WHERE PARAM_NO = #PARAM_NO:NUMERIC#									
+		]]>
+	</update>
+	
+	<select id="checkDeleteBonusComputeItemParamInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+				SELECT (SELECT COUNT(*)
+				          FROM USER_TAB_COLS
+				         WHERE TABLE_NAME = 'BN_SUMMARY_' || #CPNY_ID:VARCHAR#
+				           AND COLUMN_NAME = (select I.ITEM_ID from BN_ITEM I,BN_ITEM_PARAM P
+                         WHERE I.ITEM_NO = P.ITEM_NO and P.PARAM_NO = #NO:VARCHAR#)
+				        ) AS A
+				  FROM DUAL
+		]]>
+	</select>
+	
+	<delete id="deleteBonusComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			  DELETE BN_ITEM_PARAM WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</delete>
+	
+	<update id="updateBonusItemParamCalcuOrder" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_ITEM_PARAM SET
+					CALCU_ORDER = #ORDER:VARCHAR#
+			WHERE CALCU_ORDER = #CALORDER:VARCHAR#
+		      AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="updateBonusItemParamCalcuOrderByParamNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE BN_ITEM_PARAM SET
+					CALCU_ORDER = #CALORDER:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:VARCHAR#				
+		]]>
+	</update>
+	
+	<select id="checkBonusComputeItemParamCanBeDeleted" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+               SELECT COUNT(T.PARAM_NO) 
+                FROM  BN_ITEM_PARAM T,
+		        HR_COMPANY    HR
+		 WHERE  T.CPNY_ID = HR.CPNY_ID
+		  AND   T.ITEM_NO = #NO:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.cardAssociate">
+
+	<select id="getCardAssociateList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT 
+				   HR.EMPID,
+				   HR.PERSON_ID,
+			       HR.LOCAL_NAME,
+			       HR.DEPTNO,
+			       AR_CARD.CARD_NO,
+			       HDNAME.CONTENT DEPT_NAME,
+			       TO_CHAR(AR_CARD.DATE_START,'YYYY-MM-DD') DATE_START,
+             	   TO_CHAR(AR_CARD.DATE_END,'YYYY-MM-DD') DATE_END,
+             	   TO_CHAR(NVL(HR.DATE_STARTED,HR.JOIN_COMPANY_DATE),'YYYY-MM-DD') DATE_STARTED,
+             TO_CHAR(HR.DATE_LEFT,'YYYY-MM-DD') DATE_LEFT
+		  FROM HR_EMPLOYEE   HR,
+		  	   AR_CARD_ASSOCIATE   AR_CARD,
+		       HR_DEPARTMENT_NAME HDNAME
+		 WHERE HR.PERSON_ID = AR_CARD.PERSON_ID(+)
+		   AND HR.DEPTNO = HDNAME.DEPTNO(+)
+		   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		   
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CARD_NO">
+			<![CDATA[
+		 		  AR_CARD.CARD_NO = #CARD_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		HR.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+		
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.DEPTNO, HR.EMPID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getCardAssociateCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+				   COUNT(*)
+			  FROM HR_EMPLOYEE   HR,
+			  	   AR_CARD_ASSOCIATE   AR_CARD,
+			       HR_DEPARTMENT_NAME HDNAME
+			 WHERE HR.PERSON_ID = AR_CARD.PERSON_ID(+)
+			   AND HR.DEPTNO = HDNAME.DEPTNO(+)
+			   AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CARD_NO">
+			<![CDATA[
+		 		  AR_CARD.CARD_NO = #CARD_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="specialParam">
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		HR.DEPTNO IN  
+	             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+              <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		( HR.PERSON_ID = #supervisorPersonId:VARCHAR# OR HR.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+	</select>
+	
+	<delete id="deleteCardAssociateInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM AR_CARD_ASSOCIATE WHERE PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</delete> 
+	
+	<insert id="insertCardAssociateInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  AR_CARD_ASSOCIATE ( 
+				   PERSON_ID,
+			       CARD_NO,
+			       CPNY_ID,
+			       CREATE_DATE,
+			       CREATE_BY,
+			       DATE_START,
+			       DATE_END
+			 ) VALUES
+			 (
+			 	   #PERSON_ID:VARCHAR#,
+			       #CARD_NO:VARCHAR#,
+			       #CPNY_ID:VARCHAR#,
+			       SYSDATE,
+			       #CREATE_BY:VARCHAR#,
+			       TO_DATE(#DATE_START:VARCHAR#,'YYYY-MM-DD'),
+			       TO_DATE(#DATE_END:VARCHAR#,'YYYY-MM-DD')
+			 )   
+    	]]>
+	</insert>
+	
+	<select id="checkCardValidity" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 
+				   COUNT(*)
+			  FROM AR_CARD_ASSOCIATE
+			 WHERE PERSON_ID <> #PERSON_ID:VARCHAR#
+			 	AND CARD_NO = #CARD_NO:VARCHAR#
+			 	AND CPNY_ID = #CPNY_ID:VARCHAR#
+			    AND (
+			    		(NVL(DATE_END,TO_DATE('9999-12-31','YYYY-MM-DD')) >= TO_DATE(NVL(#DATE_START:VARCHAR#,'1900-12-31'),'YYYY-MM-DD')
+			    		AND NVL(DATE_END,TO_DATE('9999-12-31','YYYY-MM-DD')) <= TO_DATE(NVL(#DATE_END:VARCHAR#,'9999-12-31'),'YYYY-MM-DD'))
+			    		OR
+			    		(NVL(DATE_START,TO_DATE('1900-12-31','YYYY-MM-DD')) >= TO_DATE(NVL(#DATE_START:VARCHAR#,'1900-12-31'),'YYYY-MM-DD')
+			    		AND NVL(DATE_START,TO_DATE('1900-12-31','YYYY-MM-DD')) <= TO_DATE(NVL(#DATE_END:VARCHAR#,'9999-12-31'),'YYYY-MM-DD'))
+			    		OR
+			    		(NVL(DATE_START,TO_DATE('1900-12-31','YYYY-MM-DD')) <= TO_DATE(NVL(#DATE_START:VARCHAR#,'1900-12-31'),'YYYY-MM-DD')
+			    		AND NVL(DATE_END,TO_DATE('9999-12-31','YYYY-MM-DD')) >= TO_DATE(NVL(#DATE_END:VARCHAR#,'9999-12-31'),'YYYY-MM-DD'))
+			    	)
+			    	
+		]]>
+	</select>
+</sqlMap>

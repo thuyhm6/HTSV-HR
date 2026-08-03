@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="is.insuranceSystemCalculate">
+	<select id='getInsuranceSystemInfoList' parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT T.PA_BEN_BENCH_SEQ,
+		       T.INSURANCE_CODE,
+		       C.CONTENT AS INSURANCE_NAME,
+		       T.REG_TYPE_CODE,
+		       C1.CONTENT AS REG_TYPE_NAME,
+		       TO_CHAR(VERSION_DATE, 'YYYY-MM-DD') AS VERSION_DATE,
+		       T.UPPER_LIMIT,
+		       T.LOWER_LIMIT,
+		       T.COR_RATE,
+		       T.PER_RATE
+		  FROM PA_BEN_BENCHMARK T, sy_global_name C, sy_global_name C1
+		 WHERE T.INSURANCE_CODE = C.NO
+		   AND T.REG_TYPE_CODE = C1.NO
+		   AND T.INSURANCE_CODE IN ('124929',
+				                    '124930',
+				                    '124931',
+				                    '124932',
+				                    '124933')
+		   AND T.VERSION_DATE IS NULL
+		   AND C.Language=#interLanguage:VARCHAR#
+		   AND C1.Language=#interLanguage:VARCHAR#
+		UNION
+		SELECT T.PA_BEN_BENCH_SEQ,
+		       T.INSURANCE_CODE,
+		       C.CONTENT AS INSURANCE_NAME,
+		       T.REG_TYPE_CODE,
+		       C1.CONTENT AS REG_TYPE_NAME,
+		       TO_CHAR(VERSION_DATE, 'YYYY-MM-DD') AS VERSION_DATE,
+		       T.UPPER_LIMIT,
+		       T.LOWER_LIMIT,
+		       T.COR_RATE,
+		       T.PER_RATE
+		  FROM PA_BEN_BENCHMARK T, sy_global_name C, sy_global_name C1
+		 WHERE T.INSURANCE_CODE = C.NO
+		   AND T.REG_TYPE_CODE = C1.NO
+		   AND T.INSURANCE_CODE IN ('124929',
+				                    '124930',
+				                    '124931',
+				                    '124932',
+				                    '124933')
+		   AND T.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+		   AND C.NO || C1.NO NOT IN
+		       (SELECT INSURANCE_CODE || REG_TYPE_CODE
+		          FROM PA_BEN_BENCHMARK
+		         WHERE INSURANCE_CODE IN ('124929',
+				                          '124930',
+				                          '124931',
+				                          '124932',
+				                          '124933')
+		           AND VERSION_DATE IS NULL)
+		   AND C.Language=#interLanguage:VARCHAR#
+		   AND C1.Language=#interLanguage:VARCHAR#
+		   ORDER BY INSURANCE_CODE,REG_TYPE_CODE
+	</select>
+	
+	<select id='getVersionDateListBz' parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	  SELECT DISTINCT(to_char(VERSION_DATE,'yyyy-mm-dd')) as VERSION_DATE
+      FROM PA_BEN_BENCHMARK
+      WHERE VERSION_DATE IS NOT NULL
+      ORDER BY VERSION_DATE DESC
+	</select>
+	<select id='getModifyStandardSeriousBz' parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+			SELECT T.PA_BEN_BENCH_SEQ,
+		       T.INSURANCE_CODE,
+		       C.CONTENT AS INSURANCE_NAME,
+		       T.REG_TYPE_CODE,
+		       C1.CONTENT AS REG_TYPE_NAME,
+		       TO_CHAR(VERSION_DATE, 'YYYY-MM-DD') AS VERSION_DATE,
+           T.COR_VALUE,
+           T.PER_VALUE
+      FROM PA_BEN_BENCHMARK T, sy_global_name C, sy_global_name C1
+     WHERE T.INSURANCE_CODE = C.NO
+       AND T.REG_TYPE_CODE = C1.NO
+       AND T.INSURANCE_CODE = '124934'
+       AND T.VERSION_DATE IS NULL
+       AND C.Language=#interLanguage:VARCHAR#
+       AND C1.Language=#interLanguage:VARCHAR#
+    UNION
+    SELECT T.PA_BEN_BENCH_SEQ,
+           T.INSURANCE_CODE,
+           C.CONTENT AS INSURANCE_NAME,
+           T.REG_TYPE_CODE,
+           C1.CONTENT AS REG_TYPE_NAME,
+           TO_CHAR(VERSION_DATE, 'YYYY-MM-DD') AS VERSION_DATE,
+           T.COR_VALUE,
+           T.PER_VALUE
+      FROM PA_BEN_BENCHMARK T, sy_global_name C, sy_global_name C1
+     WHERE T.INSURANCE_CODE = C.NO
+       AND T.REG_TYPE_CODE = C1.NO
+       AND T.INSURANCE_CODE = '124934'
+       AND T.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+       AND C.NO || C1.NO NOT IN
+           (SELECT INSURANCE_CODE || REG_TYPE_CODE
+              FROM PA_BEN_BENCHMARK
+             WHERE INSURANCE_CODE = '124934'
+               AND VERSION_DATE IS NULL)
+         AND C.Language=#interLanguage:VARCHAR#
+       AND C1.Language=#interLanguage:VARCHAR#
+     ORDER BY INSURANCE_CODE, REG_TYPE_CODE
+	</select>
+	<select id="ifUpdatedVersion" resultClass="int">		
+		SELECT COUNT(1) FROM PA_BEN_BENCHMARK T WHERE T.VERSION_DATE IS NULL
+	</select>
+	<select id="getMaxManageCreateDate" resultClass="string">
+		SELECT MAX(TO_CHAR(T.CREATE_DATE, 'YYYYMM')) AS PA_MONTH
+  			FROM PA_BEN_MANAGE T
+	</select>
+	<select id="selectPaBenFalgByFalg" parameterClass="linkMap" resultClass="int">
+		SELECT NVL(SUM(FLAG_ID), 0)
+		  FROM PA_BEN_FLAG T
+		 WHERE T.PA_MONTH = #yearMonth:VARCHAR#
+	</select>
+	
+	<delete id="deleteExistMaxVersionDate" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_BENCHMARK T
+				 WHERE TO_CHAR(T.VERSION_DATE, 'YYYY-MM-DD') =
+				       TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+		]]>
+	</delete>
+	<insert id="createStandardNotSeriousVersion" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BEN_BENCHMARK
+				  (PA_BEN_BENCH_SEQ,
+				   INSURANCE_CODE,
+				   REG_TYPE_CODE,
+				   VERSION_DATE,
+				   UPPER_LIMIT,
+				   LOWER_LIMIT,
+				   COR_RATE,
+				   PER_RATE,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY)
+				  (SELECT DISTINCT T.PA_BEN_BENCH_SEQ,
+				          T.INSURANCE_CODE,
+				          T.REG_TYPE_CODE,
+				          TO_DATE(TO_CHAR(SYSDATE,'YYYY-MM-DD'),'YYYY-MM-DD'),
+				          T.UPPER_LIMIT,
+				          T.LOWER_LIMIT,
+				          T.COR_RATE,
+				          T.PER_RATE,
+				          SYSDATE,
+				          #adminID#,
+				          1
+				     FROM PA_BEN_BENCHMARK T
+				    WHERE T.INSURANCE_CODE IN ('124929',
+				                               '124930',
+				                               '124931',
+				                               '124932',
+				                               '124933')
+				      AND T.VERSION_DATE IS NULL)
+		]]>
+	</insert>
+	<insert id="createStandardSeriousVersion" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BEN_BENCHMARK
+				  (PA_BEN_BENCH_SEQ,
+				   INSURANCE_CODE,
+				   REG_TYPE_CODE,
+				   VERSION_DATE,
+				   COR_VALUE,
+				   PER_VALUE,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY)
+				  (
+				  	SELECT T.PA_BEN_BENCH_SEQ,
+					       T.INSURANCE_CODE,
+					       T.REG_TYPE_CODE,
+					       TO_DATE(TO_CHAR(SYSDATE,'YYYY-MM-DD'),'YYYY-MM-DD'),
+					       T.COR_VALUE,
+					       T.PER_VALUE,
+					       SYSDATE,
+					       #adminID#,
+					       1
+					  FROM PA_BEN_BENCHMARK T
+					 WHERE T.INSURANCE_CODE = '124934'
+					   AND T.VERSION_DATE IS NULL
+				  )
+		]]>
+	</insert>
+	<delete id="deleteVersionIsNull" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_BENCHMARK T WHERE T.VERSION_DATE IS NULL
+		]]>
+	</delete>
+	<update id="freshPaBenManage" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE PA_BEN_MANAGE T
+				   SET T.UPDATE_DATE    = SYSDATE,
+				       T.UPDATED_BY     = #adminID#,
+				       T.ENDOWMENT_BASE = NVL((SELECT CASE
+				                                       WHEN (T.AVG_SALARY IS NULL) THEN
+				                                        (CASE
+				                                          WHEN T.JOIN_VALUE > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.JOIN_VALUE < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.JOIN_VALUE
+				                                        END)
+				                                       WHEN (T.AVG_SALARY IS NOT NULL) THEN
+				                                        (CASE
+				                                          WHEN T.AVG_SALARY > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.AVG_SALARY < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.AVG_SALARY
+				                                        END)
+				                                     END SSS
+				                                FROM PA_BEN_BENCHMARK B
+				                               WHERE B.VERSION_DATE =
+				                                     (SELECT MAX(VERSION_DATE)
+				                                        FROM PA_BEN_BENCHMARK)
+				                                 AND B.INSURANCE_CODE = 'InsuranceTpye100'
+				                                 AND B.REG_TYPE_CODE =
+				                                     (SELECT P.REG_TYPE_CODE
+				                                        FROM HR_PERSONAL_INFO P
+				                                       WHERE P.PERSON_ID = T.EMPID)),
+				                              0),
+				       T.MEDICARE_BASE  = NVL((SELECT CASE
+				                                       WHEN (T.AVG_SALARY IS NULL) THEN
+				                                        (CASE
+				                                          WHEN T.JOIN_VALUE > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.JOIN_VALUE < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.JOIN_VALUE
+				                                        END)
+				                                       WHEN (T.AVG_SALARY IS NOT NULL) THEN
+				                                        (CASE
+				                                          WHEN T.AVG_SALARY > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.AVG_SALARY < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.AVG_SALARY
+				                                        END)
+				                                     END SSS
+				                                FROM PA_BEN_BENCHMARK B
+				                               WHERE B.VERSION_DATE =
+				                                     (SELECT MAX(VERSION_DATE)
+				                                        FROM PA_BEN_BENCHMARK)
+				                                 AND B.INSURANCE_CODE = 'InsuranceTpye101'
+				                                 AND B.REG_TYPE_CODE =
+				                                     (SELECT P.REG_TYPE_CODE
+				                                        FROM HR_PERSONAL_INFO P
+				                                       WHERE P.PERSON_ID = T.EMPID)),
+				                              0),
+				       T.SHENGYU_BASE   = NVL((SELECT CASE
+				                                       WHEN (T.AVG_SALARY IS NULL) THEN
+				                                        (CASE
+				                                          WHEN T.JOIN_VALUE > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.JOIN_VALUE < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.JOIN_VALUE
+				                                        END)
+				                                       WHEN (T.AVG_SALARY IS NOT NULL) THEN
+				                                        (CASE
+				                                          WHEN T.AVG_SALARY > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.AVG_SALARY < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.AVG_SALARY
+				                                        END)
+				                                     END SSS
+				                                FROM PA_BEN_BENCHMARK B
+				                               WHERE B.VERSION_DATE =
+				                                     (SELECT MAX(VERSION_DATE)
+				                                        FROM PA_BEN_BENCHMARK)
+				                                 AND B.INSURANCE_CODE = 'InsuranceTpye102'
+				                                 AND B.REG_TYPE_CODE =
+				                                     (SELECT P.REG_TYPE_CODE
+				                                        FROM HR_PERSONAL_INFO P
+				                                       WHERE P.PERSON_ID = T.EMPID)),
+				                              0),
+				       T.COMPO_BASE     = NVL((SELECT CASE
+				                                       WHEN (T.AVG_SALARY IS NULL) THEN
+				                                        (CASE
+				                                          WHEN T.JOIN_VALUE > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.JOIN_VALUE < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.JOIN_VALUE
+				                                        END)
+				                                       WHEN (T.AVG_SALARY IS NOT NULL) THEN
+				                                        (CASE
+				                                          WHEN T.AVG_SALARY > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.AVG_SALARY < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.AVG_SALARY
+				                                        END)
+				                                     END SSS
+				                                FROM PA_BEN_BENCHMARK B
+				                               WHERE B.VERSION_DATE =
+				                                     (SELECT MAX(VERSION_DATE)
+				                                        FROM PA_BEN_BENCHMARK)
+				                                 AND B.INSURANCE_CODE = 'InsuranceTpye103'
+				                                 AND B.REG_TYPE_CODE =
+				                                     (SELECT P.REG_TYPE_CODE
+				                                        FROM HR_PERSONAL_INFO P
+				                                       WHERE P.PERSON_ID = T.EMPID)),
+				                              0),
+				       T.UNEMP_BASE     = NVL((SELECT CASE
+				                                       WHEN (T.AVG_SALARY IS NULL) THEN
+				                                        (CASE
+				                                          WHEN T.JOIN_VALUE > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.JOIN_VALUE < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.JOIN_VALUE
+				                                        END)
+				                                       WHEN (T.AVG_SALARY IS NOT NULL) THEN
+				                                        (CASE
+				                                          WHEN T.AVG_SALARY > B.UPPER_LIMIT THEN
+				                                           B.UPPER_LIMIT
+				                                          WHEN T.AVG_SALARY < B.LOWER_LIMIT THEN
+				                                           B.LOWER_LIMIT
+				                                          ELSE
+				                                           T.AVG_SALARY
+				                                        END)
+				                                     END SSS
+				                                FROM PA_BEN_BENCHMARK B
+				                               WHERE B.VERSION_DATE =
+				                                     (SELECT MAX(VERSION_DATE)
+				                                        FROM PA_BEN_BENCHMARK)
+				                                 AND B.INSURANCE_CODE = 'InsuranceTpye104'
+				                                 AND B.REG_TYPE_CODE =
+				                                     (SELECT P.REG_TYPE_CODE
+				                                        FROM HR_PERSONAL_INFO P
+				                                       WHERE P.PERSON_ID = T.EMPID)),
+				                              0),
+				       T.BASELINE      =
+				       (SELECT CASE
+				                 WHEN (T.AVG_SALARY IS NULL) THEN
+				                  (CASE
+				                    WHEN T.JOIN_VALUE > MIN(B.UPPER_LIMIT) THEN
+				                     'Max'
+				                    WHEN T.JOIN_VALUE < MAX(B.LOWER_LIMIT) THEN
+				                     'Min'
+				                    ELSE
+				                     ''
+				                  END)
+				                 WHEN (T.AVG_SALARY IS NOT NULL) THEN
+				                  (CASE
+				                    WHEN T.AVG_SALARY > MIN(B.UPPER_LIMIT) THEN
+				                     'Max'
+				                    WHEN T.AVG_SALARY < MAX(B.LOWER_LIMIT) THEN
+				                     'Min'
+				                    ELSE
+				                     ''
+				                  END)
+				               END SSS
+				          FROM PA_BEN_BENCHMARK B
+				         WHERE B.VERSION_DATE =
+				               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+				           AND B.INSURANCE_CODE IN ('124929',
+				                                    '124930',
+				                                    '124931',
+				                                    '124932',
+				                                    '124933')
+				           AND B.REG_TYPE_CODE =
+				               (SELECT P.REG_TYPE_CODE
+				                  FROM HR_PERSONAL_INFO P
+				                 WHERE P.PERSON_ID = T.EMPID)
+				         GROUP BY B.VERSION_DATE)
+				 WHERE to_char(t.create_date, 'yyyymm') = #yearMonth#
+			  ]]>
+	</update>
+	<delete id="deleteBenchmarkStandard1">
+		<![CDATA[
+				DELETE FROM PA_BEN_BENCHMARK T
+				 WHERE T.VERSION_DATE IS NULL
+		]]>
+	</delete>
+	<insert id="insertBenchmarkStandard" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO  PA_BEN_BENCHMARK
+			(
+						 PA_BEN_BENCH_SEQ,
+			             INSURANCE_CODE,
+			             REG_TYPE_CODE,
+			             UPPER_LIMIT,
+			             LOWER_LIMIT,
+			             COR_RATE,
+			             PER_RATE,
+	     				 COR_VALUE,
+	     				 PER_VALUE,
+	     				 CREATE_DATE,
+	     				 CREATED_BY,
+	     				 ACTIVITY
+			)VALUES(
+						 PA_BEN_BENCH_SEQ.NEXTVAL,
+			             #insturanceCode:VARCHAR#,
+			             #regTypeCode:VARCHAR#,
+			             #upperLimit#,
+			             #lowerLimit#,
+			             #corRate#,
+			             #perRate#,
+			             #corValue#,
+			             #perValue#,
+			             SYSDATE,
+			             #adminID#,
+			             1
+			) 
+		]]>
+	</insert>
+	<select id="getPaBenStandardNotSerious" parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		SELECT T.PA_BEN_BENCH_SEQ,
+		       T.INSURANCE_CODE,
+		       C.CONTENT AS INSURANCE_NAME,
+		       T.REG_TYPE_CODE,
+		       C1.CONTENT AS REG_TYPE_NAME,
+		       TO_CHAR(VERSION_DATE,'YYYY-MM-DD') AS VERSION_DATE,
+		       T.UPPER_LIMIT,
+		       T.LOWER_LIMIT,
+		       T.COR_RATE,
+		       T.PER_RATE      
+		  FROM PA_BEN_BENCHMARK T,
+		       sy_global_name C,
+		       sy_global_name C1
+		 WHERE T.INSURANCE_CODE = C.NO
+		   AND T.REG_TYPE_CODE = C1.NO
+		   AND T.INSURANCE_CODE IN ('124929',
+				                    '124930',
+				                    '124931',
+				                    '124932',
+				                    '124933')
+		<isNotEmpty prepend="AND" property="versionDate">
+				TO_CHAR(T.VERSION_DATE,'YYYY-MM-DD') = #versionDate#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="versionDate">
+				T.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+		</isEmpty>
+		ORDER BY T.INSURANCE_CODE,T.REG_TYPE_CODE
+	</select>
+	<select id="getPaBenStandardSerious" parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		SELECT T.PA_BEN_BENCH_SEQ,
+		       T.INSURANCE_CODE,
+		       C.CONTENT AS INSURANCE_NAME,
+		       T.REG_TYPE_CODE,
+		       C1.CONTENT AS REG_TYPE_NAME,
+		       TO_CHAR(VERSION_DATE,'YYYY-MM-DD') AS VERSION_DATE,
+		       T.COR_VALUE,
+		       T.PER_VALUE      
+		  FROM PA_BEN_BENCHMARK T,
+		       sy_global_name C,
+		       sy_global_name C1
+		 WHERE T.INSURANCE_CODE = C.NO
+		   AND T.REG_TYPE_CODE = C1.NO
+		   AND T.INSURANCE_CODE = '124934'
+		<isNotEmpty prepend="AND" property="versionDate">
+				TO_CHAR(T.VERSION_DATE,'YYYY-MM-DD') = #versionDate#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="versionDate">
+				T.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+		</isEmpty>
+		ORDER BY T.INSURANCE_CODE,T.REG_TYPE_CODE
+	</select>
+	<delete id="deleteDataFromPaBenBase">
+		<![CDATA[
+				DELETE FROM PA_BEN_BASE T
+				  WHERE T.IMP_TYPE = 'N'
+		]]>
+	</delete>
+	<insert id="copyDataToPaBenBase" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BEN_BASE
+			  (PA_BEN_BASE_SEQ,
+			   PERSON_ID,
+			   SOCIAL_NO,
+			   AVG_SALARY,
+			   PAY_SALARY,
+			   SOCIAL_STATUS,
+			   IMP_TYPE,
+			   CREATE_DATE,
+			   CREATED_BY,
+			   ACTIVITY)
+			  (SELECT PA_BEN_BASE_SEQ.NEXTVAL,
+			          T.PERSON_ID,
+			          T.SOCIAL_NO,
+			          T.AVG_SALARY,
+			          T.AVG_SALARY,
+			          T.SOCIAL_STATUS,
+			          'N',
+			          SYSDATE,
+			          #adminID#,
+			          1
+			     FROM PA_BEN_MANAGE T,HR_EMPLOYEE E
+ 				WHERE TO_CHAR(T.CREATE_DATE, 'yyyymm') =  #pabDate#
+ 				  AND T.PERSON_ID = E.PERSON_ID
+			      AND T.PERSON_ID NOT IN(SELECT T.PERSON_ID FROM PA_BEN_BASE B)
+			    ]]>
+				    <isNotEmpty prepend="AND" property="leftDate">
+				    <![CDATA[
+						(E.DATE_LEFT IS NULL
+				      OR (E.DATE_LEFT IS NOT NULL AND E.DATE_LEFT >= TO_DATE(#leftDate:DATE#,'YYYY-MM-DD')))
+				]]>
+					</isNotEmpty>
+					<![CDATA[
+			      )
+			]]>
+	</insert>
+	<delete id="deletePaBenBaseWrongEmp" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_BASE T WHERE T.PA_BEN_BASE_SEQ=#id# 
+			  ]]>
+	</delete>
+	
+	<update id="updatePaBenBaseAvgSalary" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BEN_BASE
+			      SET AVG_SALARY = #avgSalary#,
+			      	  ALLOW_UPDATE = ''
+				WHERE EMPID = #empID#
+			  ]]>
+	</update>
+	<select id="getMaxYearMonthOfCompution" parameterClass="linkMap" resultClass="string">
+		SELECT MAX(F.PA_MONTH) FROM PA_BEN_FLAG F
+	</select>
+	<select id="afterComputationAffirm" parameterClass="linkMap" resultClass="string">
+		SELECT A.ACTIVITY
+		  FROM PA_APPLY A
+		 WHERE A.PA_MONTH = #yearMonth:VARCHAR#
+		   AND A.PA_TYPE = #paType:VARCHAR#
+		   AND A.ACTIVITY != 2
+	</select>
+	<select id="paBenBaseNumOrderCount" parameterClass="linkMap" resultClass="int">
+		SELECT COUNT(B.EMPID) FROM PA_BEN_BASE B
+	</select>
+	<select id="paBenBaseNumTrueOrderCount" parameterClass="linkMap" resultClass="int">
+		SELECT COUNT(B.EMPID)
+		  FROM PA_BEN_BASE B, PA_BEN_MANAGE M
+		 WHERE B.EMPID = M.EMPID
+		   AND TO_CHAR(M.CREATE_DATE, 'YYYYMM') = CASE
+		         WHEN (SELECT MAX(F.PA_MONTH) FROM PA_BEN_FLAG F) IS NULL THEN
+		          (SELECT MAX(TO_CHAR(CREATE_DATE, 'YYYYMM')) FROM PA_BEN_MANAGE)
+		         ELSE
+		          (TO_CHAR(ADD_MONTHS(TO_DATE((SELECT MAX(F.PA_MONTH)
+		                                        FROM PA_BEN_FLAG F),
+		                                      'YYYYMM'),
+		                              +1),
+		                   'YYYYMM'))
+		       END
+	</select>
+	<select id="getPaBenBaseNumOrderList"  parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		SELECT T.PA_BEN_BASE_SEQ,
+		       D.DEPTNAME,
+		       T.EMPID,
+		       E.CHINESENAME,
+		       P.IDCARD_NO,
+		       C.CODE_NAME AS REG_TYPE_CODE_NAME,
+		       C1.CODE_NAME AS POST_COEF_NAME,
+		       C2.CODE_NAME AS STATUS_CODE_NAME,
+		       to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS DATE_STARTED1,
+		       to_char(E.END_PRACTICE_DATE,'yyyy-mm-dd') AS DATE_STARTED,
+		       to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		       T.SOCIAL_NO,
+		       T.PAY_SALARY,
+		       T.AVG_SALARY,
+		       T.IMP_TYPE,
+		       T.DATE_TYPE,
+		       T.ERROR_REMARK
+		  FROM PA_BEN_BASE    T,
+		       HR_EMPLOYEE      E,
+		       HR_PERSONAL_INFO P,
+		       HR_DEPARTMENT    D,
+		       SY_CODE          C,
+		       SY_CODE          C1,
+		       SY_CODE          C2
+		 WHERE T.EMPID = E.EMPID
+		   AND E.EMPID = P.EMPID(+)
+		   AND E.DEPTID = D.DEPTID(+)
+		   AND P.REG_TYPE_CODE = C.CODE_ID(+)
+		   AND E.POST_COEF = C1.CODE_ID(+)
+		   AND E.STATUS_CODE = C2.CODE_ID(+)
+		   AND T.EMPID NOT IN
+		       (SELECT M.EMPID
+		          FROM PA_BEN_BASE B, PA_BEN_MANAGE M
+		         WHERE B.EMPID = M.EMPID
+		           AND TO_CHAR(M.CREATE_DATE, 'YYYYMM') = CASE
+		                 WHEN (SELECT MAX(F.PA_MONTH) FROM PA_BEN_FLAG F) IS NULL THEN
+		                  (SELECT MAX(TO_CHAR(CREATE_DATE, 'YYYYMM'))
+		                     FROM PA_BEN_MANAGE)
+		                 ELSE
+		                  (TO_CHAR(ADD_MONTHS(TO_DATE((SELECT MAX(F.PA_MONTH)
+		                                                FROM PA_BEN_FLAG F),
+		                                              'YYYYMM'),
+		                                      +1),
+		                           'YYYYMM'))
+		               END)
+		 ORDER BY E.DEPTID, T.EMPID ASC
+	</select>
+	<select id="getEmpidFromBaseAndManage"  parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		SELECT B.EMPID, B.AVG_SALARY, M.PA_BEN_MANAGE_SEQ
+		  FROM PA_BEN_BASE B, PA_BEN_MANAGE M
+		 WHERE B.EMPID = M.EMPID
+		   AND TO_CHAR(M.CREATE_DATE, 'YYYYMM') = CASE
+		         WHEN (SELECT MAX(F.PA_MONTH) FROM PA_BEN_FLAG F) IS NULL THEN
+		          (SELECT MAX(TO_CHAR(CREATE_DATE, 'YYYYMM')) FROM PA_BEN_MANAGE)
+		         ELSE
+		          (TO_CHAR(ADD_MONTHS(TO_DATE((SELECT MAX(F.PA_MONTH)
+		                                        FROM PA_BEN_FLAG F),
+		                                      'YYYYMM'),
+		                              +1),
+		                   'YYYYMM'))
+		       END
+	</select>
+	<update id="orderUpdatePaBenManageAvgSalary" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BEN_MANAGE T
+			   SET T.AVG_SALARY         = #avgSalary#,
+			       T.UPDATE_DATE        = SYSDATE,
+			       T.UPDATED_BY         = #adminID#,
+			       T.ENDOWMENT_BASE =
+		             NVL((SELECT CASE
+						            WHEN #avgSalary# > B.UPPER_LIMIT THEN
+						             B.UPPER_LIMIT
+						            WHEN #avgSalary# < B.LOWER_LIMIT THEN
+						             B.LOWER_LIMIT
+						            ELSE
+						             #avgSalary#
+						       END VALUE1
+					  FROM PA_BEN_BENCHMARK B
+					 WHERE B.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+					   AND B.INSURANCE_CODE = 'InsuranceTpye100'
+					   AND B.REG_TYPE_CODE = (SELECT P.REG_TYPE_CODE
+					                            FROM HR_PERSONAL_INFO P
+					                           WHERE P.EMPID = #empID#)),0),
+		             T.MEDICARE_BASE =
+		             NVL((SELECT CASE
+						            WHEN #avgSalary# > B.UPPER_LIMIT THEN
+						             B.UPPER_LIMIT
+						            WHEN #avgSalary# < B.LOWER_LIMIT THEN
+						             B.LOWER_LIMIT
+						            ELSE
+						             #avgSalary#
+						       END VALUE2
+					  FROM PA_BEN_BENCHMARK B
+					 WHERE B.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+					   AND B.INSURANCE_CODE = 'InsuranceTpye101'
+					   AND B.REG_TYPE_CODE = (SELECT P.REG_TYPE_CODE
+					                            FROM HR_PERSONAL_INFO P
+					                           WHERE P.EMPID = #empID#)),0),
+		             T.SHENGYU_BASE  =
+		             NVL((SELECT CASE
+						            WHEN #avgSalary# > B.UPPER_LIMIT THEN
+						             B.UPPER_LIMIT
+						            WHEN #avgSalary# < B.LOWER_LIMIT THEN
+						             B.LOWER_LIMIT
+						            ELSE
+						             #avgSalary#
+						       END VALUE3
+					  FROM PA_BEN_BENCHMARK B
+					 WHERE B.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+					   AND B.INSURANCE_CODE = 'InsuranceTpye102'
+					   AND B.REG_TYPE_CODE = (SELECT P.REG_TYPE_CODE
+					                            FROM HR_PERSONAL_INFO P
+					                           WHERE P.EMPID = #empID#)),0),
+		             T.COMPO_BASE    =
+		             NVL((SELECT CASE
+						            WHEN #avgSalary# > B.UPPER_LIMIT THEN
+						             B.UPPER_LIMIT
+						            WHEN #avgSalary# < B.LOWER_LIMIT THEN
+						             B.LOWER_LIMIT
+						            ELSE
+						             #avgSalary#
+						       END VALUE4
+					  FROM PA_BEN_BENCHMARK B
+					 WHERE B.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+					   AND B.INSURANCE_CODE = 'InsuranceTpye103'
+					   AND B.REG_TYPE_CODE = (SELECT P.REG_TYPE_CODE
+					                            FROM HR_PERSONAL_INFO P
+					                           WHERE P.EMPID = #empID#)),0),
+		             T.UNEMP_BASE    =
+		             NVL((SELECT CASE
+						            WHEN #avgSalary# > B.UPPER_LIMIT THEN
+						             B.UPPER_LIMIT
+						            WHEN #avgSalary# < B.LOWER_LIMIT THEN
+						             B.LOWER_LIMIT
+						            ELSE
+						             #avgSalary#
+						       END VALUE5
+					  FROM PA_BEN_BENCHMARK B
+					 WHERE B.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+					   AND B.INSURANCE_CODE = 'InsuranceTpye104'
+					   AND B.REG_TYPE_CODE = (SELECT P.REG_TYPE_CODE
+					                            FROM HR_PERSONAL_INFO P
+					                           WHERE P.EMPID = #empID#)),0),
+		             T.BASELINE      =
+		             (SELECT CASE
+						            WHEN #avgSalary# > MIN(B.UPPER_LIMIT) THEN
+						             'Max'
+						            WHEN #avgSalary# < MAX(B.LOWER_LIMIT) THEN
+						             'Min'
+						            ELSE
+						             ''
+						       END BASELINE
+					  FROM PA_BEN_BENCHMARK B
+					 WHERE B.VERSION_DATE = (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+					   AND B.INSURANCE_CODE IN ('InsuranceTpye100',
+					                            'InsuranceTpye101',
+					                            'InsuranceTpye102',
+					                            'InsuranceTpye103',
+					                            'InsuranceTpye104')
+					   AND B.REG_TYPE_CODE = (SELECT P.REG_TYPE_CODE
+					                            FROM HR_PERSONAL_INFO P
+					                           WHERE P.EMPID = #empID#)
+					 GROUP BY B.VERSION_DATE)
+			 WHERE T.PA_BEN_MANAGE_SEQ = #seq#
+			  ]]>
+	</update>
+	<!--  
+	<delete id="deletePaBenBaseWrongEmp" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_BASE T WHERE T.PA_BEN_BASE_SEQ=#id# 
+			  ]]>
+	</delete>
+		-->
+	<select id="paBenBaseNumOrderCount1" parameterClass="linkMap" resultClass="int">
+		SELECT COUNT(B.EMPID) FROM PA_BEN_BASE B
+	</select>
+	<select id="paBenBaseNumTrueOrderCount1" parameterClass="linkMap" resultClass="int">
+		SELECT COUNT(B.EMPID)
+		  FROM PA_BEN_BASE B, PA_BEN_MANAGE M
+		 WHERE B.EMPID = M.EMPID
+		   AND TO_CHAR(M.CREATE_DATE, 'YYYYMM') = CASE
+		         WHEN (SELECT MAX(F.PA_MONTH) FROM PA_BEN_FLAG F) IS NULL THEN
+		          (SELECT MAX(TO_CHAR(CREATE_DATE, 'YYYYMM')) FROM PA_BEN_MANAGE)
+		         ELSE
+		          (TO_CHAR(ADD_MONTHS(TO_DATE((SELECT MAX(F.PA_MONTH)
+		                                        FROM PA_BEN_FLAG F),
+		                                      'YYYYMM'),
+		                              +1),
+		                   'YYYYMM'))
+		       END
+	</select>
+	<procedure id="callPaBenBaseCheckCal" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_BEN_BASE_CHECK_CAL(#companyID#,#news,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<select id="getPaBenBaseNumCheckListDetail" parameterClass="linkMap" resultClass="linkMap">
+		SELECT T.PA_BEN_BASE_SEQ,
+			E.DEPTID,
+			D.DEPTNAME,
+			T.EMPID,
+			E.CHINESENAME,
+			P.IDCARD_NO,
+			P.REG_TYPE_CODE,
+			C.CODE_NAME AS REG_TYPE_CODE_NAME,
+			C1.CODE_NAME AS POST_COEF_NAME,
+			C2.CODE_NAME AS STATUS_CODE_NAME,
+			E.POST_COEF,
+			E.STATUS_CODE,
+			to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS DATE_STARTED1,					       
+			to_char(E.END_PRACTICE_DATE,'yyyy-mm-dd') AS DATE_STARTED,
+			to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+			T.SOCIAL_NO,
+			T.PAY_SALARY,
+			A.VALUE,
+			A.TYPE,
+			C3.CODE_NAME AS TYPENAME,
+			T.IMP_TYPE,
+			T.DATE_TYPE,
+			T.ERROR_REMARK
+		FROM PA_BEN_BASE T,
+			T_PA_BEN_CHECK_DETAIL A,
+			HR_EMPLOYEE E,
+			HR_PERSONAL_INFO P,
+			HR_DEPARTMENT D,
+			SY_CODE C,
+			SY_CODE C1,
+			SY_CODE C2,
+			SY_CODE C3
+		WHERE T.EMPID = E.EMPID
+			AND E.EMPID = P.EMPID(+)
+			AND E.EMPID = A.EMPID
+			AND E.DEPTID = D.DEPTID
+			AND P.REG_TYPE_CODE = C.CODE_ID(+)
+			AND E.POST_COEF = C1.CODE_ID(+)
+			AND E.STATUS_CODE = C2.CODE_ID(+)
+			AND A.TYPE = C3.CODE_ID(+)
+		<isNotEmpty prepend="AND" property="type">
+			A.TYPE = #type#
+		</isNotEmpty>
+		<isNotEmpty property="detailOrder">
+			$detailOrder$
+		</isNotEmpty>
+		<isEmpty property="detailOrder">
+			ORDER BY E.DEPTID, T.EMPID ASC
+		</isEmpty>
+	</select>
+	
+	<select id="getPaBenBaseNumCheckList" resultClass="linkMap">
+		SELECT T.TYPE, S.CONTENT, T.VALUE
+		  FROM T_PA_BEN_CHECK T, Sy_Global_Name S
+		 WHERE T.TYPE = S.NO
+		 ORDER BY T.TYPE
+	</select>
+	<update id="backPaBenBaseNumUpdate" parameterClass="linkMap">
+		<![CDATA[
+			   UPDATE PA_BEN_BASE
+			      SET ALLOW_UPDATE = ''
+			     WHERE ALLOW_UPDATE = 'Y'
+			  ]]>
+	</update>
+	<select id="getPaBenBaseNumList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">		
+		SELECT T.PA_BEN_BASE_SEQ,
+       D1.Content,
+       T.EMPID,
+       E.Local_Name,
+       CHANGER_IDNO(P.IDCARD_NO) IDCARD_NO,
+       C.CONTENT AS REG_TYPE_CODE_NAME,
+        <!-- 
+       		C1.CODE_NAME AS POST_COEF_NAME,
+        -->
+       C2.CONTENT AS STATUS_CODE_NAME,
+       to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS DATE_STARTED1,
+       to_char(E.Before_End_Probation_Date, 'yyyy-mm-dd') AS DATE_STARTED,
+       to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+       CHANGER_IDNO(T.SOCIAL_NO) SOCIAL_NO,
+       T.PAY_SALARY,
+       T.AVG_SALARY,
+       T.IMP_TYPE,
+       T.DATE_TYPE,
+       T.ERROR_REMARK
+  FROM PA_BEN_BASE      T,
+       HR_EMPLOYEE      E,
+       HR_PERSONAL_INFO P,
+       HR_DEPARTMENT    D,
+       sy_global_name          C,
+       sy_global_name          C1,
+       sy_global_name          C2,
+       sy_global_name          D1
+ WHERE T.EMPID = E.EMPID
+   AND E.EMPID = P.Person_Id(+)
+   AND E.DEPTNO=D.DEPTID
+   <!-- 
+ AND E.DEPTID = D.DEPTID
+-->  
+   AND P.REG_TYPE_CODE = C.NO(+)
+    <!-- 
+   AND E.POST_COEF = C1.NO(+)
+     -->
+   AND E.STATUS_CODE = C2.NO(+)
+   AND D.Deptid=D1.NO
+   AND D.Cpny_Id=#interLanguage:VARCHAR#
+	</select>
+</sqlMap>

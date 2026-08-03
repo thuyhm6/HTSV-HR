@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "sql-map-2.dtd" >
+<sqlMap namespace="is.stopInstance">
+
+	<select id="getPaBenStopInsureList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">		
+		SELECT T.PA_BEN_MANAGE_DEL_SEQ,
+		       GET_DEPT_NAME(D.DEPTNO,'zh') DEPTNAME, <!-- 部门名 -->
+		       T.EMPID,
+		       E.LOCAL_NAME  CHINESENAME, <!-- 员工名字-->
+		       P.SEXCODE SEX_CODE,
+	       		GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) SEX_NAME,
+		       P.IDCARD_NO,
+		       GET_GLOBAL_NAME(E.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+		        P.REG_TYPE_CODE,
+			   to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED,
+		       to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		       CHANGER_IDNO(T.SOCIAL_NO) SOCIAL_NO,
+		       T.END_DATE,
+		       SUBSTR(T.END_DATE, 1, 4) AS END_YEAR,
+		       SUBSTR(T.END_DATE, 5, 6) AS END_MONTH,
+		       T.DATE_TYPE,
+		       T.ERROR_REMARK
+		  FROM PA_BEN_MANAGE_DEL T,
+		       HR_EMPLOYEE       E,
+		       HR_PERSONAL_INFO  P,
+		       HR_DEPARTMENT     D,
+		        SY_GLOBAL_NAME C1,
+			SY_GLOBAL_NAME C2
+		 WHERE T.EMPID = E.EMPID
+		   AND E.PERSON_ID = P.PERSON_ID(+)
+		   AND E.DEPTNO = D.DEPTNO
+		  AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		and e.cpny_id= #companyID:VARCHAR#
+	</select>
+	
+	<select id="getPaBenStopInsureCnt" parameterClass="linkMap" resultClass="int">
+			SELECT COUNT(*)
+			 FROM PA_BEN_MANAGE_DEL T,
+		       HR_EMPLOYEE       E,
+		       HR_PERSONAL_INFO  P,
+		       HR_DEPARTMENT     D,
+		        SY_GLOBAL_NAME C1,
+			SY_GLOBAL_NAME C2
+		 WHERE T.EMPID = E.EMPID
+		   AND E.PERSON_ID = P.PERSON_ID(+)
+		   AND E.DEPTNO = D.DEPTNO
+		  AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and C1.LANGUAGE='zh'
+		and C2.LANGUAGE='zh'
+		and E.cpny_id= #companyID:VARCHAR#
+	</select>
+	
+	
+	<delete id="deleteStopInsureInfo" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_MANAGE_DEL T
+					WHERE T.PA_BEN_MANAGE_DEL_SEQ = #seq:VARCHAR#
+			  ]]>
+	</delete>
+	
+	<select id="getAllowPaBenStopInsureUpdate" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true" >		
+		SELECT T.PA_BEN_MANAGE_DEL_SEQ,
+		       GET_DEPT_NAME(D.DEPTNO,'zh') DEPTNAME, <!-- 部门名 -->
+		       T.EMPID,
+		       E.LOCAL_NAME  CHINESENAME, <!-- 员工名字-->
+		       P.SEXCODE SEX_CODE,
+	       		GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) SEX_NAME,
+		       P.IDCARD_NO,
+		       GET_GLOBAL_NAME(E.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+		        P.REG_TYPE_CODE,
+			   to_char(E.DATE_STARTED,'yyyy-mm-dd') AS DATE_STARTED,
+		       to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,
+		       CHANGER_IDNO(T.SOCIAL_NO) SOCIAL_NO,
+		       T.END_DATE,
+		       SUBSTR(T.END_DATE, 1, 4) AS END_YEAR,
+		       SUBSTR(T.END_DATE, 5, 6) AS END_MONTH,
+		       T.DATE_TYPE,
+		       T.ERROR_REMARK
+		  FROM PA_BEN_MANAGE_DEL T,
+		       HR_EMPLOYEE       E,
+		       HR_PERSONAL_INFO  P,
+		       HR_DEPARTMENT     D,
+		       SY_GLOBAL_NAME C1,
+		       SY_GLOBAL_NAME C2
+		 WHERE T.EMPID = E.EMPID
+		   AND E.PERSON_ID = P.PERSON_ID(+)
+		   AND E.DEPTNO = D.DEPTNO
+		    AND E.POST_NO = C1.NO(+)
+		  AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		AND e.cpny_id='C02'
+		AND T.ALLOW_UPDATE = 'Y'
+		and C1.LANGUAGE='zh'
+		and C2.LANGUAGE='zh'
+		ORDER BY D.DEPTNO, E.EMPID
+	</select>
+	
+	<update id="allowPaBenStopInsureUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BEN_MANAGE_DEL
+			      SET ALLOW_UPDATE = 'Y'
+				WHERE PA_BEN_MANAGE_DEL_SEQ = #id#
+			  ]]>
+	</update>
+	<update id="backPaBenStopInsureUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BEN_MANAGE_DEL
+			      SET ALLOW_UPDATE = ''
+			     WHERE ALLOW_UPDATE = 'Y'
+			  ]]>
+	</update>
+	<update id="updatePaBenManageAddInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE PA_BEN_MANAGE_DEL
+			   SET END_DATE        = #yearMonth#,
+			       UPDATE_DATE     = SYSDATE,
+			       UPDATED_BY      = #adminID#
+			 WHERE EMPID = #empID#
+			  ]]>
+	</update>
+	
+	<select id="getInsuranceAreaListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			 
+			 SELECT DISTINCT GET_DEPT_NAME(HD.DEPTNO,  #interLanguage:VARCHAR#) DEPTNAME, HD.DEPTNO,HD.PAY_AREA_CD,hd.orderno
+						   FROM HR_DEPARTMENT HD
+						  WHERE HD.CPNY_ID = #interCpnyID:VARCHAR#
+						    AND HD.DEPT_LEVEL = '2'
+						  START WITH HD.DEPTNO IN (SELECT DISTINCT T.DEPTNO
+						                             FROM PA_SUPERVISOR_INFO T
+						                            WHERE T.PERSON_ID = #supervisorPersonId:VARCHAR# )
+						 CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO 
+						 order siblings by orderno
+		]]>		
+	</select>
+	<!-- 10.20加查询CARRY_WAY（四舍五入） -->
+	<select id="getInsuranceParamDataChList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SS.DATA_NO,
+			       SS.CPNY_ID,
+			       SS.PAY_AREA_CD,
+			       GET_PAY_AREA_NAME(SS.PAY_AREA_CD, #CPNY_ID:VARCHAR#) PAY_AREA_NAME,
+			       SS.INSRAREA_ID,
+			       PAY.CONTENT INSRAREA_NAME,
+			       SS.INSURE_ID,
+			       ITEM.CONTENT INSURE_NAME,
+			       SS.INSURE_RATE,
+       			   SS.INSURE_VALUE,
+       			   SS.ACTIVITY,
+       			   SS.REMARK,
+			       SS.CREATED_BY,
+			       TO_CHAR(SS.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') CREATE_DATE,
+			       SS.UPDATED_BY,
+			       TO_CHAR(SS.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') UPDATE_DATE,
+			       SS.CARRY_WAY
+			  FROM IS_SETUP_INFO SS, SY_GLOBAL_NAME PAY, SY_GLOBAL_NAME ITEM
+			 WHERE SS.INSRAREA_ID = PAY.NO
+			   AND PAY.LANGUAGE = #interLanguage:VARCHAR#
+			   AND SS.INSURE_ID = ITEM.NO
+			   AND ITEM.LANGUAGE = #interLanguage:VARCHAR#
+		]]>				
+		<isNotEmpty prepend="and" property="CPNY_ID">
+			<![CDATA[				   
+				SS.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>   
+            <isEqual prepend="and" property="CPNY_ID" compareValue='TSTO'>
+				exists (
+					select 1 
+						from hr_department a ,
+						     pa_supervisor_info b
+						where a.deptno = b.deptno
+						  and a.dept_level = 2
+						  and a.pay_area_cd = SS.PAY_AREA_CD
+						  and b.person_id = #supervisorPersonId:VARCHAR#
+				)	  
+            </isEqual>
+		</isNotEmpty>			   
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[		
+			SS.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+			]]>   
+		</isNotEmpty>			   
+		<isNotEmpty prepend="and" property="INSRAREA_ID">
+			<![CDATA[			   
+			    SS.INSRAREA_ID = #INSRAREA_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="INSRAREA_NAME">
+			<![CDATA[			   
+			    ( PAY.CONTENT LIKE '%' || #INSRAREA_NAME:VARCHAR# || '%' OR SS.INSRAREA_ID LIKE '%' || #INSRAREA_NAME:VARCHAR# || '%' ) 
+			]]>   
+		</isNotEmpty>			   
+		<isNotEmpty prepend="and" property="INSURE_ID">
+			<![CDATA[			   
+			   	SS.INSURE_ID = #INSURE_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>	
+		<isNotEmpty prepend="and" property="INSURE_NAME">
+			<![CDATA[			   
+			   	( ITEM.CONTENT LIKE '%' || #INSURE_NAME:VARCHAR# || '%' OR SS.INSURE_ID LIKE '%' || #INSURE_NAME:VARCHAR# || '%' ) 
+			]]>   
+		</isNotEmpty>		   
+		<isNotEmpty prepend="and" property="ACTIVITY_FLAG">
+			<![CDATA[			   
+			   	SS.ACTIVITY = #ACTIVITY_FLAG:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DATA_NO">
+			<![CDATA[			   
+			   	SS.DATA_NO = #DATA_NO:VARCHAR#
+			]]>   
+		</isNotEmpty>			   
+		<![CDATA[			   
+			 ORDER BY SS.DATA_NO DESC
+		]]>		
+	</select>
+	
+	<select id="getInsuranceParamDataChCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1) 
+				  FROM IS_SETUP_INFO SS
+				 WHERE 1=1
+		]]>					
+		<isNotEmpty prepend="and" property="CPNY_ID">
+			<![CDATA[				   
+				SS.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>   
+            <isEqual prepend="and" property="CPNY_ID" compareValue='TSTO'>
+				exists (
+					select 1 
+						from hr_department a ,
+						     pa_supervisor_info b
+						where a.deptno = b.deptno
+						  and a.dept_level = 2
+						  and a.pay_area_cd = SS.PAY_AREA_CD
+						  and b.person_id = #supervisorPersonId:VARCHAR#
+				)	  
+            </isEqual>
+		</isNotEmpty>			   
+		<isNotEmpty prepend="and" property="PAY_AREA_CD">
+			<![CDATA[		
+			SS.PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+			]]>   
+		</isNotEmpty>		   
+		<isNotEmpty prepend="and" property="INSRAREA_ID">
+			<![CDATA[			   
+			    SS.INSRAREA_ID = #INSRAREA_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>			   
+		<isNotEmpty prepend="and" property="INSURE_ID">
+			<![CDATA[			   
+			   	SS.INSURE_ID = #INSURE_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>			   
+		<isNotEmpty prepend="and" property="ACTIVITY_FLAG">
+			<![CDATA[			   
+			   	SS.ACTIVITY = #ACTIVITY_FLAG:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DATA_NO">
+			<![CDATA[			   
+			   	SS.DATA_NO = #DATA_NO:VARCHAR#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<!-- 保险参数删除 -->
+	<delete id="deleteInsuranceParamData" parameterClass="linkMap">
+		<![CDATA[
+			DELETE IS_SETUP_INFO
+			 WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>  			
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[			   
+		   	   PAY_AREA_CD = #PAY_AREA_CD:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<![CDATA[
+			   AND INSRAREA_ID = #INSRAREA_ID:VARCHAR#
+			   AND INSURE_ID = #INSURE_ID:VARCHAR#
+		]]>
+	</delete>
+	
+	<!-- 保险参数添加 ,10.20添加四舍五入-->
+	<insert id="insertInsuranceParamData" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_SETUP_INFO
+				  (
+				   DATA_NO,
+				   CPNY_ID,
+			]]>  				   
+			<isNotEmpty prepend="" property="PAY_AREA_CD">
+				<![CDATA[			   
+			   	   PAY_AREA_CD,
+				]]>   
+			</isNotEmpty>
+			<![CDATA[	
+				   INSRAREA_ID,
+				   INSURE_ID,
+				   INSURE_RATE,
+				   INSURE_VALUE,
+				   
+				   REMARK,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CARRY_WAY
+				   )
+				VALUES
+				  (
+			        IS_SETUP_INFO_SEQ.NEXTVAL,
+			        #CPNY_ID#,
+			]]>  				   
+			<isNotEmpty prepend="" property="PAY_AREA_CD">
+				<![CDATA[			   
+			   	    #PAY_AREA_CD#,
+				]]>   
+			</isNotEmpty>
+			<![CDATA[
+			        #INSRAREA_ID#,
+			        #INSURE_ID#,
+			        #INSURE_RATE#,
+			        #INSURE_VALUE#,
+			        			
+			        #REMARK#,
+			        #ACTIVITY#,
+			        SYSDATE,
+			        #CREATED_BY#,
+			        #CARRY_WAY#
+			      )
+		]]>		
+	</insert>	
+	
+	<!-- 保险参数更新 10.20加四舍五入-->
+	<update id="updateInsuranceParamData" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE IS_SETUP_INFO
+			    SET INSURE_RATE = #INSURE_RATE:VARCHAR#,
+			        INSURE_VALUE = #INSURE_VALUE:VARCHAR#,
+			        REMARK = #REMARK:VARCHAR#,
+			        ACTIVITY = #ACTIVITY:VARCHAR#,
+			        CARRY_WAY = #CARRY_WAY:VARCHAR#
+			  WHERE DATA_NO = #DATA_NO:VARCHAR#
+		]]>
+	</update>
+	<!-- 10.20增加四舍五入 -->
+	<select id="getIsParamImportInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SS.DATA_NO,
+			       SS.CPNY_ID,
+			       SS.PAY_AREA_CD,
+			       SS.PAY_AREA_CD PAY_AREA_CD_CHECK,
+			       SS.INSRAREA_ID,
+			       SS.INSRAREA_ID INSRAREA_CHECK,
+			       SS.INSURE_ID,
+			       SS.INSURE_ID INSURE_CHECK,
+			       SS.INSURE_RATE,
+			       SS.INSURE_VALUE,
+			       SS.ACTIVITY,
+			       SS.REMARK,
+			       
+			       SS.CREATED_BY,
+			       TO_CHAR(SS.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       SS.UPDATED_BY,
+			       TO_CHAR(SS.UPDATE_DATE, 'YYYY-MM-DD') UPDATE_DATE,
+			       SS.UPLOAD_BY,
+			       TO_CHAR(SS.UPLOAD_DATE, 'YYYY-MM-DD') UPLOAD_DATE,
+			       SS.CHECK_FLAG,
+			       SS.CHECK_ERROR,
+			       SS.CARRY_WAY
+			  FROM IS_SETUP_INFO_TEMP SS
+			 WHERE 1 = 1
+		]]>				
+		<isNotEmpty prepend="and" property="CPNY_ID">
+			<![CDATA[				   
+				SS.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPLOAD_BY">
+		    <![CDATA[
+				SS.UPLOAD_BY = #UPLOAD_BY#
+	        ]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CHECK_FLAG">
+		    <![CDATA[
+				SS.CHECK_FLAG = #CHECK_FLAG#
+	        ]]>   
+		</isNotEmpty>
+		<![CDATA[			   
+			 ORDER BY SS.PAY_AREA_CD,SS.INSRAREA_ID,SS.INSURE_ID,SS.DATA_NO DESC
+		]]>		
+	</select>
+	
+	<select id="getIsParamImportInfoListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM IS_SETUP_INFO_TEMP SS WHERE 1 = 1
+		]]>				
+		<isNotEmpty prepend="and" property="CPNY_ID">
+			<![CDATA[				   
+				SS.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPLOAD_BY">
+		    <![CDATA[
+				SS.UPLOAD_BY = #UPLOAD_BY#
+	        ]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CHECK_FLAG">
+		    <![CDATA[
+				SS.CHECK_FLAG = #CHECK_FLAG#
+	        ]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getIsParamImportInfoListErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM IS_SETUP_INFO_TEMP SS WHERE 1 = 1 AND CHECK_FLAG = 1
+		]]>				
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[				   
+				SS.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>   
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="UPLOAD_BY">
+		    <![CDATA[
+				SS.UPLOAD_BY = #UPLOAD_BY#
+	        ]]>   
+		</isNotEmpty>
+	</select>
+	
+	<!-- 删除DATA_NO通过主键 -->
+	<delete id="delIsParamDataImportByNo" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM IS_SETUP_INFO_TEMP SS WHERE SS.DATA_NO = #DATA_NO#
+		]]>
+	</delete>
+	
+	<!-- 导入的保险参数插入正式表之前要删除之前的数据 -->
+	<delete id="delIsParamDataImportBatch" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM IS_SETUP_INFO SS WHERE 1 = 1
+			   AND CPNY_ID = #CPNY_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[			   
+		   	   PAY_AREA_CD = #PAY_AREA_CD#
+			]]>   
+		</isNotEmpty>
+		<![CDATA[	
+			  AND INSRAREA_ID = #INSRAREA_ID#
+			  AND INSURE_ID = #INSURE_ID#
+		]]>
+	</delete>
+	
+	<!-- 导入的保险参数插入到正式表中 -->
+	<insert id="addIsParamDataImport" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO IS_SETUP_INFO
+				  (
+				   DATA_NO,
+				   CPNY_ID,
+			]]>  				   
+			<isNotEmpty prepend="" property="PAY_AREA_CD">
+				<![CDATA[			   
+			   	   PAY_AREA_CD,
+				]]>   
+			</isNotEmpty>
+			<![CDATA[	
+				   INSRAREA_ID,
+				   INSURE_ID,
+				   INSURE_RATE,
+				   INSURE_VALUE,
+				   
+				   REMARK,
+				   ACTIVITY,
+				   CREATE_DATE,
+				   CREATED_BY
+				   )
+				VALUES
+				  (
+			        #DATA_NO#,
+			        #CPNY_ID#,
+			]]>  				   
+			<isNotEmpty prepend="" property="PAY_AREA_CD">
+				<![CDATA[			   
+			   	    #PAY_AREA_CD#,
+				]]>   
+			</isNotEmpty>
+			<![CDATA[
+			        #INSRAREA_ID#,
+			        #INSURE_ID#,
+			        #INSURE_RATE#,
+			        #INSURE_VALUE#,
+			        			
+			        #REMARK#,
+			        #ACTIVITY#,
+			        SYSDATE,
+			        #CREATED_BY#
+			      )
+		]]>		
+	</insert>	
+	
+	<!-- 更新导入保险参数临时表里的保险参数验证结果 -->
+	<update id="updateIsParamDataCheckResult" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE IS_SETUP_INFO_TEMP SS
+			   SET SS.CHECK_FLAG  = 1,
+			       SS.CHECK_ERROR = SS.CHECK_ERROR || #ERROR_CONTENT:VARCHAR#,
+			       UPDATE_DATE    = SYSDATE,
+			       UPDATED_BY     = #UPDATED_BY:VARCHAR#
+			 WHERE SS.DATA_NO = #DATA_NO:VARCHAR#
+		]]>
+	</update>
+	
+	<select id="getInsuranceAreaCheckListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT CPNY_ID, DEPTNO, PAY_AREA_CD
+			  FROM HR_DEPARTMENT
+			 WHERE PAY_AREA_CD IS NOT NULL
+		]]>  	
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[			   
+		   	       CPNY_ID = #CPNY_ID#
+				]]>   
+			</isNotEmpty>			   
+			<isNotEmpty prepend="AND" property="PAY_AREA_CD_CHECK">
+				<![CDATA[			   
+		   	       PAY_AREA_CD = #PAY_AREA_CD_CHECK#
+				]]>   
+			</isNotEmpty>
+		<![CDATA[
+			 GROUP BY CPNY_ID, PAY_AREA_CD, DEPTNO
+		]]>		
+	</select>
+	
+	<select id="getInsrareaCheckListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SP.CODE_NO, S1.CONTENT CODE_NAME
+			  FROM SY_CODE T, SY_CODE_PARAM SP, SY_GLOBAL_NAME S1
+			 WHERE T.PARENT_CODE_NO = '216736'
+			   AND T.CODE_NO = SP.CODE_NO
+			   AND T.CODE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = 'zh'
+			   AND T.ACTIVITY = 1
+		]]>  		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[			   
+	   	       SP.CPNY_ID = #CPNY_ID#
+			]]>   
+		</isNotEmpty>		   
+		<isNotEmpty prepend="AND" property="INSRAREA_CHECK">
+			<![CDATA[			   
+	   	       S1.CONTENT = #INSRAREA_CHECK#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<select id="getInsureCheckListByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SP.CODE_NO, S1.CONTENT CODE_NAME
+			  FROM SY_CODE T, SY_CODE_PARAM SP, SY_GLOBAL_NAME S1
+			 WHERE T.PARENT_CODE_NO = '219677'
+			   AND T.CODE_NO = SP.CODE_NO
+			   AND T.CODE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = 'zh'
+			   AND T.ACTIVITY = 1
+		]]>  		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[			   
+	   	       SP.CPNY_ID = #CPNY_ID#
+			]]>   
+		</isNotEmpty>		   
+		<isNotEmpty prepend="AND" property="INSURE_CHECK">
+			<![CDATA[			   
+	   	       S1.CONTENT = #INSURE_CHECK#
+			]]>   
+		</isNotEmpty>
+	</select>
+	
+	<!-- 删除临时表中所有导入的保险参数 -->
+	<delete id="cancelIsParamDataImport" parameterClass="linkMap">
+		<![CDATA[	
+			DELETE FROM IS_SETUP_INFO_TEMP SS WHERE SS.UPLOAD_BY = #UPLOAD_BY:VARCHAR#
+		]]>
+	</delete>
+	
+	<select id="getInsAreaInfoListByKey" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SP.CODE_NO,
+			       NVL(T.DESCRIPTION, '无') DESCRIPTION,
+			       T.DEPTH,
+			       NVL(T.ORDERNO, '') ORDERNO,
+			       T.PARENT_CODE_NO,
+			       S1.CONTENT CODE_NAME
+			  FROM SY_CODE T, SY_CODE_PARAM SP, SY_GLOBAL_NAME S1
+			 WHERE T.PARENT_CODE_NO = '216736'
+			   AND T.CODE_NO = SP.CODE_NO
+			   AND SP.CPNY_ID = 'TSTO'
+			   AND T.CODE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = 'zh'
+			   AND T.ACTIVITY = 1
+			   and rownum <= 100
+		]]>  		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[			   
+	   	       SP.CPNY_ID = #CPNY_ID#
+			]]>   
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="INSRAREA_ID">
+			<![CDATA[			   
+	   	       T.CODE_NO = #INSRAREA_ID#
+			]]>   
+		</isNotEmpty>	   
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[			   
+	   	       ( S1.CONTENT LIKE '%' || #KEY# || '%' OR SP.CODE_NO LIKE '%' || #KEY# || '%' )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		ORDER BY   NLSSORT(S1.CONTENT,'NLS_SORT = SCHINESE_PINYIN_M')
+		]]>
+	</select>
+	
+	<select id="getInsInsureInfoListByKey" parameterClass="linkMap" resultClass="linkMap" remapResults="true" >		
+		<![CDATA[
+			SELECT SP.CODE_NO,
+			       NVL(T.DESCRIPTION, '无') DESCRIPTION,
+			       T.DEPTH,
+			       NVL(T.ORDERNO, '') ORDERNO,
+			       T.PARENT_CODE_NO,
+			       S1.CONTENT CODE_NAME
+			  FROM SY_CODE T, SY_CODE_PARAM SP, SY_GLOBAL_NAME S1
+			 WHERE T.PARENT_CODE_NO = '219677'
+			   AND T.CODE_NO = SP.CODE_NO
+			   AND SP.CPNY_ID = #CPNY_ID#
+			   AND T.CODE_NO = S1.NO(+)
+			   AND S1.LANGUAGE(+) = 'zh'
+			   AND T.ACTIVITY = 1
+			   and rownum <= 100
+		]]>  		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[			   
+	   	       SP.CPNY_ID = #CPNY_ID#
+			]]>   
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="INSURE_ID">
+			<![CDATA[			   
+	   	       T.CODE_NO = #INSURE_ID#
+			]]>   
+		</isNotEmpty>	   
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[			   
+	   	       ( S1.CONTENT LIKE '%' || #KEY# || '%' OR SP.CODE_NO LIKE '%' || #KEY# || '%' )
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		ORDER BY   NLSSORT(S1.CONTENT,'NLS_SORT = SCHINESE_PINYIN_M')
+		]]>
+	</select>
+</sqlMap>

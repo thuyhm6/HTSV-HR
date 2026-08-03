@@ -1,0 +1,94 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java"
+	errorPage=""%>
+<%@page import="com.ait.sys.service.ToolMenuSer"%>
+<%@page import="com.ait.sys.service.impl.ToolMenuSerImpl"%>
+<%@ include file="/WEB-INF/view/inc/initTaglibs.jsp"%>
+
+<div class="pageHeader">
+<form id="viewEmpInfo" onsubmit="return navTabSearch(this);" action="/hrm/empinfo/viewPerConversionList" method="post" rel="pagerForm">
+<div class="searchBar">
+<table class="searchContent">
+	<tr>
+		<td><!-- 部门： --> <spring:message
+			code="hr.viewPersonalInfo.title.DEPTNAME" /> 
+		</td>
+		<td>
+			<ait:deptList name="seach_DEPTNO" cpnyId="${defaultCpny}" limit="hr" id="viewPerConversionList_seachDept"/>
+			<ait:deptTreeIcon name="seach_DEPTNO" cpnyId="${defaultCpny}" limit="hr" id="viewPerConversionList_seachDept" selected="${DEPTNO}"/></td>
+		<td><!-- 工号/姓名： --> <spring:message
+			code="hr.viewContractByInsert.title.EMPIDANDLOCALNAME" /> 
+		</td>
+		<td><input
+			type="text" name="seach_KEY" value="${KEY}" /></td>
+	</tr>
+</table>
+<div class="subBar">
+			<ul>
+				<li>
+					<div class="buttonActive">
+						<div class="buttonContent">
+							<button type="submit">
+								<spring:message code="public.title.search"/><!-- 检索 -->
+							</button>
+						</div>
+					</div>
+				</li>
+			</ul>
+</div>
+</div>
+</form>
+</div>
+
+
+<div class="pageContent">
+	<div layoutH="10" style="float:left; display:block; overflow:auto; width:350PX;; border:solid 1px #CCC; line-height:21px; background:#fff">
+		<table class="table" width="101.8%" layoutH="173">
+			<thead>
+			Total:${totalcount }
+				<tr>
+					<th width="20%">No.</th>
+					<th width="20%">姓名</th>
+					<th width="20%">
+					<input id="" name="" type="checkbox">
+					主要联络处与否
+					</th>
+					<th width="20%">关系</th>
+					<th width="20%">联系电话</th>
+					<th width="20%">电话号码2</th>
+					<th width="20%">E-Mail</th>
+					<th width="20%">变更者</th>
+					<th width="20%">变更时间</th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach items="${hrEmergencyAddressList}" var="item" varStatus="i">
+		
+						<tr onclick="openOnRight('/hrm/empinfo/viewSingleHrEmergencyAddress?pageNum=1&menuNo=2540&navTabId=hr0101&PERSON_ID=${item.PERSON_ID}&EMERGENCY_NO=${item.EMERGENCY_NO }','viewEmpinfoEdit_hr0101');">
+						<td style="text-align:left">${i.count}</td>
+						<td style="text-align:left">${item.EMER_NAME}</td>
+						<td style="text-align:left">
+						<c:if test="${item.MAIN_LIAISON_OFFICE=='Y'}">
+						<input type="checkbox"  checked="checked" id="cMain_${item.EMERGENCY_NO }" onclick="return false" >
+						</c:if>
+						<c:if test="${item.MAIN_LIAISON_OFFICE=='N'}">
+						<input type="checkbox"  id="cMain_${item.EMERGENCY_NO }" onclick="return false">
+						</c:if>
+						</td>
+						<td style="text-align:left">${item.EMER_TYPE_CODE_NAME}</td>
+						<td style="text-align:left">${item.EMER_PHONE}</td>
+						<td style="text-align:left">${item.EMER_PHONE_SECOND}</td>
+						<td class='td_center' >${item.EMER_EMAIL}</td>
+						<td class='td_center' >${item.UPDATED_BY}&nbsp&nbsp${item.UPDATED_IP}</td>
+						<td class='td_center' >${item.UPDATE_DATE}</td>
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>
+		<%-- <c:set value="/hrm/empinfo/viewPerConversionList" var="pageUrl"/> --%>
+		<%@ include file="/WEB-INF/view/inc/initPagination11.jsp"%>
+	</div>
+	<div id="viewEmpinfoEdit_hr0101" class="unitBox" style="margin-left:370px;">
+		<div class="pageContent" style="border-left:1px #B8D0D6 solid;border-right:1px #B8D0D6 solid">
+		</div>
+	</div>
+</div>

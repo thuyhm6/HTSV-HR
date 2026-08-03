@@ -1,0 +1,4 @@
+select * from att_item
+select * from ATT_ITEM_PARAM
+select * from SYS_CODE_INTL
+select * from SYS_CODE

@@ -1,0 +1,126 @@
+/*.middle{
+	width: 1200px;
+	margin: 0px auto;
+}*/
+.middle .leftMenu{
+	width: 186px;
+	height: 100%;
+	background: #2a4c7a;
+	float: left;
+	position:absolute;
+}
+
+/*隐藏菜单后的样式*/
+.middle .hidLeftMenu{
+	display: none;
+	padding-top: 0px;
+	width: 40px;
+	height: 1650px;
+	background-color: #dc6428;
+	float: left;
+	border-right: 1px solid #c14101;
+}
+.middle .hidLeftMenu .hidTitle{
+	color: #5AD1F2;
+	width: 20px;
+	margin-top: 20px;
+	line-height: 50px;
+	margin-left: 10px;
+	font-size: 20px;
+}
+.middle .hidLeftMenu .openMenu{
+	margin-left: 12px;
+	cursor: pointer;
+}
+/*隐藏菜单后的样式--结束*/
+
+.middle .leftMenu .topMenu{
+	height: 42px;
+	background: #2a4c7a;
+}
+.middle .leftMenu .topMenu img{
+	margin: 11px;
+	float:right;
+}
+.middle .leftMenu .topMenu .changeMenu{
+	cursor: pointer;
+}
+.middle .leftMenu .topMenu .banshi{
+	padding-left: 23px;
+}
+.middle .leftMenu .topMenu .menuTitle{
+	text-align: center;
+	color: #F2F2F2;
+	float: left;
+	line-height: 42px;
+	font-size: 16px;
+	width: 120px;
+}
+.menu_list {
+	width: 186px;
+	background: #2a4c7a;
+	padding-bottom:60px;
+	float:left;
+}
+.menu_list ul{width: 100%;
+	float:left;}
+.menu_list ul li{
+	display: block;
+	text-align: center;
+	width: 100%;
+	float:left;
+	position:relative;
+	border-bottom: 1px solid #0e2f62;
+	background:#1262ae;
+}
+.menu_list ul li .fuMenu{
+	color: #F2F2F2;
+	font-size: 14px;
+	cursor: pointer;
+	height: 42px;
+	line-height: 42px;
+	text-align:left;
+	width: 166px;
+	padding-left:20px;
+	float: left;
+	overflow:hidden;
+}
+.menu_list ul li .fuMenu_tb{ float:right; background:url(../images/fuMenu_tb.png) no-repeat; width:10px; height:16px; position:absolute; right:11px; top:13px;}
+.menu_list ul li .xiala{
+	float: left;
+	margin-left: -50px;
+	margin-top: 27px;
+}
+.menu_list ul li .div1 {
+	width: 100%;
+	height: auto;
+	float: left;
+}
+.menu_list ul li .div1 .zcd{
+	color: #8da9ce;
+	font-size: 14px;
+	height: 46px;
+	background-color: #2a4c7a;
+	border-bottom:1px solid #0e2f62
+	/*margin-bottom: 2px;*/
+	cursor: pointer;
+	line-height: 46px;
+	text-align:left;
+	width:186px;
+	padding-left:20px;
+	display: block;
+}
+.div1 {
+	height: 200px;
+	display: none;
+}
+.menu_list ul li .div1 .zcd:hover{
+	color: #FFFFFF;
+	background-color: #1a3a69;
+}
+.removes{
+	color: #0FB9EF !important;
+	border-left: 16px solid #0FB9EF;
+}
+.hidLeftMenu a{ display:block; width:100%; height:100%; margin-left:0px !important; position:relative;}
+.hidLeftMenu a img{ position:absolute; left:50%; float:left; width:16px; height:16px; margin-left:-8px; top:20%;}

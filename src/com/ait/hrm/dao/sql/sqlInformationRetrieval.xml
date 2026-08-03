@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.informationRetrieval">	
+
+    <!-- 过滤权限 start  
+		<isNotEmpty prepend="AND" property="specialParam">
+		<isNotEqual prepend="" property="specialParam" compareValue="general">
+			<![CDATA[
+		   		HR.DEPTNO IN  
+             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HR.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+		</isNotEmpty>
+   	 过滤权限 end -->
+    
+
+
+
+	     	<select id="getEmpRetrieveShowCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		             <![CDATA[
+		      
+		         $CondSqlCnt$
+		       ]]>
+		       <!-- 过滤权限 start -->
+				<isNotEmpty prepend="AND" property="specialParam">
+				<isNotEqual prepend="" property="specialParam" compareValue="general">
+					<![CDATA[
+				   		HR_EMPLOYEE_V.DEPTNO IN  
+		             ]]>
+		            	<include refid="sys.include.getDataPermission"/>
+		            </isNotEqual>
+		            <isEqual prepend="" property="specialParam" compareValue="general">
+					    HR_EMPLOYEE_V.PERSON_ID = #ADMIN_ID:VARCHAR#
+		            </isEqual>
+				</isNotEmpty>
+		   		 <!-- 过滤权限 end -->
+    
+	        </select>
+	        
+	        
+	      
+	        <select id="getEmpRetrieveShowList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		      <![CDATA[
+		      
+		         $CondSql$
+		       ]]>
+		       <!-- 过滤权限 start -->
+				<isNotEmpty prepend="AND" property="specialParam">
+				<isNotEqual prepend="" property="specialParam" compareValue="general">
+					<![CDATA[
+				   		HR_EMPLOYEE_V.DEPTNO IN  
+		             ]]>
+		            	<include refid="sys.include.getDataPermission"/>
+		            </isNotEqual>
+		            <isEqual prepend="" property="specialParam" compareValue="general">
+					    HR_EMPLOYEE_V.PERSON_ID = #ADMIN_ID:VARCHAR#
+		            </isEqual>
+				</isNotEmpty>
+		   		 <!-- 过滤权限 end -->
+    
+	        </select>
+	        <select id="getInfoFieldByTableNameList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		      <![CDATA[
+		      
+		             SELECT T.FIELD_ID, T.TABLE_ID, T.CODE_TYPE,
+		               
+		                get_global_name(T.FIELD_NAME, #interLanguage:VARCHAR#)  FIELD_NAME,
+		                T.SHOT_TABLE FROM INFO_FIELD T
+
+                       WHERE T.TABLE_ID=#TABLE_ID:VARCHAR# ORDER BY  T.ORDERNO
+		             
+		      
+		        ]]>
+		     </select> 
+		  <insert id="saveEmpRetrieveInfo" parameterClass="linkMap">
+		      <![CDATA[
+		           INSERT INTO HR_RETRIEVE_STORED(
+		                  HR_RETRIEVE_STORED_NO,
+                          PERSON_ID,
+                          CPNY_ID,
+                          RETRIEVE_TABLE_NO,
+                          CONDSQL,
+                          SQLKEY,
+                          COLNAME,
+                          CONDSQLCNT,
+                          CREATED_BY,
+                          CREATED_DATE )
+                   VALUES( HR_RETRIEVE_STORED_seq.Nextval,
+                          #PERSON_ID#,
+                          #CPNY_ID#,
+                          #RETRIEVE_TABLE_NO#,
+                          #CONDSQL#,
+                          #SQLKEY#,
+                          #COLNAME#,
+                          #CONDSQLCNT#,
+                          #CREATED_BY#,
+                          SYSDATE )            
+		     
+		        ]]>
+		 </insert> 
+		   <select id="getCustomerTableList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		      <![CDATA[
+		      
+		             SELECT T.HR_RETRIEVE_STORED_NO AS TABLE_NO , 
+		             get_global_name(T.RETRIEVE_TABLE_NO, #interLanguage:VARCHAR#) AS  TABLE_NAME  
+		             FROM HR_RETRIEVE_STORED T 
+		             WHERE T.PERSON_ID=#PERSON_ID# AND T.CPNY_ID=#CPNY_ID#
+
+                    
+		             
+		              
+		        ]]>
+		     </select> 
+		       <select id="getCodeParamList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		      <![CDATA[
+		      
+		            SELECT SP.CODE_NO,
+				             T.DESCRIPTION,
+				             T.DEPTH,
+				             T.ORDERNO,
+				             T.PARENT_CODE_NO,
+				             S1.CONTENT CODE_NAME
+				        FROM SY_CODE        T,
+				             SY_CODE_PARAM  SP,
+				             SY_GLOBAL_NAME S1
+				       WHERE T.PARENT_CODE_NO = #PARENT_CODE_NO#
+				         AND T.CODE_NO = SP.CODE_NO
+				         AND SP.CPNY_ID = #CPNY_ID#
+				         AND T.CODE_NO = S1.NO(+)
+				         AND S1.LANGUAGE(+)= #interLanguage:VARCHAR#
+				         AND T.ACTIVITY = 1
+
+                    
+		             
+		              
+		        ]]>
+		     </select> 
+		     
+		     
+		       <select id="getCustomerTableListByNO" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		      <![CDATA[
+		      
+		             SELECT     T.CONDSQL,
+                                T.SQLKEY,
+                                T.COLNAME,T.CONDSQLCNT,T.RETRIEVE_TABLE_NO,
+		             get_global_name(T.RETRIEVE_TABLE_NO, #interLanguage:VARCHAR#) AS  TABLE_NAME  
+		             FROM HR_RETRIEVE_STORED T 
+		             WHERE T.HR_RETRIEVE_STORED_NO=#NO#
+
+         
+		        ]]>
+		     </select> 
+		        <delete id="deleteCustTable" parameterClass="linkMap"  >
+		      <![CDATA[
+		              DELETE FROM HR_RETRIEVE_STORED T 
+		             WHERE T.HR_RETRIEVE_STORED_NO=#NO#
+                  ]]>
+		     </delete> 
+		     
+		         <select id="getCustTableSyGlobalNoById" parameterClass="linkMap" resultClass="linkMap" >
+		      <![CDATA[
+		      
+		             SELECT     T.RETRIEVE_TABLE_NO as NO 
+		            
+		             FROM HR_RETRIEVE_STORED T 
+		             WHERE T.HR_RETRIEVE_STORED_NO=#NO#
+
+         
+		        ]]>
+		     </select> 
+		     
+  <select id="getPostGradeForCheckBoxList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.POST_NO CODE_NO,
+			       SY.CONTENT CODE_NAME,
+			       '0' PARENT_CODE_NO
+			  FROM HR_POST_GRADE  T,
+			       SY_GLOBAL_NAME SY
+			 WHERE T.POST_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+   	   	]]>
+    </select>
+    
+    <select id="getPostForCheckBoxList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.POST_NO CODE_NO,
+			       SY.CONTENT CODE_NAME,
+			        '0' PARENT_CODE_NO
+			  FROM HR_POST    T,
+			       SY_GLOBAL_NAME SY
+			 WHERE T.POST_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ACTIVITY = 1
+			  ]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[	ORDER BY T.ORDERNO   ]]>	 
+	</select>
+	
+	<select id="getDutyForCheckBoxList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.DUTY_NO CODE_NO,
+			       SY.CONTENT CODE_NAME,
+			       '0' PARENT_CODE_NO
+			  FROM HR_DUTY    T,
+			       SY_GLOBAL_NAME SY
+			 WHERE T.DUTY_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ACTIVITY = 1
+			  ]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+		</isNotEmpty>	
+		<![CDATA[	ORDER BY T.ORDERNO   ]]>	 
+	</select>
+	
+	<select id="getPositionForCheckBoxList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.POSITION_NO CODE_NO,
+			       SY.CONTENT CODE_NAME,
+			       '0' PARENT_CODE_NO
+			  FROM HR_POSITION    T,
+			       SY_GLOBAL_NAME SY
+			 WHERE T.POSITION_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				T.CPNY_ID = #CPNY_ID:VARCHAR#
+		</isNotEmpty>		 
+	</select>
+	<!-- <isNotEmpty prepend="AND" property="CPNY_ID">
+				
+		</isNotEmpty> -->
+		
+		<sql id="EmpIdRetrieveL">
+	
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				HE.EMPID LIKE '%' ||#EMPID:VARCHAR#||'%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="LOCAL_NAME">
+			<![CDATA[
+				HE.LOCAL_NAME LIKE '%' ||#LOCAL_NAME:VARCHAR#||'%'
+			]]>
+		</isNotEmpty>
+		
+		
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				EXISTS (
+					SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=HE.DEPTNO
+	                 	START WITH B1.DEPTNO = #DEPTNO#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+			]]>
+		</isNotEmpty>
+		</sql>
+		<!-- 查询当前法人的人员信息 -->
+	<select id="getEmpIdRetrieveList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				 SELECT HE.EMPID,
+	              HE.PERSON_ID,
+	              HE.LOCAL_NAME,
+	              HD.CONTENT DEPTNAME
+	        	 FROM HR_EMPLOYEE HE,
+	             HR_DEPARTMENT_NAME HD      
+	      		 WHERE HE.DEPTNO = HD.DEPTNO(+)
+	        	 AND HD.LANGUAGE = #language:VARCHAR#
+	        	 AND HE.CPNY_ID =  #CPNY_ID:VARCHAR#
+			  ]]>
+			<include refid="EmpIdRetrieveL"/>
+		<![CDATA[	ORDER BY HE.EMPID   ]]>	 
+	</select>
+	<!-- 查询当前法人的人员信息  数量 -->
+	<select id="getEmpIdListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(HE.EMPID),
+	        	 FROM HR_EMPLOYEE HE,
+	             HR_DEPARTMENT_NAME HD      
+	      		 WHERE HE.DEPTNO = HD.DEPTNO(+)
+	        	 AND HD.LANGUAGE = #language:VARCHAR#
+	        	 AND HE.CPNY_ID =  #CPNY_ID:VARCHAR#
+		]]>
+		
+		<include refid="EmpIdRetrieveL"/>
+	</select>
+	
+</sqlMap>

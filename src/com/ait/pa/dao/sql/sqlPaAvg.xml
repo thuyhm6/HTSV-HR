@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.basic">
+	
+ 	<sql id="paSearchEmployeeListCondition" >
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.Deptno = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.Deptno = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.Deptno = HR_DEPARTMENT.Parent_Dept_No
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_ADMIN_ID">
+			<![CDATA[
+						EXISTS (SELECT *
+						          FROM AR_SUPERVISOR_INFO
+						         WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+						           AND AR_SUPERVISOR_NO = #AR_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="SELECT_TYPE">
+		   <isEqual property="SELECT_TYPE" compareValue="PA_INSURANCE" >
+	          	<![CDATA[	          	
+	          	    NOT EXISTS(SELECT *
+							     FROM $isSummeryTable$
+							    WHERE IS_MONTH = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.EMPID)
+
+		    	]]>
+	        </isEqual>
+	        
+	        <isEqual property="SELECT_TYPE" compareValue="PA_BONUS" >
+	          	<![CDATA[
+		 		  	 NOT EXISTS(SELECT *
+							     FROM $bnSummeryTable$
+							    WHERE BN_MONTH  = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.EMPID)
+		    	]]>
+	        </isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="getPaSearchEmployeeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT HR.EMPID,
+					       HR.PERSON_ID,
+					       HR.LOCAL_NAME,
+					       HR.CHINESE_PINYIN,
+					       HR.STATUS_CODE,
+					       SY0.CONTENT       AS STATUS_NAME,
+					       HR.DEPTNO,
+					       HD.CONTENT        DEPT_NAME,
+					       HR.POST_GRADE_ID,
+					       SY1.CONTENT       AS POST_NAME,
+					       HR.POST_ID,
+					       SY2.CONTENT       POSITION_NAME,
+					       HR.POSITION_ID,
+					       SY3.CONTENT       POST_GRADE_NAME
+					  FROM HR_EMPLOYEE        HR,
+					       HR_DEPARTMENT_NAME HD,
+					       SY_GLOBAL_NAME     SY0,
+					       HR_POST            HP0,
+					       HR_POSITION        HP1,
+					       HR_POST_GRADE      HP2,
+					       SY_GLOBAL_NAME     SY1,
+					       SY_GLOBAL_NAME     SY2,
+					       SY_GLOBAL_NAME     SY3
+					 WHERE HR.DEPTNO = HD.DEPTNO(+)
+					   AND HD.LANGUAGE = #interLanguage:VARCHAR#
+					   AND HR.STATUS_CODE = SY0.NO(+)
+					   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND HR.POST_ID = HP0.POST_ID(+)
+					   AND HP0.POST_NO = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND HR.POSITION_ID = HP1.POSITION_ID(+)
+					   AND HP1.POSITION_NO = SY2.NO(+)
+					   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND HR.POST_GRADE_ID = HP2.POST_GRADE_ID
+					   AND HP2.POST_GRADE_NO = SY3.NO(+)
+					   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+			 
+		]]>
+		
+		<include refid="paSearchEmployeeListCondition"/>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.Deptno, HR.EMPID
+			]]>
+		</isEmpty>
+		 
+	</select>
+	
+	<select id="getPaSearchEmployeeCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EMPLOYEE HR, HR_DEPARTMENT HD
+			 WHERE HR.Deptno = HD.Deptno
+			 
+		]]>
+		
+		<include refid="paSearchEmployeeListCondition"/>
+		 
+	</select>
+
+   <sql id="paSearchEmployeeForBonusListCondition" >
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.Deptno = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.Deptno = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.Deptno = HR_DEPARTMENT.Parent_Dept_No
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_ADMIN_ID">
+			<![CDATA[
+						EXISTS (SELECT *
+						          FROM AR_SUPERVISOR_INFO
+						         WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+						           AND AR_SUPERVISOR_NO = #AR_ADMIN_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="SELECT_TYPE">
+		   <isEqual property="SELECT_TYPE" compareValue="PA_INSURANCE" >
+	          	<![CDATA[	          	
+	          	    NOT EXISTS(SELECT *
+							     FROM $isSummeryTable$
+							    WHERE IS_MONTH = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.PERSON_ID)
+
+		    	]]>
+	        </isEqual>
+	        
+	        <isEqual property="SELECT_TYPE" compareValue="PA_BONUS" >
+	          	<![CDATA[
+		 		  	 NOT EXISTS(SELECT *
+							     FROM $bnSummeryTable$
+							    WHERE BN_MONTH  = #PA_MONTH:VARCHAR#
+							      AND PERSON_ID = HR.PERSON_ID)
+		    	]]>
+	        </isEqual>
+	
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="SELECT_TABLE">
+			<isEqual property="SELECT_TABLE" compareValue="BN_PERSON" >
+	          	<![CDATA[
+		 		  	 NOT EXISTS(SELECT * FROM BN_PERSONNEL
+                            WHERE PA_MONTH = #PA_MONTH:VARCHAR#
+							  AND PERSON_ID = HR.PERSON_ID)
+		    	]]>
+	        </isEqual>
+	    </isNotEmpty> 
+	        
+	</sql>
+
+	<select id="getPaSearchEmployeeForBonusList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					  SELECT HR.EMPID,
+					       HR.PERSON_ID,
+					       HR.LOCAL_NAME,
+					       HR.CHINESE_PINYIN,
+					       HR.STATUS_CODE,
+					       SY0.CONTENT       AS STATUS_NAME,
+					       HR.DEPTNO,
+					       HD.CONTENT        DEPT_NAME,
+					       HR.POST_GRADE_ID,
+					       SY1.CONTENT       AS POST_NAME,
+					       HR.POST_ID,
+					       SY2.CONTENT       POSITION_NAME,
+					       HR.POSITION_ID,
+					       SY3.CONTENT       POST_GRADE_NAME
+					  FROM HR_EMPLOYEE        HR,
+					       HR_DEPARTMENT_NAME HD,
+					       SY_GLOBAL_NAME     SY0,
+					       HR_POST            HP0,
+					       HR_POSITION        HP1,
+					       HR_POST_GRADE      HP2,
+					       SY_GLOBAL_NAME     SY1,
+					       SY_GLOBAL_NAME     SY2,
+					       SY_GLOBAL_NAME     SY3
+					 WHERE HR.DEPTNO = HD.DEPTNO(+)
+					   AND HD.LANGUAGE = #interLanguage:VARCHAR#
+					   AND HR.STATUS_CODE = SY0.NO(+)
+					   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND HR.POST_ID = HP0.POST_ID(+)
+					   AND HP0.POST_NO = SY1.NO(+)
+					   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND HR.POSITION_ID = HP1.POSITION_ID(+)
+					   AND HP1.POSITION_NO = SY2.NO(+)
+					   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND HR.POST_GRADE_ID = HP2.POST_GRADE_ID
+					   AND HP2.POST_GRADE_NO = SY3.NO(+)
+					   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 
+		]]>
+		
+		<include refid="paSearchEmployeeForBonusListCondition"/>
+		
+
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HR.Deptno, HR.EMPID
+			]]>
+		</isEmpty>		 
+	</select>
+	
+	<select id="getPaSearchEmployeeForBonusCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			   FROM HR_EMPLOYEE        HR,
+			       HR_DEPARTMENT_NAME HD,
+			       SY_GLOBAL_NAME     SY0,
+			       HR_POST            HP0,
+			       HR_POSITION        HP1,
+			       HR_POST_GRADE      HP2,
+			       SY_GLOBAL_NAME     SY1,
+			       SY_GLOBAL_NAME     SY2,
+			       SY_GLOBAL_NAME     SY3
+			 WHERE HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE = #interLanguage:VARCHAR#
+			   AND HR.STATUS_CODE = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.POST_ID = HP0.POST_ID(+)
+			   AND HP0.POST_NO = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.POSITION_ID = HP1.POSITION_ID(+)
+			   AND HP1.POSITION_NO = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.POST_GRADE_ID = HP2.POST_GRADE_ID
+			   AND HP2.POST_GRADE_NO = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#		 
+		]]>
+		
+		<include refid="paSearchEmployeeForBonusListCondition"/>
+		 
+	</select>
+</sqlMap>

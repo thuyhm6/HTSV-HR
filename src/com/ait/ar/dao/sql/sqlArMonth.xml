@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.arMonth">
+
+     <select id="getArColumnsParam" resultClass="linkMap">
+		SELECT 
+				COLUMN_NAME
+		FROM    USER_TAB_COLUMNS A ,
+				AR_STA_ITEM B
+			    WHERE A.TABLE_NAME = 'AR_HISTORY'
+			    AND A.DATA_TYPE = 'NUMBER'
+			    AND NOT EXISTS 
+			   ( 
+			     SELECT *
+			     FROM PA_DISTINCT_LIST
+			     WHERE COLUMN_NAME = FIELD_NAME
+				 AND TABLE_NAME = 'PA_HR_V' 
+			   ) 
+				 AND A.COLUMN_NAME=B.STA_ITEM_ID
+				 ORDER BY B.CAL_ORDER 
+     </select>
+   	 <select id="getArColumns" resultClass="linkMap">
+		
+	    SELECT COLUMN_NAME,
+	           SY_GLOBAL_NAME.CONTENT ITEM_NAME,
+	           AR_STA_ITEM_PARAM.CAL_ORDER,
+		        GET_ITEM_GLAG(COLUMN_NAME,AR_STA_ITEM_PARAM.CPNY_ID) ITEM_FLAG,
+		       GET_ITEM_NUMBER(COLUMN_NAME,AR_STA_ITEM_PARAM.CPNY_ID) ITEM_NUMBER,
+		       AR_STA_ITEM.ITEM_NO,STA_ITEM_ID ITEM_ID
+	      FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
+	     WHERE TABLE_NAME = #AR_SUMMARY_TABLE#
+	       AND DATA_TYPE = 'NUMBER'
+	       AND COLUMN_NAME = STA_ITEM_ID
+	       AND AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
+           AND AR_STA_ITEM_PARAM.CPNY_ID = #interCpnyID:VARCHAR#
+	       AND AR_STA_ITEM.ITEM_NO = SY_GLOBAL_NAME.NO(+)
+	       AND SY_GLOBAL_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+	       AND AR_STA_ITEM.ACTIVITY = 1
+	       AND NOT EXISTS (SELECT *
+	              FROM PA_DISTINCT_LIST
+	             WHERE COLUMN_NAME = DISTINCT_FIELD
+	               AND TABLE_NAME = 'PA_HR_V'
+	               AND CPNY_ID = #interCpnyID:VARCHAR#)
+	     ORDER BY AR_STA_ITEM_PARAM.CAL_ORDER
+
+ 	</select>
+ 	<!-- 3.26添加了 orderno 的条件-->
+ 	<select id="getArColumnsYN" resultClass="linkMap">
+		
+	    SELECT COLUMN_NAME,
+	           SY_GLOBAL_NAME.CONTENT ITEM_NAME,
+	           AR_STA_ITEM_PARAM.CAL_ORDER
+	      FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
+	     WHERE TABLE_NAME = #AR_SUMMARY_TABLE#
+	       AND DATA_TYPE = 'NUMBER'
+	       AND COLUMN_NAME = STA_ITEM_ID
+	       AND AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
+           AND AR_STA_ITEM_PARAM.CPNY_ID = #interCpnyID:VARCHAR#
+	       AND AR_STA_ITEM.ITEM_NO = SY_GLOBAL_NAME.NO(+)
+	       AND SY_GLOBAL_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+	       AND AR_STA_ITEM.ACTIVITY = 1
+	       AND AR_STA_ITEM.SHOW_YN = 'Y'
+	       AND NOT EXISTS (SELECT *
+	              FROM PA_DISTINCT_LIST
+	             WHERE COLUMN_NAME = DISTINCT_FIELD
+	               AND TABLE_NAME = 'PA_HR_V'
+	               AND CPNY_ID = #interCpnyID:VARCHAR#)
+	       and ar_sta_item_param.cpny_id = #interCpnyID:VARCHAR#
+   		   AND ar_sta_item_param.ORDERNO IS NOT NULL
+	     ORDER BY SHOW_ORDER,ar_sta_item_param.ORDERNO
+
+ 	</select>
+ 	
+ 	
+ 	<select id="retrieveMonthlyStatusList" parameterClass="linkMap"
+		resultClass="linkMap">
+		<![CDATA[
+		
+			   SELECT PA_MONTH_STR,
+					  ATT_MO_FLAG,
+					  PARAM_INITIAL_FLAG,
+					  CALC_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  CALC_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE
+				 FROM PA_PROGRESS
+	  	]]>
+
+		<isNotEmpty prepend="WHERE" property="arMonth">
+			<![CDATA[
+				  PA_MONTH_STR = #arMonth#
+			]]>
+		</isNotEmpty>
+
+	</select>
+	<!-- 为ess个人考勤信息查看服务。根据personid查考勤 -->
+		 <select id="getArMonthEssList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT 
+				   HR_EMPLOYEE.EMPID,
+				   HR_EMPLOYEE.PERSON_ID,
+				   HR_EMPLOYEE.LOCAL_NAME,
+				   HR_DEPARTMENT_NAME.CONTENT DEPTNAME,
+				   AR.AR_MONTH
+				   $sqlStatement$
+			  FROM AR_SUMMARY_HTSV AR, 
+				   HR_EMPLOYEE_FOR_CAL HR_EMPLOYEE,
+				   HR_DEPARTMENT_NAME
+			 WHERE AR.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND AR.AR_MONTH = #arMonth:VARCHAR#
+			   AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+			   AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ]]>
+
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+			   
+			    (SELECT STAT_NO FROM ar_statistic_emptype ASE 
+             WHERE ASE.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE  
+             AND ASE.CPNY_ID = HR_EMPLOYEE.CPNY_ID   and rownum=1 )  = #STAT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+
+
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			      HR_EMPLOYEE.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+
+
+		<isNotEmpty prepend="AND" property="deptNO">
+			<![CDATA[
+		       EXISTS (
+					  SELECT     *
+                     	FROM HR_DEPARTMENT B1
+                     	WHERE B1.DEPTNO=HR_EMPLOYEE.DEPTNO
+                 	START WITH B1.DEPTNO = #deptNO:VARCHAR#
+                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                )
+		    ]]>
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR_EMPLOYEE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR_EMPLOYEE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR_EMPLOYEE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY   AR.DEPTNO DESC, HR_EMPLOYEE.EMPID 
+		]]>
+
+	</select>
+ 
+	 <select id="getArMonthList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+			SELECT 
+				   HR_EMPLOYEE.EMPID,
+				   HR_EMPLOYEE.PERSON_ID,
+				   HR_EMPLOYEE.LOCAL_NAME,
+				   HR_DEPARTMENT_NAME.CONTENT DEPTNAME,
+				   AR.EMP_TYPE_NAME,
+				   AR.AR_MONTH
+				   $sqlStatement$
+			  FROM AR_SUMMARY_HTSV AR, 
+				   HR_EMPLOYEE_FOR_CAL HR_EMPLOYEE,
+				   HR_DEPARTMENT_NAME
+			 WHERE AR.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND AR.AR_MONTH = #arMonth:VARCHAR#
+			   AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+			   AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ]]>
+
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+			   
+			    (SELECT STAT_NO FROM ar_statistic_emptype ASE 
+             WHERE ASE.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE  
+             AND ASE.CPNY_ID = HR_EMPLOYEE.CPNY_ID   and rownum=1 )  = #STAT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%')	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      HR_EMPLOYEE.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO 
+						   WHERE HR_EMPLOYEE.DEPTNO = AR_SUPERVISOR_INFO.DEPTNO
+	 					     AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	 	 		
+				AND   EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_EMPTYPE_INFO
+					 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE
+					   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+	 	 		  	 	
+	 	 		  	 	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptNO">
+			<![CDATA[
+		       EXISTS (
+					  SELECT     *
+                     	FROM HR_DEPARTMENT B1
+                     	WHERE B1.DEPTNO=HR_EMPLOYEE.DEPTNO
+                 	START WITH B1.DEPTNO = #deptNO:VARCHAR#
+                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                )
+		    ]]>
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR_EMPLOYEE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR_EMPLOYEE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR_EMPLOYEE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY   AR.DEPTNO DESC, HR_EMPLOYEE.EMPID 
+		]]>
+
+	</select>
+	
+	<select id="getArMonthListCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[	
+	   		SELECT 
+				   COUNT(*)
+			  FROM AR_SUMMARY_HTSV AR, 
+				   HR_EMPLOYEE_FOR_CAL HR_EMPLOYEE ,
+				   HR_DEPARTMENT_NAME
+			 WHERE AR.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND AR.AR_MONTH = #arMonth:VARCHAR#
+			   AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+			   AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+			      (SELECT STAT_NO FROM ar_statistic_emptype ASE 
+             WHERE ASE.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE  
+             AND ASE.CPNY_ID = HR_EMPLOYEE.CPNY_ID   and rownum=1 )  = #STAT_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%')	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      HR_EMPLOYEE.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO 
+						   WHERE HR_EMPLOYEE.DEPTNO = AR_SUPERVISOR_INFO.DEPTNO
+	 					     AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	 	 		  	 	
+				AND   EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_EMPTYPE_INFO
+					 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE
+					   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+	 	 		  	 	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptNO">
+			<![CDATA[
+		       EXISTS (
+					  SELECT     *
+                     	FROM HR_DEPARTMENT B1
+                     	WHERE B1.DEPTNO=HR_EMPLOYEE.DEPTNO
+                 	START WITH B1.DEPTNO = #deptNO:VARCHAR#
+                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                )
+		    ]]>
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HR_EMPLOYEE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HR_EMPLOYEE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HR_EMPLOYEE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<update id="updateArMonthInfo" parameterClass="linkMap" >
+	   $sql$
+	</update>
+	
+	<select id="getMonthlyStatusList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+			   SELECT PA_MONTH_STR,
+					  ATT_MO_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE
+				 FROM PA_PROGRESS
+	  	]]>
+
+		<isNotEmpty prepend="WHERE" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="WHERE" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = TO_CHAR(SYSDATE,'YYYYMM')
+			]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_NO">
+			<![CDATA[
+				  STAT_NO = #STAT_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getLastDayByMonth" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			select TO_CHAR(last_day(to_date(#MONTH_STR:VARCHAR#, 'YYYYMM')), 'YYYY') YEAR_STR,
+			       TO_CHAR(last_day(to_date(#MONTH_STR:VARCHAR#, 'YYYYMM')), 'MM') MONTH_STR,
+			       TO_CHAR(last_day(to_date(#MONTH_STR:VARCHAR#, 'YYYYMM')), 'DD') DAY_STR,
+			       TO_CHAR(last_day(to_date(#MONTH_STR:VARCHAR#, 'YYYYMM')), 'YYYY-MM-DD') DDAY
+			  from dual
+	  	]]>
+	</select>
+	<select id="getArAfrimExceptionList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[	
+					SELECT A.*, D.ORG_NAME_LOCAL DEPTNAME
+			  FROM (SELECT HR.EMPID       EMPID,
+			               HR.DEPTNO     DEPTNO,
+			               HR.LOCAL_NAME LOCAL_NAME,
+			               A.START_DATE  START_DATE,
+			               A.END_DATE    END_DATE,
+			               A.UPLOAD_DATE UPLOAD_DATE,
+			               HE.LOCAL_NAME   UPLOAD_BY,
+			               A.ACTIVITY    ACTIVITY
+			          FROM AR_EXCEPTION_AFFIRM A, HR_EMPLOYEE HR,HR_EMPLOYEE HE
+			         WHERE A.PERSON_ID = HR.PERSON_ID
+			           AND A.UPLOAD_BY= HE.PERSON_ID
+			         ) A,
+			       HR_DEPARTMENT D
+			 WHERE A.DEPTNO = D.DEPTNO
+			   AND D.CPNY_ID = 'SST'
+		]]>
+	    
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				A.DEPTNO IN
+	               (SELECT DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 START WITH DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+	
+	</select>
+	<select id="getArAfrimExceptionCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[	
+	   		
+			     SELECT COUNT(*) FROM (SELECT HR.EMPID      EMPID,
+                   HR.DEPTNO    DEPTNO,
+                   HR.LOCAL_NAME LOCAL_NAME,
+                   A.START_DATE START_DATE,
+                   A.END_DATE   END_DATE,
+                   A.ACTIVITY   ACTIVITY
+              FROM AR_EXCEPTION_AFFIRM A ,HR_EMPLOYEE HR
+              WHERE A.PERSON_ID = HR.PERSON_ID
+              ) A,HR_DEPARTMENT D 
+      WHERE A.DEPTNO=D.DEPTNO
+        AND D.CPNY_ID='SST'
+		]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				A.DEPTNO IN
+	               (SELECT DEPTNO
+	                  FROM HR_DEPARTMENT
+	                 START WITH DEPTNO = #DEPT_NO:VARCHAR#
+	                CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(HE.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="getArExceptionTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from AR_EXCEPTION_AFFIRM_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+			and RESULT_FLAG = 'E'
+		]]>
+	</select>
+	<select id="getArExceptionTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  select COUNT(1)
+			from AR_EXCEPTION_AFFIRM_TEMP
+			where UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getArExceptionTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  	SELECT pa.EMPID,
+	 	  		   pa.LOCAL_NAME,
+			       pa.DEPT_NAME,
+			       pa.START_DATE,
+			       pa.END_DATE,
+			       pa.UPLOAD_ERROR_MSG,
+			       pa.LINE_ID,
+			       pa.RESULT_FLAG,
+			       hr.local_name UPLOAD_BY,
+			       to_char(pa.UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE
+			from AR_EXCEPTION_AFFIRM_TEMP pa,
+			hr_employee hr
+			where pa.UPLOAD_BY = hr.person_id
+			and UPLOAD_BY = #PERSON_ID#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY LINE_ID
+		]]>
+	</select>
+	
+	
+</sqlMap>

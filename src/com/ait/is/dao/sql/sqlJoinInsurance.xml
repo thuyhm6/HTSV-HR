@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "sql-map-2.dtd" >
+<sqlMap namespace="is.joinInstance">
+<select id="getPaBenJoinInsureList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">		
+		SELECT T.PA_BEN_MANAGE_ADD_SEQ, 
+	       E.DEPTNO,<!-- 部门 ID-->
+	       GET_DEPT_NAME(D.DEPTNO,'zh') DEPTNAME, <!-- 部门名 -->
+	       T.EMPID, <!-- 职号-->
+	       E.LOCAL_NAME  CHINESENAME, <!-- 员工名字-->
+	       P.SEXCODE,
+	       CHANGER_IDNO(P.IDCARD_NO) IDCARD_NO,
+	       P.REG_TYPE_CODE,
+	       GET_GLOBAL_NAME(P.REG_TYPE_CODE,'zh') AS REG_TYPE_CODE_NAME,<!-- 户口性质-->
+	       E.STATUS_CODE,
+	       to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS DATE_STARTED, <!-- 入职日期-->
+	       to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,  <!-- 离职日期-->
+	       CHANGER_IDNO(T.SOCIAL_NO) SOCIAL_NO,
+	       T.JOIN_VALUE,  <!-- 入社基数-->
+	       T.REFER_VALUE, <!-- 基础参照工资--> 
+	       T.ENDOWMENT_BASE, <!-- 缴纳基数-->
+	       T.MEDICARE_BASE,
+	       T.SHENGYU_BASE,
+	       T.COMPO_BASE, 
+	       T.UNEMP_BASE,
+	       T.START_DATE, <!-- 开始缴纳日-->
+	       SUBSTR(T.START_DATE,1,4) AS START_YEAR,
+	       SUBSTR(T.START_DATE,5,6) AS START_MONTH,
+	       T.BASELINE, <!-- 标记-->
+	       T.DATE_TYPE, 
+	       T.ERROR_REMARK 
+	  FROM PA_BEN_MANAGE_ADD T,
+	       HR_EMPLOYEE  E,
+	       HR_PERSONAL_INFO  P,
+	       HR_DEPARTMENT     D,
+	       SY_GLOBAL_NAME C1,
+			SY_GLOBAL_NAME C2
+	 WHERE T.EMPID = E.EMPID
+	   AND E.PERSON_ID= P.PERSON_ID(+)
+	   AND E.DEPTNO = D.DEPTNO(+)
+	   AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		and e.cpny_id= #companyID:VARCHAR#
+	</select>
+	
+	<select id="getPaBenJoinInsureCnt" parameterClass="linkMap" resultClass="int">
+			SELECT COUNT(*)
+			  FROM PA_BEN_MANAGE_ADD T,
+	       HR_EMPLOYEE       E,
+	       HR_PERSONAL_INFO  P,
+	       HR_DEPARTMENT     D,
+	       SY_GLOBAL_NAME C1,
+			SY_GLOBAL_NAME C2
+	  WHERE T.EMPID = E.EMPID
+	   AND E.PERSON_ID= P.PERSON_ID(+)
+	   AND E.DEPTNO = D.DEPTNO(+)
+	   AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		and e.cpny_id='C02'
+	
+	</select>
+	
+ 	 <delete id="deleteJoinInsureInfo" parameterClass="linkMap">
+		<![CDATA[
+				DELETE FROM PA_BEN_MANAGE_ADD T
+					WHERE T.PA_BEN_MANAGE_ADD_SEQ = #seq:VARCHAR#
+			  ]]>
+	</delete>
+	
+	<select id="getAllowPaBenJoinInsureUpdate" resultClass="linkMap">		
+		SELECT E.DEPTNO,
+		        GET_DEPT_NAME(D.DEPTNO,'zh') DEPTNAME, <!-- 部门名 -->
+		       T.EMPID,
+		        E.LOCAL_NAME  CHINESENAME, <!-- 员工名字-->
+		        GET_GLOBAL_NAME(P.REG_TYPE_CODE,'zh') AS REG_TYPE_CODE_NAME,<!-- 户口性质-->
+		        to_char(E.DATE_STARTED, 'yyyy-mm-dd') AS DATE_STARTED, <!-- 入职日期-->
+		        to_char(E.DATE_LEFT, 'yyyy-mm-dd') AS DATE_LEFT,  <!-- 离职日期-->
+		       T.JOIN_VALUE,
+		       T.REFER_VALUE,
+		       T.ENDOWMENT_BASE,
+		       T.MEDICARE_BASE,
+		       T.SHENGYU_BASE,
+		       T.COMPO_BASE,
+		       T.UNEMP_BASE,
+		       T.START_DATE,
+		       SUBSTR(T.START_DATE,1,4) AS START_YEAR,
+	       	   SUBSTR(T.START_DATE,5,6) AS START_MONTH,
+		       T.BASELINE,
+		       T.DATE_TYPE,
+		       T.ERROR_REMARK
+		  FROM PA_BEN_MANAGE_ADD T,
+		       HR_EMPLOYEE       E,
+		       HR_PERSONAL_INFO  P,
+		       HR_DEPARTMENT     D,
+		        SY_GLOBAL_NAME C1,
+			SY_GLOBAL_NAME C2
+		 WHERE T.EMPID = E.EMPID
+		   AND E.PERSON_ID = P.PERSON_ID(+)
+		   AND E.DEPTNO = D.DEPTNO(+)
+		   AND T.ALLOW_UPDATE = 'Y'
+		    AND E.POST_NO = C1.NO(+)
+		AND E.STATUS_CODE =C2.NO(+)
+		and c1.LANGUAGE='zh'
+		and c2.LANGUAGE='zh'
+		and e.cpny_id= 'C02'
+		 ORDER BY E.DEPTNO, T.EMPID ASC
+	</select>
+	
+	<update id="allowPaBenJoinInsureUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BEN_MANAGE_ADD
+			      SET ALLOW_UPDATE = 'Y'
+				WHERE PA_BEN_MANAGE_ADD_SEQ = #id#
+			  ]]>
+	</update>
+	<update id="backPaBenJoinInsureUpdate" parameterClass="string">
+		<![CDATA[
+			   UPDATE PA_BEN_MANAGE_ADD
+			      SET ALLOW_UPDATE = ''
+			     WHERE ALLOW_UPDATE = 'Y'
+			  ]]>
+	</update>
+	<update id="updatePaBenManageAddInfo" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE PA_BEN_MANAGE_ADD T
+			   SET T.JOIN_VALUE     = #joinValue#,
+			       T.START_DATE     = #yearMonth#,
+			       T.UPDATE_DATE    = SYSDATE,
+			       T.UPDATED_BY     = #adminID#,
+			       T.ENDOWMENT_BASE =
+			       NVL((SELECT CASE
+			                 WHEN #joinValue# > B.UPPER_LIMIT THEN
+			                  B.UPPER_LIMIT
+			                 WHEN #joinValue# < B.LOWER_LIMIT THEN
+			                  B.LOWER_LIMIT
+			                 ELSE
+			                  #joinValue#
+			               END SSS
+			          FROM PA_BEN_BENCHMARK B
+			         WHERE B.VERSION_DATE =
+			               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+			           AND B.INSURANCE_CODE = 'InsuranceTpye100'
+			           AND B.REG_TYPE_CODE =
+			               (SELECT P.REG_TYPE_CODE
+			                  FROM HR_PERSONAL_INFO P
+			                 WHERE P.PERSON_ID = #empID#)),0),
+			       T.MEDICARE_BASE =
+			       NVL((SELECT CASE
+			                 WHEN #joinValue# > B.UPPER_LIMIT THEN
+			                  B.UPPER_LIMIT
+			                 WHEN #joinValue# < B.LOWER_LIMIT THEN
+			                  B.LOWER_LIMIT
+			                 ELSE
+			                  #joinValue#
+			               END SSS
+			          FROM PA_BEN_BENCHMARK B
+			         WHERE B.VERSION_DATE =
+			               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+			           AND B.INSURANCE_CODE = 'InsuranceTpye101'
+			           AND B.REG_TYPE_CODE =
+			               (SELECT P.REG_TYPE_CODE
+			                  FROM HR_PERSONAL_INFO P
+			                 WHERE P.PERSON_ID = #empID#)),0),
+			       T.SHENGYU_BASE  =
+			       NVL((SELECT CASE
+			                 WHEN #joinValue# > B.UPPER_LIMIT THEN
+			                  B.UPPER_LIMIT
+			                 WHEN #joinValue# < B.LOWER_LIMIT THEN
+			                  B.LOWER_LIMIT
+			                 ELSE
+			                  #joinValue#
+			               END SSS
+			          FROM PA_BEN_BENCHMARK B
+			         WHERE B.VERSION_DATE =
+			               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+			           AND B.INSURANCE_CODE = 'InsuranceTpye102'
+			           AND B.REG_TYPE_CODE =
+			               (SELECT P.REG_TYPE_CODE
+			                  FROM HR_PERSONAL_INFO P
+			                 WHERE P.PERSON_ID = #empID#)),0),
+			       T.COMPO_BASE    =
+			       NVL((SELECT CASE
+			                 WHEN #joinValue# > B.UPPER_LIMIT THEN
+			                  B.UPPER_LIMIT
+			                 WHEN #joinValue# < B.LOWER_LIMIT THEN
+			                  B.LOWER_LIMIT
+			                 ELSE
+			                  #joinValue#
+			               END SSS
+			          FROM PA_BEN_BENCHMARK B
+			         WHERE B.VERSION_DATE =
+			               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+			           AND B.INSURANCE_CODE = 'InsuranceTpye103'
+			           AND B.REG_TYPE_CODE =
+			               (SELECT P.REG_TYPE_CODE
+			                  FROM HR_PERSONAL_INFO P
+			                 WHERE P.PERSON_ID = #empID#)),0),
+			       T.UNEMP_BASE    =
+			       NVL((SELECT CASE
+			                 WHEN #joinValue# > B.UPPER_LIMIT THEN
+			                  B.UPPER_LIMIT
+			                 WHEN #joinValue# < B.LOWER_LIMIT THEN
+			                  B.LOWER_LIMIT
+			                 ELSE
+			                  #joinValue#
+			               END SSS
+			          FROM PA_BEN_BENCHMARK B
+			         WHERE B.VERSION_DATE =
+			               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+			           AND B.INSURANCE_CODE = 'InsuranceTpye104'
+			           AND B.REG_TYPE_CODE =
+			               (SELECT P.REG_TYPE_CODE
+			                  FROM HR_PERSONAL_INFO P
+			                 WHERE P.PERSON_ID = #empID#)),0),
+			       T.BASELINE      =
+			       (SELECT CASE
+			                 WHEN #joinValue# > MIN(B.UPPER_LIMIT) THEN
+			                  'Max'
+			                 WHEN #joinValue# < MAX(B.LOWER_LIMIT) THEN
+			                  'Min'
+			                 ELSE
+			                  ''
+			               END BASE_LINE
+			          FROM PA_BEN_BENCHMARK B
+			         WHERE B.VERSION_DATE =
+			               (SELECT MAX(VERSION_DATE) FROM PA_BEN_BENCHMARK)
+			           AND B.INSURANCE_CODE IN ('InsuranceTpye100',
+			                                    'InsuranceTpye101',
+			                                    'InsuranceTpye102',
+			                                    'InsuranceTpye103',
+			                                    'InsuranceTpye104')
+			           AND B.REG_TYPE_CODE =
+			               (SELECT P.REG_TYPE_CODE
+			                  FROM HR_PERSONAL_INFO P
+			                 WHERE P.PERSON_ID = #empID#))
+			 WHERE T.EMPID = #empID#
+			  ]]>
+	</update>
+	<delete id="deletePaJoinImp">
+		<![CDATA[
+				DELETE FROM PA_BEN_MANAGE_ADD_IMP
+			  ]]>
+	</delete>
+	<!-- 查询所有的历史表数据 -->
+	<select id="getPaBehsJoinImpList"  resultClass="linkMap">
+		SELECT T.PERSON_ID,
+	       T.START_DATE,
+	       T.JOIN_VALUE 
+	  FROM PA_BEN_MANAGE_ADD_IMP T
+	</select>
+	<insert id="insertPaBenhsJoin" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_BEN_MANAGE_ADD(
+			       PA_BEN_MANAGE_ADD_SEQ,
+			       PERSON_ID,
+			       START_DATE,
+			       JOIN_VALUE,
+			       CREATE_DATE,
+			       CREATED_BY,
+			       ACTIVITY,
+			       SOCIAL_STATUS) 
+			VALUES(
+			       PA_BEN_MANAGE_ADD_SEQ,.NEXTVAL,
+			       #PERSON_ID:VARCHAR#,
+			       #START_DATE:VARCHAR#,
+			       #JOIN_VALUE:NUMBER#,
+			       SYSDATE,
+			       #CREATED_BY:VARCHAR#,
+			       #ACTIVITY:NUMBER#,
+			       #SOCIAL_STATUS:VARCHAR#
+			)
+		]]>
+	</insert>
+	
+	<update id="updatePaBenhsBase" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_BEN_MANAGE_ADD T
+			   SET T.START_DATE = #START_DATE#,T.JOIN_VALUE = #JOIN_VALUE#
+			 WHERE T.PERSON_ID = #PERSON_ID#
+		]]>
+	</update>
+	
+	<select id="checkPaBenhsJoin" parameterClass="linkMap" resultClass="string">
+		<![CDATA[
+			SELECT T.PA_BEN_MANAGE_ADD_SEQ
+			  FROM PA_BEN_MANAGE_ADD T
+			 WHERE T.PERSON_ID = #PERSON_ID#
+			   AND T.START_DATE = #START_DATE#
+		]]>
+	</select>
+	<select id="findPIdByParam" resultClass="linkMap">
+		SELECT T.PERSON_ID
+		FROM HR_EMPLOYEE T
+		WHERE
+		T.CPNY_ID = #CPNYID#
+		AND T.EMPID = #EMPID#
+	</select>
+	
+	
+	
+</sqlMap>

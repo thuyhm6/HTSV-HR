@@ -1,0 +1,1460 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.portal">
+	<select id="getPortalList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PL.SEQ,
+			       PL.MAKE_TYPE,
+			       PL.MAKE_RESULT,
+			       PL.PORTAL_NAME,
+			       PL.REMARK_MESSAGE,
+			       TO_CHAR(PL.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') CREATED_DATE,
+			       nvl(HE.LOCAL_NAME,PL.CREATED_BY) LOCAL_NAME,
+			       PL.CREATED_BY
+			  FROM SY_PORTAL_LOG PL, HR_EMPLOYEE HE
+			 WHERE PL.CREATED_BY = HE.PERSON_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PL.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FIRST_DATE">
+			<![CDATA[
+				TO_CHAR(PL.CREATE_DATE,'YYYY-MM-DD') = #FIRST_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="SYNCHRON_STATUS" compareValue="1">
+			<![CDATA[
+				MAKE_RESULT = '1'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="SYNCHRON_STATUS" compareValue="2">
+			<![CDATA[
+				MAKE_RESULT = '2'
+			]]>
+		</isEqual>
+		<![CDATA[
+			 ORDER BY PL.CREATE_DATE DESC, PL.CREATED_BY, PL.PORTAL_NAME
+		]]>
+	</select>
+
+	<select id="getPortalListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+		SELECT COUNT(*) FROM (
+			SELECT PL.SEQ,
+			       PL.MAKE_TYPE,
+			       PL.MAKE_RESULT,
+			       PL.PORTAL_NAME,
+			       PL.REMARK_MESSAGE,
+			       TO_CHAR(PL.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') CREATED_DATE,
+			       HE.LOCAL_NAME,
+			       PL.CREATED_BY
+			  FROM SY_PORTAL_LOG PL, HR_EMPLOYEE HE
+			 WHERE PL.CREATED_BY = HE.PERSON_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PL.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FIRST_DATE">
+			<![CDATA[
+				TO_CHAR(PL.CREATE_DATE,'YYYY-MM-DD') = #FIRST_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="SYNCHRON_STATUS" compareValue="1">
+			<![CDATA[
+				MAKE_RESULT = '1'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="SYNCHRON_STATUS" compareValue="2">
+			<![CDATA[
+				MAKE_RESULT = '2'
+			]]>
+		</isEqual>
+		<![CDATA[
+			 ) LOG
+		]]>
+	</select>
+	
+	<select id="getPaDataToSapList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT FIELD_ID FROM PA_DATA_TO_SAP 
+			 WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getPaSummaryInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT CPNY_ID,
+			   PA_MONTH,
+			   GIVE_DATE,
+			   DEPTNO,
+			   EMP_TYPE_CODE,
+			   ITEM_ID,
+			   ITEM_SUM FROM 
+			   (SELECT MAX(CPNY_ID) CPNY_ID,
+		               MAX(PA_MONTH) PA_MONTH,
+		               TO_CHAR(TO_DATE(#SAP_GIVE_DATE:VARCHAR#, 'YYYY-MM-DD'), 'YYYYMMDD') AS GIVE_DATE,
+		               DEPTNO,
+		               EMP_TYPE_CODE,
+		               #FIELD_ID:VARCHAR# AS ITEM_ID,
+		               SUM(NVL($FIELD_ID$, 0)) ITEM_SUM
+		          FROM $TABLE_NAME$
+		         WHERE PA_MONTH = #PA_MONTH:VARCHAR#
+		           AND GIVE_DATE = TO_DATE(#SAP_GIVE_DATE:VARCHAR#, 'YYYY-MM-DD')
+		           AND CPNY_ID = #CPNY_ID:VARCHAR#
+		         GROUP BY DEPTNO,EMP_TYPE_CODE)
+		     WHERE ITEM_SUM <> 0
+		]]>
+	</select>
+	
+	<select id="getDepartMentInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  	 SELECT    DISTINCT PS.CPNY_ID,
+			       PS.DEPTNO,
+			       HN.CONTENT DEPTNAME
+			  FROM PA_SUMMARY_C02     PS,
+			       HR_DEPARTMENT_NAME HN
+			 WHERE PS.DEPTNO = HN.DEPTNO(+)
+			   AND HN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND PS.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND PS.GIVE_DATE = TO_DATE(#SAP_GIVE_DATE:VARCHAR#,'YYYY-MM-DD')
+		]]>
+	</select>
+                
+	<insert id="insertPortalLog" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_PORTAL_LOG
+				  (SEQ,
+				   MAKE_TYPE,
+				   MAKE_RESULT,
+				   PORTAL_NAME,
+				   REMARK_MESSAGE,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CPNY_ID,
+				   ACTIVITY)
+				VALUES
+				  (SY_PORTAL_LOG_SEQ.Nextval,
+				   #MAKE_TYPE:VARCHAR#,
+				   #MAKE_RESULT:VARCHAR#,
+				   #PORTAL_NAME:VARCHAR#,
+				   #REMARK_MESSAGE:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   #CPNY_ID:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+	<insert id="addSAPItem" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DATA_TO_SAP
+				  (FIELD_ID,
+				   CPNY_ID,
+				   CREATED_BY,
+				   CREATE_DATE)
+				VALUES
+				  (
+				   #ITEM_ID:VARCHAR#,
+				   #CPNY_ID:VARCHAR#,
+				   #CREATED_BY:VARCHAR#,
+				   SYSDATE
+				   )
+		]]>
+	</insert>
+	
+	<delete id="deleteSAPItem" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_DATA_TO_SAP WHERE CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</delete>	
+	
+	<select id="getC01PaSummaryInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT CPNY_ID,
+		           SUBSTR(PA_MONTH,0,4) YEAR,
+		           SUBSTR(PA_MONTH,5,6) MONTH,
+		           GIVE_DATE,
+		           DEPTNO,
+		           ITEM_ID ITEM,
+		           SEND_DATE,
+		           MAKE_TYPE,
+		           EMP_TYPE_CODE EMP_TYPE,
+		           nvl(ITEM_SUM,0) NUM,
+		           DEPT_DISTINGUISH_NO
+		      FROM (SELECT MAX(PA.CPNY_ID) CPNY_ID,
+		                   MAX(PA.PA_MONTH) PA_MONTH,
+		                   TO_CHAR(TO_DATE(#SAP_GIVE_DATE:VARCHAR#, 'YYYY-MM-DD'), 'YYYY-MM-DD') AS GIVE_DATE,
+		                   PA.DEPTNO,
+		                   PA.EMP_TYPE_CODE,
+		                   #FIELD_ID:VARCHAR# AS ITEM_ID,
+		                   #SAP_SEND_DATE:VARCHAR# AS SEND_DATE,
+		                   #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+		                   SUM(NVL($FIELD_ID$, 0)) ITEM_SUM,
+		                   MAX(HD.DEPT_DISTINGUISH_NO) DEPT_DISTINGUISH_NO
+		              FROM PA_SUMMARY_C01 PA,HR_DEPARTMENT HD
+		             WHERE PA.PA_MONTH = #PA_MONTH:VARCHAR#
+		               AND PA.DEPTNO = HD.DEPTNO(+)
+		               AND PA.GIVE_DATE = TO_DATE(#SAP_GIVE_DATE:VARCHAR#, 'YYYY-MM-DD')
+		               AND PA.CPNY_ID = #CPNY_ID:VARCHAR#
+		             GROUP BY PA.DEPTNO,PA.EMP_TYPE_CODE
+		          ) SS WHERE SS.ITEM_SUM <> 0
+		]]>
+	</select>
+	
+	<select id="getC01SapSummarySendCount" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT to_number(nvl(MAX(SEND_COUNT),0) + 1)
+			  FROM PA_DATA_TO_SAP_SUMMARY PA
+			 WHERE YEAR_ID = #YEAR:VARCHAR#
+			   AND MONTH_ID = #MONTH:VARCHAR#
+			   AND ITEM = #ITEM:VARCHAR#
+			   AND DEPTNO = #DEPTNO:VARCHAR#
+			   AND GIVE_DATE = #GIVE_DATE:VARCHAR#
+			   AND SEND_DATE = #SEND_DATE:VARCHAR#
+		]]>		
+		<isNotEmpty prepend="AND" property="EMP_TYPE">
+			<![CDATA[	   
+				   EMP_TYPE = #EMP_TYPE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="insertC01PaSummary" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DATA_TO_SAP_SUMMARY
+		          (CPNY_ID,
+		           YEAR_ID,
+		           MONTH_ID,
+		           GIVE_DATE,
+		           SEND_DATE,
+		           DEPTNO,
+		           ITEM,
+		           EMP_TYPE,
+		           NUM,
+		           DEPT_DISTINGUISH_NO,
+		           
+		           MAKE_TYPE,
+		           SEND_COUNT,
+		           CREATE_DATE,
+		           CREATED_BY,
+		           ACTIVITY)
+		        VALUES
+				  (#CPNY_ID:VARCHAR#,
+				   #YEAR:VARCHAR#,
+				   #MONTH:VARCHAR#,
+				   #GIVE_DATE:VARCHAR#,
+				   #SEND_DATE:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   #ITEM:VARCHAR#,
+				   #EMP_TYPE:VARCHAR#,
+				   #NUM:VARCHAR#,
+				   #DEPT_DISTINGUISH_NO:VARCHAR#,
+				   
+				   #MAKE_TYPE:VARCHAR#,
+				   #SEND_COUNT:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+	<select id="getC01SapSummaryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.CPNY_ID,
+			       GG.CONTENT DISTINGUISH_NAME,
+			       HDN.CONTENT DEPARTMENT,
+			       PA.YEAR_ID,
+			       PA.MONTH_ID,
+			       PA.GIVE_DATE,
+			       PI.ITEM_NAME,
+			       PA.ITEM,
+			       PA.NUM,
+			       
+			       PA.EMP_TYPE,
+			       ETY.CONTENT EMP_TYPE_NAME,
+			       PA.MAKE_TYPE,
+			       to_char(PA.CREATE_DATE,'yyyy-mm-dd HH24:MI:SS') CREATE_DATE,
+			       PA.CREATED_BY,
+			       
+			       PA.SEND_DATE,
+			       PA.SEND_COUNT
+			  FROM PA_DATA_TO_SAP_SUMMARY PA,
+			       PA_ITEM_V_C01          PI,
+			       SY_GLOBAL_NAME         GG,
+			       SY_GLOBAL_NAME         ETY,
+			       HR_DEPARTMENT_NAME     HDN
+			 WHERE PA.ITEM = PI.ITEM_ID
+			   AND PA.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE = 'zh'
+			   AND PA.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = 'zh'
+			   AND PA.EMP_TYPE = ETY.NO(+)
+			   AND ETY.LANGUAGE = 'zh'
+		]]>
+		<isNotEmpty prepend="AND" property="sum_sapYear">
+			<![CDATA[
+				PA.YEAR_ID = #sum_sapYear:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sum_sapMonth">
+			<![CDATA[
+				PA.MONTH_ID = #sum_sapMonth:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				PA.DEPTNO IN (SELECT HD.DEPTNO
+			                       FROM HR_DEPARTMENT HD
+			                      START WITH DEPTNO = #DEPTNO:VARCHAR#
+			                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUM_GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = #SUM_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUM_SEND_DATE">
+			<![CDATA[
+				PA.SEND_DATE = #SUM_SEND_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA.CREATE_DATE,PA.ITEM
+		]]>
+	</select>
+	
+	<select id="getC01SapSummaryListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_DATA_TO_SAP_SUMMARY PA,
+			       PA_ITEM_V_C01          PI,
+			       SY_GLOBAL_NAME         GG,
+			       SY_GLOBAL_NAME         ETY,
+			       HR_DEPARTMENT_NAME     HDN
+			 WHERE PA.ITEM = PI.ITEM_ID
+			   AND PA.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE = 'zh'
+			   AND PA.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE = 'zh'
+			   AND PA.EMP_TYPE = ETY.NO(+)
+			   AND ETY.LANGUAGE = 'zh'
+		]]>
+		<isNotEmpty prepend="AND" property="sum_sapYear">
+			<![CDATA[
+				PA.YEAR_ID = #sum_sapYear:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sum_sapMonth">
+			<![CDATA[
+				PA.MONTH_ID = #sum_sapMonth:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				PA.DEPTNO IN (SELECT HD.DEPTNO
+			                       FROM HR_DEPARTMENT HD
+			                      START WITH DEPTNO = #DEPTNO:VARCHAR#
+			                     CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUM_GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = #SUM_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SUM_SEND_DATE">
+			<![CDATA[
+				PA.SEND_DATE = #SUM_SEND_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>		
+	
+	<select id="getC01PaActualSalaryAllList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.CPNY_ID,
+			       PA.PA_MONTH,
+			       TO_CHAR(PA.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE,
+			       #FIRM_SEND_DATE:VARCHAR# SEND_DATE,
+			       PA.EMPID,
+			       PA.LOCAL_NAME PA_NAME,
+       			   HPI.CARD_NAME EMP_NAME,
+			       nvl(PA.ACTUAL_RELEASE_SALARY,0) ACTUAL_RELEASE_SALARY,
+			       HD.DEPT_DISTINGUISH_NO,
+			       GG.CONTENT DEPT_DISTINGUISH_NAME,
+			       HPI.BANK_ID,
+			       get_global_name(HB.BANK_NO, 'zh') BANK_NAME,
+			       get_global_name(HB.BANK_NO, 'ko') BANK_KO_NAME,
+			       get_global_name(HB.BANK_NO, 'en') BANK_EN_NAME,
+			       HPI.CARD_NO
+			  FROM PA_SUMMARY_C01 PA, 
+			       HR_EMPLOYEE    HE,
+			       HR_DEPARTMENT  HD, 
+			       HR_EMP_PA_INFO HPI, 
+			       HR_BANK        HB,
+			       SY_GLOBAL_NAME GG
+			 WHERE PA.PERSON_ID = HPI.PERSON_ID(+)
+			   AND PA.PERSON_ID = HE.PERSON_ID
+			   AND PA.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = 'zh'
+			   AND HPI.BANK_ID = HB.BANK_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="firm_sapYear">
+			<isNotEmpty property="firm_sapMonth">
+				<![CDATA[
+					PA.PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR# 
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FIRM_GIVE_DATE">
+			<![CDATA[
+				TO_CHAR(PA.GIVE_DATE,'YYYY-MM-DD') = #FIRM_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="MORE_FIFTY_THOUSAND">
+			<isEqual prepend="AND" property="MORE_FIFTY_THOUSAND" compareValue="MORE_THAN">
+				<![CDATA[
+					PA.ACTUAL_RELEASE_SALARY >= 50000
+				]]>
+	        </isEqual>
+	        <isEqual prepend="AND" property="MORE_FIFTY_THOUSAND" compareValue="LESS_THAN">
+				<![CDATA[
+					PA.ACTUAL_RELEASE_SALARY < 50000
+				]]>
+	        </isEqual>
+        </isNotEmpty>
+		<!--C(现金人员)、W(待转账人员不发送)-->
+		<isEqual prepend="AND" property="FIRM_SEND_TYPE" compareValue="ALL_TYPE">
+			<![CDATA[
+				PA.PERSON_ID NOT IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE IN('C','W') AND PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR#)
+			]]>
+        </isEqual>
+        <!--F转账人员发送-->
+        <isEqual prepend="AND" property="FIRM_SEND_TYPE" compareValue="PART_TYPE">
+			<![CDATA[
+				PA.PERSON_ID IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE = 'F' AND PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR#)
+			]]>
+        </isEqual>
+		<![CDATA[
+			ORDER BY PA.PA_MONTH,PA.DEPTNO,PA.EMPID
+		]]>
+	</select>
+	
+	<select id="getC01PaActualSalaryAllListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+		SELECT COUNT(*) FROM (
+			SELECT PA.CPNY_ID,
+			       PA.PA_MONTH,
+			       TO_CHAR(PA.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE,
+			       #FIRM_SEND_DATE:VARCHAR# SEND_DATE,
+			       PA.EMPID,
+			       PA.LOCAL_NAME PA_NAME,
+       			   HPI.CARD_NAME EMP_NAME,
+			       nvl(PA.ACTUAL_RELEASE_SALARY,0) ACTUAL_RELEASE_SALARY,
+			       HD.DEPT_DISTINGUISH_NO,
+			       GG.CONTENT DEPT_DISTINGUISH_NAME,
+			       HPI.BANK_ID,
+			       get_global_name(HB.BANK_NO, 'zh') BANK_NAME,
+			       get_global_name(HB.BANK_NO, 'ko') BANK_KO_NAME,
+			       get_global_name(HB.BANK_NO, 'en') BANK_EN_NAME,
+			       HPI.CARD_NO
+			   FROM PA_SUMMARY_C01 PA, 
+			       HR_EMPLOYEE    HE,
+			       HR_DEPARTMENT  HD, 
+			       HR_EMP_PA_INFO HPI, 
+			       HR_BANK        HB,
+			       SY_GLOBAL_NAME GG
+			 WHERE PA.PERSON_ID = HPI.PERSON_ID(+)
+			   AND PA.PERSON_ID = HE.PERSON_ID
+			   AND PA.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = 'zh'
+			   AND HPI.BANK_ID = HB.BANK_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="firm_sapYear">
+			<isNotEmpty property="firm_sapMonth">
+				<![CDATA[
+					PA.PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR# 
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FIRM_GIVE_DATE">
+			<![CDATA[
+				TO_CHAR(PA.GIVE_DATE,'YYYY-MM-DD') = #FIRM_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="MORE_FIFTY_THOUSAND">
+			<isEqual prepend="AND" property="MORE_FIFTY_THOUSAND" compareValue="MORE_THAN">
+				<![CDATA[
+					PA.ACTUAL_RELEASE_SALARY >= 50000
+				]]>
+	        </isEqual>
+	        <isEqual prepend="AND" property="MORE_FIFTY_THOUSAND" compareValue="LESS_THAN">
+				<![CDATA[
+					PA.ACTUAL_RELEASE_SALARY < 50000
+				]]>
+	        </isEqual>
+        </isNotEmpty>
+		<!--C(现金人员)、W(待转账人员不发送)-->
+		<isEqual prepend="AND" property="FIRM_SEND_TYPE" compareValue="ALL_TYPE">
+			<![CDATA[
+				PA.PERSON_ID NOT IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE IN('C','W') AND PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR#)
+			]]>
+        </isEqual>
+        <!--F转账人员发送-->
+        <isEqual prepend="AND" property="FIRM_SEND_TYPE" compareValue="PART_TYPE">
+			<![CDATA[
+				PA.PERSON_ID IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE = 'F' AND PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR#)
+			]]>
+        </isEqual>
+		<![CDATA[
+			) SS
+		]]>
+	</select>
+	
+	<select id="getC01PaActualSalaryCntByEmpid" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(PA.EMPID)
+			  FROM PA_DATA_TO_SAP_ACTUAL PA
+			 WHERE CPNY_ID = 'C01'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="firm_sapYear">
+			<isNotEmpty property="firm_sapMonth">
+				<![CDATA[
+					PA.PA_MONTH = #firm_sapYear:VARCHAR# || #firm_sapMonth:VARCHAR# 
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SAP_GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = #SAP_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getC01PaActualSalaryAfterList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.CPNY_ID,
+			       PA.PA_MONTH,
+			       PA.GIVE_DATE,
+			       PA.SEND_DATE,
+			       PA.EMPID,
+			       PA.EMP_NAME,
+			       PA.SEND_COUNT,
+			       nvl(PA.ACTUAL_RELEASE_SALARY,0) ACTUAL_RELEASE_SALARY,
+			       PA.DEPT_DISTINGUISH_NO,
+			       PA.DEPT_DISTINGUISH_NAME,
+			       PA.BANK_ID,
+			       PA.BANK_NAME,
+			       PA.CARD_NO,
+			       TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+			       TO_CHAR(PA.CREATE_DATE,'HH24:MI:SS') CREATE_TIME,
+			       NVL(HE.LOCAL_NAME,PA.CREATED_BY) CREATED_BY
+			  FROM PA_DATA_TO_SAP_ACTUAL PA,HR_EMPLOYEE HE
+			 WHERE PA.CREATED_BY = HE.PERSON_ID(+)
+			   AND PA.CPNY_ID = 'C01'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sapYear">
+			<isNotEmpty property="sapMonth">
+				<![CDATA[
+					PA.PA_MONTH = #sapYear:VARCHAR# || #sapMonth:VARCHAR# 
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SAP_GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = #SAP_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEND_DATE">
+			<![CDATA[
+				PA.SEND_DATE = #SEND_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA.PA_MONTH,PA.CREATE_DATE DESC,PA.EMPID
+		]]>
+	</select>
+	
+	<select id="getC01PaActualSalaryAfterListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+		SELECT COUNT(*) FROM (
+			SELECT PA.CPNY_ID,
+			       PA.PA_MONTH,
+			       PA.GIVE_DATE,
+			       PA.SEND_DATE,
+			       PA.EMPID,
+			       PA.EMP_NAME,
+			       PA.SEND_COUNT,
+			       nvl(PA.ACTUAL_RELEASE_SALARY,0) ACTUAL_RELEASE_SALARY, 
+			       PA.DEPT_DISTINGUISH_NO,
+			       PA.DEPT_DISTINGUISH_NAME,
+			       PA.BANK_ID,
+			       PA.BANK_NAME,
+			       PA.CARD_NO,
+			       TO_CHAR(PA.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+			       TO_CHAR(PA.CREATE_DATE,'HH24:MI:SS') CREATE_TIME,
+			       NVL(HE.LOCAL_NAME,PA.CREATED_BY) CREATED_BY
+			  FROM PA_DATA_TO_SAP_ACTUAL PA,HR_EMPLOYEE HE
+			 WHERE PA.CREATED_BY = HE.PERSON_ID(+)
+			   AND PA.CPNY_ID = 'C01'
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sapYear">
+			<isNotEmpty property="sapMonth">
+				<![CDATA[
+					PA.PA_MONTH = #sapYear:VARCHAR# || #sapMonth:VARCHAR# 
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SAP_GIVE_DATE">
+			<![CDATA[
+				PA.GIVE_DATE = #SAP_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEND_DATE">
+			<![CDATA[
+				PA.SEND_DATE = #SEND_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			) SS
+		]]>
+	</select>
+	
+	<select id="checkEmpSapInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.CPNY_ID,
+			       PA.PA_MONTH,
+			       PA.EMPID,
+			       PA.LOCAL_NAME,
+			       HPI.CARD_NAME,
+			       HDN.CONTENT DEPARTMENT,
+			       GG.CONTENT DEPT_DISTINGUISH_NAME,
+			       HPI.BANK_ID,
+			       GB.CONTENT BANK_NAME,
+			       HPI.CARD_NO,
+			       HPI.BANK_BRANCH_CD,
+			       HBB.BANK_BRANCH_NAME_CN
+			  FROM PA_SUMMARY_C01     PA,
+			       HR_EMPLOYEE        HE,
+			       HR_PERSONAL_INFO   HP,
+			       HR_DEPARTMENT      HD,
+			       HR_DEPARTMENT_NAME HDN,
+			       HR_EMP_PA_INFO     HPI,
+			       HR_BANK            HB,
+			       HR_BANK_BRANCH     HBB,
+			       SY_GLOBAL_NAME     GG,
+			       SY_GLOBAL_NAME     GB
+			 WHERE PA.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HE.PERSON_ID = PA.PERSON_ID
+			   AND HE.PERSON_ID = HP.PERSON_ID
+			   AND PA.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPTNO = HDN.DEPTNO(+)
+			   AND HDN.LANGUAGE(+) = 'zh'
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = 'zh'
+			   AND HB.BANK_ID = GB.NO(+)
+			   AND GB.LANGUAGE(+) = 'zh'
+			   AND HPI.BANK_BRANCH_CD = HBB.BANK_BRANCH_CD(+)
+			   AND PA.ACTUAL_RELEASE_SALARY <> 0
+			   AND PA.ACTUAL_RELEASE_SALARY < 50000
+			   AND HPI.BANK_ID = HB.BANK_ID(+)
+			   AND (
+			   		 (
+			   		   HP.NATIONALITY_CODE = '871' AND
+			           (
+			             HPI.BANK_ID IS NULL OR HPI.CARD_NO IS NULL OR 
+			             PA.LOCAL_NAME IS NULL OR HE.LOCAL_NAME IS NULL OR HPI.CARD_NAME IS NULL OR
+       					 HE.LOCAL_NAME <> PA.LOCAL_NAME OR PA.LOCAL_NAME <> HPI.CARD_NAME OR 
+			             (HPI.BANK_ID = '1031' AND HPI.BANK_BRANCH_CD IS NULL)
+			            )
+			          ) 
+			         OR
+			         (
+			           HP.NATIONALITY_CODE <> '871' AND
+			           (
+			           	 HPI.BANK_ID IS NULL OR HPI.CARD_NO IS NULL OR HPI.CARD_NAME IS NULL OR
+			             (HPI.BANK_ID = '1031' AND HPI.BANK_BRANCH_CD IS NULL)
+			            )
+			          )
+			        )
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FIRM_GIVE_DATE">
+			<![CDATA[
+				TO_CHAR(PA.GIVE_DATE,'YYYY-MM-DD') = #FIRM_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<!-- 异常人员信息导出专用  start -->
+			<!--C(现金人员)、W(待转账人员不发送)-->
+			<isEqual prepend="AND" property="FIRM_SEND_TYPE" compareValue="ALL_TYPE">
+				<![CDATA[
+					PA.PERSON_ID NOT IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE IN('C','W') AND PA_MONTH = #PA_MONTH:VARCHAR#)
+				]]>
+	        </isEqual>
+	        <!--F转账人员发送-->
+	        <isEqual prepend="AND" property="FIRM_SEND_TYPE" compareValue="PART_TYPE">
+				<![CDATA[
+					PA.PERSON_ID IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE = 'F' AND PA_MONTH = #PA_MONTH:VARCHAR#)
+				]]>
+	        </isEqual>
+        <!-- 异常人员信息导出专用  end -->
+        
+        <!-- 转账信息发送专用 start -->
+	        <!--C(现金人员)、W(待转账人员不发送)-->
+			<isEqual prepend="AND" property="SEND_TYPE" compareValue="ALL_TYPE">
+				<![CDATA[
+					PA.PERSON_ID NOT IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE IN('C','W') AND PA_MONTH = #PA_MONTH:VARCHAR#)
+				]]>
+	        </isEqual>
+	        <!--F转账人员发送-->
+	        <isEqual prepend="AND" property="SEND_TYPE" compareValue="PART_TYPE">
+				<![CDATA[
+					PA.PERSON_ID IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE = 'F' AND PA_MONTH = #PA_MONTH:VARCHAR#)
+				]]>
+	        </isEqual>
+        <!-- 转账信息发送专用 start -->
+        
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA.DEPTNO,PA.EMPID
+		]]>
+	</select>
+	
+	<delete id="deleteZhaBeiAndJiaXingCash" parameterClass="linkMap">
+	    <![CDATA[
+	      DELETE FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL A WHERE 1 = 1
+	    ]]>
+	    <isNotEmpty prepend="AND" property="PA_MONTH">
+	      <![CDATA[
+	        A.PA_MONTH = #PA_MONTH:VARCHAR#
+	      ]]>
+	    </isNotEmpty>
+	    <isNotEmpty prepend="AND" property="PERSON_ID">
+	      <![CDATA[
+	        A.PERSON_ID = #PERSON_ID:VARCHAR#
+	      ]]>
+	    </isNotEmpty>
+	</delete>
+	
+	<insert id="addZhaBeiAndJiaXingCash" parameterClass="linkMap">
+    	<![CDATA[
+	      INSERT INTO PA_DATA_TO_SAP_ACTUAL_SPECIAL
+	          (PA_MONTH,
+	           PERSON_ID,
+	           SEND_TYPE,
+	           CREATED_BY,
+	           CREATE_DATE,
+	           ACTIVITY)
+	        VALUES
+	          (
+	           #PA_MONTH:VARCHAR#,
+	           #PERSON_ID:VARCHAR#,
+	           #SEND_TYPE:VARCHAR#,
+	           'IT' ,
+	           SYSDATE,
+	           1
+	           )
+    	]]>
+  	</insert>
+  	<!-- 2013-12-13 原来只有闸北、嘉兴店，现在加一个苏州店，一个徐州店 -->
+	<select id="getZhaBeiAndJiaXingEmpPaInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA_MONTH, EMPID, PERSON_ID, LOCAL_NAME, 'C' SEND_TYPE
+			  FROM PA_SUMMARY_C01
+			 WHERE 1 = 1
+			   AND PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND TO_CHAR(GIVE_DATE,'YYYY-MM-DD') = #FIRM_GIVE_DATE:VARCHAR#
+			   AND (DEPT_DISTINGUISH_NO IN ('21972', '122037', '20723', '123523') OR
+			       DEPT_DISTINGUISH_NAME IN ('(85)闸北店', '(87)嘉兴店', '(86)苏州华元店', '(97)徐州万达店'))
+		]]>
+	</select>
+	
+	<select id="getC01PaActualSalaryInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT PA.CPNY_ID,
+			       PA.PA_MONTH,
+			       TO_CHAR(PA.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE,
+			       #SAP_SEND_DATE:VARCHAR# SEND_DATE,
+			       PA.EMPID,
+			       PA.LOCAL_NAME PA_NAME,
+       			   HPI.CARD_NAME EMP_NAME,
+			       nvl(PA.ACTUAL_RELEASE_SALARY,0) ACTUAL_RELEASE_SALARY, 
+			       HD.DEPT_DISTINGUISH_NO,
+			       GG.CONTENT DEPT_DISTINGUISH_NAME,
+			       HPI.BANK_ID,
+			       get_global_name(HB.BANK_NO, 'zh') BANK_NAME,
+			       get_global_name(HB.BANK_NO, 'ko') BANK_KO_NAME,
+			       get_global_name(HB.BANK_NO, 'en') BANK_EN_NAME,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+			       HPI.CARD_NO,
+       			   HPI.BANK_BRANCH_CD,
+                   PA.DEPTNO
+			  FROM PA_SUMMARY_C01 PA, 
+			       HR_EMPLOYEE    HE,
+			       HR_DEPARTMENT  HD, 
+			       HR_EMP_PA_INFO HPI, 
+			       HR_BANK        HB,
+			       SY_GLOBAL_NAME GG
+			 WHERE PA.PERSON_ID = HPI.PERSON_ID(+)
+			   AND HE.PERSON_ID = PA.PERSON_ID
+			   AND PA.DEPTNO = HD.DEPTNO(+)
+			   AND HD.DEPT_DISTINGUISH_NO = GG.NO(+)
+			   AND GG.LANGUAGE(+) = 'zh'
+			   AND PA.ACTUAL_RELEASE_SALARY <> 0
+			   AND PA.ACTUAL_RELEASE_SALARY < 50000
+			   AND HPI.BANK_ID = HB.BANK_ID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				PA.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SAP_GIVE_DATE">
+			<![CDATA[
+				TO_CHAR(PA.GIVE_DATE,'YYYY-MM-DD') = #SAP_GIVE_DATE:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<!--C(现金人员)、W(待转账人员不发送)-->
+		<isEqual prepend="AND" property="SEND_TYPE" compareValue="ALL_TYPE">
+			<![CDATA[
+				PA.PERSON_ID NOT IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE IN('C','W') AND PA_MONTH = #PA_MONTH:VARCHAR#)
+			]]>
+        </isEqual>
+        <!--F转账人员发送-->
+        <isEqual prepend="AND" property="SEND_TYPE" compareValue="PART_TYPE">
+			<![CDATA[
+				PA.PERSON_ID IN(SELECT PERSON_ID FROM PA_DATA_TO_SAP_ACTUAL_SPECIAL WHERE SEND_TYPE = 'F' AND PA_MONTH = #PA_MONTH:VARCHAR#)
+			]]>
+        </isEqual>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				PA.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY PA.DEPTNO,PA.EMPID
+		]]>
+	</select>
+	
+	<select id="getC01SapActualSalarySendCount" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT to_number(nvl(MAX(SEND_COUNT),0) + 1)
+			  FROM PA_DATA_TO_SAP_ACTUAL PA
+			 WHERE PA.PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND PA.EMPID = #EMPID:VARCHAR#
+			   AND PA.GIVE_DATE = #GIVE_DATE:VARCHAR#
+			   AND PA.SEND_DATE = #SEND_DATE:VARCHAR#
+		]]>
+	</select>
+	
+	<insert id="insertC01PaActual" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DATA_TO_SAP_ACTUAL
+		          (CPNY_ID,
+		           PA_MONTH,
+		           GIVE_DATE,
+		           SEND_DATE,
+		           SEND_COUNT,
+		           DEPTNO,
+		           EMPID,
+		           EMP_NAME,
+		           ACTUAL_RELEASE_SALARY,
+		           BANK_ID,
+		           BANK_NAME,
+		           BANK_KO_NAME,
+		           BANK_EN_NAME,
+		           CARD_NO,
+		           BANK_BRANCH_CD,
+		           DEPT_DISTINGUISH_NO,
+		           DEPT_DISTINGUISH_NAME,
+		           MAKE_TYPE,
+		           CREATE_DATE,
+		           CREATED_BY,
+		           ACTIVITY)
+		        VALUES
+				  (#CPNY_ID:VARCHAR#,
+				   #PA_MONTH:VARCHAR#,
+				   #GIVE_DATE:VARCHAR#,
+				   #SEND_DATE:VARCHAR#,
+				   #SEND_COUNT:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   #EMPID:VARCHAR#,
+				   #EMP_NAME:VARCHAR#,
+				   #ACTUAL_RELEASE_SALARY:VARCHAR#,
+				   
+				   #BANK_ID:VARCHAR#,
+				   #BANK_NAME:VARCHAR#,
+				   #BANK_KO_NAME:VARCHAR#,
+				   #BANK_EN_NAME:VARCHAR#,
+				   #CARD_NO:VARCHAR#,
+				   #BANK_BRANCH_CD:VARCHAR#,
+				   
+				   #DEPT_DISTINGUISH_NO:VARCHAR#,
+				   #DEPT_DISTINGUISH_NAME:VARCHAR#,
+				   
+				   #MAKE_TYPE:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+	<select id="getC01EmpInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SS.CPNY_ID,
+			       SS.EMPID,
+			       SS.LOCAL_NAME,
+			       SS.KOREAN_NAME,
+			       SS.ENGLISH_NAME,
+			       SS.DEPTNO,
+			       B.CONTENT DEPT_NAME,
+			       C.CONTENT DEPT_KO_NAME,
+			       D.CONTENT DEPT_EN_NAME,
+			       SS.DUTY_NO,
+			       SS.DUTY_NAME,
+			       SS.DUTY_KO_NAME,
+			       SS.DUTY_EN_NAME,
+			       SS.HOME_PHONE,
+			       SS.CELLPHONE,
+			       SS.IDCARD_NO,
+			       SS.EMP_OFFICE,
+			       SS.CARD_NO,
+			       SS.BANK_ID,
+			       SS.BANK_NAME,
+			       SS.BANK_KO_NAME,
+			       SS.BANK_EN_NAME,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE
+			  FROM (SELECT HE.CPNY_ID,
+			               HE.EMPID,
+			               HE.PERSON_ID,
+			               HE.LOCAL_NAME,
+			               HE.KOREAN_NAME,
+			               HE.ENGLISH_NAME,
+			               HE.DEPTNO,
+			               HE.DUTY_NO,
+			               get_global_name(HE.DUTY_NO, 'zh') DUTY_NAME,
+			               get_global_name(HE.DUTY_NO, 'ko') DUTY_KO_NAME,
+			               get_global_name(HE.DUTY_NO, 'en') DUTY_EN_NAME,
+			               HP.HOME_PHONE,
+			               HP.CELLPHONE,
+			               HP.IDCARD_NO,
+			               decode(HE.EMP_OFFICE,'15120','0','1') EMP_OFFICE, 
+			               HPI.CARD_NO,
+			               HPI.BANK_ID,
+			               get_global_name(HB.BANK_NO, 'zh') BANK_NAME,
+			               get_global_name(HB.BANK_NO, 'ko') BANK_KO_NAME,
+			               get_global_name(HB.BANK_NO, 'en') BANK_EN_NAME,
+			               HD.DEPT_DISTINGUISH_NO,
+			               get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') DEPT_DISTINGUISH_NAME
+			          FROM HR_EMPLOYEE      HE,
+			               HR_DEPARTMENT    HD,
+			               HR_PERSONAL_INFO HP,
+			               HR_EMP_PA_INFO   HPI,
+			               HR_BANK          HB
+			         WHERE HE.CPNY_ID = 'C01'
+		]]>
+		<isNotEmpty prepend="AND" property="SEND_TYPE">
+			<![CDATA[
+				HE.EMPID IN(SELECT EMPID FROM PA_DATA_TO_SAP_EMP_SPECIAL)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			           AND HE.DEPTNO = HD.DEPTNO(+)
+			           AND HE.PERSON_ID = HP.PERSON_ID(+)
+			           AND HE.PERSON_ID = HPI.PERSON_ID(+)
+			           AND HPI.BANK_ID = HB.BANK_ID(+)) SS
+			  LEFT OUTER JOIN HR_DEPARTMENT_NAME B ON SS.DEPTNO = B.DEPTNO AND B.LANGUAGE = 'zh'
+			  LEFT OUTER JOIN HR_DEPARTMENT_NAME C ON SS.DEPTNO = C.DEPTNO AND C.LANGUAGE = 'ko'
+			  LEFT OUTER JOIN HR_DEPARTMENT_NAME D ON SS.DEPTNO = D.DEPTNO AND D.LANGUAGE = 'en'
+			 ORDER BY SS.DEPTNO, SS.EMPID
+		]]>
+	</select>
+	
+	<select id="getC01SapEmpByPersonid" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  		SELECT HE.CPNY_ID,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.KOREAN_NAME,
+			       HE.ENGLISH_NAME,
+			       HE.DEPTNO,
+			       HE.DEPT_NAME,
+			       HE.DEPT_KO_NAME,
+			       HE.DEPT_EN_NAME,
+			       HE.DUTY_NO,
+			       HE.DUTY_NAME,
+			       HE.DUTY_KO_NAME,
+			       HE.DUTY_EN_NAME,
+			       HE.HOME_PHONE,
+			       HE.CELLPHONE,
+			       HE.IDCARD_NO,
+			       HE.EMP_OFFICE,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+			       HE.CARD_NO,
+			       HE.BANK_ID,
+			       HE.BANK_NAME,
+			       HE.BANK_KO_NAME,
+			       HE.BANK_EN_NAME
+			  FROM PA_DATA_TO_SAP_EMP HE
+			 WHERE 1 = 1
+			   AND ROWNUM = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				HE.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	<delete id="deleteC01EmpInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_DATA_TO_SAP_EMP A WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				A.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				A.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<insert id="insertC01EmpInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DATA_TO_SAP_EMP
+		          (CPNY_ID,
+		           EMPID,
+		           LOCAL_NAME,
+		           KOREAN_NAME,
+		           ENGLISH_NAME,
+		           DEPTNO,
+		           DEPT_NAME,
+		           DEPT_KO_NAME,
+		           DEPT_EN_NAME,
+		           DUTY_NO,
+		           DUTY_NAME,
+		           DUTY_KO_NAME,
+		           DUTY_EN_NAME,
+		           HOME_PHONE,
+		           CELLPHONE,
+		           IDCARD_NO,
+		           EMP_OFFICE,
+		           CARD_NO,
+		           BANK_ID,
+		           BANK_NAME,
+		           BANK_KO_NAME,
+		           BANK_EN_NAME,
+		           MAKE_TYPE,
+		           CREATE_DATE,
+		           CREATED_BY,
+		           ACTIVITY)
+		        VALUES
+				  (#CPNY_ID:VARCHAR#,
+				   #EMPID:VARCHAR#,
+				   #LOCAL_NAME:VARCHAR#,
+				   #KOREAN_NAME:VARCHAR#,
+				   #ENGLISH_NAME:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   
+				   #DEPT_NAME:VARCHAR#,
+				   #DEPT_KO_NAME:VARCHAR#,
+				   #DEPT_EN_NAME:VARCHAR#,
+				   
+				   #DUTY_NO:VARCHAR#,
+				   #DUTY_NAME:VARCHAR#,
+				   #DUTY_KO_NAME:VARCHAR#,
+				   #DUTY_EN_NAME:VARCHAR#,
+				   
+				   #HOME_PHONE:VARCHAR#,
+				   #CELLPHONE:VARCHAR#,
+				   #IDCARD_NO:VARCHAR#,
+				   #EMP_OFFICE:VARCHAR#,
+				   #CARD_NO:VARCHAR#,
+				   
+				   #BANK_ID:VARCHAR#,
+				   #BANK_NAME:VARCHAR#,
+				   #BANK_KO_NAME:VARCHAR#,
+				   #BANK_EN_NAME:VARCHAR#,
+				   
+				   #MAKE_TYPE:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+	<select id="getC01EmpPostInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT SS.CPNY_ID,
+			       SS.EMPID,
+			       SS.EMP_NAME,
+			       
+			       SS.POSITION_NAME,
+			       SS.POSITION_KO_NAME,
+			       SS.POSITION_EN_NAME,
+			       
+			       SS.DUTY_NAME,
+			       SS.DUTY_KO_NAME,
+			       SS.DUTY_EN_NAME,
+			       
+			       SS.POST_NAME,
+			       SS.POST_KO_NAME,
+			       SS.POST_EN_NAME,
+			       
+			       SS.DATE_LEFT,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+			       SS.DEPTNO,
+			       B.CONTENT DEPT_NAME,
+			       C.CONTENT DEPT_KO_NAME,
+			       D.CONTENT DEPT_EN_NAME,
+			       SS.DEPT_DISTINGUISH_NO,
+			       SS.DEPT_DISTINGUISH_NAME
+			  FROM (SELECT HE.CPNY_ID,
+			               HE.EMPID,
+			               HE.LOCAL_NAME EMP_NAME,
+			               get_global_name(HE.POSITION_NO, 'zh') POSITION_NAME,
+			               get_global_name(HE.POSITION_NO, 'ko') POSITION_KO_NAME,
+			               get_global_name(HE.POSITION_NO, 'en') POSITION_EN_NAME,
+			               
+			               get_global_name(HE.DUTY_NO, 'zh') DUTY_NAME,
+			               get_global_name(HE.DUTY_NO, 'ko') DUTY_KO_NAME,
+			               get_global_name(HE.DUTY_NO, 'en') DUTY_EN_NAME,
+			               
+			               get_global_name(HE.POST_NO, 'zh') POST_NAME,
+			               get_global_name(HE.POST_NO, 'ko') POST_KO_NAME,
+			               get_global_name(HE.POST_NO, 'en') POST_EN_NAME,
+			               TO_CHAR(HE.DATE_LEFT, 'YYYYMMDD') DATE_LEFT,
+			               HE.DEPTNO,
+			               HD.DEPT_DISTINGUISH_NO,
+			               get_global_name(HD.DEPT_DISTINGUISH_NO, 'zh') DEPT_DISTINGUISH_NAME
+			          FROM HR_EMPLOYEE HE,HR_DEPARTMENT HD
+			         WHERE HE.CPNY_ID = 'C01'
+		]]>
+		<isNotEmpty prepend="AND" property="SEND_TYPE">
+			<![CDATA[
+				HE.EMPID IN(SELECT EMPID FROM PA_DATA_TO_SAP_EMPPOST_SPECIAL)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			           AND HE.DEPTNO = HD.DEPTNO(+)) SS
+			        LEFT OUTER JOIN HR_DEPARTMENT_NAME B ON SS.DEPTNO = B.DEPTNO AND B.LANGUAGE = 'zh'
+			        LEFT OUTER JOIN HR_DEPARTMENT_NAME C ON SS.DEPTNO = C.DEPTNO AND C.LANGUAGE = 'ko'
+			        LEFT OUTER JOIN HR_DEPARTMENT_NAME D ON SS.DEPTNO = D.DEPTNO AND D.LANGUAGE = 'en'
+		]]>
+	</select>
+	
+	<select id="getC01SapEmpPostByEmpid" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[  
+	  		SELECT HE.CPNY_ID,
+			       HE.EMPID,
+			       HE.EMP_NAME,
+			       
+			       HE.POSITION_NAME,
+			       HE.POSITION_KO_NAME,
+			       HE.POSITION_EN_NAME,
+			       
+			       HE.DUTY_NAME,
+			       HE.DUTY_KO_NAME,
+			       HE.DUTY_EN_NAME,
+			       
+			       HE.POST_NAME,
+			       HE.POST_KO_NAME,
+			       HE.POST_EN_NAME,
+			       
+			       HE.DATE_LEFT,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+			       HE.DEPTNO,
+			       HE.DEPT_NAME,
+			       HE.DEPT_KO_NAME,
+			       HE.DEPT_EN_NAME,
+			       HE.DEPT_DISTINGUISH_NO,
+			       HE.DEPT_DISTINGUISH_NAME
+			  FROM PA_DATA_TO_SAP_EMPPOST HE
+			 WHERE 1 = 1
+			   AND ROWNUM = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				HE.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HE.DEPTNO,HE.EMPID
+		]]>
+	</select>
+	
+	<delete id="deleteC01EmpPost" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_DATA_TO_SAP_EMPPOST A WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				A.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				A.EMPID = #EMPID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<insert id="insertC01EmpPost" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DATA_TO_SAP_EMPPOST
+		          (CPNY_ID,
+		           EMPID,
+		           EMP_NAME,
+		           POSITION_NAME,
+		           POSITION_KO_NAME,
+		           POSITION_EN_NAME,
+		           DUTY_NAME,
+		           DUTY_KO_NAME,
+		           DUTY_EN_NAME,
+		           POST_NAME,
+		           POST_KO_NAME,
+		           POST_EN_NAME,
+		           DATE_LEFT,
+		           DEPTNO,
+		           DEPT_NAME,
+		           DEPT_KO_NAME,
+		           DEPT_EN_NAME,
+		           DEPT_DISTINGUISH_NO,
+		           DEPT_DISTINGUISH_NAME,
+		           
+		           MAKE_TYPE,
+		           CREATE_DATE,
+		           CREATED_BY,
+		           ACTIVITY)
+		        VALUES
+				  (#CPNY_ID:VARCHAR#,
+				   #EMPID:VARCHAR#,
+				   #EMP_NAME:VARCHAR#,
+				   #POSITION_NAME:VARCHAR#,
+				   #POSITION_KO_NAME:VARCHAR#,
+				   #POSITION_EN_NAME:VARCHAR#,
+				   
+				   #DUTY_NAME:VARCHAR#,
+				   #DUTY_KO_NAME:VARCHAR#,
+				   #DUTY_EN_NAME:VARCHAR#,
+				   
+				   #POST_NAME:VARCHAR#,
+				   #POST_KO_NAME:VARCHAR#,
+				   #POST_EN_NAME:VARCHAR#,
+				   
+				   #DATE_LEFT:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   #DEPT_NAME:VARCHAR#,
+				   #DEPT_KO_NAME:VARCHAR#,
+				   #DEPT_EN_NAME:VARCHAR#,
+				   #DEPT_DISTINGUISH_NO:VARCHAR#,
+				   #DEPT_DISTINGUISH_NAME:VARCHAR#,
+				   
+				   #MAKE_TYPE:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+	<select id="getC01DepartMentInfoList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  		SELECT SS.CPNY_ID,
+			       SS.DEPTNO,
+			       B.CONTENT DEPT_NAME,
+			       C.CONTENT DEPT_KO_NAME,
+			       D.CONTENT DEPT_EN_NAME,
+			       SS.DATE_CREATED,
+			       SS.DATE_ENDED,
+			       SS.ACTIVITY,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+			       SS.DEPT_LEVEL
+			  FROM (SELECT HD.CPNY_ID,
+			               HD.DEPTNO,
+			               TO_CHAR(HD.DATE_CREATED, 'YYYY-MM-DD') DATE_CREATED,
+			               TO_CHAR(HD.DATE_ENDED, 'YYYY-MM-DD') DATE_ENDED,
+			               HD.ACTIVITY,
+			               HD.DEPT_LEVEL
+			          FROM HR_DEPARTMENT HD
+			         WHERE HD.CPNY_ID = 'C01'
+			           ) SS
+			  LEFT OUTER JOIN HR_DEPARTMENT_NAME B ON SS.DEPTNO = B.DEPTNO AND B.LANGUAGE = 'zh'
+			  LEFT OUTER JOIN HR_DEPARTMENT_NAME C ON SS.DEPTNO = C.DEPTNO AND C.LANGUAGE = 'ko'
+			  LEFT OUTER JOIN HR_DEPARTMENT_NAME D ON SS.DEPTNO = D.DEPTNO AND D.LANGUAGE = 'en'
+		]]>
+	</select>
+	
+	<select id="getC01SapDeptByDeptno" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  		SELECT HD.CPNY_ID,
+			       HD.DEPTNO,
+			       HD.DEPT_NAME,
+			       HD.DEPT_KO_NAME,
+			       HD.DEPT_EN_NAME,
+			       HD.DATE_CREATED,
+			       HD.DATE_ENDED,
+			       #MAKE_TYPE:VARCHAR# AS MAKE_TYPE,
+			       HD.DEPT_LEVEL,
+			       HD.ACTIVITY
+			  FROM PA_DATA_TO_SAP_DEPARTMENT HD
+			 WHERE 1 = 1
+			   AND ROWNUM = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HD.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HD.DEPTNO
+		]]>
+	</select>
+	
+	<delete id="deleteC01DepartMent" parameterClass="linkMap">
+		<![CDATA[
+			DELETE FROM PA_DATA_TO_SAP_DEPARTMENT A WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				A.CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				A.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</delete>
+	
+	<insert id="insertC01DepartMent" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_DATA_TO_SAP_DEPARTMENT
+		          (CPNY_ID,
+		           DEPTNO,
+		           DEPT_NAME,
+		           DEPT_KO_NAME,
+		           DEPT_EN_NAME,
+		           DATE_CREATED,
+		           DATE_ENDED,
+		           DEPT_LEVEL,
+ 				   ACTIVITY,
+ 				   
+		           MAKE_TYPE,
+		           CREATE_DATE,
+		           CREATED_BY
+		           )
+		        VALUES
+				  (#CPNY_ID:VARCHAR#,
+				   #DEPTNO:VARCHAR#,
+				   #DEPT_NAME:VARCHAR#,
+				   #DEPT_KO_NAME:VARCHAR#,
+				   #DEPT_EN_NAME:VARCHAR#,
+				   
+				   #DATE_CREATED:VARCHAR#,
+				   #DATE_ENDED:VARCHAR#,
+				   #DEPT_LEVEL:VARCHAR#,
+				   #ACTIVITY:VARCHAR#,
+				   
+				   #MAKE_TYPE:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#)
+		]]>
+	</insert>
+	
+</sqlMap>

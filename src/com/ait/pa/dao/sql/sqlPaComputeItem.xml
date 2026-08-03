@@ -1,0 +1,994 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.paComputeItem">
+
+	<sql id="getPaComputeItemListCondition">
+
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #ITEM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NO">
+			<![CDATA[
+		 		  T.ITEM_NO = #NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="ITEM_ID">
+			<![CDATA[
+		 		  T.ITEM_ID like '%' || #ITEM_ID:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  (SY.CONTENT LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+	</sql>
+
+	<select id="getPaComputeItemList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.ITEM_NO,
+			       SY.CONTENT ITEM_NAME,
+			       T.DESCR,
+			       T.DATATYPE,
+			       T.ITEM_ID
+			  FROM PA_ITEM        T,
+			       SY_GLOBAL_NAME SY
+			 WHERE T.ITEM_NO = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+               AND T.ACTIVITY IN (1,11)
+		]]>
+
+		<isNotEmpty prepend="AND" property="INPUT_ITEM_PARAM">	
+			<![CDATA[   
+				  T.ITEM_NO NOT IN (SELECT P.ITEM_NO FROM PA_ITEM_PARAM P 
+				   WHERE P.CPNY_ID=#interCpnyID:VARCHAR# 
+				   AND P.ITEM_NO IS NOT NULL)			
+			]]>
+		</isNotEmpty>
+
+		<include refid="getPaComputeItemListCondition" />
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY ITEM_NO
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getPaComputeItemCnt" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			    FROM PA_ITEM T, SY_GLOBAL_NAME SY
+					 WHERE T.ITEM_NO = SY.NO(+)
+					   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+
+		<include refid="getPaComputeItemListCondition" />
+
+	</select>
+
+	<select id="checkAddPaComputeItemInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(ITEM_NO)
+			  FROM PA_ITEM T 
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_ID">
+				<![CDATA[
+			 		  T.ITEM_ID = #ITEM_ID:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+				<![CDATA[
+			 		  T.ITEM_NO = #ITEM_NO:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="NO">
+				<![CDATA[
+			 		  T.ITEM_NO <> #NO:NUMERIC#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+
+
+	<insert id="addPaComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_ITEM
+				(
+					ITEM_NO,
+					ACTIVITY,
+					DESCR,
+					DATATYPE,
+					ORDERNO,
+					ITEM_ID,
+					CREATE_DATE,
+					CREATED_BY,
+					CREATED_IP
+				)
+			VALUES(
+					#NO:VARCHAR#,
+					1,
+					#DESCR:VARCHAR#,
+					#DATATYPE:VARCHAR#,
+					(SELECT MAX(NVL(ORDERNO,0))+1 FROM PA_ITEM),
+					#ITEM_ID:VARCHAR#,
+					SYSDATE,
+					#adminID:VARCHAR#,
+					#adminIP:VARCHAR#
+				)
+		]]>
+	</insert>
+
+	<insert id="addPaComputeItemInfoAffirm" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_ITEM
+				(
+					ITEM_NO,
+					ACTIVITY,
+					DESCR,
+					DATATYPE,
+					ORDERNO,
+					ITEM_ID,
+					CREATE_DATE,
+					CREATED_BY
+				)
+			VALUES(
+					#ITEM_NO:VARCHAR#,
+					#ACTIVITY:NUMBER#,
+					#DESCR:VARCHAR#,
+					#DATATYPE:VARCHAR#,
+					(SELECT MAX(NVL(ORDERNO,0))+1 FROM PA_ITEM),
+					#ITEM_ID:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#
+				)
+		]]>
+	</insert>
+
+	<update id="updatePaComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_ITEM SET
+					ITEM_ID = #ITEM_ID:VARCHAR#,
+					DESCR = #DESCR:VARCHAR#,
+					DATATYPE = #DATATYPE:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE ITEM_NO = #NO:VARCHAR#
+					
+		]]>
+	</update>
+
+
+	<update id="updatePCInfoByCalcuOrder" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_ITEM_PARAM SET
+				   CALCU_ORDER = #ORDER:VARCHAR#
+			WHERE  CALCU_ORDER = #CALORDER:VARCHAR#
+			  AND  CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+
+	<update id="updatePCInfoByParamNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_ITEM_PARAM SET
+					CALCU_ORDER = #CALORDER:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</update>
+
+
+
+	<select id="checkDeletePaComputeItemInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT (SELECT COUNT(*) FROM PA_ITEM_PARAM WHERE ITEM_NO =  #NO:VARCHAR#) + 
+				   (SELECT COUNT(*) FROM PA_FORMULAR WHERE ITEM_NO =  #NO:VARCHAR#) +
+			       (SELECT COUNT(*)
+			          FROM USER_TAB_COLS
+			         WHERE TABLE_NAME =  #TABLE_NAME:VARCHAR#
+			           AND COLUMN_NAME = (SELECT PA.ITEM_ID FROM PA_ITEM PA WHERE PA.ITEM_NO =  #NO:VARCHAR#)) AS A
+			  FROM DUAL
+			
+		]]>
+	</select>
+
+	<delete id="deletePaComputeItemInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_ITEM WHERE ITEM_NO = #NO:VARCHAR#
+		]]>
+	</delete>
+
+	<update id="updatePaComputeItemInfoCalOrder" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE PA_ITEM SET
+					CALCU_ORDER = #CALCU_ORDER:NUMERIC#
+			 WHERE PA_ITEM_NO = #PA_ITEM_NO:NUMERIC#
+		]]>
+	</update>
+
+
+
+	<sql id="getPaComputeItemParamCondition">
+
+		<isNotEmpty prepend="AND" property="ITEM_NO">
+			<![CDATA[
+		 		  T.ITEM_NO LIKE '%' || #ITEM_NO:VARCHAR# || '%' 
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[
+		 		  T.PARAM_NO = #PARAM_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  SY.CONTENT LIKE '%' || #KEY:VARCHAR# || '%'
+		    ]]>
+		</isNotEmpty>
+
+
+	</sql>
+
+	<select id="getPaComputeItemParamList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT T.PARAM_NO,
+		       T.ITEM_NO,
+		       PI.ITEM_ID,
+		       SY.CONTENT             ALIAS_NAME,
+		       T.CALCU_ORDER,
+		       T.PRICISION,
+		       T.CARRY_BIT,
+		       T.CPNY_ID,
+		       SY0.CONTENT            CPNY_NAME,
+		       T.APPLY_TYPE,
+		       SY1.CONTENT APPLY_TYPE_NAME,
+		       PI.SHOW_YN,
+		       PI.SHOW_ORDER,
+		       GET_ITEM_GLAG(PI.ITEM_ID,T.CPNY_ID) ITEM_FLAG,
+		       GET_ITEM_NUMBER(PI.ITEM_ID,T.CPNY_ID) ITEM_NUMBER
+		  FROM PA_ITEM_PARAM  T,
+		       PA_ITEM PI,
+		       SY_GLOBAL_NAME SY,
+		       HR_COMPANY     HR,
+		       SY_GLOBAL_NAME SY0,
+		       SY_GLOBAL_NAME SY1
+		 WHERE T.ITEM_NO = PI.ITEM_NO 
+		   AND T.ITEM_NO = SY.NO(+)
+		   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND T.CPNY_ID = HR.CPNY_ID
+		   AND HR.CPNY_NO = SY0.NO(+)
+		   AND SY0.LANGUAGE = #interLanguage:VARCHAR#
+		   AND T.APPLY_TYPE = SY1.NO(+)
+		   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND PI.ACTIVITY = 1
+		]]>
+
+		<include refid="getPaComputeItemParamCondition" />
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY CALCU_ORDER
+			]]>
+		</isEmpty>
+
+	</select>
+
+	<select id="getPaComputeItemParamListYN" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT SY.CONTENT  ITEM_NAME,
+               PI.ITEM_ID COLUMN_NAME
+		  FROM PA_ITEM_PARAM  T,
+		       PA_ITEM PI,
+		       SY_GLOBAL_NAME SY,
+		       HR_COMPANY     HR,
+		       SY_GLOBAL_NAME SY0,
+		       SY_GLOBAL_NAME SY1
+		 WHERE T.ITEM_NO = PI.ITEM_NO 
+		   AND T.ITEM_NO = SY.NO(+)
+		   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND T.CPNY_ID = HR.CPNY_ID
+		   AND HR.CPNY_NO = SY0.NO(+)
+		   AND SY0.LANGUAGE = #interLanguage:VARCHAR#
+		   AND T.APPLY_TYPE = SY1.NO(+)
+		   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND PI.SHOW_YN = 'Y'
+			   AND PI.ACTIVITY = 1
+
+		]]>
+
+		<include refid="getPaComputeItemParamCondition" />
+
+
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY PI.SHOW_ORDER
+			]]>
+		</isEmpty>
+
+	</select>
+	<!-- 为ess个人工资 查询服务。可以查出保险明细 -->
+	<select id="getPaComputeItemParamESSListYN" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT * FROM(
+		SELECT PA.ITEM_ID COLUMN_NAME,
+               SY.CONTENT ITEM_NAME,
+               T.ORDERNO
+          FROM PA_ITEM PA,
+               PA_ITEM_PARAM PAM,
+               SY_GLOBAL_NAME SY,
+               PA_SALARYCALCULATERESULT T
+         WHERE PA.ITEM_NO = PAM.ITEM_NO
+           AND PA.ITEM_NO = SY.NO
+           AND PA.ITEM_ID = T.ITEM_ID
+           AND PAM.CPNY_ID = T.CPNY_ID
+           AND SY.LANGUAGE = #interLanguage:VARCHAR#
+           AND PAM.CPNY_ID = #interCpnyID:VARCHAR# 
+		 UNION ALL
+		SELECT P.PARAM_ITEM_ID COLUMN_NAME,
+               SYP.CONTENT ITEM_NAME,
+               PT.ORDERNO
+          FROM PA_PARAM_ITEM P,
+               PA_PARAM_ITEM_PARAM PM,
+               SY_GLOBAL_NAME SYP,
+               PA_SALARYCALCULATERESULT PT
+         WHERE P.PARAM_ITEM_NO = PM.PARAM_ITEM_NO
+           AND PM.CPNY_ID = PT.CPNY_ID
+           AND P.PARAM_ITEM_NO = SYP.NO
+           AND P.PARAM_ITEM_ID = PT.ITEM_ID
+           AND SYP.LANGUAGE = #interLanguage:VARCHAR#
+           AND PT.CPNY_ID = #interCpnyID:VARCHAR# 
+		 UNION ALL
+		        SELECT PM.ITEM_ID COLUMN_NAME,
+               SYM.CONTENT ITEM_NAME,
+               TM.ORDERNO
+          FROM PA_BASIC_ITEM PM,
+               PA_BASIC_ITEM_PARAM PMM,
+               SY_GLOBAL_NAME SYM,
+               PA_SALARYCALCULATERESULT TM
+         WHERE PM.ITEM_NO = PMM.ITEM_NO
+           AND PM.ITEM_NO = SYM.NO
+           AND PM.ITEM_ID = TM.ITEM_ID
+           AND PMM.CPNY_ID = TM.CPNY_ID
+           AND SYM.LANGUAGE = #interLanguage:VARCHAR#
+           AND PMM.CPNY_ID = #interCpnyID:VARCHAR# )
+         ORDER BY to_number(ORDERNO)
+	   ]]>
+	</select>
+	
+	<!-- 为ess个人工资 查询服务。可以查出输入项目明细 ('216705','298763')-->
+	<select id="getPaParamDateList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT get_global_name(PPIP.PARAM_ITEM_NO,'zh') ITEM_NAME,
+		PPD.REMARK,PPD.RETURN_VALUE,PPD.START_MONTH,PPD.END_MONTH
+		from PA_PARAM_DATA PPD,PA_PARAM_ITEM_PARAM PPIP
+		WHERE PPD.PARAM_NO = PPIP.PARAM_NO
+		AND    PPD.up_flag<>'N'
+		AND PPD.PERSON_ID = #PERSON_ID:VARCHAR#
+		AND #arMonth:VARCHAR# BETWEEN PPD.START_MONTH AND PPD.END_MONTH
+		AND PPIP.PARAM_ITEM_NO IN 
+				(select s.PARAM_ITEM_NO
+				  from (SELECT PA.PARAM_ITEM_NO PARAM_ITEM_NO,
+				  	get_column_value(PA.PARAM_ITEM_ID,'PA_SUMMARY_'||#interCpnyID#,#PERSON_ID:VARCHAR#,#arMonth:VARCHAR#) v
+                  FROM PA_PARAM_ITEM PA,
+                       PA_PARAM_ITEM_PARAM PP
+                  WHERE PA.PARAM_ITEM_NO = PP.PARAM_ITEM_NO
+                  AND PP.CPNY_ID=#interCpnyID#) s
+                  where s.v<>0)
+                  ORDER BY PPIP.PARAM_ITEM_NO
+	   ]]>
+	</select>
+	
+	<!-- 为tr查询员工工资服务。可以查出输入项目明细 -->
+	<select id="getPaParamDateList_tr" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT get_global_name(PPIP.PARAM_ITEM_NO,'zh') ITEM_NAME,
+		PPD.REMARK,PPD.RETURN_VALUE,PPD.START_MONTH,PPD.END_MONTH
+		from PA_PARAM_DATA PPD,PA_PARAM_ITEM_PARAM PPIP,HR_EMPLOYEE E
+		WHERE PPD.PARAM_NO = PPIP.PARAM_NO
+		AND PPD.PERSON_ID = E.PERSON_ID
+		AND    PPD.up_flag<>'N'
+		AND E.EMPID = #EMP_ID:VARCHAR#
+		AND #arMonth:VARCHAR# BETWEEN PPD.START_MONTH AND PPD.END_MONTH
+		AND PPIP.PARAM_ITEM_NO IN 
+				(select s.PARAM_ITEM_NO
+				  from (SELECT PA.PARAM_ITEM_NO PARAM_ITEM_NO,
+				  	get_column_value(PA.PARAM_ITEM_ID,'PA_SUMMARY_'||#interCpnyID#,(SELECT EE.PERSON_ID FROM HR_EMPLOYEE EE WHERE EE.EMPID = #EMP_ID:VARCHAR# AND EE.CPNY_ID = #interCpnyID:VARCHAR#) ,#arMonth:VARCHAR#) v
+                  FROM PA_PARAM_ITEM PA,
+                       PA_PARAM_ITEM_PARAM PP
+                  WHERE PA.PARAM_ITEM_NO = PP.PARAM_ITEM_NO
+                  AND PP.CPNY_ID=#interCpnyID#) s
+                  where s.v<>0)
+	   ]]>
+	</select>
+	
+	<!-- 为ess个人工资 查询服务。可以查出人员信息明细 -->
+	<select id="getHrComputeItemParamESSListYN" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT * FROM(
+		 SELECT	T.DISTINCT_FIELD COLUMN_NAME, 
+			    SY.CONTENT ITEM_NAME,
+			    TT.ORDERNO
+	   FROM PA_DISTINCT_LIST T, SY_GLOBAL_NAME SY,PA_SALARYCALCULATERESULT TT
+		WHERE T.ID = SY.NO(+)
+          AND T.DISTINCT_FIELD = TT.ITEM_ID
+          AND T.CPNY_ID = TT.CPNY_ID
+		  AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		  AND T.CPNY_ID = #interCpnyID:VARCHAR# )
+         ORDER BY to_number(ORDERNO)
+	   ]]>
+	</select>
+	
+	<!-- 为ess个人工资 查询服务。可以查出考勤明细 -->
+	<select id="getArComputeItemParamESSListYN" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT * FROM(
+		SELECT AR.STA_ITEM_ID COLUMN_NAME,
+               SY.CONTENT ITEM_NAME,
+               T.ORDERNO
+          FROM AR_STA_ITEM AR,
+               AR_STA_ITEM_PARAM PAR,
+               SY_GLOBAL_NAME SY,
+               PA_SALARYCALCULATERESULT T
+         WHERE AR.ITEM_NO = PAR.ITEM_NO
+           AND AR.ITEM_NO = SY.NO
+           AND AR.STA_ITEM_ID = T.ITEM_ID
+           AND PAR.CPNY_ID = T.CPNY_ID
+           AND SY.LANGUAGE = #interLanguage:VARCHAR#
+           AND PAR.CPNY_ID = #interCpnyID:VARCHAR# 
+     UNION ALL
+    SELECT P.ITEM_ID COLUMN_NAME,
+               SYP.CONTENT ITEM_NAME,
+               PT.ORDERNO
+          FROM AR_ITEM P,
+               AR_ITEM_PARAM PM,
+               SY_GLOBAL_NAME SYP,
+               PA_SALARYCALCULATERESULT PT
+         WHERE P.ITEM_NO = PM.ITEM_NO
+           AND PM.CPNY_ID = PT.CPNY_ID
+           AND P.ITEM_NO = SYP.NO
+           AND P.ITEM_ID = PT.ITEM_ID
+           AND SYP.LANGUAGE = #interLanguage:VARCHAR#
+           AND PT.CPNY_ID = #interCpnyID:VARCHAR# )
+         ORDER BY to_number(ORDERNO)
+	   ]]>
+	</select>
+	
+	<!-- 为ess个人工资 查询服务。可以查出保险明细 -->
+	<select id="getIsComputeItemParamESSListYN" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		SELECT * FROM(
+		        SELECT ISP.ITEM_ID COLUMN_NAME,
+               SY.CONTENT ITEM_NAME,
+               T.ORDERNO
+          FROM IS_ITEM ISP,
+               IS_ITEM_PARAM PAR,
+               SY_GLOBAL_NAME SY,
+               PA_SALARYCALCULATERESULT T
+         WHERE ISP.ITEM_NO = PAR.ITEM_NO
+           AND ISP.ITEM_NO = SY.NO
+           AND ISP.ITEM_ID = T.ITEM_ID
+           AND PAR.CPNY_ID = T.CPNY_ID
+           AND SY.LANGUAGE = #interLanguage:VARCHAR#
+           AND PAR.CPNY_ID = #interCpnyID:VARCHAR# 
+     UNION ALL
+        SELECT P.PARAM_ID COLUMN_NAME,
+               SYP.CONTENT ITEM_NAME,
+               PT.ORDERNO
+          FROM IS_PARAM_ITEM P,
+               IS_PARAM_ITEM_PARAM PM,
+               SY_GLOBAL_NAME SYP,
+               PA_SALARYCALCULATERESULT PT
+         WHERE P.PARAM_ITEM_NO = PM.PARAM_ITEM_NO
+           AND PM.CPNY_ID = PT.CPNY_ID
+           AND P.PARAM_ITEM_NO = SYP.NO
+           AND P.PARAM_ID = PT.ITEM_ID
+           AND SYP.LANGUAGE = #interLanguage:VARCHAR#
+           AND PT.CPNY_ID = #interCpnyID:VARCHAR# )
+           ORDER BY to_number(ORDERNO)
+	   ]]>
+	</select>
+	<!-- 为ess个人工资报表服务，根据personId查询个人工资 -->
+	<select id="getEssPa" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+			SELECT 
+				   HR_EMPLOYEE.EMPID,
+				   HR_EMPLOYEE.PERSON_ID,
+				   HR_EMPLOYEE.LOCAL_NAME,
+				   HR_DEPARTMENT_NAME.CONTENT DEPTNAME,
+				   PA.PA_MONTH
+				   $sqlStatement$
+			  FROM pa_summary_HTSV PA, 
+				   HR_EMPLOYEE,
+				   HR_DEPARTMENT_NAME
+			 WHERE PA.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND PA.PA_MONTH = #arMonth:VARCHAR#
+			   AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+			   AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ]]>
+        <isNotEmpty prepend="AND" property="EMP_ID">
+			<![CDATA[
+			      HR_EMPLOYEE.EMPID = #EMP_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="EMP_ID">
+		    1=1
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			      HR_EMPLOYEE.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		</isEmpty>
+        <isNotEmpty prepend="AND" property="PERSON_ID_INFO">
+			<![CDATA[
+			       EXISTS ( SELECT *
+	  	 		  	        FROM PA_SUPERVISOR_INFO 
+						   WHERE HR_EMPLOYEE.DEPTNO = PA_SUPERVISOR_INFO.DEPTNO
+	 					     AND PA_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID_INFO:VARCHAR#
+	 	 		  	 	)
+	 	 		
+				AND   EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_EMPTYPE_INFO
+					 WHERE PA_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE
+					   AND PA_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #PERSON_ID_INFO:VARCHAR#
+		 		  )
+	 	 		  	 	
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	<!-- 为ess个人工资报表服务，根据personId查询个人人员类型 -->
+		<select id="getEmpTypeCodeForPersonId" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+                    SELECT E.EMP_TYPE_CODE ,S.CONTENT EMP_TYPE_NAME
+                    FROM HR_EMPLOYEE E,SY_GLOBAL_NAME S
+                    WHERE E.EMP_TYPE_CODE = S.NO
+                      AND E.CPNY_ID =#interCpnyID:VARCHAR#
+				  	  AND E.PERSON_ID = #PERSON_ID:VARCHAR#
+		 ]]>
+		
+	</select>
+	<!-- 为ess个人工资报表服务，根据personId查询个人工资 
+	<select id="getEssHr" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+			 SELECT 
+			       HR_DEPARTMENT_NAME.CONTENT DEPTNAME
+				   $sqlStatement$
+			  FROM HR_EMPLOYEE E,HR_DEPARTMENT_NAME
+			 WHERE E.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO
+			   AND HR_DEPARTMENT_NAME.LANGUAGE = #interLanguage:VARCHAR#
+			   AND E.CPNY_ID = #interCpnyID:VARCHAR#
+				  
+		 ]]>
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			     E.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	</select>-->
+	
+	<!-- 为ess个人工资报表服务，根据personId查询个人工资  从summary表中查，所有字段都在。-->
+	<select id="getEssHr" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+			 SELECT 
+			       DEPT_NAME DEPTNAME
+				   $sqlStatement$
+			  FROM PA_SUMMARY_HTSV E
+			 WHERE CPNY_ID = #interCpnyID:VARCHAR#
+				  
+		 ]]>
+		<isNotEmpty prepend="AND" property="EMP_ID">
+			<![CDATA[
+			     E.EMPID = #EMP_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="EMP_ID">
+		    1=1
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+			<![CDATA[
+			      E.PERSON_ID = #PERSON_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		</isEmpty>
+        <isNotEmpty prepend="AND" property="PERSON_ID_INFO">
+			<![CDATA[
+			       EXISTS ( SELECT *
+	  	 		  	        FROM PA_SUPERVISOR_INFO 
+						   WHERE E.DEPTNO = PA_SUPERVISOR_INFO.DEPTNO
+	 					     AND PA_SUPERVISOR_INFO.PERSON_ID = #PERSON_ID_INFO:VARCHAR#
+	 	 		  	 	)
+	 	 		
+				AND   EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_EMPTYPE_INFO
+					 WHERE PA_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = E.EMP_TYPE_CODE
+					   AND PA_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #PERSON_ID_INFO:VARCHAR#
+		 		  )
+	 	 		  	 	
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getPaListYN" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true">
+		<![CDATA[	
+			SELECT 
+				   HR_EMPLOYEE.EMPID,
+				   HR_EMPLOYEE.PERSON_ID,
+				   HR_EMPLOYEE.LOCAL_NAME,
+				   HR_DEPARTMENT_NAME.CONTENT DEPTNAME,
+				   PA.PA_MONTH
+				   $sqlStatement$
+			  FROM pa_summary_HTSV PA, 
+				   HR_EMPLOYEE,
+				   HR_DEPARTMENT_NAME
+			 WHERE PA.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND PA.PA_MONTH = #arMonth:VARCHAR#
+			   AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+			   AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 ]]>
+
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.LOCAL_NAME LIKE '%' || #condition:VARCHAR# || '%')	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      HR_EMPLOYEE.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM PA_SUPERVISOR_INFO 
+						   WHERE HR_EMPLOYEE.DEPTNO = PA_SUPERVISOR_INFO.DEPTNO
+	 					     AND PA_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	 	 		
+				AND   EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_EMPTYPE_INFO
+					 WHERE PA_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HR_EMPLOYEE.EMP_TYPE_CODE
+					   AND PA_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+	 	 		  	 	
+	 	 		  	 	
+		    ]]>
+		</isNotEmpty>
+	</select>
+
+
+	<!-- <select id="getPaComputeItemParamListCnt" parameterClass="linkMap" 
+		resultClass="int"> <![CDATA[ SELECT COUNT(*) FROM PA_ITEM_PARAM T, SY_GLOBAL_NAME 
+		SY WHERE T.ITEM_NO = SY.NO(+) AND SY.LANGUAGE(+) = #interLanguage :VARCHAR# 
+		]]> <include refid="getPaComputeItemParamCondition"/> </select> -->
+	<select id="checkAddPaComputeItemParamInfo" parameterClass="linkMap"
+		resultClass="int">
+		<![CDATA[
+			SELECT COUNT(ITEM_NO)
+			  FROM PA_ITEM_PARAM T 
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="ITEM_NO">
+				<![CDATA[
+			 		  T.ITEM_NO = #ITEM_NO:VARCHAR# 
+			    ]]>
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+			 		  T.CPNY_ID = #CPNY_ID:VARCHAR#
+			    ]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+
+	<insert id="addPaComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO PA_ITEM_PARAM
+				(
+					PARAM_NO,
+					ITEM_NO,
+					CPNY_ID,
+					CALCU_ORDER,
+					PRICISION,
+					CARRY_BIT,
+					ACTIVITY,
+					ORDERNO,
+					APPLY_TYPE,
+					CREATE_DATE,
+					CREATED_BY
+				)
+			VALUES(
+					PA_ITEM_PARAM_SEQ.NEXTVAL,
+					#ITEM_NO:VARCHAR#,
+					#CPNY_ID:VARCHAR#,
+					(SELECT NVL(MAX(T.CALCU_ORDER), 0) + 1 FROM PA_ITEM_PARAM T WHERE T.CPNY_ID = #CPNY_ID:VARCHAR#),
+					#PRICISION:VARCHAR#,
+					#CARRY_BIT:VARCHAR#,
+					1,
+					(SELECT MAX(NVL(T.ORDERNO,0)) + 1 FROM PA_ITEM_PARAM T),
+					#APPLY_TYPE:VARCHAR#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#
+				)
+		]]>
+	</insert>
+
+
+
+	<update id="upPaComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_ITEM_PARAM SET
+					PRICISION = #PRICISION:NUMERIC#,
+					CARRY_BIT = #CARRY_BIT:NUMERIC#,
+					APPLY_TYPE = #APPLY_TYPE:VARCHAR#,
+					UPDATE_DATE = SYSDATE,
+					UPDATED_BY = #UPDATED_BY:VARCHAR#
+			WHERE PARAM_NO = #PARAM_NO:NUMERIC#
+					
+		]]>
+	</update>
+	<!-- SUN 是否发送财务 -->
+	<update id="upPaComputeItemMappingInfo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE  PA_ITEM_PARAM T SET
+					T.MAP_CODE = #MAP_CODE:VARCHAR#,
+					T.TO_FINANCE_FLAG= #TO_FINANCE_FLAG:VARCHAR#,
+					T.UPDATE_DATE = SYSDATE,
+					T.UPDATED_BY = #UPDATED_BY:VARCHAR#
+			  WHERE T.ITEM_NO = #ITEM_NO:NUMERIC#
+			    AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+					
+		]]>
+	</update>
+
+
+	<delete id="deletePaComputeItemParamInfo" parameterClass="linkMap">
+		<![CDATA[
+			DELETE PA_ITEM_PARAM WHERE PARAM_NO = #PARAM_NO:VARCHAR#
+		]]>
+	</delete>
+
+	<delete id="updatePaComputeItemParamInfoAll" parameterClass="String">
+		<![CDATA[
+			DELETE PA_ITEM_PARAM T WHERE ITEM_NO = #item_no:VARCHAR#
+		]]>
+	</delete>
+
+	<update id="updatePaComputeItemParam" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE PA_ITEM_PARAM T SET T.ACTIVITY = 1 WHERE ITEM_NO = #ITEM_NO:VARCHAR# AND CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	</update>
+
+	<select id="getPaItemListForFormula" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+			   SELECT  PI.ITEM_NO,
+			           SY.CONTENT ITEM_NAME
+			        FROM PA_ITEM       PI,
+			             PA_ITEM_PARAM PIP,
+			             SY_GLOBAL_NAME SY
+			       WHERE PI.ITEM_NO = PIP.ITEM_NO
+			         AND PIP.CPNY_ID = #CPNY_ID:VARCHAR#
+			         AND PI.ITEM_NO = SY.NO(+)
+			         AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			         AND PI.ACTIVITY = 1
+			         ORDER BY PIP.CALCU_ORDER
+		]]>
+	</select>
+
+	<select id="getPaItemListForDayFormula" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+			   SELECT  PI.ITEM_NO,
+			           SY.CONTENT ITEM_NAME
+			        FROM PA_ITEM       PI,
+			             PA_ITEM_PARAM PIP,
+			             SY_GLOBAL_NAME SY
+			       WHERE PI.ITEM_NO = PIP.ITEM_NO
+			         AND PIP.CPNY_ID = #CPNY_ID:VARCHAR#
+			         AND PI.ITEM_NO = SY.NO(+)
+			         AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			         AND PIP.APPLY_TYPE IN ('21349','21351')
+			         ORDER BY PIP.CALCU_ORDER
+		]]>
+	</select>
+
+	<update id="updateShowPaComputeItemParamList" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE PA_ITEM PI
+				SET PI.SHOW_YN = #showyn:VARCHAR#,
+				    PI.SHOW_ORDER = #showorder:VARHCAR#
+				WHERE  PI.ITEM_NO = #item:VARHCAR#
+		]]>
+	</update>
+	<!-- 获取备注项 ，项目名为 id ‘id’，‘id2’-->
+	<select id="getPaRemark" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					select get_global_name(P.Param_Item_No,'zh') PANAME, d.remark REMARK
+					from pa_param_item p,
+					     pa_param_data d,
+					     pa_param_item_param pt
+					where p.param_item_id in ($param_item_id$)
+					and   p.param_item_no=pt.param_item_no
+					and   pt.param_no = d.param_no
+					and   #armonth# between d.start_month and d.end_month
+					and   d.person_id =#PERSON_ID#
+		]]>
+	</select>
+	
+	<!--工资项目和值pn-->
+	<select id="getLgepnPaInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  SELECT PN.CPNY_ID,
+             PN.PA_MONTH,
+             PN.DEPT_NAME,
+             PN.EMPID,
+             PN.LOCAL_NAME,
+             PN.DATE_STARTED,
+             PN.EMP_TYPE_NAME,
+             PN.DUTY_NO,
+             PN.POSITION_NO,
+             PN.POST_GRADE_NO,
+             PN.PAY_GRADE,
+             PN.PAY_STEP,
+             NVL(PN.SCHEDULED_DAYS,0) AS SCHEDULED_DAYS,
+             NVL(PN.ACTUAL_WORK_DAYS,0) AS ACTUAL_WORK_DAYS,
+             NVL(PN.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+             NVL(PN.PAY_PINGSHI_OT_ZONGJI+PN.PAY_PINGSHI_OT_SY_ZJ+PN.S_PINGSHI_OT_SY+PN.S_PINGSHI_OT_ZS,0) AS PAY_PINGSHI_OT,
+             NVL(PN.PAY_ZM_OT_SY_ZJ+PN.PAY_ZM_OT_ZS_ZJ+PN.S_ZHOUMO_OT_SY+PN.S_ZHOUMO_OT_ZS,0) AS PAY_ZM_OT,
+             NVL(PN.PAY_FADING_OT_SY_ZJ+PN.PAY_FADING_OT_ZS_ZJ+PN.S_FADING_OT_SY+PN.S_FADING_OT_ZS,0) AS PAY_FADING_OT,
+             NVL(PN.SY_SHIJIA_HOURS+PN.ZS_SHIJIA_HOURS,0) AS SHIJIA_HOURS,
+             NVL(PN.SY_BINGJIA_HOURS+PN.ZS_BINGJIA_HOURS,0) AS BINGJIA_HOURS,
+             NVL(PN.SY_KUANGGONG_HOURS+PN.ZS_KUANGGONG_HOURS,0) AS KUANGGONG_HOURS,
+             NVL(PN.CHUCHAI_DAY,0) AS CHUCHAI_DAY,
+             NVL(PN.TIAOXIU_HOURS,0) AS TIAOXIU_HOURS,
+             NVL(PN.SY_ZDZT_ZHUAN+ZS_ZDZT_ZHUAN,0) AS CHIDAOZUITUI_ZHUAN,
+             NVL(PN.SHIYONG_NIANJIA_DAY,0) AS SHIYONG_NIANJIA_DAY,
+             NVL(PN.YEBAN_CISHU,0) AS YEBAN_CISHU,
+             NVL(PN.CHIDAO_CISHU_ONEHOURS+PN.CHIDAO_CISHU_TWOHOURS+PN.CHIDAO_CISHU_THREEHOURS,0) AS CHIDAO_CISHU,
+             NVL(PN.ZAOTUI_CISHU_ONEHOURS+PN.ZAOTUI_CISHU_TWOHOURS+PN.ZAOTUI_CISHU_THREEHOURS,0) AS ZAOTUI_CISHU,
+             NVL(EP.TOT_VAC_CNT,0) AS TOT_VAC_CNT,
+             NVL(EP.DEL_VAC,0) AS DEL_VAC,
+             NVL(PN.HUNJIA_DAY,0) AS HUNJIA_DAY,
+             NVL(PN.SANGJIA_DAY,0) AS SANGJIA_DAY,
+             NVL(PN.CHANQIAN_DAY,0) AS CHANQIAN_DAY,
+             NVL(PN.CHANJIA_DAY,0) AS CHANJIA_DAY,
+             NVL(PN.BULUJIA_DAY,0) AS BULUJIA_DAY,
+             NVL(PN.LIUCHANJIA_DAY,0) AS LIUCHANJIA_DAY,
+             NVL(PN.GONGSHANGJIA_DAY,0) AS GONGSHANGJIA_DAY,
+             NVL(PN.PEIXUN_HOURS,0) AS PEIXUN_HOURS,
+             NVL(PN.WAICHU_HOURS,0) AS WAICHU_HOURS,
+             NVL(PN.Z_PAY_PINGSHI_OT_SY+PN.Z_PAY_PINGSHI_OT_ZS,0) AS ZHUISU_PINGSHI_OT,
+             NVL(PN.Z_PAY_ZHOUMO_OT_SY+PN.Z_PAY_ZHOUMO_OT_ZS,0) AS ZHUISU_ZHOUMO_OT,
+             NVL(PN.Z_PAY_FADING_OT_SY+PN.Z_PAY_FADING_OT_ZS,0) AS ZHUISU_FADONG_OT,
+             NVL(PN.PEICHANJIA_DAYS,0) AS PEICHANJIA_DAYS,
+             NVL(PN.GONGJIA_HOURS,0) AS GONGJIA_HOURS,
+             NVL(PN.LOUSHUAKA_CISHU,0) AS LOUSHUAKA_CISHU,
+             NVL(PN.BASE_SALARY,0) AS BASE_SALARY,
+             NVL(PN.CHANGE_SALARY,0) AS CHANGE_SALARY,
+             NVL(PN.WORK_OT_FEE,0) AS WORK_OT_FEE,
+             NVL(PN.WEEKEND_OT_FEE,0) AS WEEKEND_OT_FEE,
+             NVL(PN.HOLIDAYS_OT_FEE,0) AS HOLIDAYS_OT_FEE,
+             NVL(PN.DUTY_FEE,0) AS DUTY_FEE,
+             NVL(PN.P_SPECIAL_DUTY_TESHU,0) AS P_SPECIAL_DUTY_TESHU,
+             NVL(PN.POST_FEE,0) AS POST_FEE,
+             NVL(PN.TECH_POST_MONEY,0) AS TECH_POST_MONEY,
+             NVL(PN.P_ONDUTY_FEE,0) AS P_ONDUTY_FEE,
+             NVL(PN.NIGHT_WORK_FEE,0) AS NIGHT_WORK_FEE,
+             NVL(PN.CHAOSHI_FEE,0) AS CHAOSHI_FEE,
+             NVL(PN.LAST_OT_FEE,0) AS LAST_OT_FEE,
+             NVL(PN.P_BONUS,0) AS P_BONUS,
+             NVL(PN.P_ASSESS_GRADE,0) AS P_ASSESS_GRADE,
+             NVL(PN.P_END_YEAR_FEE,0) AS P_END_YEAR_FEE,
+             NVL(PN.ABSENTEEISM_REDUCE,0) AS ABSENTEEISM_REDUCE,
+             NVL(PN.SICK_REDUCE,0) AS SICK_REDUCE,
+             NVL(PN.LEAVE_REDUCE,0) AS LEAVE_REDUCE,
+             NVL(PN.CHIDAO_REDUCE,0) AS CHIDAO_REDUCE,
+             NVL(PN.ZAOTUI_REDUCE,0) AS ZAOTUI_REDUCE,
+             NVL(PN.NO_CARD_REDUCE,0) AS NO_CARD_REDUCE,
+             NVL(PN.TURN_ABS_REDUCE,0) AS TURN_ABS_REDUCE,
+             NVL(PN.GROSS_PAY,0) AS GROSS_PAY,
+             NVL(PN.SOCIETY_FEE,0) AS SOCIETY_FEE,
+             NVL(PN.LOVE_FEE,0) AS LOVE_FEE,
+             NVL(PN.NET_PAY,0) AS NET_PAY,
+             NVL(PN.TAX,0) AS TAX,
+             NVL(PN.END_YEAR_TAX,0) AS END_YEAR_TAX,
+             NVL(PN.P_IS_AJUST_PER,0) AS P_IS_AJUST_PER,
+             NVL(PN.P_IS_AJUST_COR,0) AS P_IS_AJUST_COR,
+             NVL(PN.IS_FUND_AJUST_JIA_PER,0) AS IS_FUND_AJUST_JIA_PER, 
+             NVL(PN.IS_FUND_AJUST_JIA_C ,0) AS IS_FUND_AJUST_JIA_C,
+             NVL(PN.IS_UNEMPLOY_PER,0) AS IS_UNEMPLOY_PER,
+             NVL(PN.IS_FUND_RER,0) AS IS_FUND_RER,
+             NVL(PN.IS_MEDICAL_COR ,0) AS IS_MEDICAL_COR,
+             NVL(PN.IS_UNEMPLOY_COR,0) AS IS_UNEMPLOY_COR,
+             NVL(PN.IS_INJURY_COR,0) AS IS_INJURY_COR,
+             NVL(PN.IS_ENDOWMENT_PER,0) AS IS_ENDOWMENT_PER,
+             NVL(PN.IS_MEDICAL_PER,0) AS IS_MEDICAL_PER,
+             NVL(PN.IS_SERIOUS_PER,0) AS IS_SERIOUS_PER,
+             NVL(PN.IS_FERTILITY_COR,0) AS IS_FERTILITY_COR,
+             NVL(PN.IS_FUND_COR,0) AS IS_FUND_COR,
+             NVL(PN.IS_ENDOWMENT_COR,0) AS IS_ENDOWMENT_COR,
+             NVL(PN.EESH_COREMAN_FEE,0) AS EESH_COREMAN_FEE,
+             NVL(PN.P_TRAFFIC_FSE,0) AS P_TRAFFIC_FSE,
+             NVL(PN.P_LOVE_FEE,0) AS P_LOVE_FEE,
+             NVL(PN.P_SUBSIDY,0) AS P_SUBSIDY,
+             NVL(PN.WORK_AGE_MONEY,0) AS WORK_AGE_MONEY,
+             NVL(PN.P_ADJUST_FEE,0) AS P_ADJUST_FEE,
+             NVL(PN.P_ADJUST_MINUS_FEE,0) AS P_ADJUST_MINUS_FEE,
+             NVL(PN.P_FIXATION_OTFEE,0) AS P_FIXATION_OTFEE,
+             NVL(PN.AR_MEMBER_MONEY,0) AS AR_MEMBER_MONEY,
+             NVL(PN.P_JIABAN_MONTY,0) AS P_JIABAN_MONTY,
+             NVL(PN.P_LEFT_FEE,0) AS P_LEFT_FEE,
+             NVL(PN.P_PD_FEE,0) AS P_PD_FEE,
+             NVL(PN.P_HOUSE_FEE,0) AS P_HOUSE_FEE
+        FROM PA_SUMMARY_LGEPN PN,AR_VAC_EMP EP
+       WHERE PN.PERSON_ID = #PERSON_ID:VARCHAR#
+         AND PN.PERSON_ID = EP.PERSON_ID 
+         AND EP.VAC_TP = '2637'
+	     AND PN.PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getLgepnPaParamInfo" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		 SELECT PA.RETURN_VALUE,
+		        PA.REMARK
+           FROM PA_PARAM_ITEM PT,PA_PARAM_ITEM_PARAM PTM, PA_PARAM_DATA PA 
+          WHERE PT.PARAM_ITEM_NO = PTM.PARAM_ITEM_NO 
+            AND PTM.PARAM_NO = PA.PARAM_NO
+            AND PT.PARAM_ITEM_ID = #PARAM_ID:VARCHAR#
+            AND PA.START_MONTH <= #PA_MONTH:VARCHAR#
+            AND PA.END_MONTH >= #PA_MONTH:VARCHAR#
+            AND PA.PERSON_ID = #PERSON_ID:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

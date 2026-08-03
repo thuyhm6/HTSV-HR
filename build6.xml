@@ -1,0 +1,22 @@
+<project name="Project" default="copy-server.xml" basedir=".">
+
+	<property name="tomcat7.0" value="E:\java\tomcat" />
+	<property name="clean-server.xml" value="${tomcat7.0}\conf\server.xml" />
+	<property name="copy-server.xml" value="${basedir}\server.xml" />
+
+	<target name="clean-server.xml">
+		<delete file="${clean-server.xml}">
+		</delete>
+	</target>
+
+	<target name="copy-server.xml" depends="clean-work">
+		<copy file="${copy-server.xml}" todir="${tomcat7.0}\conf">
+		</copy>
+		<echo> copy ${copy-server.xml} to ${tomcat7.0}\conf complete!</echo>
+	</target>
+	
+	<target name="clean-work" depends="clean-server.xml">
+	  <delete dir="${tomcat7.0}\work"></delete>
+	</target>
+
+</project>

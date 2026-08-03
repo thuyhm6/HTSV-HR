@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.resumeSelection">	
+	<select id="getResumeInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT REC_EMPLOYEE.REC_EMPLOYEE_NO,
+				   REC_EMPLOYEE.EMP_NAME,
+				   get_global_name(REC_EMPLOYEE.CERT_TYPE_CODE, #interLanguage:VARCHAR#) CERT_TYPE,
+				   CERT_NUMBER,
+				   EMP_TELPHONE,
+				   EMP_ADDRESS,
+				   get_global_name(REC_EMPLOYEE.SEX_CODE, #interLanguage:VARCHAR#) SEX,
+				   get_global_name(REC_EMPLOYEE.NATIONALITY_CODE, #interLanguage:VARCHAR#) NATIONALITY,
+				   TO_CHAR(TO_DATE(EMP_BIRTHDAY, 'YYYY/MM/DD'), 'DD/MM/YYYY') EMP_BIRTHDAY,
+				   get_global_name(MARITAL_STATUS_CODE, #interLanguage:VARCHAR#) MARITAL_STATUS_CODE,
+				   SUBJECT,
+				   FINAL_SCHOOL,
+				   get_global_name(REC_EMPLOYEE.FINAL_EDU_CODE, #interLanguage:VARCHAR#) FINAL_EDU,
+				   FINAL_GRAD_DATE,
+				   EMP_EMAIL,
+				   get_global_name(REC_EMPLOYEE.POST_TYPE_CODE, #interLanguage:VARCHAR#) POST_TYPE,
+				   REC_INTERVIEW.FINAL_CONFIRM FINAL_CONFIRM,
+				   WORK_EXPERIENCE,
+				   TRUNC((sysdate - TO_DATE(EMP_BIRTHDAY,'YYYY.MM.DD'))/365,0) AGE,
+				   FILE_PATH,
+				   REC_TYPE,
+				   REC_EMPLOYEE.CREATE_DATE CREATE_DATE,
+				   REC_EMPLOYEE.CREATED_BY CREATED_BY,
+				   REC_EMPLOYEE.UPDATE_DATE UPDATE_DATE,
+				   REC_EMPLOYEE.UPDATED_BY UPDATED_BY,
+				   REC_EMPLOYEE.ACTIVITY ACTIVITY,
+				   FILE_NAME
+			  FROM REC_EMPLOYEE, REC_INTERVIEW
+			 WHERE REC_EMPLOYEE.REC_EMPLOYEE_NO = REC_INTERVIEW.REC_EMPLOYEE_NO(+)
+			 AND REC_EMPLOYEE.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			
+			EMP_NAME LIKE
+			upper('%'||#KEY#||'%')
+			
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST">
+	      <![CDATA[
+				REC_EMPLOYEE.POST_TYPE_CODE = #POST:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CERT_NUMBER">
+	      <![CDATA[
+				REC_EMPLOYEE.CERT_NUMBER LIKE '%' || #CERT_NUMBER:VARCHAR# || '%' 
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TELPHONE">
+	      <![CDATA[
+				REC_EMPLOYEE.EMP_TELPHONE LIKE '%' || #EMP_TELPHONE:VARCHAR# || '%' 
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDUCATION">
+			<![CDATA[
+			     FINAL_EDU_CODE = #EDUCATION:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPE">
+				<![CDATA[
+		 		 REC_TYPE = #TYPE:NUMBER#
+			    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="S_AVERAGE_SCORE">
+			<isNotEmpty prepend="" property="E_AVERAGE_SCORE">
+			      <![CDATA[
+				 		AVERAGE_SCORE BETWEEN #S_AVERAGE_SCORE:VARCHAR# AND #E_AVERAGE_SCORE:VARCHAR#
+			      ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="GRADUATION_ACHIEVEMENT">
+				<![CDATA[
+		 		 GRADUATION_ACHIEVEMENT = #GRADUATION_ACHIEVEMENT:NUMBER#
+			    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="LANGUAGE_ABILITY">
+				<![CDATA[
+		 		 LANGUAGE_ABILITY = #LANGUAGE_ABILITY:NUMBER#
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CONCOUNT">
+			<isEqual prepend="" property="eqOrMore" compareValue="1">
+				<![CDATA[
+		      		WORK_EXPERIENCE >= #CONCOUNT:VARCHAR#           
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="eqOrMore" compareValue="0">
+				<![CDATA[
+	      			WORK_EXPERIENCE = #CONCOUNT:VARCHAR#
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MIANYN">
+			<isEqual prepend="" property="MIANYN" compareValue="14894">
+				<![CDATA[
+		      		FINAL_CONFIRM is null        
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="MIANYN" compareValue="14893">
+				<![CDATA[
+	      			FINAL_CONFIRM is not null 
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="INTERVIEW">
+			<![CDATA[
+		 		 REC_INTERVIEW.FINAL_CONFIRM = #INTERVIEW:VARCHAR#
+			    ]]>
+	    </isNotEmpty>  
+    
+		<![CDATA[
+			ORDER BY REC_INTERVIEW.REC_INTERVIEW_NO
+		]]>
+	</select>
+	<select id="getResumeInfoListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT count(1)
+			  FROM REC_EMPLOYEE, REC_INTERVIEW
+			 WHERE REC_EMPLOYEE.REC_EMPLOYEE_NO = REC_INTERVIEW.REC_EMPLOYEE_NO(+)
+			 AND REC_EMPLOYEE.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			
+			EMP_NAME LIKE
+			upper('%'||#KEY#||'%')
+			
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST">
+	      <![CDATA[
+				REC_EMPLOYEE.POST_TYPE_CODE = #POST:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EDUCATION">
+			<![CDATA[
+			     FINAL_EDU_CODE = #EDUCATION:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TYPE">
+				<![CDATA[
+		 		 REC_TYPE = #TYPE:NUMBER#
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="CONCOUNT">
+			<isEqual prepend="" property="eqOrMore" compareValue="1">
+				<![CDATA[
+		      		WORK_EXPERIENCE >= #CONCOUNT:VARCHAR#           
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="eqOrMore" compareValue="0">
+				<![CDATA[
+	      			WORK_EXPERIENCE = #CONCOUNT:VARCHAR#
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="MIANYN">
+			<isEqual prepend="" property="MIANYN" compareValue="14894">
+				<![CDATA[
+		      		FINAL_CONFIRM is null        
+			    ]]>
+			</isEqual>
+			<isEqual prepend="" property="MIANYN" compareValue="14893">
+				<![CDATA[
+	      			FINAL_CONFIRM is not null 
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="INTERVIEW">
+			<![CDATA[
+		 		 REC_INTERVIEW.FINAL_CONFIRM = #INTERVIEW:VARCHAR#
+			    ]]>
+	    </isNotEmpty>  
+    
+		<![CDATA[
+			ORDER BY REC_INTERVIEW.REC_INTERVIEW_NO
+		]]>
+    
+	</select>
+	<update id="updateResumeInfoForUpdate" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE REC_EMPLOYEE RE SET RE.REC_TYPE =#FLAG# 
+			 	WHERE RE.REC_EMPLOYEE_NO =#REC_EMPLOYEE_NO:VARCHAR#
+		]]>
+	</update>
+</sqlMap>

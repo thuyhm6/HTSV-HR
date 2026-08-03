@@ -1,0 +1,10 @@
+浏览器兼容问题统计 
+1.代码获取用getEmentById("xx") 但是标签中并没有定义id属性（程序不规范）
+2.代码获取用getEmentById("xx")  标签中id重复（程序不规范）。
+3.若按钮调用js方法中有
+    v object.parentElement ; 则换成   object.parentNode;	 
+
+
+       row.cells[k].all则换成 row.cells[k].children;
+
+    document.all和parentElemnt只IE有效，Chrome无效，

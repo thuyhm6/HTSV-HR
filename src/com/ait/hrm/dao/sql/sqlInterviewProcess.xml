@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.recruit">
+
+	<select id="getReadyToInterviewInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT RI.REC_INTERVIEW_NO,
+					   RA.REC_AFFIRM_NO,
+			           RE.EMP_NAME,
+			           RE.REC_EMPLOYEE_NO,
+			           GET_GLOBAL_NAME(RE.FINAL_EDU_CODE,#interLanguage:VARCHAR#)FINAL_EDU,
+			           GET_GLOBAL_NAME(RE.POST_TYPE_CODE,#interLanguage:VARCHAR#)POST_TYPE,
+			           GET_GLOBAL_NAME(RE.SEX_CODE,#interLanguage:VARCHAR#)SEX,
+			           FLOOR(MONTHS_BETWEEN(SYSDATE, TO_DATE(RE.EMP_BIRTHDAY,'YYYY/MM/DD'))/ 12)AGE,
+			           GET_GLOBAL_NAME(RE.NATIONALITY_CODE,#interLanguage:VARCHAR#)NATIONALITY_CODE,
+			           RE.EMP_TELPHONE,
+			           RI.INTERVIEW_STATUS,
+			           RA.SCORE,
+			           RA.AFFIRM_FLAG,
+			           RA.AFFIRM_REMARK
+			FROM REC_INTERVIEW RI,REC_EMPLOYEE RE,REC_AFFIRM RA
+			WHERE RI.REC_EMPLOYEE_NO = RE.REC_EMPLOYEE_NO
+			AND RI.REC_INTERVIEW_NO = RA.REC_INTERVIEW_NO
+			AND RA.AFFIRMOR_ID = #adminId:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="EMP_NAME">
+	      <![CDATA[
+			UPPER(RE.EMP_NAME) LIKE UPPER('%'||#EMP_NAME:VARCHAR#||'%')
+	      ]]>
+	    </isNotEmpty>
+		<isNotEmpty prepend="AND" property="POST_TYPE_CODE">
+	      <![CDATA[
+				RE.POST_TYPE_CODE = #POST_TYPE_CODE:VARCHAR#
+	      ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="FINAL_EDU">
+			<![CDATA[
+			     RE.FINAL_EDU_CODE = #FINAL_EDU:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="INTER_STATUS" compareValue="0">
+			<![CDATA[
+				RI.INTERVIEW_STATUS = #INTER_STATUS:NUMRIC#
+				AND RI.REC_INTERVIEW_NO IN(
+				SELECT RECA.REC_INTERVIEW_NO
+				FROM REC_AFFIRM RECA
+				WHERE RECA.AFFIRMOR_ID = #adminId:VARCHAR#
+				GROUP BY RECA.REC_INTERVIEW_NO
+				)
+			]]>
+		</isNotEqual>
+		<isEqual prepend="AND" property="INTER_STATUS" compareValue="0">
+			<![CDATA[
+				RA.REC_AFFIRM_NO IN(
+				SELECT RAT.REC_AFFIRM_NO FROM REC_AFFIRM RAT
+				WHERE RAT.AFFIRMOR_ID = #adminId:VARCHAR#
+				AND RAT.AFFIRM_FLAG = 0)
+			]]>
+		</isEqual>
+		<![CDATA[
+			ORDER BY RI.REC_INTERVIEW_NO DESC
+		]]>
+	</select>
+	
+	<select id="getInterviewAffirmList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HRE.EMPID,
+			           HRE.LOCAL_NAME,
+			           GET_DEPT_NAME(HRE.DEPTNO,#interLanguage:VARCHAR#)DEPTNAME,
+			           GET_GLOBAL_NAME(HRE.POST_GRADE_NO,#interLanguage:VARCHAR#)POSTGRADENAME,
+			           RA.AFFIRM_FLAG,
+			           RA.SCORE,
+			           RA.AFFIRM_REMARK
+			FROM REC_AFFIRM RA,HR_EMPLOYEE HRE, REC_INTERVIEW RE
+			WHERE RA.AFFIRMOR_ID = HRE.PERSON_ID
+			AND RA.REC_INTERVIEW_NO = RE.REC_INTERVIEW_NO
+		]]>
+		<isNotEmpty prepend="AND" property="REC_INTERVIEW_NO">
+			<![CDATA[
+				RA.REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="REC_EMPLOYEE_NO">
+			<![CDATA[
+				RE.REC_EMPLOYEE_NO = #REC_EMPLOYEE_NO:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY RA.AFFIRM_LEVEL
+		]]>
+	</select>
+	
+	<update id="interviewProcessApproval" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE REC_AFFIRM
+			   SET AFFIRM_FLAG   = #affirmFlag:VARCHAR#,
+			       AFFIRM_REMARK = #AFFIRM_REMARK:VARCHAR#,
+			       SCORE = #SCORE:VARCHAR#,
+			       UPDATE_DATE   = SYSDATE,
+			       UPDATED_BY    = #createBy:VARCHAR#
+			 WHERE REC_AFFIRM_NO = #REC_AFFIRM_NO:VARCHAR#
+		]]>
+	</update>
+	<select id="isMaxAffirmLevel" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT 1
+		      FROM REC_AFFIRM RA
+		     WHERE RA.AFFIRMOR_ID = #adminID:VARCHAR#
+		       AND AFFIRM_FLAG <> 0 
+		       AND RA.REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#
+		       AND RA.AFFIRM_LEVEL =
+		           (SELECT MAX(AFFIRM_LEVEL)
+		              FROM REC_INTERVIEW RI, REC_AFFIRM RECA
+		             WHERE RI.REC_INTERVIEW_NO = RECA.REC_INTERVIEW_NO
+		               AND RI.INTERVIEW_STATUS = 0
+		               AND RI.REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#
+		               AND RI.ACTIVITY = 1)
+		]]>
+	</select>
+	<update id="updateFinalApprovalStatus" parameterClass="linkMap">
+		<![CDATA[
+			 UPDATE REC_INTERVIEW
+		        SET INTERVIEW_STATUS = #affirmFlag:VARCHAR#,
+		            UPDATE_DATE   = SYSDATE,
+			        UPDATED_BY    = #createBy:VARCHAR#
+		      WHERE REC_INTERVIEW_NO = #REC_INTERVIEW_NO:VARCHAR#
+		]]>
+	</update>
+	
+	
+</sqlMap>

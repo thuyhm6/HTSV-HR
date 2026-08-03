@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.overtime">
+
+	<select id="getselectcode" parameterClass="linkMap" resultClass="linkMap"
+		remapResults="true"> 
+		<![CDATA[
+			 SELECT  CODE_NO,ORDERNO ,get_global_name(CODE_NO, 'zh') DEDUCT_TIME
+	  		  FROM SY_CODE SC
+	         WHERE PARENT_CODE_NO = '147774'
+           
+            ORDER BY ORDERNO
+            
+		]]>
+	</select>
+
+	<!-- 查询 -->
+	<select id="getAffirmorList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[	
+				SELECT TB.AFFIRMOR_ID,
+				       TB.AFFIRM_LEVEL,
+				       HR_AFFIRMOR.EMPID,
+				       HR_AFFIRMOR.CHINESE_PINYIN,
+				       HR_AFFIRMOR.LOCAL_NAME,
+				       SG.CONTENT POSITIONNAME
+				  FROM SY_AFFIRM_RELATION_TB TB,
+				       HR_EMPLOYEE HRE,
+				       HR_EMPLOYEE HR_AFFIRMOR,
+				       HR_POSITION HPO,
+				       SY_GLOBAL_NAME SG
+				 WHERE HRE.PERSON_ID = #PERSON_ID#
+				   AND HR_AFFIRMOR.POSITION_NO = HPO.POSITION_NO(+)
+				   AND HPO.POSITION_NO = SG.NO(+)
+				   AND TB.AFFIRMOR_ID = HR_AFFIRMOR.PERSON_ID
+				   AND TB.AFFIRM_TYPE_ID = #APPLY_TYPE_NO#
+				   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+   		]]>
+		<isNotEmpty prepend="AND" property="BYEMPID">
+			<![CDATA[
+    		    SY_AFFIRM_RELATION_TB.AFFIRM_OBJECT = HR_EMPLOYEE.EMPID
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="BYDEPTID">
+			<![CDATA[
+    		    SY_AFFIRM_RELATION_TB.AFFIRM_OBJECT = HR_EMPLOYEE.DEPTID
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY AFFIRM_LEVEL
+			]]>
+		</isEmpty>
+	</select>
+
+	<!-- 根据法人的扣除时间取得当前申请是否需要扣除时间 START -->
+	<select id="getDeductFromTimeByCpnyId" parameterClass="linkMap"
+		resultClass="int"> 	
+		<![CDATA[
+				select count(0) 
+				  from ess_apply_deduct_time t
+				 where T.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND TO_DATE(#TO_DATE:VARCHAR#, 'YYYY-MM-DD HH24:MI:SS') >
+				       TO_DATE(#APPLY_TO_DATE_STR:VARCHAR# || T.TO_TIME, 'YYYY-MM-DD HH24:MI:SS')
+				   AND TO_DATE(#FROM_DATE:VARCHAR#, 'YYYY-MM-DD HH24:MI:SS') <
+				       TO_DATE(#APPLY_TO_DATE_STR:VARCHAR# || T.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS')  
+				   AND T.OT_APPLY_CODE = #OT_APPLY_TYPE_CODE:VARCHAR#    
+		]]>
+	</select>
+	<!-- 根据法人的扣除时间取得当前申请是否需要扣除时间 END -->
+
+	<!-- 根据法人的扣除时间取得当前申请是否需要扣除时间 START -->
+	<select id="getDeductTimeCountInOtTimeByCpnyId" parameterClass="linkMap"
+		resultClass="string"> 	
+		<![CDATA[
+				select round((TO_DATE(#APPLY_FROM_DATE_STR:VARCHAR# || T.TO_TIME, 'YYYY-MM-DD HH24:MI:SS') -
+				             TO_DATE(#APPLY_FROM_DATE_STR:VARCHAR# || T.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS')) * 24,
+				             2)
+				  from ess_apply_deduct_time t
+				 where T.CPNY_ID = #CPNY_ID#  
+				   AND ROWNUM = 1
+		]]>
+	</select>
+
+
+
+	<sql id="seachEssOvertimeApplyInfoList">
+		<isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+		<![CDATA[
+				0 = (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = OT.APPLY_NO
+				               AND EA.AFFIRM_FLAG <> 0
+				               AND OT.OT_TYPE_NO = #APPLY_TYPE_NO#)
+ 		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+		<![CDATA[
+           	     0 < (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = OT.APPLY_NO
+				               AND EA.AFFIRM_FLAG <> 0
+				               AND OT.OT_TYPE_NO = #APPLY_TYPE_NO#)
+		 ]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+			<![CDATA[
+			        OT.OT_TYPE_NO = #APPLY_TYPE_NO#
+			]]>
+		</isNotEmpty>
+		<!-- 个人信息查询条件 -->
+		<isNotEmpty prepend="AND" property="menuNum">
+		<![CDATA[
+	 		     OT.PERSON_ID = #ADMIN_ID:VARCHAR#
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+			<![CDATA[
+			        OT.OT_TYPE_CODE = #APPLY_TYPE_CODE#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+					( HRV.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HRV.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HRV.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+			]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="START_DATE">
+			<isEmpty property="END_DATE">
+			<![CDATA[
+				OT.Ot_To_Time    < SYSDATE  AND OT.Ot_From_Time >  add_months(SYSDATE,-1)
+				 ]]>
+			</isEmpty>
+		</isEmpty>
+
+
+		<isEmpty prepend="AND" property="START_DATE">
+			<isNotEmpty property="END_DATE">
+				<![CDATA[
+						 (OT.OT_FROM_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						 OR OT.OT_TO_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						 OR OT.OT_FROM_TIME < TO_DATE('1900-12-31', 'YYYY-MM-DD') 
+						 AND OT.OT_TO_TIME > TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		     ]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isEmpty prepend="AND" property="END_DATE">
+			<isNotEmpty property="START_DATE">
+			   <![CDATA[
+			    (OT.OT_FROM_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			 OR  OT.OT_TO_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			 OR  OT.OT_FROM_TIME < TO_DATE(#START_DATE#, 'YYYY-MM-DD') 
+			 AND OT.OT_TO_TIME > TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		       ]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty property="START_DATE">
+			<isNotEmpty prepend="AND" property="END_DATE">
+				<![CDATA[
+				 (OT.OT_FROM_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR OT.OT_TO_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR OT.OT_FROM_TIME < TO_DATE(#START_DATE#, 'YYYY-MM-DD') 
+				 AND OT.OT_TO_TIME > TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		        ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+					 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTNO = HRV.DEPTNO
+					         START WITH B1.DEPTNO = #DEPT_NO#
+					       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>
+		</isNotEmpty>
+		<!-- 部门查询条件 end -->
+
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+		<![CDATA[
+	 		  (EXISTS(
+	 		  	SELECT *
+				  FROM AR_SUPERVISOR_INFO
+				 WHERE AR_SUPERVISOR_INFO.DEPTNO = HRV.DEPTNO
+				   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+	 		  )
+	 		  OR HRV.PERSON_ID = #ADMIN_ID:VARCHAR#)
+	    ]]>
+		</isNotEmpty>
+
+		<isEqual prepend="AND" property="JUECAI_ZHUANGTAI"
+			compareValue="1">
+		<![CDATA[
+				0 = (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = OT.APPLY_NO
+				               AND (EA.AFFIRM_FLAG = 0 OR EA.AFFIRM_FLAG = 2)
+				               AND OT.OT_TYPE_NO = #APPLY_TYPE_NO:VARCHAR#)
+ 		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="JUECAI_ZHUANGTAI"
+			compareValue="2">
+		<![CDATA[
+				0 < (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = OT.APPLY_NO
+				               AND EA.AFFIRM_FLAG = 2
+				               AND OT.OT_TYPE_NO = #APPLY_TYPE_NO:VARCHAR#)
+ 		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="JUECAI_ZHUANGTAI"
+			compareValue="0">
+		<![CDATA[
+				0 < (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = OT.APPLY_NO
+				               AND EA.AFFIRM_FLAG = 0
+				               AND OT.OT_TYPE_NO = #APPLY_TYPE_NO:VARCHAR#)
+ 		]]>
+		</isEqual>
+
+		<isEqual prepend="AND" property="QUEREN_ZHUANGTAI"
+			compareValue="1">
+		<![CDATA[
+				OT.ACTIVITY = 1
+ 		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="QUEREN_ZHUANGTAI"
+			compareValue="2">
+		<![CDATA[
+				OT.ACTIVITY = 2
+ 		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="QUEREN_ZHUANGTAI"
+			compareValue="0">
+		<![CDATA[
+				OT.ACTIVITY = 0
+ 		]]>
+		</isEqual>
+	</sql>
+
+
+
+
+
+	<select id="getEssviewOtviewListCnt" parameterClass="linkMap"
+		resultClass="int" remapResults="true">
+		<![CDATA[
+				SELECT count(0)
+				  FROM ESS_APPLY_OT       OT,
+				       HR_EMPLOYEE_V      HRV,
+				       SY_GLOBAL_NAME     SG,
+				       HR_DEPARTMENT      HD,
+				       HR_DEPARTMENT_NAME HDN,
+				       SY_GLOBAL_NAME     PON,
+				       SY_GLOBAL_NAME     POSN
+				 WHERE HRV.DEPTNO = HD.DEPTNO
+				   AND OT.PERSON_ID = HRV.PERSON_ID
+				   AND HRV.POST_NO = PON.NO(+)
+				   AND HRV.POSITION_NO = POSN.NO(+)
+				   AND HDN.DEPTNO = HRV.DEPTNO
+				   AND SG.LANGUAGE(+) =  #interLanguage:VARCHAR#
+				   AND HDN.LANGUAGE(+) =  #interLanguage:VARCHAR#
+				   AND PON.LANGUAGE(+) =  #interLanguage:VARCHAR#
+				   AND POSN.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND OT.OT_TYPE_CODE = SG.NO(+)
+			]]>
+		<include refid="seachEssOvertimeApplyInfoList" />
+
+	</select>
+
+
+
+</sqlMap>

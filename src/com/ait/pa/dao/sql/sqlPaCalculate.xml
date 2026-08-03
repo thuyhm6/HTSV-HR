@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.paCalculate">
+	<!-- calculate pa  -->
+	<procedure id="paCalculateLGE" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_PACAL_LGE(#PA_MONTH:VARCHAR#, #PA_SUPERVISOR_ID:VARCHAR#,#CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#,'NORMAL', 'NONE',#supervisorId:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<procedure id="paWithholdingCalculateLGE" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_PACAL_Withholding_LGE(#PA_MONTH:VARCHAR#, #PA_SUPERVISOR_ID:VARCHAR#,#CPNY_ID:VARCHAR#,#empType:VARCHAR#,'NORMAL', 'NONE',#supervisorId:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<procedure id="paWithholdingArCalculateLGE" parameterClass="linkMap">
+		<![CDATA[
+			{call AR_MONTH_WD_CAL_P(#PA_MONTH:VARCHAR#,#CPNY_ID:VARCHAR#, #PA_SUPERVISOR_ID:VARCHAR#,#STAT_NO:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<procedure id="paSalaryConfirm" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_PACAL_PACONFIRM(#PA_MONTH:VARCHAR#, #FLAG:VARCHAR#,#CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<procedure id="paSalaryTransfer" parameterClass="linkMap">
+		<![CDATA[
+			 
+			{call   MQ_SND_PAY_GHRS_TRANSFER(#CPNY_ID:VARCHAR#,
+                                 #PAY_AREA_CD:CARCHAR#,  
+                                   #PA_MONTH:VARCHAR#,  
+                                #STAT_NO:VARCHAR#, 
+                                  'N',#message,jdbcType=VARCHAR,mode=OUT#)}
+		]]>
+	</procedure>
+	
+	
+		<procedure id="paSalaryTransferProduce" parameterClass="linkMap">
+		<![CDATA[
+				 
+			{call   MQ_SND_PAY_GHRS_TRANSFER(#CPNY_ID:VARCHAR#,
+                                 #PAY_AREA_CD:CARCHAR#,  
+                                   #PA_MONTH:VARCHAR#,  
+                                #STAT_NO:VARCHAR#, 
+                                  'N',#message,jdbcType=VARCHAR,mode=OUT#)}
+		]]>
+	</procedure>
+	<select id="getArStatisticEmpGoup" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT distinct hjts.jobtype_group_no GROUP_NO, get_global_name(hjts.jobtype_group_no,'zh') GROUP_NAME
+		        FROM AR_STATISTIC_DATE_PARAM ASDP,AR_STATISTIC_EMPTYPE ASE,
+		        HR_JOB_TYPE_SETUP HJTS,PA_SUPERVISOR_EMPTYPE_INFO SSEI
+		       WHERE ASDP.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASE.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND HJTS.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASDP.STAT_NO = ASE.STAT_NO
+		       AND ASE.EMP_TYPE_CODE = HJTS.JOBTYPE_NO
+		       AND HJTS.JOBTYPE_NO = SSEI.EMP_TYPE_CODE
+		       AND SSEI.PERSON_ID = #supervisorPersonId:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PAY_AREA_CD">
+			<![CDATA[
+		 		   ASDP.STAT_NO = #PAY_AREA_CD:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<procedure id="paSalaryTransferYuti" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_SALARY_TRANSFER(#PA_MONTH:VARCHAR#, #FLAG:VARCHAR#,#CPNY_ID:VARCHAR#,#V_OBJECT:VARCHAR#,#STAT_NO:VARCHAR#,#PAY_AREA_CD:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<procedure id="paSalaryConfirmApply" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_PACAL_PACONFIRMAPPLY(#PA_MONTH:VARCHAR#, #PA_SUPERVISOR_ID:VARCHAR#,#CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#,#AR_DEPT_NO:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<procedure id="paCalculate" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_PACAL_P_NEW(#PA_MONTH:VARCHAR#, #PA_SUPERVISOR_ID:VARCHAR#,#CPNY_ID:VARCHAR#,#STAT_NO:VARCHAR#,'NORMAL', 'NONE',#PACAL_GIVE_DATE:VARCHAR#,#caltype:VARCHAR#,#supervisorId:VARCHAR#,#deptid:VARCHAR#,#empid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	
+	<select id="getPaCalculateTypeList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT T.TYPE_ID, T.TYPE_NAME
+			  FROM PA_CALCULATE_TYPE T
+			 WHERE T.ACTIVITY = 1
+			 ORDER BY T.ORDERNO
+		]]>
+	</select>
+	
+	<select id="getArStatisticList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DISTINCT ASDP.STAT_NO,
+              GET_GLOBAL_NAME(ASDP.STAT_NO, #interLanguage:VARCHAR#) STAT_NAME
+		        FROM AR_STATISTIC_DATE_PARAM ASDP,AR_STATISTIC_EMPTYPE ASE,
+		        AR_SUPERVISOR_EMPTYPE_INFO SSEI
+		       WHERE ASDP.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASE.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASDP.STAT_NO = ASE.STAT_NO
+		       AND ASE.EMP_TYPE_CODE = SSEI.EMP_TYPE_CODE
+		       AND SSEI.PERSON_ID = #supervisorPersonId:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getPaStatisticList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DISTINCT ASDP.STAT_NO,
+              GET_GLOBAL_NAME(ASDP.STAT_NO, #interLanguage:VARCHAR#) STAT_NAME
+		        FROM AR_STATISTIC_DATE_PARAM ASDP,AR_STATISTIC_EMPTYPE ASE,
+		        PA_SUPERVISOR_EMPTYPE_INFO SSEI
+		       WHERE ASDP.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASE.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASDP.STAT_NO = ASE.STAT_NO
+		       AND ASE.EMP_TYPE_CODE = SSEI.EMP_TYPE_CODE
+		       AND SSEI.PERSON_ID = #supervisorPersonId:VARCHAR#
+		]]>
+	</select>
+		<!-- 传送财务获取人员类型组 -->
+	<select id="getArStatisticPatransferList" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT DISTINCT ASDP.STAT_NO,
+              GET_GLOBAL_NAME(ASDP.STAT_NO, #interLanguage:VARCHAR#) STAT_NAME
+		        FROM AR_STATISTIC_DATE_PARAM ASDP,AR_STATISTIC_EMPTYPE ASE,
+		        PA_SUPERVISOR_EMPTYPE_INFO SSEI
+		       WHERE ASDP.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASE.CPNY_ID = #interCpnyID:VARCHAR#
+		       AND ASDP.STAT_NO = ASE.STAT_NO
+		       AND ASE.EMP_TYPE_CODE = SSEI.EMP_TYPE_CODE
+		       AND SSEI.PERSON_ID = #supervisorPersonId:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="YING_CU">
+			<![CDATA[
+		 		    ASDP.STAT_NO  IN ('219948','219946')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="interCpnyID">
+			 <isEqual property="interCpnyID" compareValue="SST" >
+	          	<![CDATA[
+		 		  	  ASDP.STAT_NO <> '217870'
+		    	]]>
+	        </isEqual>
+		</isNotEmpty>
+		
+	</select>
+	
+ <procedure id="getPaifClose" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_SALARY_TRANSFER_CHECK(#PA_MONTH:VARCHAR#,#V_OBJECT:VARCHAR#,#STAT_NO:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	 
+	<procedure id="getPaifCloseYuti" parameterClass="linkMap">
+		<![CDATA[
+			{call PA_SALARY_TRANSFER_CHECK_YUTI(#PA_MONTH:VARCHAR#,#V_OBJECT:VARCHAR#,#STAT_NO:VARCHAR#,#deptid:VARCHAR#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+	<select id="getPaifCloseTwo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+		
+					
+					
+			 select count(*)
+			                  from pa_progress t
+			                    where pa_month_str = #PA_MONTH:VARCHAR#
+			                      and pa_apply_lock_flag = '1'
+                            and t.cpny_id= #CPNY_ID:VARCHAR#
+                            AND T.AR_DEPT_NO in  ( $deptid$ ) 
+                            and t.stat_no=DECODE(#STAT_NO:VARCHAR#,'211812','219946','211814','219948','')
+ 
+		]]>
+		 
+	</select>
+	
+	
+	<select id="getDeptAreaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  
+				   SELECT DISTINCT GET_DEPT_NAME(HD.DEPTNO,  #interLanguage:VARCHAR#) DEPTNAME, HD.DEPTNO,hd.orderno
+						   FROM HR_DEPARTMENT HD
+						  WHERE HD.CPNY_ID = #interCpnyID:VARCHAR#
+						    AND HD.DEPT_LEVEL = '2'
+						  START WITH HD.DEPTNO IN (SELECT DISTINCT T.DEPTNO
+						                             FROM PA_SUPERVISOR_INFO T
+						                            WHERE T.PERSON_ID = #PERSON_ID:VARCHAR# )
+						 CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO 
+						 order siblings by orderno
+	  	]]>
+	</select>
+	
+	
+	<select id="getDeptAreaListByHr" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  
+				   SELECT DISTINCT GET_DEPT_NAME(HD.DEPTNO,  #interLanguage:VARCHAR#) DEPTNAME, HD.DEPTNO,hd.orderno
+						   FROM HR_DEPARTMENT HD
+						  WHERE HD.CPNY_ID = #interCpnyID:VARCHAR#
+						    AND HD.DEPT_LEVEL = '2'
+						  START WITH HD.DEPTNO IN (SELECT DISTINCT T.DEPTNO
+						                             FROM SY_USER_DEPT T
+						                            WHERE T.USER_NO = (
+                                        SELECT SU.USER_NO FROM SY_USER SU WHERE SU.PERSON_ID = #PERSON_ID:VARCHAR#
+                                        ) )
+						 CONNECT BY PRIOR HD.PARENT_DEPT_NO = HD.DEPTNO 
+						 order siblings by orderno
+	  	]]>
+	</select>
+	
+	<select id="getPaSupervisorList"  resultClass="linkMap" >
+		<![CDATA[
+			SELECT PA_SUPERVISOR.PERSON_ID SUPERVISOR_ID,
+			       HR_EMPLOYEE.EMPID,
+			       HR_EMPLOYEE.LOCAL_NAME,
+			       HR_DEPARTMENT_NAME.CONTENT DEPTNAME,
+			       TO_CHAR(PA_SUPERVISOR.CREATE_DATE, 'YYYY-MM-DD') CREATE_DATE,
+			       HE.LOCAL_NAME CREATED_BY
+			  FROM PA_SUPERVISOR, HR_EMPLOYEE, HR_DEPARTMENT_NAME, HR_EMPLOYEE HE
+			 WHERE PA_SUPERVISOR.PERSON_ID = HR_EMPLOYEE.PERSON_ID
+			   AND HR_EMPLOYEE.DEPTNO = HR_DEPARTMENT_NAME.DEPTNO(+)
+			   AND HR_DEPARTMENT_NAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND PA_SUPERVISOR.CREATED_BY = HE.PERSON_ID(+)
+			   AND HR_EMPLOYEE.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="PA_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM PA_SUPERVISOR_INFO
+					 WHERE PA_SUPERVISOR_INFO.DEPTNO = HR_EMPLOYEE.DEPTNO
+					   AND PA_SUPERVISOR_INFO.PERSON_ID = #PA_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR HR_EMPLOYEE.PERSON_ID = #PA_SUPERVISIOR_INFO:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getCheckPaCalculateType" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM PA_BONUS_HISTORY T
+			 WHERE T.PA_MONTH = #PA_MONTH:VARCHAR#
+			   AND T.PA_CALCULATE_TYPE_ID = #PA_CALCULATE_TYPE:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getSalaryProvideDatePa" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		  SELECT DISTINCT TO_CHAR(T.GIVE_DATE, 'YYYY-MM-DD') GIVE_DATE_PA0108 
+		  FROM PA_CALC_OBJECT T
+		  WHERE T.PA_MONTH =#paMonth:VARCHAR#
+		  AND T.CPNY_ID =#CPNY_ID:VARCHAR#
+	</select>
+    
+    <select id="getSalaryProvideDatePa2" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+          SELECT DISTINCT TO_CHAR(T.GIVE_DATE, 'YYYY-MM-DD') PACAL_GIVE_DATE
+          FROM PA_CALC_OBJECT T
+          WHERE T.PA_MONTH =#paMonth:VARCHAR#
+          AND T.CPNY_ID =#CPNY_ID:VARCHAR#
+    </select>
+    
+    
+    <update id="updatepaapplyCloseGuan" parameterClass="linkMap" >
+		<![CDATA[	
+			UPDATE PA_PROGRESS
+			   SET PA_APPLY_LOCK_FLAG = #FLAG#
+			 WHERE STAT_NO = #statNo#
+			   AND CPNY_ID = #interCpnyID#
+			   AND PA_MONTH_STR = #paMonth#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		  	   AR_DEPT_NO = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	</update>
+	
+	  <update id="updateisapplyCloseGuan" parameterClass="linkMap" >
+		<![CDATA[	
+			UPDATE PA_PROGRESS
+			   SET IS_LOCK_FLAG = #FLAG#
+			 WHERE STAT_NO = #statNo#
+			   AND CPNY_ID = #interCpnyID#
+			   AND PA_MONTH_STR = #paMonth#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		  	   AR_DEPT_NO = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	</update>
+	
+	
+	
+	 <update id="updatepapaOpenFlag" parameterClass="linkMap" >
+		<![CDATA[	
+			UPDATE PA_PROGRESS
+			   SET PA_OPEN_FLAG = #FLAG#
+			 WHERE STAT_NO = #statNo#
+			   AND CPNY_ID = #interCpnyID#
+			   AND PA_MONTH_STR = #paMonth#
+		]]>
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		  	 AR_DEPT_NO = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	</update>
+	<update id="updatepaWithholdingapplyCloseGuan" parameterClass="linkMap" >
+		<![CDATA[	
+			UPDATE PA_PROGRESS_Withholding
+			   SET PA_WITHHOLDING_LOCK_FLAG = #FLAG#
+			 WHERE EMP_TYPE_NO = #EMPTYPEID#
+			   AND AR_DEPT_NO = #DEPTID#
+			   AND CPNY_ID = #interCpnyID#
+			   AND PA_MONTH_STR = #paMonth#
+		]]>
+	</update>
+	
+	<select id="getPALOCKFLAG" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			     SELECT  NVL(COUNT(1),0) 
+				    FROM PA_PROGRESS
+				     WHERE STAT_NO = #statNo#
+				  
+				   AND CPNY_ID = #interCpnyID#
+				   AND PA_LOCK_FLAG = 1
+				   AND PA_MONTH_STR = #paMonth#
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		  	         AR_DEPT_NO = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	 </select>
+	 
+	 
+	<select id="getpaapplyDEPT_Name" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			 select d.org_name_local from hr_department d  where 1=1 and rownum = 1
+	
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		  	     d.deptid   = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	 </select>
+	 
+	 <select id="getPALOCKFLAGISNO" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+	select decode(NVL(max(x.transfer_flag), 'N'), 'Y', 'T', 'F')
+      
+        from XGINF_PAY_GHRS_HISTORY_IF x
+       where x.yyyymm =  #fPaMonth#
+         AND X.SUBSIDIARY = DECODE(#interCpnyID#,'TSTO',DECODE(#DEPT_NO#,'106172','LGERD',#interCpnyID#),#interCpnyID#) 
+          
+         AND X.TRANSFER_FLAG = 'Y'
+           
+         AND X.ATTRIBUTE1 IN (  select   distinct get_description_code(SE.JOBTYPE_NO)
+								      FROM AR_STATISTIC_DATE_PARAM ASDP,
+								           AR_STATISTIC_EMPTYPE    ASE,
+								           
+								           HR_JOB_TYPE_SETUP       SE
+								     WHERE ASDP.STAT_NO = ASE.STAT_NO
+								       AND ASDP.CPNY_ID = ASE.CPNY_ID(+)  
+								       AND ASE.EMP_TYPE_CODE = SE.JOBTYPE_NO
+								       AND ASE.CPNY_ID = SE.CPNY_ID
+								       AND ASE.CPNY_ID = #interCpnyID#
+								     AND  ASE.STAT_NO = #statNo#) 
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		   X.PAY_AREA_NO   = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	 </select>
+	 
+	 
+	 
+	 <select id="getPAWithholdingLOCKFLAG" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			     SELECT  PA_WITHHOLDING_APPLY_LOCK_FLAG 
+				    FROM PA_PROGRESS_WITHHOLDING
+				    WHERE EMP_TYPE_NO = #EMPTYPEID#
+					   AND CPNY_ID = #interCpnyID#
+					   AND PA_MONTH_STR = #paMonth#
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+		  		 AND AR_DEPT_NO = #DEPT_NO#
+		  	 ]]>
+	  	 </isNotEmpty>
+	 </select>
+	 
+	 
+	  <select id="getpaDepeNameAndEmpTypeName" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			     SELECT get_dept_name(#DEPTID:VARCHAR#,#interLanguage:VARCHAR#) DEPTNAME,
+					    get_global_name(#EMPTYPEID:VARCHAR#,#interLanguage:VARCHAR#) EMPTYPENAME
+				 FROM DUAL
+	  	]]>
+	 </select>
+	 
+	 <select id="getJobTypeGroupAreaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  
+			  
+			  SELECT GET_GLOBAL_NAME(JOBTYPE_GROUP_NO, #interLanguage:VARCHAR#) JOBTYPENAME, JOBTYPE_GROUP_NO
+				  FROM HR_JOB_TYPE_SETUP
+				 WHERE CPNY_ID = #interCpnyID:VARCHAR#
+				   AND (GET_GLOBAL_NAME(JOBTYPE_GROUP_NO, #interLanguage:VARCHAR#) LIKE '%促销%' OR
+				       GET_GLOBAL_NAME(JOBTYPE_GROUP_NO, #interLanguage:VARCHAR#) LIKE '%营业%')
+				 GROUP BY GET_GLOBAL_NAME(JOBTYPE_GROUP_NO, #interLanguage:VARCHAR#), JOBTYPE_GROUP_NO
+				 ORDER BY GET_GLOBAL_NAME(JOBTYPE_GROUP_NO, #interLanguage:VARCHAR#)
+	  	]]>
+	</select>
+	
+	
+	
+	<select id="getEmpTypeAreaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		
+		SELECT B.JOBTYPE_GROUP_NO, A.EMP_TYPE_CODE, GET_GLOBAL_NAME(A.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMPTYPENAME FROM 
+			PA_SUPERVISOR_EMPTYPE_INFO A , HR_JOB_TYPE_SETUP B    WHERE
+			A.EMP_TYPE_CODE = B.JOBTYPE_NO
+			AND B.CPNY_ID = #interCpnyID:VARCHAR#
+			AND PERSON_ID = #PERSON_ID:VARCHAR#
+			AND B.JOBTYPE_GROUP_NO = #JOBTYPE_GROUP_NO:VARCHAR#
+	  	]]>
+	</select>
+	
+
+
+    <select id="getPaWithholdingMonthlyStatusCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			   SELECT COUNT(*) CNT
+				 FROM PA_PROGRESS_Withholding
+				 WHERE 1 = 1
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="PA_MONTH">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPTYPEID">
+			<![CDATA[
+				  EMP_TYPE_NO = #EMPTYPEID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+				  AR_DEPT_NO = #DEPTID:VARCHAR#
+			]]>
+		</isNotEmpty>
+     </select>
+	 
+	 
+	 
+	 <insert id="insertPaWithholdingMonthlyStatus" parameterClass="linkMap">
+		<![CDATA[	
+		
+		  INSERT INTO PA_PROGRESS_Withholding
+					  (PA_MONTH_STR,
+					  EMP_TYPE_NO,
+					  ATT_MO_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  PA_WITHHOLDING_LOCK_FLAG,
+					  PA_WITHHOLDING_APPLY_LOCK_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE,
+					  CPNY_ID,
+					  AR_DEPT_NO,
+					  CREATE_DATE,
+					  CREATED_BY)
+			   VALUES (#PA_MONTH:VARCHAR#,
+			   		   #EMPTYPEID:VARCHAR#,
+			   		   NVL(#ATT_MO_FLAG:NUMERIC#,0),
+					   NVL(#ATT_MO_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_OPEN_FLAG:NUMERIC#,0),
+					   NVL(#PA_OPEN_FLAG:NUMERIC#,0),
+					   NVL(#PA_OPEN_FLAG:NUMERIC#,0),
+					   #LOCK_USER_ID:VARCHAR#,
+					   SYSDATE,
+					   #CPNY_ID:VARCHAR#,
+					   #DEPTID:VARCHAR#,
+					   SYSDATE,
+					   #LOCK_USER_ID:VARCHAR#
+			   		  )
+			 ]]>
+	</insert>
+	
+	
+	<select id="getWithholdingMonthlyStatusList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT PA_MONTH_STR,
+			          PA_WITHHOLDING_LOCK_FLAG,
+					  ATT_MO_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE
+				 FROM PA_PROGRESS_Withholding
+	  	]]>
+		<isNotEmpty prepend="WHERE" property="PA_MONTH">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  CPNY_ID = #CPNY_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMPTYPEID">
+			<![CDATA[
+				  EMP_TYPE_NO = #EMPTYPEID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+				  AR_DEPT_NO = #DEPTID:VARCHAR#
+			]]>
+		</isNotEmpty>
+	</select>
+	<!-- 查询工资项目值 -->
+	
+    <select id="getPaConfrimMonth" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	  SELECT 
+       O.ORG_NAME_LOCAL ,
+       E.PERSON_ID,
+       E.EMPID,
+       E.LOCAL_NAME,       
+       P.BASE_SALARY_STD "基本工资标准",
+       P.CHANGE_SALARY_STD "成果工资标准",
+       P.BASE_SALARY"基本工资",
+       P.CHANGE_SALARY"成果工资",
+       P.DUTY_FEE"职责津贴",
+       P.WORK_AGE_MONEY "工龄补贴",
+       P.P_HOUSE_FEE "住房补贴",
+       P.POST_FEE "岗位补助",
+       P.P_FIXATION_OTFEE "固定加班费",
+       P.ASSESS_WAGE "评价工资",
+       P.P_ONDUTY_FEE "值班费",
+       P.P_TRAFFIC_FSE "FSE交通费",
+       P.P_JIABAN_MONTY "司机加班费",
+       P.P_LEFT_FEE "其他补贴免税",
+       P.WORK_OT_FEE "平时加班",
+       P.WEEKEND_OT_FEE "周末加班",
+       P.HOLIDAYS_OT_FEE "法定日加班",       
+       P.LAST_OT_FEE "上月追溯加班",
+       P.CHAOSHI_FEE "其他补贴加",
+       P.NIGHT_WORK_FEE "夜班津贴",
+       P.P_ADJUST_FEE "工资调整加",       
+       P.P_BONUS"奖金加",
+       
+       (P.BASE_SALARY +
+       P.CHANGE_SALARY +
+       P.DUTY_FEE +
+       P.WORK_AGE_MONEY +
+       P.P_HOUSE_FEE +
+       P.POST_FEE +
+       P.P_FIXATION_OTFEE +
+       P.ASSESS_WAGE +
+       P.P_ONDUTY_FEE +
+       P.P_TRAFFIC_FSE +
+       P.P_JIABAN_MONTY +
+       P.P_LEFT_FEE +
+       P.WORK_OT_FEE +
+       P.WEEKEND_OT_FEE +
+       P.HOLIDAYS_OT_FEE +
+       P.CHAOSHI_FEE +
+       P.NIGHT_WORK_FEE +
+       P.P_ADJUST_FEE +
+       P.P_BONUS + 
+       P_END_YEAR_FEE) 总发放额,
+       
+       P.LEAVE_REDUCE "事假扣款",
+       P.SICK_REDUCE "病假扣款",
+       P.CHIDAO_REDUCE "迟到扣款",
+       P.ZAOTUI_REDUCE "早退扣款",
+       0 "长期病假扣款",
+       P.ABSENTEEISM_REDUCE "旷工扣款",
+       P.TURN_ABS_REDUCE "迟到早退转旷工扣款",
+       P.NO_CARD_REDUCE "未打卡扣款",
+       0 "休职扣款",
+       P.P_ADJUST_MINUS_FEE "工资调整减",
+       0 "奖金（-）",
+       P_END_YEAR_FEE "年终奖金",
+       P.END_YEAR_TAX "年终奖金税金",
+       
+       P.IS_ENDOWMENT_COR "公司养老保险",
+       P.IS_FUND_COR      "公司公积金",
+       P.IS_UNEMPLOY_COR  "公司失业保险",
+       P.IS_MEDICAL_COR   "公司医疗保险",
+       P.IS_INJURY_COR    "公司工伤保险",
+       P.IS_FERTILITY_COR "公司生育保险",
+       
+       P.IS_ENDOWMENT_PER "个人养老保险",
+       P.IS_FUND_RER      "个人公积金",
+       P.IS_UNEMPLOY_PER  "个人失业保险",
+       P.IS_SERIOUS_PER   "个人大额大病",
+       P.IS_MEDICAL_PER   "个人医疗保险",
+       P_IS_AJUST_COR     "保险补扣公司",
+       P.P_IS_AJUST_PER   "保险补扣个人",
+       
+       P.P_UNION_FEE "个人工会费",
+       P.P_LOVE_FEE  "爱心基金个人",
+       P.END_YEAR_TAX + P.TAX "所得税",
+       P.GROSS_PAY "应发工资",
+       P.NET_PAY "实发工资"
+       
+
+
+  FROM PA_SUMMARY_LGEPN P,
+       HR_EMPLOYEE      E,
+       HR_EMP_PA_INFO   S,
+       HR_DEPARTMENT    O,
+       SY_GLOBAL_NAME   I,
+       HR_PERSONAL_INFO H,
+       SY_CODE_MAPPING  SM
+ WHERE E.CPNY_ID = #CPNY:VARCHAR#
+   AND P.PA_MONTH = #paMonth:VARCHAR#
+   AND E.EMPID = P.EMPID
+   AND E.CPNY_ID = P.CPNY_ID
+   AND E.PERSON_ID = S.PERSON_ID
+   AND I.NO = E.INSRAREA_ID
+   AND E.CPNY_ID = O.CPNY_ID
+   AND E.DEPTNO = O.DEPTID
+   AND E.PERSON_ID = H.PERSON_ID
+   AND E.EMP_TYPE_CODE = SM.CHR_CODE_NO
+   AND ((E.DEPTNO IN
+                      (SELECT DEPTNO
+                          FROM HR_DEPARTMENT O
+                         WHERE CPNY_ID = #CPNY:VARCHAR#
+                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+                         START WITH DEPTNO = #deptNO:VARCHAR#)) 
+                         OR (DECODE(#deptNO:VARCHAR#,'', 0, null,0,0,0,1) = 0))
+   and (SELECT STAT_NO FROM ar_statistic_emptype ASE 
+             WHERE ASE.EMP_TYPE_CODE = E.EMP_TYPE_CODE 
+             AND ASE.CPNY_ID =E.CPNY_ID   and rownum=1 )  = #STAT_NO_PA:VARCHAR#
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+				  E.EMPID = #condition:VARCHAR# OR E.LOCAL_NAME LIKE '%condition%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+				  E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR# 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+				  E.emp_office = #EmpOffice:VARCHAR# 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			<![CDATA[
+				  E.EMP_TYPE_CODE IN
+				       (SELECT E.EMP_TYPE_CODE
+				          FROM HR_EMPLOYEE E, HR_JOB_TYPE_SETUP F
+				         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+				           AND (DECODE(#JobTypeGroupNo:VARCHAR#, '', 0, 1) = 0 OR
+				               F.JOBTYPE_GROUP_NO = #JobTypeGroupNo:VARCHAR#)
+				           AND F.CPNY_ID = #CPNY:VARCHAR#
+				           AND E.CPNY_ID=F.CPNY_ID)
+			]]>
+		</isNotEmpty>   
+	</select>
+		<!-- 查询工资项目值数量-->
+    <select id="getPaConfrimMonthCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+		 SELECT 
+       count(0)
+  FROM PA_SUMMARY_LGEPN P,
+       HR_EMPLOYEE      E,
+       HR_EMP_PA_INFO   S,
+       HR_DEPARTMENT    O,
+       SY_GLOBAL_NAME   I,
+       HR_PERSONAL_INFO H,
+       SY_CODE_MAPPING  SM
+ WHERE E.CPNY_ID = #CPNY:VARCHAR#
+   AND P.PA_MONTH = #paMonth:VARCHAR#
+   AND E.EMPID = P.EMPID
+   AND E.CPNY_ID = P.CPNY_ID
+   AND E.PERSON_ID = S.PERSON_ID
+   AND I.NO = E.INSRAREA_ID
+   AND E.CPNY_ID = O.CPNY_ID
+   AND E.DEPTNO = O.DEPTID
+   AND E.PERSON_ID = H.PERSON_ID
+   AND E.EMP_TYPE_CODE = SM.CHR_CODE_NO
+   AND ((E.DEPTNO IN
+                      (SELECT DEPTNO
+                          FROM HR_DEPARTMENT O
+                         WHERE CPNY_ID = #CPNY:VARCHAR#
+                        CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO
+                         START WITH DEPTNO = #deptNO:VARCHAR#)) 
+                         OR (DECODE(#deptNO:VARCHAR#,'', 0, null,0,0,0,1) = 0))
+   and (SELECT STAT_NO FROM ar_statistic_emptype ASE 
+             WHERE ASE.EMP_TYPE_CODE = E.EMP_TYPE_CODE 
+             AND ASE.CPNY_ID =E.CPNY_ID   and rownum=1 )  = #STAT_NO_PA:VARCHAR#
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+				  E.EMPID = #condition:VARCHAR# OR E.LOCAL_NAME LIKE '%condition%'
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+				  E.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR# 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+				  E.emp_office = #EmpOffice:VARCHAR# 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+			<![CDATA[
+				  E.EMP_TYPE_CODE IN
+				       (SELECT E.EMP_TYPE_CODE
+				          FROM HR_EMPLOYEE E, HR_JOB_TYPE_SETUP F
+				         WHERE E.EMP_TYPE_CODE = F.JOBTYPE_NO
+				           AND (DECODE(#JobTypeGroupNo:VARCHAR#, '', 0, 1) = 0 OR
+				               F.JOBTYPE_GROUP_NO = #JobTypeGroupNo:VARCHAR#)
+				           AND F.CPNY_ID = #CPNY:VARCHAR#
+				           AND E.CPNY_ID=F.CPNY_ID)
+			]]>
+		</isNotEmpty>           
+	</select>
+</sqlMap>

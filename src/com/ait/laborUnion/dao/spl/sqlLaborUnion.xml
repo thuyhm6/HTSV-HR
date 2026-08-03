@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="LaborUnion.contractInfo">
+
+
+
+	<select id="getLaborUnionSumForSearch" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	
+		<![CDATA[
+		
+ SELECT SUM(COUNT(TT.PERSON_ID)) GROUPCOUNT,
+             SUM((SELECT COUNT(T.PERSON_ID)
+                   FROM HR_EMPLOYEE T
+                  WHERE T.DATE_STARTED <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND T.PERSON_ID = TT.PERSON_ID
+                    AND T.CPNY_ID=#CPNY_ID#
+                    )) ALLCOUNT,
+                    
+             SUM((SELECT COUNT(T.PERSON_ID)
+                   FROM HR_EMPLOYEE T
+                  WHERE T.DATE_STARTED <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND T.DATE_LEFT IS NOT NULL
+                    AND T.DATE_LEFT <=
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND T.PERSON_ID = TT.PERSON_ID
+                    AND T.CPNY_ID=#CPNY_ID#
+                    )) LEFTCOUNT,
+             SUM((SELECT COUNT(T.PERSON_ID)
+                   FROM HR_EMPLOYEE T
+                  WHERE T.DATE_STARTED <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND (T.DATE_LEFT IS NULL OR
+                        T.DATE_LEFT >
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND T.PERSON_ID = TT.PERSON_ID
+                    AND T.CPNY_ID=#CPNY_ID#
+                    )) STAYCOUNT,
+             SUM((SELECT COUNT(T.EMPID)
+                   FROM HR_LABOR_UNION T, HR_EMPLOYEE HE
+                  WHERE  T.EMPID = HE.EMPID
+                      AND TT.PERSON_ID=HE.PERSON_ID
+                      AND (TO_DATE(T.START_DATE, 'yyyy-mm-dd') <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND (T.END_DATE IS NULL OR
+                        TO_DATE(T.END_DATE, 'yyyy-mm-dd') >=
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND HE.DATE_STARTED <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND (HE.DATE_LEFT IS NULL OR
+                        HE.DATE_LEFT >
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND HE.CPNY_ID=#CPNY_ID#
+                    )) JOINCOUNT,
+             SUM((SELECT COUNT(T.PERSON_ID)
+                   FROM HR_EMPLOYEE T
+                  WHERE T.DATE_STARTED <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND (T.DATE_LEFT IS NULL OR
+                        T.DATE_LEFT >
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND T.PERSON_ID = TT.PERSON_ID
+                    AND T.CPNY_ID=#CPNY_ID#
+                    )) -
+             SUM((SELECT COUNT(T.EMPID)
+                   FROM HR_LABOR_UNION T, HR_EMPLOYEE HE
+                  WHERE  T.EMPID = HE.EMPID
+                      AND TT.PERSON_ID=HE.PERSON_ID
+                      AND (TO_DATE(T.START_DATE, 'yyyy-mm-dd') <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND (T.END_DATE IS NULL OR
+                        TO_DATE(T.END_DATE, 'yyyy-mm-dd') >=
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND HE.DATE_STARTED <
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd')
+                    AND (HE.DATE_LEFT IS NULL OR
+                        HE.DATE_LEFT >
+                        TO_DATE(#PaMonth#, 'yyyy-mm-dd'))
+                    AND HE.CPNY_ID=#CPNY_ID#
+                    )) NOTJOINCOUNT
+        FROM HR_PERSONAL_INFO TT
+       WHERE 1 = 1
+       AND TT.PERSON_ID NOT IN (SELECT EMPID FROM HR_EMPLOYEE WHERE EMPID LIKE 'H%')
+       
+       ]]>
+        <isNotEmpty prepend="AND" property="SEXCODE">
+			<![CDATA[
+				 TT.SEXCODE = #SEXCODE#
+			]]>
+		</isNotEmpty>
+		
+       <![CDATA[
+        GROUP BY TT.PERSON_ID
+		
+	 	]]>
+	 	
+
+	 		
+	</select>  
+	
+	
+	
+	
+		<select id="getLaborUnionSumForSearch2" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	
+		
+		
+		<![CDATA[
+               
+               
+               
+     SELECT SUM((SELECT COUNT(T.EMPID)
+             FROM HR_LABOR_UNION T
+            WHERE REPLACE(SUBSTR(T.START_DATE, 1, 7), '-', '') =
+                  (TO_CHAR(ADD_MONTHS(TO_DATE(#paMonth:VARCHAR#, 'YYYY-MM-DD'), -1),
+                           'YYYYMM'))
+              AND (T.END_DATE IS NULL OR
+                   (T.END_DATE IS NOT NULL AND
+                   REPLACE(SUBSTR(T.END_DATE, 1, 7), '-', '') >
+                   (TO_CHAR(ADD_MONTHS(TO_DATE(#paMonth:VARCHAR#, 'YYYY-MM-DD'),
+                                        -1),
+                             'YYYYMM'))))
+              AND T.EMPID = E.EMPID)) LASTCOUNT,
+       SUM((SELECT COUNT(T.EMPID)
+             FROM HR_LABOR_UNION T
+            WHERE REPLACE(SUBSTR(T.END_DATE, 1, 7), '-', '') =
+                  REPLACE(SUBSTR(#paMonth:VARCHAR#, 1, 7), '-', '')
+              AND T.EMPID = T.EMPID)) LEFTCOUNT,
+       SUM((SELECT COUNT(T.EMPID)
+             FROM HR_LABOR_UNION T
+            WHERE REPLACE(SUBSTR(T.START_DATE, 1, 7), '-', '') =
+                  REPLACE(SUBSTR(#paMonth:VARCHAR#, 1, 7), '-', '')
+              AND (T.END_DATE IS NULL OR
+                   (T.END_DATE IS NOT NULL AND
+                   REPLACE(SUBSTR(T.END_DATE, 1, 7), '-', '') >=
+                   REPLACE(SUBSTR(#paMonth:VARCHAR#, 1, 7), '-', '')))
+              AND T.EMPID = E.EMPID)) JOINCOUNT
+  FROM HR_PERSONAL_INFO TT, HR_EMPLOYEE E
+ WHERE 1 = 1
+   AND TT.PERSON_ID NOT IN
+       (SELECT EMPID FROM HR_EMPLOYEE WHERE EMPID LIKE 'H%')
+   AND TT.PERSON_ID = E.PERSON_ID
+   AND E.CPNY_ID = #CPNY_ID:VARCHAR#
+
+  
+
+		]]>
+		<isNotEmpty prepend="AND" property="SEXCODE">
+			<![CDATA[
+				 TT.SEXCODE = #SEXCODE:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+	 	
+
+	 		
+	</select>  
+	
+	
+    <select id="getLaborUnionExcel" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+    	
+    	 
+    	 <![CDATA[
+     SELECT EMP.EMPID,
+           EMP.LOCAL_NAME,
+           GET_DEPT_NAME(EMP.DEPTNO,#language:VARCHAR#) DEPTNAME,
+           TO_CHAR(EMP.DATE_STARTED,'YYYY-MM-DD') DATE_STARTED,
+           TO_CHAR(EMP.DATE_LEFT,'YYYY-MM-DD') DATE_LEFT,
+           T.START_DATE,
+           T.END_DATE
+
+      FROM HR_LABOR_UNION T, HR_EMPLOYEE EMP
+      WHERE EMP.EMPID = T.EMPID(+)
+      AND EMP.EMPID NOT IN (SELECT EMPID FROM HR_EMPLOYEE WHERE EMPID LIKE 'H%')
+      AND EMP.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="paMonth">
+			<![CDATA[
+				   EMP.DATE_STARTED <
+       				TO_DATE(#paMonth:VARCHAR#, 'yyyy-mm-dd')
+			]]>
+			<isNotEmpty prepend="AND" property="EmpStatus">
+				<isEqual compareValue="EmpStatus6" property="EmpStatus">
+				<![CDATA[
+				    (EMP.DATE_LEFT IS NULL OR EMP.DATE_LEFT > TO_DATE(#paMonth:VARCHAR#, 'yyyy-mm-dd')) 
+				]]>
+				</isEqual>
+				<isEqual compareValue="EmpStatus3" property="EmpStatus">
+				<![CDATA[
+				    (EMP.DATE_LEFT IS NOT NULL AND EMP.DATE_LEFT <= TO_DATE(#paMonth:VARCHAR#, 'yyyy-mm-dd'))    
+				]]>
+				</isEqual>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="labor">
+				<isEqual compareValue="join" property="labor">
+				<![CDATA[
+					  ( T.END_DATE   IS NULL OR T.END_DATE > #paMonth:VARCHAR#)
+	                 AND ( T.START_DATE IS NOT NULL AND T.START_DATE <= #paMonth:VARCHAR#)
+				]]>
+				</isEqual>
+				<isEqual compareValue="left" property="labor">
+				<![CDATA[
+					
+					((T.START_DATE IS NOT NULL AND T.END_DATE IS NOT NULL AND T.END_DATE <= #paMonth:VARCHAR#)
+					OR (T.START_DATE IS NULL  AND T.END_DATE IS NULL ))
+					AND EMP.EMPID = T.EMPID
+					
+				]]>
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<![CDATA[
+			ORDER BY EMP.DEPTNO,EMP.PERSON_ID
+		]]>
+    	 
+    </select>  
+	
+	
+	
+</sqlMap>	
+	

@@ -1,0 +1,368 @@
+<%@ page contentType="text/html; charset=UTF-8" language="java"
+	errorPage=""%>
+<%@ include file="/WEB-INF/view/inc/initTaglibs.jsp"%>
+<script>
+$(document).ready(function(){
+	$("#viewRegPersonalTargetProbation_SEQ",navTab.getCurrentPanel()).change(function(){
+		$("#viewRegPersonalTargetProbationForm",navTab.getCurrentPanel()).submit();
+	});
+	sumObjectTargetScorePerSum();
+	$('td[sysAff="aff"]',navTab.getCurrentPanel()).each(function(i, obj){
+		var index = $(obj).attr("sysIndex");
+		
+		var total = 0;
+		var yjTotal = 0;
+		var nlTotal = 0;
+		$('td[sysLong="AFFIRM_SCORE_' + index + '"]',navTab.getCurrentPanel()).each(function(i, obj){
+			if($(obj).html() != ''){
+				if($(obj).attr("sysType") == 'yj'){
+					yjTotal += parseInt($(obj).html());
+				}else{
+					nlTotal += parseInt($(obj).html());
+				}
+				total += parseInt($(obj).html());
+			}
+		});
+		
+		$("#yjAffirmScore_" + index,navTab.getCurrentPanel()).html(yjTotal);
+		$("#nlAffirmScore_" + index,navTab.getCurrentPanel()).html(nlTotal);
+		$("#sumAffirmScore_" + index,navTab.getCurrentPanel()).html(total);
+	});
+});
+
+function sumObjectTargetScorePer(obj){
+	if(parseInt(obj.value) > parseInt($(obj).attr("sysLimit"))){
+		alertMsg.info("<spring:message code='evs.viewProbationEvsAffirm.PINGFENBUNENGDAYUBILV.a'/>");//评分不能大于比率
+		$(obj).val(0);
+	}
+	sumObjectTargetScorePerSum();
+}
+
+function sumObjectTargetScorePerSum(){
+	var total = 0;
+	var yjTotal = 0;
+	var nlTotal = 0;
+	$('input:[name="AFFIRM_SCORE"]',navTab.getCurrentPanel()).each(function(i, obj){
+		if($(obj).val() != ''){
+			if($(obj).attr("sysType") == 'yj'){
+				yjTotal += parseInt($(obj).val());
+			}else{
+				nlTotal += parseInt($(obj).val());
+			}
+			total += parseInt($(obj).val());
+		}
+	});
+	$("#yjAffirmScore",navTab.getCurrentPanel()).html(yjTotal);
+	$("#nlAffirmScore",navTab.getCurrentPanel()).html(nlTotal);
+	$("#sumAffirmScore",navTab.getCurrentPanel()).html(total);
+}
+
+function viewConfirmTargetProbationSave(flag){
+	if(flag == 1){
+		msg = "<spring:message code='evs.viewConfirmTargetInfoAbility.SHIXING.a'/>";//实行
+	}else if(flag == 0){
+		msg = "<spring:message code='evs.viewAffirmTarget1.LINGSHIBAOCUN.a'/>";//临时保存
+	}
+	if(flag != 0){
+		var form = $("#viewAffirmTargetProbationForm",navTab.getCurrentPanel());
+		if (!form.valid()) {
+			return false;
+		}
+	}
+	//获取页面的值
+	var jsonData = '[';
+	$('input:[name="AFFIRM_SCORE"]',navTab.getCurrentPanel()).each(function(i, obj){
+		if (jsonData.length > 1) {
+			jsonData += ',{';
+		} else {
+			jsonData += '{';
+		}
+		jsonData += ' "EVS_SCORE": "' + obj.value + '" ,';
+		jsonData += ' "ITEM_SEQ": "' + $(obj).parent().find("input:[name='ITEM_SEQ']").val() + '" ,';
+		jsonData += ' "SEQ": "' + '${viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}' + '" ,';
+		jsonData += ' "RESUME_SEQ": "' + '${RESUME_SEQ}' + '" ,';
+		jsonData += ' "adminID": "' + '${LoginUser.adminID}' + '" ,';
+		jsonData += ' "adminIP": "' + '${LoginUser.adminIP}' + '" ,';
+		jsonData += ' "interCpnyID": "' + '${LoginUser.cpnyId}' + '" ';
+		jsonData += '}';
+	});
+	jsonData += ']';
+	 											//确定要                                                  												吗？
+	alertMsg.confirm("<spring:message code='ess.viewMonthDetailConfirmList.QUEDINGYAO.a'/>" + msg + "<spring:message code='ess.viewMonthDetailConfirmList.MAO.a'/>",
+  		{okCall:function(){
+		  	$.ajax({
+  				type: 'POST',
+  				url: '/evs/manage/addProbationEvsAffirmInfo',
+  				data:[{ name: 'jsonData', value: jsonData },
+  				      { name: 'AFFIRM_CONTENT', value: $("#AFFIRM_CONTENT",navTab.getCurrentPanel()).val() },
+  				      { name: 'EVS_POINT', value: '' },
+  				      { name: 'SEQ', value: '${viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}' },
+  				      { name: 'RESUME_SEQ', value: '${RESUME_SEQ}' },
+  				      { name: 'AFFIRM_LEVEL', value: $("#AFFIRM_LEVEL",navTab.getCurrentPanel()).val() },
+  				      { name: 'EVS_OBJECT_SEQ', value: '${viewEvsObjectInfo.EVS_OBJECT_SEQ}' },
+  				      { name: 'FLAG', value: flag }],
+  				dataType:"json",
+  				cache: false,
+  				success: navTabAjaxDoneWithForm,
+  				error: DWZ.ajaxError
+  		});
+  	}});
+}
+
+</script>
+<c:if test="${not empty resumeList}">
+<div class="pageHeader">
+	<form id="viewAffirmTargetProbationForm" onsubmit="return navTabSearch(this);" action="/evs/manage/viewProbationEvsAffirm" method="post" >
+		<div class="searchBar">
+			<table class="searchContent">
+				<tr>
+					<td><spring:message code="evs.viewResumeList.PINGJIAMING.a"/><!--评价名--></td>
+					<td>
+						<select id="viewRegPersonalTargetProbationResumeNo" name="RESUME_SEQ">
+							<c:forEach items="${resumeList}" var="result">
+								<option value="${result.SEQ}" <c:if test="${result.SEQ eq RESUME_SEQ}">selected</c:if>>${result.RESUME_NAME}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+							</c:forEach>
+						</select>
+						<input type="hidden" name="evsType" value="${evsType }">
+						<input type="hidden" name="seach_LIMIT_AFF" value="${LIMIT_AFF }">
+					</td>
+				</tr>
+			</table>
+			<div class="subBar">
+				<ul>
+					<li>
+						<div class="buttonActive">
+							<div class="buttonContent">
+								<button type="submit">
+									<spring:message code="button.search"/><!--查询-->
+								</button>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</form>
+</div>
+
+<div class="pageContent">
+	<form id="viewRegPersonalTargetProbationSaveForm" action="/evs/manage/addRegPersonalTargetProbation" method="post">
+	<div style="padding-left:10px;padding-right:10px;padding-top:5px;">
+	<%@ include file="/WEB-INF/view/evs/manage/viewPersonalInfoHead_evsProbation.jsp"%>
+		<div style="font:bold 14px/20px arial,sans-serif;float:left;height:20px;line-height:20px;width:100%;"><spring:message code="evs.viewProbationEvsResult.RENSHIJILU.a"/><!--人事记录--></div>
+		<table class="user_table" width="70%">	
+			<tr>
+				<td rowspan="2" class="td_title" style="text-align:center;width:10%;"><spring:message code="ess.infoApply.check_work"/><!--考勤--></td>
+				<td colspan="2" class="td_title" style="text-align:center;width:20%;"><spring:message code="evs.viewProbationEvsResult.CHIDAOZAOTUI.a"/><!--迟到/早退--></td>
+				<td colspan="2" class="td_title" style="text-align:center;width:20%;"><spring:message code="ar.monthwork.title.kuanggong"/><!--旷工--></td>
+				<td colspan="2" class="td_title" style="text-align:center;width:20%;"><spring:message code="ess.viewpersonalpainfo.shijia"/><!--事假--></td>
+			</tr>
+			<tr>
+				<td colspan="2" class="td_type" style="text-align:center">&nbsp;${viewEvsObjectInfo.CHIDAO }&nbsp;</td>
+				<td colspan="2" class="td_type" style="text-align:center">&nbsp;${viewEvsObjectInfo.KUANGGONG }&nbsp;</td>
+				<td colspan="2" class="td_type" style="text-align:center">&nbsp;${viewEvsObjectInfo.SHIJIA }&nbsp;</td>
+			</tr>
+			<tr>
+				<td rowspan="2" class="td_title" style="text-align:center;width:10%;" ><spring:message code="evs.viewProbationEvsResult.JIANGFA.a"/><!--奖罚--></td>
+				<td colspan="3" class="td_title" style="text-align:center;width:30%;" ><spring:message code="evs.viewProbationEvsResult.JIANG.a"/><!--奖--></td>
+				<td colspan="3" class="td_title" style="text-align:center;width:30%;" ><spring:message code="evs.viewProbationEvsResult.FA.a"/><!--罚--></td>
+			</tr>
+			<tr>
+				<td colspan="3" class="td_type">&nbsp;
+					<c:forEach items="${getEvsRewardInfo}" var="item" varStatus="i">
+						${item.LOCAL_NAME }<br/>
+					</c:forEach>
+				</td>
+				<td colspan="3" class="td_type">&nbsp;
+					<c:forEach items="${getEvsPunishmentInfo}" var="item" varStatus="i">
+						${item.LOCAL_NAME }<br/>
+					</c:forEach>
+				</td>
+			</tr>
+		</table>
+		<div style="font:bold 14px/20px arial,sans-serif;float:left;height:20px;line-height:20px;">Objective Confirm</div>
+		<c:if test="${viewEvsObjectInfo.ACTIVITY eq '2'}">
+		<div style="float:right;height:20px;line-height:20px;margin-top:5px;">
+			<a class="w_button" onclick="viewConfirmTargetProbationSave(0)"><span><spring:message code="evs.viewAffirmTarget1.LINGSHIBAOCUN.a"/><!--临时保存--></span></a>
+			<a class="w_button" onclick="viewConfirmTargetProbationSave(1)"><span><spring:message code="evs.viewConfirmTargetInfoAbility.SHIXING.a"/><!--实行--></span></a>
+		</div>
+		</c:if>
+		<table class="user_table" width="100%" id="viewRegPersonalTargetProbation_table">	
+			<tr id="rowIdObjectTarget_100">
+				<td class="td_title"  style="text-align:center;" width="5%">No</td>
+				<td class="td_title"  style="text-align:center;" width="25%"><spring:message code="inct.salesman.evaluationItemType"/><!--评价项目--></td>
+				<td class="td_title" style="text-align:center;" width="50%"><spring:message code="inct.salesman.eval.personal.target"/><!--目标--></td>
+				<td class="td_title" style="text-align:center;" width="10%"><spring:message code="inct.salesman.ratio"/><!--比率-->(%)</td>
+				<c:forEach items="${viewEvsAffirmList}" var="item" varStatus="i">
+					<c:if test="${item.AFFIRM_TYPE eq 1}">
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ or item.AFFIRM_FLAG eq 1}">
+					<c:if test="${item.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" sysAff="aff" sysIndex="${i.index }" style="text-align:center;" width="5%">${item.LOCAL_NAME}</td>
+					</c:if>
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" style="text-align:center;" width="10%"><spring:message code="evs.viewProbationEvsAffirm.PINGFEN.a"/><!--评分--></td>
+					</c:if>
+					</c:if>
+					</c:if>
+				</c:forEach>
+			</tr>
+			<c:forEach items="${viewSSTEvsItem}" var="item" varStatus="i">
+				<tr>
+					<td class="td_type" style="text-align:center">${i.count}</td>
+			    	<td class="td_type">${item.ITEM_NAME }</td>
+			    	<td class="td_type">${item.ITEM_CONTENT }</td>
+			    	<td class="td_type" style="text-align:right" sysLong="ITEM_SCORE">${item.ITEM_SCORE }</td>
+					<c:forEach items="${viewEvsAffirmList}" var="aff" varStatus="j">
+						<c:if test="${aff.AFFIRM_TYPE eq 1}">
+						<c:if test="${aff.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ or aff.AFFIRM_FLAG eq 1}">
+						<c:if test="${aff.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+							<c:forEach items="${viewProAffScore}" var="score" varStatus="k">
+								<c:if test="${aff.SEQ eq score.AFFIRM_SEQ and item.SEQ eq score.ITEM_SEQ}">
+			    					<td class="td_type" style="text-align:right" sysType="yj" sysLong="AFFIRM_SCORE_${j.index }">${score.EVS_SCORE }</td>
+								</c:if>
+							</c:forEach>
+						</c:if>
+						<c:if test="${aff.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+							<td class="td_type" style="text-align:center">
+								<input name="AFFIRM_SCORE" sysLimit="${item.ITEM_SCORE }" sysType="yj" value="<c:forEach items="${viewProAffScore}" var="score" varStatus="k"><c:if test="${aff.SEQ eq score.AFFIRM_SEQ and item.SEQ eq score.ITEM_SEQ}">${score.EVS_SCORE }</c:if></c:forEach>" type="text" size="15" onblur="sumObjectTargetScorePer(this)" class="required number" min="0" max="100">
+								<input name="ITEM_SEQ" type="hidden" value="${item.SEQ }">
+							</td>
+						</c:if>
+						</c:if>
+						</c:if>
+					</c:forEach>
+				</tr>
+			</c:forEach>
+			<tr id="rowIdObjectTarget_101">
+				<td class="td_title"></td>
+				<td class="td_title" colspan="2" style="text-align:right;"><spring:message code="evs.viewProbationEvsResult.YEJIXIAOJI.a"/><!--业绩小计--></td>
+				<td class="td_title" style="text-align:right;" id="objectTargetSum">50</td>
+				<c:forEach items="${viewEvsAffirmList}" var="item" varStatus="i">
+					<c:if test="${item.AFFIRM_TYPE eq 1}">
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ or item.AFFIRM_FLAG eq 1}">
+					<c:if test="${item.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" id="yjAffirmScore_${i.index }" sysIndex="${i.index }" style="text-align:right;"></td>
+					</c:if>
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" id="yjAffirmScore"></td>
+					</c:if>
+					</c:if>
+					</c:if>
+				</c:forEach>
+			</tr>
+			
+			<c:forEach items="${viewSSTProbationEvsItem}" var="item" varStatus="i">
+				<tr>
+					<td class="td_type" style="text-align:center">${i.count}</td>
+			    	<td class="td_type" colspan="2">${item.ITEM_CONTENT }</td>
+			    	<td class="td_type" style="text-align:right" sysLong="ITEM_SCORE">${item.ITEM_SCORE }</td>
+					<c:forEach items="${viewEvsAffirmList}" var="aff" varStatus="j">
+						<c:if test="${aff.AFFIRM_TYPE eq 1}">
+							<c:if test="${aff.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ or aff.AFFIRM_FLAG eq 1}">
+								<c:if test="${aff.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+										<c:forEach items="${viewProAffScore}" var="score" varStatus="k">
+											<c:if test="${aff.SEQ eq score.AFFIRM_SEQ and item.SEQ eq score.ITEM_SEQ}">
+					    						<td class="td_type" style="text-align:right" sysLong="AFFIRM_SCORE_${j.index }" sysType="nl">${score.EVS_SCORE }</td>
+											</c:if>
+										</c:forEach>
+								</c:if>
+								<c:if test="${aff.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+									<td class="td_type" style="text-align:center">
+										<input name="AFFIRM_SCORE" sysLimit="${item.ITEM_SCORE }" sysType="nl" value="<c:forEach items="${viewProAffScore}" var="score" varStatus="k"><c:if test="${aff.SEQ eq score.AFFIRM_SEQ and item.SEQ eq score.ITEM_SEQ}">${score.EVS_SCORE }</c:if></c:forEach>" type="text" size="15" onblur="sumObjectTargetScorePer(this)" class="required number" min="0" max="100">
+										<input name="ITEM_SEQ" type="hidden" value="${item.SEQ }">
+									</td>
+								</c:if>
+							</c:if>
+						</c:if>
+					</c:forEach>
+				</tr>
+			</c:forEach>
+			<tr id="rowIdObjectTarget_101">
+				<td class="td_title"></td>
+				<td class="td_title" colspan="2" style="text-align:right;"><spring:message code="evs.viewProbationEvsResult.NENGLIXIAOJI.a"/><!--能力小计--></td>
+				<td class="td_title" style="text-align:right;" id="objectTargetSum">50</td>
+				<c:forEach items="${viewEvsAffirmList}" var="item" varStatus="i">
+					<c:if test="${item.AFFIRM_TYPE eq 1}">
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ or item.AFFIRM_FLAG eq 1}">
+					<c:if test="${item.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" id="nlAffirmScore_${i.index }" sysIndex="${i.index }" style="text-align:right;"></td>
+					</c:if>
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" id="nlAffirmScore"></td>
+					</c:if>
+					</c:if>
+					</c:if>
+				</c:forEach>
+			</tr>
+			<tr id="rowIdObjectTarget_101">
+				<td class="td_title"></td>
+				<td class="td_title" colspan="2" style="text-align:right;"><spring:message code="edu.studentChakan.ZONGFEN.a"/><!--总分--></td>
+				<td class="td_title" style="text-align:right;" id="objectTargetSum">100</td>
+				<c:forEach items="${viewEvsAffirmList}" var="item" varStatus="i">
+					<c:if test="${item.AFFIRM_TYPE eq 1}">
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ or item.AFFIRM_FLAG eq 1}">
+					<c:if test="${item.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" id="sumAffirmScore_${i.index }" sysIndex="${i.index }" style="text-align:right;"></td>
+					</c:if>
+					<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+						<td class="td_title" id="sumAffirmScore"></td>
+					</c:if>
+					</c:if>
+					</c:if>
+				</c:forEach>
+			</tr>
+		</table>
+		<input type="hidden" name="RESUME_SEQ" value="${RESUME_SEQ }"/>
+		<input type="hidden" name="EVS_OBJECT_SEQ" value="${viewEvsObjectInfo.EVS_OBJECT_SEQ }"/>
+		<input type="hidden" name="SEQ" value="${viewEvsAffirmInfo.SEQ }"/>
+		<input type="hidden" id="objectTargetFlag" name="FLAG" value="0"/>
+	</div>
+	<div style="padding-left:10px;padding-right:10px;padding-top:5px;">
+		<div style="font:bold 14px/20px arial,sans-serif;float:left;height:20px;line-height:20px;"><spring:message code="evs.viewProbationEvsResult.YUANGONGZIPING.a"/><!--员工自评--></div>
+		<table class="user_table" width="100%">
+			<tr id="rowIdEvsBySelf_100">
+				<td class="td_title"  style="text-align:center;">Comment</td>
+			</tr>
+			<tr id="rowIdEvsBySelf_100">
+				<td class="td_type">${viewEvsObjectInfo.AFFIRM_CONTENT }</td>
+			</tr>
+		</table>
+	</div>
+	<div style="padding-left:10px;padding-right:10px;padding-top:5px;padding-bottom:50px;">
+		<div style="font:bold 14px/20px arial,sans-serif;float:left;height:20px;line-height:20px;"><spring:message code="edu.trainResult.PINGJIAZHE.a"/><!--评价者--></div>
+		<table class="user_table" width="100%">
+			<tr>
+				<td class="td_title"  style="text-align:center;" width="5%"><spring:message code="ar.viewcycle.title.xuhao"/><!--序号--></td>
+				<td class="td_title"  style="text-align:center;" width="10%"><spring:message code="evs.viewProbationEvsResult.PINGJIAQUFEN.a"/><!--评价区分--></td>
+				<td class="td_title" style="text-align:center;" width="15%"><spring:message code="edu.trainResult.PINGJIAZHE.a"/><!--评价者--></td>
+				<td class="td_title" style="text-align:center;" width="70%"><spring:message code="hrm.empinfo.Evaluation_message"/><!--评价信息--></td>
+			</tr>
+			<c:forEach items="${viewEvsAffirmList}" var="item" varStatus="i">
+				<tr id="rowIdApplyLotPro${i.index}">
+					<td class="td_type" style="text-align: center"><span name="rowIndex">${i.count}</span></td>
+					<td class="td_type" style="text-align: center">
+						<c:if test="${item.AFFIRM_TYPE eq '1' }"><spring:message code="edu.trainResult.PINGJIAZHE.a"/><!--评价者--></c:if>
+						<c:if test="${item.AFFIRM_TYPE eq '2' }"><spring:message code="ess.infoApply.confirm_person"/><!--确认者--></c:if>
+					</td>
+					<td class="td_type" style="text-align: center">
+						${item.AFFIRMOR_INFO}
+					</td>
+					<td class="td_type">
+						<c:if test="${item.SEQ eq viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+							<textarea style="width:100%;height:100px" id="AFFIRM_CONTENT" name="AFFIRM_CONTENT" class="editor required" tools="Cut,Copy,Paste,|,Fullscreen">${item.AFFIRM_CONTENT }</textarea>
+							<input type="hidden" id="AFFIRM_LEVEL" value="${item.AFFIRM_LEVEL }"/>
+						</c:if>
+						<c:if test="${item.SEQ ne viewEvsObjectInfo.CURRENT_AFFIRM_SEQ}">
+							${item.AFFIRM_CONTENT}
+						</c:if>
+					</td>
+				</tr>
+			</c:forEach>
+		</table>
+	</div>
+	</form>
+</div>
+</c:if>
+<c:if test="${empty resumeList}">
+	<%@ include file="/WEB-INF/view/evs/manage/no_evs.jsp"%>
+</c:if>

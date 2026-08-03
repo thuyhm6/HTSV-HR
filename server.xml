@@ -1,0 +1,18 @@
+<Server port="8055" shutdown="SHUTDOWN">
+<Service name="osms">
+ <Connector port="80" maxHttpHeaderSize="8192"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               enableLookups="false" redirectPort="8443" acceptCount="100"
+               connectionTimeout="20000" disableUploadTimeout="true" URIEncoding="UTF-8"/>
+    <Engine name="osms" defaultHost="osms">
+	 <Host name="osms" appBase="webapps"
+       unpackWARs="true" autoDeploy="true"
+       xmlValidation="false" xmlNamespaceAware="false">
+        <Context crossContext="true" displayName="osms" docBase="D:\workspace\lgechr\WebRoot" path="" reloadable="true" />
+		<!-- 以下这个是报表工具系统的,调试时候就注释掉,这样就能加快HR的启动速度 -->
+		<Context crossContext="true"  sessionCookieName="ORsessionid" displayName="OR" reloadable="true" path="/openreports" docBase="D:\workspace\openreports\WebRoot"/>
+		
+	</Host>
+</Engine>
+  </Service>
+</Server>

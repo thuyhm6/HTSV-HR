@@ -1,0 +1,945 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.empSummary">
+
+	<!-- 基本信息查询-->
+	<select id="getEmpInfoList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+		SELECT HR.EMPID EMPID,	HR.CPNY_ID CPNY,
+				HR.POSITION_NO ,
+				HR.DUTY_NO DUTY_NAME,
+				get_codename_by_codeno(HR.POST_NO,#interLanguage:VARCHAR#) POST,
+				get_codename_by_codeno(HR.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE,
+				HR.PERSON_ID PERSON_ID,
+				HR.LOCAL_NAME LOCAL_NAME,
+				get_codename_by_codeno(HR.POSITION_NO,#interLanguage:VARCHAR#) POSITION ,
+				HR.DEPTNO DEPTNO,
+				HRD.CONTENT DEPT_NAME,
+				SY.CONTENT EMP_TYPE,
+				GET_GLOBAL_NAME(HR.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME 
+		  FROM HR_EMPLOYEE HR, HR_DEPARTMENT_NAME HRD, SY_GLOBAL_NAME SY
+		 WHERE HR.DEPTNO = HRD.DEPTNO(+)
+		 AND HR.EMP_TYPE_CODE = SY.NO(+)
+		 AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		 AND HRD.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_TYPE">
+			<![CDATA[
+		 		  HR.EMP_TYPE_CODE = #EMP_TYPE:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EMP_OFFICE_NAME">
+			<![CDATA[
+		 		  HR.EMP_OFFICE = #EMP_OFFICE_NAME:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HR.DEPTNO IN (
+					select sud.deptno 
+					from sy_user_dept sud,
+						(SELECT DEPTNO
+						FROM HR_DEPARTMENT 
+						START WITH DEPTNO = #DEPTNO#
+						CONNECT BY PRIOR DEPTNO=PARENT_DEPT_NO) DEPT
+					where sud.deptno = DEPT.deptno
+					AND sud.user_no=#userNo:VARCHAR# 
+				)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+		 		  HR.POSITION_NO = #POSITION:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+		 		  HR.CPNY_ID = #CPNY_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY HR.DEPTNO,HR.EMPID
+		]]>
+	</select>
+	
+	<select id="paInfoLgech" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select t.ACTUAL_WORK_DAYS p1,
+		       t.SCHEDULED_DAYS p2,
+		       decode(e.status_code,
+		              '14891',
+		              t.pay_pingshi_ot_zongji,
+		              t.pay_pingshi_ot_sy_zj) p3,
+		       decode(e.status_code, '14891', t.pay_zm_ot_zs_zj, t.pay_zm_ot_sy_zj) p4,
+		       decode(e.status_code,
+		              '14891',
+		              t.pay_fading_ot_zs_zj,
+		              t.pay_fading_ot_sy_zj) p5,
+		       decode(e.status_code, '14891', t.shijia_zs, t.shijia_sy) p6,
+		       decode(e.status_code, '14891', t.bingjia_zs, t.bingjia_sy) p7,
+		       decode(e.status_code, '14891', t.chuchai_day, t.chuchai_day) p8,
+		       decode(e.status_code, '14891', t.kuanggong_zs, t.kuanggong_sy) p9,
+		       t.shiyong_nianjia_day + t.shiyong_fuli_day p10,
+		       t.hunjia_day + t.sangjia_day + t.chanjia_day p11,
+		       decode(e.status_code, '14891', t.zs_chidao_yixia, t.sy_chidao_yixia) p12,
+		       decode(e.status_code, '14891', t.zs_zaotui_yixia, t.sy_zaotui_yixia) p13,
+		       0 p14,
+		       0 p15,
+		       0 p16
+		  from ar_summary_lgech t, hr_employee e
+		 where e.person_id = t.person_id(+)
+		   and e.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   t.ar_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( e.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR e.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+			ORDER BY e.CREATE_DATE DESC
+		]]>
+	</select>
+	
+		<select id="getPaInfoLxjLgechList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select nvl( t.ACTUAL_WORK_DAYS, 0) p1,
+		      nvl( t.SCHEDULED_DAYS, 0) p2,
+		      nvl( decode(e.status_code,
+		              '14891',
+		              t.pay_pingshi_ot_zongji,
+		              t.pay_pingshi_ot_sy_zj), 0) p3,
+		       nvl(decode(e.status_code, '14891', t.pay_zm_ot_zs_zj, t.pay_zm_ot_sy_zj), 0) p4,
+		      nvl( decode(e.status_code,
+		              '14891',
+		              t.pay_fading_ot_zs_zj,
+		              t.pay_fading_ot_sy_zj) , 0)p5,
+		       nvl(decode(e.status_code, '14891', t.shijia_zs, t.shijia_sy), 0) p6,
+		       nvl(decode(e.status_code, '14891', t.bingjia_zs, t.bingjia_sy) , 0)p7,
+		       nvl(decode(e.status_code, '14891', t.chuchai_day, t.chuchai_day), 0) p8,
+		       nvl(decode(e.status_code, '14891', t.kuanggong_zs, t.kuanggong_sy), 0) p9,
+		      nvl( t.shiyong_nianjia_day + t.shiyong_fuli_day , 0)p10,
+		       nvl(t.hunjia_day + t.sangjia_day + t.chanjia_day , 0)p11,
+		       nvl(decode(e.status_code, '14891', t.zs_chidao_yixia, t.sy_chidao_yixia), 0) p12,
+		       nvl(decode(e.status_code, '14891', t.zs_zaotui_yixia, t.sy_zaotui_yixia) , 0)p13,
+		       0 p14,
+		       0 p15,
+		       0 p16
+		  from ar_summary_lgech t, hr_employee e
+		 where e.person_id = t.person_id(+)
+		   and e.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   t.ar_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( e.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR e.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+			ORDER BY e.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getPaInfoLxjLgetaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			select nvl( t.ACTUAL_WORK_DAYS, 0) p1,
+			      nvl( t.SCHEDULED_DAYS, 0) p2,
+			      nvl( decode(e.status_code,
+			              '14891',
+			              t.pay_pingshi_ot_zongji,
+			              t.pay_pingshi_ot_sy_zj), 0) p3,
+			       nvl(decode(e.status_code, '14891', t.pay_zm_ot_zs_zj, t.pay_zm_ot_sy_zj), 0) p4,
+			      nvl( decode(e.status_code,
+			              '14891',
+			              t.pay_fading_ot_zs_zj,
+	                  t.pay_fading_ot_sy_zj) , 0)p5,
+	           nvl(decode(e.status_code, '14891', t.shijia_zs, t.shijia_sy), 0) p6,
+	           nvl(decode(e.status_code, '14891', t.bingjia_zs, t.bingjia_sy) , 0)p7,
+	           nvl(decode(e.status_code, '14891', t.chuchai_day, t.chuchai_day), 0) p8,
+	           nvl(decode(e.status_code, '14891', t.kuanggong_zs, t.kuanggong_sy), 0) p9,
+	          nvl( t.shiyong_nianjia_day + t.shiyong_fuli_day , 0)p10,
+	           nvl(t.hunjia_day + t.sangjia_day + t.chanjia_day , 0)p11,
+	           nvl(decode(e.status_code, '14891', t.zs_chidao_zhuan, t.sy_chidao_zhuan), 0) p12,
+	           nvl(decode(e.status_code, '14891', t.zs_zaotui_zhuan, t.sy_zaotui_zhuan) , 0)p13,
+	           0 p14,
+	           0 p15,
+	           0 p16
+	      from ar_summary_lgeta t, hr_employee e
+	     where e.person_id = t.person_id(+)
+	       and e.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   t.ar_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( e.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR e.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+			ORDER BY e.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	
+	<select id="getPaInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'0.00' p1,
+		'0.00' p2,
+		'0.00' p3,
+		'0.00' p4,
+		'0.00' p5,
+		'0.00' p6,
+		'0.00' p7,
+		'0.00' p8,
+		'0.00' p9,
+		'0.00' p10,
+		'0.00' p11,
+		'0.00' p12,
+		'0.00' p13,
+		'0.00' p14,
+		'0.00' p15,
+		'0.00' p16
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="paInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'0.00' p1,
+		'0.00' p2,
+		'0.00' p3,
+		'0.00' p4,
+		'0.00' p5,
+		'0.00' p6,
+		'0.00' p7,
+		'0.00' p8,
+		'0.00' p9,
+		'0.00' p10,
+		'0.00' p11,
+		'0.00' p12,
+		'0.00' p13,
+		'0.00' p14,
+		'0.00' p15,
+		'0.00' p16
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="paInfo_20140907" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8,
+		'p9' p9,
+		'p10' p10,
+		'p11' p11,
+		'p12' p12,
+		'p13' p13,
+		'p14' p14,
+		'p15' p15,
+		'p16' p16
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	
+	<select id="getYearInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT
+			    T.VAC_ID p1,
+					HR.EMPID p2,
+					T.LIQUIDATION_LAST p3,
+					T2.LIQUIDATION_LAST p4,
+			    HR.PERSON_ID
+				FROM HR_EMPLOYEE HR
+			    , AR_VAC_EMP T, AR_VAC_EMP T2
+			 WHERE T.VAC_ID = T2.VAC_ID
+			   AND T.PERSON_ID = HR.PERSON_ID
+			   AND T2.VAC_TP = 2648
+			   AND T.VAC_TP = 2637
+				AND T2.PERSON_ID = HR.PERSON_ID
+				AND HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   t.vac_id =substr(REPLACE(#TIME#, '-', ''), 0, 4)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="paYearInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+    T.VAC_ID p1,
+		HR.EMPID p2,
+		T.LIQUIDATION_LAST p3,
+		T2.LIQUIDATION_LAST p4,
+    HR.PERSON_ID
+	FROM HR_EMPLOYEE HR
+    , AR_VAC_EMP T, AR_VAC_EMP T2
+ WHERE T.VAC_ID = T2.VAC_ID
+   AND T.PERSON_ID = HR.PERSON_ID
+   AND T2.VAC_TP = 2648
+   AND T.VAC_TP = 2637
+	AND T2.PERSON_ID = HR.PERSON_ID
+	AND HR.ACTIVITY = 1
+	AND HR.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getpayDetilInfoLxjLgechList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT nvl(p.BASE_SALARY_STD , 0)  p1,
+			      nvl( p.CHANGE_SALARY_STD, 0) p2,
+			      nvl( p.TRAFFIC_LUNCH_FEE, 0) p3,
+			      nvl( p.COMMUMICATION_FEE, 0) p4,
+			      nvl( p.PERFORMANCE_BONUS, 0) p5
+			  FROM pa_summary_lgech p, hr_employee hr
+			 WHERE HR.ACTIVITY = 1
+			   and hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getpayDetilInfoLxjLgetaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT nvl(p.BASE_SALARY_STD , 0)  p1,
+		            nvl( p.CHANGE_SALARY_STD, 0) p2,
+		            0 p3,
+		            0 p4,
+		            0 p5
+		        FROM pa_summary_lgeta p, hr_employee hr
+		       WHERE HR.ACTIVITY = 1
+		         and hr.empid = p.empid(+) 
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getpayDetilInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT
+					'p1' p1,
+					'p2' p2,
+					'p3' p3,
+					'p4' p4,
+					'p5' p5,
+					'p6' p6,
+					'p7' p7,
+					'p8' p8
+				FROM HR_EMPLOYEE HR
+				WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="payDetilInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+		<select id="getotherPayInfoLxjLgechList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT nvl(p.LOVE_FEE, 0) p1
+				  FROM pa_summary_lgech p, hr_employee hr
+				 WHERE HR.ACTIVITY = 1
+				   and hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getotherPayInfoLxjLgetaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT 0 p1
+		          FROM pa_summary_lgeta p, hr_employee hr
+		         WHERE HR.ACTIVITY = 1
+		           and hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getotherPayInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT
+					'p1' p1,
+					'p2' p2,
+					'p3' p3,
+					'p4' p4,
+					'p5' p5,
+					'p6' p6,
+					'p7' p7,
+					'p8' p8
+				FROM HR_EMPLOYEE HR
+				WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="otherPayInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getwelfarePayInfoLxjLgechList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+					<![CDATA[
+				select p.IS_ENDOWMENT_COR p1,
+			       p.IS_FUND_COR      p2,
+			       p.IS_UNEMPLOY_COR  p3,
+			       p.IS_MEDICAL_COR   p4,
+			       p.IS_FERTILITY_COR p5,
+			       p.IS_INJURY_COR    p6,
+			       p.IS_ENDOWMENT_PER p7,
+			       p.IS_FUND_RER      p8,
+			       p.IS_UNEMPLOY_PER  p9,
+			       p.IS_MEDICAL_PER   p10,
+			       p.IS_FERTILITY_PER p11,
+			       p.IS_SERIOUS_PER   p12
+			  from is_summary_lgech p, hr_employee hr
+			  where hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.is_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getwelfarePayInfoLxjLgetaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+					<![CDATA[
+				select p.IS_ENDOWMENT_COR p1,
+		             p.IS_FUND_COR      p2,
+		             p.IS_UNEMPLOY_COR  p3,
+		             p.IS_MEDICAL_COR   p4,
+		             p.IS_FERTILITY_COR p5,
+		             p.IS_INJURY_COR    p6,
+		             p.IS_ENDOWMENT_PER p7,
+		             p.IS_FUND_RER      p8,
+		             p.IS_UNEMPLOY_PER  p9,
+		             p.IS_MEDICAL_PER   p10,
+		             0 p11,
+		             p.IS_SERIOUS_PER   p12
+		        from is_summary_lgeta p, hr_employee hr
+		        where hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.is_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getwelfarePayInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8,
+		'p9' p9,
+		'p10' p10,
+		'p11' p11,
+		'p12' p12,
+		'p13' p13,
+		'p14' p14,
+		'p15' p15,
+		'p16' p16
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="welfarePayInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8,
+		'p9' p9,
+		'p10' p10,
+		'p11' p11,
+		'p12' p12,
+		'p13' p13,
+		'p14' p14,
+		'p15' p15,
+		'p16' p16
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	
+	<select id="getadministrationPayInfoLxjLgechList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT nvl(p.SOCIETY_FEE,0) p1,
+			       '0.00' p2,
+			       nvl(p.TAX ,0)p3,
+			       nvl(p.GROSS_PAY ,0)p4,
+			       nvl(p.LOVE_FEE,0) p5,
+			       nvl(p.NET_PAY ,0)p6
+			  FROM pa_summary_lgech p, hr_employee hr
+			 WHERE HR.ACTIVITY = 1
+			   and hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getadministrationPayInfoLxjLgetaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT nvl(p.SOCIETY_FEE,0) p1,
+		             '0.00' p2,
+		             nvl(p.TAX ,0)p3,
+		             nvl(p.GROSS_PAY ,0)p4,
+		             0 p5,
+		             nvl(p.NET_PAY ,0)p6
+		        FROM pa_summary_lgeta p, hr_employee hr
+		       WHERE HR.ACTIVITY = 1
+		         and hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getadministrationPayInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT
+					'p1' p1,
+					'p2' p2,
+					'p3' p3,
+					'p4' p4,
+					'p5' p5,
+					'p6' p6,
+					'p7' p7,
+					'p8' p8
+				FROM HR_EMPLOYEE HR
+				WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="administrationPayInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		 ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getpaManuallyInfoLxjLgechList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				  select 'MINI_WAGE_ADJUST' p1,
+			         '最低工资调整(税前)' p2,
+			         p.MINI_WAGE_ADJUST p3,
+			         p.pa_month p4,
+			         '' p5,
+			         '' p6
+			    from pa_summary_lgech p, hr_employee hr
+			   where hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getpaManuallyInfoLxjLgetaList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				  select 'LAST_OT_FEE' p1,
+			         '上月加班调整' p2,
+			         p.LAST_OT_FEE p3,
+			         p.pa_month p4,
+			         '' p5,
+			         '' p6
+			    from pa_summary_lgeta p, hr_employee hr
+			   where hr.empid = p.empid(+)
+		]]>
+		<isNotEmpty prepend="AND" property="TIME">
+			<![CDATA[
+		 		   p.pa_month =substr(REPLACE(#TIME#, '-', ''), 0, 6)
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="getpaManuallyInfoLxjList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT
+					'p1' p1,
+					'p2' p2,
+					'p3' p3,
+					'p4' p4,
+					'p5' p5,
+					'p6' p6,
+					'p7' p7,
+					'p8' p8
+				FROM HR_EMPLOYEE HR
+				WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<select id="paManuallyInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	SELECT
+		'p1' p1,
+		'p2' p2,
+		'p3' p3,
+		'p4' p4,
+		'p5' p5,
+		'p6' p6,
+		'p7' p7,
+		'p8' p8
+	FROM HR_EMPLOYEE HR
+	WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+			<![CDATA[
+		ORDER BY HR.CREATE_DATE DESC
+		]]>
+	</select>
+	
+</sqlMap>

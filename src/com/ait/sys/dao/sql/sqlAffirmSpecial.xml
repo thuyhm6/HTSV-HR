@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.affirmSpecial">
+
+	<select id="getAffirmSpecialList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT E.EMPID, E.PERSON_ID, E.LOCAL_NAME,E.CPNY_ID
+			          FROM HR_EMPLOYEE E
+			        UNION
+			        SELECT D.DEPTID   AS EMPID,
+			               D.DEPTNO   AS PERSON_ID,
+			               DN.CONTENT AS LOCAL_NAME,
+			               D.CPNY_ID
+			          FROM HR_DEPARTMENT D, HR_DEPARTMENT_NAME DN
+			         WHERE D.DEPTNO = DN.DEPTNO(+)
+			           AND DN.LANGUAGE(+) = #interLanguage:VARCHAR#) C
+			 WHERE EXISTS
+				(SELECT AFFIRM_OBJECT 
+				          FROM SY_AFFIRM_RELATION_SPECIAL T ,HR_EMPLOYEE E WHERE T.AFFIRM_OBJECT=C.PERSON_ID 
+				           AND T.AFFIRMOR_ID=E.PERSON_ID
+				             AND E.CPNY_ID=#interCpnyID:VARCHAR# 
+		]]>	
+			<!-- 决裁者 -->
+		 <isNotEmpty prepend="and" property="AFFIRMOR_ID">
+			 	T.AFFIRMOR_ID=#AFFIRMOR_ID:VARCHAR#   
+		 </isNotEmpty> 
+		   <isNotEmpty prepend="and" property="AFFIRMOR_NAME">
+			 	(E.PERSON_ID like '%' || #AFFIRMOR_NAME:VARCHAR#  ||'%' 
+			 	OR E.LOCAL_NAME like '%' || #AFFIRMOR_NAME:VARCHAR#  ||'%') 
+		 </isNotEmpty> 
+		 <![CDATA[ ) AND C.CPNY_ID=#interCpnyID:VARCHAR#]]>	
+			<!-- 被决裁者 -->
+		 <isNotEmpty prepend="and" property="EMP_ID">
+			 	( C.PERSON_ID like '%' || #EMP_ID:VARCHAR#  ||'%' 
+			 	OR C.LOCAL_NAME like '%' || #EMP_ID:VARCHAR#  ||'%' )
+		 </isNotEmpty> 
+		
+		
+		
+	</select>
+	<select id="getAffirmSpecialListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM (SELECT E.EMPID, E.PERSON_ID, E.LOCAL_NAME,E.CPNY_ID
+			          FROM HR_EMPLOYEE E
+			        UNION
+			        SELECT D.DEPTID   AS EMPID,
+			               D.DEPTNO   AS PERSON_ID,
+			               DN.CONTENT AS LOCAL_NAME,
+			               D.CPNY_ID
+			          FROM HR_DEPARTMENT D, HR_DEPARTMENT_NAME DN
+			         WHERE D.DEPTNO = DN.DEPTNO(+)
+			           AND DN.LANGUAGE(+) = #interLanguage:VARCHAR#) C
+			 WHERE EXISTS
+				(SELECT AFFIRM_OBJECT 
+				          FROM SY_AFFIRM_RELATION_SPECIAL T,HR_EMPLOYEE E WHERE T.AFFIRM_OBJECT=C.PERSON_ID 
+				           AND T.AFFIRMOR_ID=E.PERSON_ID
+				            AND E.CPNY_ID=#interCpnyID:VARCHAR#
+		]]>	
+			<!-- 决裁者 -->
+		 <isNotEmpty prepend="and" property="AFFIRMOR_ID">
+			 	T.AFFIRMOR_ID=#AFFIRMOR_ID:VARCHAR#   
+		 </isNotEmpty> 
+		  <isNotEmpty prepend="and" property="AFFIRMOR_NAME">
+			 	(E.PERSON_ID like '%' || #AFFIRMOR_NAME:VARCHAR#  ||'%' 
+			 	OR E.LOCAL_NAME like '%' || #AFFIRMOR_NAME:VARCHAR#  ||'%' )
+		 </isNotEmpty> 
+		 <![CDATA[ )AND C.CPNY_ID=#interCpnyID:VARCHAR#]]>	
+			<!-- 被决裁者 -->
+		 <isNotEmpty prepend="and" property="EMP_ID">
+			 	( C.PERSON_ID like '%' || #EMP_ID:VARCHAR#  ||'%' 
+			 	OR C.LOCAL_NAME like '%' || #EMP_ID:VARCHAR#  ||'%' )
+		 </isNotEmpty> 
+		
+	</select>
+	
+	<select id="getAffirmSpecialList_special" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT E.EMPID, E.PERSON_ID, E.LOCAL_NAME,E.CPNY_ID
+			          FROM HR_EMPLOYEE E,
+                     SY_AFFIRM_RELATION_SPECIAL T
+               WHERE T.AFFIRM_OBJECT = E.PERSON_ID
+                 AND T.CPNY_ID = #interCpnyID:VARCHAR# 
+			        UNION
+			        SELECT D.DEPTID   AS EMPID,
+			               D.DEPTNO   AS PERSON_ID,
+			               GET_DEPT_NAME(D.DEPTNO,#interLanguage:VARCHAR#) AS LOCAL_NAME,
+			               D.CPNY_ID
+			          FROM HR_DEPARTMENT D, SY_AFFIRM_RELATION_SPECIAL T
+			         WHERE D.CPNY_ID=#interCpnyID:VARCHAR# 
+                 	AND T.AFFIRM_OBJECT = D.DEPTNO 
+		]]>	
+			<!-- 决裁者 -->
+		 <isNotEmpty prepend="and" property="AFFIRMOR_ID">
+			 	T.AFFIRMOR_ID=#AFFIRMOR_ID:VARCHAR#   
+		 </isNotEmpty> 
+		 <isNotEmpty prepend="and" property="AFFIRMOR_NAME">
+			 	(T.AFFIRMOR_ID = #AFFIRMOR_NAME:VARCHAR# OR T.AFFIRMOR_ID IN (SELECT EE.PERSON_ID FROM HR_EMPLOYEE EE WHERE EE.PERSON_ID = T.AFFIRMOR_ID AND EE.LOCAL_NAME like '%' || #AFFIRMOR_NAME:VARCHAR#  ||'%')) 
+		 </isNotEmpty> 
+		 <![CDATA[
+		 )C
+		 ]]>
+		 <dynamic prepend="WHERE">
+			<!-- 被决裁者 -->
+		 <isNotEmpty prepend="and" property="EMP_ID">
+			 	(C.PERSON_ID like '%' || #EMP_ID:VARCHAR#  ||'%' 
+			 	OR C.LOCAL_NAME like '%' || #EMP_ID:VARCHAR#  ||'%' )
+		 </isNotEmpty> 
+		 </dynamic>
+		
+		
+	</select>
+	
+	<select id="getAffirmSpecialListCnt_special" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(0)
+			  FROM (SELECT E.EMPID, E.PERSON_ID, E.LOCAL_NAME,E.CPNY_ID
+			          FROM HR_EMPLOYEE E,
+                     SY_AFFIRM_RELATION_SPECIAL T
+               WHERE T.AFFIRM_OBJECT = E.PERSON_ID
+                 AND T.CPNY_ID = #interCpnyID:VARCHAR# 
+			        UNION
+			        SELECT D.DEPTID   AS EMPID,
+			               D.DEPTNO   AS PERSON_ID,
+			               GET_DEPT_NAME(D.DEPTNO,#interLanguage:VARCHAR#) AS LOCAL_NAME,
+			               D.CPNY_ID
+			          FROM HR_DEPARTMENT D,SY_AFFIRM_RELATION_SPECIAL T
+			         WHERE D.CPNY_ID=#interCpnyID:VARCHAR# 
+                 AND T.AFFIRM_OBJECT = D.DEPTNO
+		]]>	
+			<!-- 决裁者 -->
+		 <isNotEmpty prepend="and" property="AFFIRMOR_ID">
+			 	T.AFFIRMOR_ID=#AFFIRMOR_ID:VARCHAR#   
+		 </isNotEmpty>
+		 <isNotEmpty prepend="and" property="AFFIRMOR_NAME">
+			 	(T.AFFIRMOR_ID = #AFFIRMOR_NAME:VARCHAR# OR T.AFFIRMOR_ID IN (SELECT EE.PERSON_ID FROM HR_EMPLOYEE EE WHERE EE.PERSON_ID = T.AFFIRMOR_ID AND EE.LOCAL_NAME like '%' || #AFFIRMOR_NAME:VARCHAR#  ||'%')) 
+		 </isNotEmpty> 
+	     <![CDATA[
+		 )C
+		 ]]>
+		 <dynamic prepend="WHERE">
+			<!-- 被决裁者 -->
+		 <isNotEmpty prepend="and" property="EMP_ID">
+			 	(C.PERSON_ID like '%' || #EMP_ID:VARCHAR#  ||'%' 
+			 	OR C.LOCAL_NAME like '%' || #EMP_ID:VARCHAR#  ||'%' )
+		 </isNotEmpty> 
+		 </dynamic>
+	</select>
+
+	<update id="UpdateAffirmSpecial" parameterClass="linkMap">
+		<![CDATA[  
+			UPDATE SY_AFFIRM_RELATION_SPECIAL T
+			   SET T.AFFIRM_LEVEL =#LEVEL:VARCHAR#
+			 WHERE T.AFFIRM_OBJECT =
+			       (SELECT PERSON_ID
+			          FROM HR_EMPLOYEE
+			         WHERE EMPID = #EMPID:VARCHAR#
+			        UNION
+			        SELECT DEPTID AS PERSON_ID FROM HR_DEPARTMENT WHERE DEPTNO =#EMPID#)
+			   AND T.AFFIRMOR_ID =#AFFIRM_PERSON#
+			   AND T.AFFIRM_TYPE_ID =#TYPE:VARCHAR#
+		]]>
+	</update>  
+	
+	
+	<!--   AND (T.PARENT_CODE_NO IN ('123313','16413') or  T.CODE_NO ='1359' or T.CODE_NO ='642' or T.CODE_NO ='641' or T.CODE_NO = '14005')
+			  -->
+	<select id="getCodeListByParentCode" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+		<![CDATA[
+			SELECT * FROM (SELECT A.*,
+			       ROWNUM ORDER_NO FROM (SELECT A.CODE_NO,
+			       A.DESCRIPTION,
+			       A.DEPTH,
+			       A.ORDERNO,
+			       A.PARENT_CODE_NO,
+			       S.CONTENT
+			  FROM SY_CODE A, SY_CODE_PARAM SC, SY_GLOBAL_NAME S
+			 WHERE PARENT_CODE_NO in (21,31)
+			   AND A.CODE_NO = S.NO(+)
+			   AND S.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND SC.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND A.CODE_NO = SC.CODE_NO
+			   AND A.ACTIVITY = 1
+			 ORDER BY A.PARENT_CODE_NO, A.ORDERNO) A
+			 UNION
+			SELECT B.*,
+			       ROWNUM + 20 ORDER_NO FROM (SELECT T.CODE_NO,
+			       T.DESCRIPTION,
+			       T.DEPTH,
+			       T.ORDERNO,
+			       T.PARENT_CODE_NO,
+			       U.CONTENT
+			  FROM SY_CODE T, SY_GLOBAL_NAME U, SY_CODE_PARAM P
+			 WHERE T.CODE_NO = U.NO(+)
+			   AND T.PARENT_CODE_NO = #PARENT_CODE_NO:NUMERIC#
+			   AND U.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND P.CODE_NO = T.CODE_NO
+			   AND P.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND T.ACTIVITY = 1
+			   AND P.ACTIVITY = 1
+			   AND T.CODE_NO NOT IN (21,31)
+			 order by parent_code_no, orderno) B )
+			 ORDER BY ORDER_NO
+		]]>
+	</select> 
+	<select id="getCodeListCntByParentCode" parameterClass="linkMap" resultClass="int"  remapResults="true">
+		<![CDATA[
+			SELECT count(*)
+			  FROM SY_CODE        T,
+			       SY_GLOBAL_NAME U,
+			       SY_CODE_PARAM P
+			 WHERE T.CODE_NO = U.NO(+)
+			   AND T.PARENT_CODE_NO = #PARENT_CODE_NO:NUMERIC#
+			   AND U.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND P.CODE_NO = T.CODE_NO
+			   AND P.CPNY_ID=#interCpnyID:VARCHAR#
+			   AND T.ACTIVITY=1
+   			   AND P.ACTIVITY=1
+		]]>
+		<isNotEmpty prepend="AND" property="CODE_NAME">
+			<![CDATA[
+		 		 U.CONTENT LIKE '%'||#CODE_NAME#||'%'
+		    ]]>
+		</isNotEmpty>
+		 
+	</select> 
+	<select id="getItemDetail" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+			<![CDATA[
+				select t.cpny_id,
+				       t.affirmor_id,
+				       t.affirm_type_id,
+				       t.affirm_level,
+				       t.affirm_object,
+				       t.affirm_flag,
+				       hr.empid,
+				       hr.local_name as name
+				  from SY_AFFIRM_RELATION_SPECIAL t,hr_employee hr
+				 where t.cpny_id=#interCpnyID:VARCHAR#
+				 and hr.person_id(+) = t.affirmor_id
+			]]>
+			    <!-- 被决裁者 -->
+				<isNotEmpty prepend="AND" property="PERSONID">
+					<![CDATA[
+				 		 affirm_object =#PERSONID:VARCHAR#
+				    ]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="CODENO">
+					<![CDATA[
+				 		 affirm_type_id=#CODENO:VARCHAR#
+				    ]]>
+				</isNotEmpty>
+			<![CDATA[
+				 order by affirm_level 
+			 ]]>
+	</select> 
+	
+	<select id="getItemDetail_special" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+			<![CDATA[
+				select t.cpny_id,
+				       t.affirmor_id,
+				       t.affirm_type_id,
+				       t.affirm_level,
+				       t.affirm_object,
+				       t.affirm_flag,
+				       hr.empid,
+				       hr.local_name as name
+				  from sy_affirm_relation_special t,hr_employee hr
+				 where hr.person_id(+) = t.affirmor_id
+				 and t.cpny_id=#interCpnyID:VARCHAR#
+			]]>
+			    <!-- 被决裁者 -->
+				<isNotEmpty prepend="AND" property="PERSONID">
+					<![CDATA[
+				 		 affirm_object =#PERSONID:VARCHAR#
+				    ]]>
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="CODENO">
+					<![CDATA[
+				 		 affirm_type_id=#CODENO:VARCHAR#
+				    ]]>
+				</isNotEmpty>
+			<![CDATA[
+				 order by affirm_level 
+			 ]]>
+	</select> 
+	
+	<select id="getAffirmorSpecialList" parameterClass="linkMap" resultClass="linkMap"  remapResults="true">
+			<![CDATA[
+				SELECT EMPID,PERSON_ID,E.CHINESE_PINYIN,LOCAL_NAME,HDN.CONTENT AS DEPTNAME
+				  FROM HR_EMPLOYEE E, HR_DEPARTMENT T,HR_DEPARTMENT_NAME HDN
+				WHERE E.DEPTNO = T.DEPTNO
+				   AND T.CPNY_ID = #interCpnyID:VARCHAR#
+				   AND HDN.DEPTNO(+)=T.DEPTNO
+				   AND HDN.LANGUAGE(+)=#interLanguage:VARCHAR#
+			]]>
+			 <!-- 决裁者工号或姓名 -->
+			<isNotEmpty prepend="AND" property="AFFIRMOR_ID">
+				<![CDATA[
+						(E.EMPID LIKE '%'||#AFFIRMOR_ID:VARCHAR#||'%' 
+							OR E.LOCAL_NAME LIKE '%'||#AFFIRMOR_ID:VARCHAR#||'%')
+				 ]]>
+			</isNotEmpty>
+			 
+			<![CDATA[
+				 order by E.EMPID
+			 ]]>
+	</select> 
+	<delete id="deleteAffirmSpecialLevelInfo" parameterClass="linkMap">
+		<![CDATA[
+			 DELETE FROM SY_AFFIRM_RELATION_SPECIAL T WHERE T.AFFIRM_OBJECT=#AFFIRM_OBJECT# AND T.AFFIRM_TYPE_ID=#AFFIRM_TYPE_NO#         
+		]]>
+	</delete> 
+	<select id="getDeptTreeList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.DEPTNO,
+			       SG.CONTENT AS DEPT_NAME,
+			       T.PARENT_DEPT_NO,
+			       T.dept_level DEPTH
+			  FROM (SELECT *
+			          FROM HR_DEPARTMENT HD
+			         WHERE 1 = 1
+		]]>			         
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+					HD.CPNY_ID = #CPNY_ID:VARCHAR#
+			 ]]>
+		</isNotEmpty>
+		<![CDATA[
+			           ) T,
+			       HR_DEPARTMENT_NAME SG
+			 WHERE T.DEPTNO = SG.DEPTNO(+)
+			   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+			 START WITH T.dept_level = 1
+			CONNECT BY PRIOR T.DEPTNO = T.PARENT_DEPT_NO
+			 ORDER SIBLINGS BY T.ORDERNO		
+		]]>
+	</select>  
+	<select id="getEmpByDeptIdList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT E.EMPID,E.PERSON_ID,E.LOCAL_NAME,T.DEPTNO,N.CONTENT AS DEPTNAME
+			  FROM HR_EMPLOYEE E, HR_DEPARTMENT T, HR_DEPARTMENT_NAME N
+			 WHERE T.DEPTNO = N.DEPTNO(+)
+			   AND N.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND E.DEPTNO = T.DEPTNO
+			   AND T.DEPTNO = #DEPTNO:VARCHAR#
+		]]>
+	</select>
+	<select id="getAffirmorsSpecialByEmpOrDeptAndType" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				 SELECT E.EMPID,
+				       E.LOCAL_NAME,
+				       E.CHINESE_PINYIN,
+				       DT.CONTENT AS DEPTNAME,
+				       C.AFFIRM_LEVEL,
+				       E.PERSON_ID
+				  FROM HR_EMPLOYEE E,
+				       HR_DEPARTMENT D,
+				       HR_DEPARTMENT_NAME DT,
+				       (SELECT *
+				          FROM SY_AFFIRM_RELATION_SPECIAL T
+				           
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="and" property="AFFIRM_OBJECT">
+				T.AFFIRM_OBJECT = #AFFIRM_OBJECT:VARCHAR#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="AFFIRM_TYPE_NO">
+				T.AFFIRM_TYPE_ID = #AFFIRM_TYPE_NO:VARCHAR#
+			</isNotEmpty>
+		</dynamic>
+		<![CDATA[) C
+				 WHERE C.AFFIRMOR_ID = E.PERSON_ID
+				   AND E.DEPTNO = D.DEPTNO
+				   AND DT.DEPTNO(+) = D.DEPTNO
+				   AND DT.LANGUAGE(+) =#interLanguage:VARCHAR#
+				   ORDER BY C.AFFIRM_LEVEL]]>
+	</select>
+	
+		<select id="getAffirmorsSpecialByEmpOrDeptAndType_special" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				 SELECT E.EMPID,
+				       E.LOCAL_NAME,
+				       E.CHINESE_PINYIN,
+				       C.AFFIRM_LEVEL,
+				       E.PERSON_ID,
+				       $AFFIRM_OBJECT$ DEPT_NO,
+				       GET_DEPT_NAME(#AFFIRM_OBJECT:VARCHAR#,#interLanguage:VARCHAR#) DEPT_NAME,
+				       get_code_name(C.AFFIRM_TYPE_ID,#interLanguage:VARCHAR#) APPLY_TYPE_NAME
+				  FROM HR_EMPLOYEE E,
+				       HR_DEPARTMENT D,
+				       (SELECT *
+				          FROM SY_AFFIRM_RELATION_special T
+				           
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="and" property="AFFIRM_OBJECT">
+				T.AFFIRM_OBJECT = #AFFIRM_OBJECT:VARCHAR#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="AFFIRM_TYPE_NO">
+				T.AFFIRM_TYPE_ID = #AFFIRM_TYPE_NO:VARCHAR#
+			</isNotEmpty>
+		</dynamic>
+		<![CDATA[) C
+				 WHERE C.AFFIRMOR_ID = E.PERSON_ID
+				   AND E.DEPTNO = D.DEPTNO
+				   ORDER BY C.AFFIRM_LEVEL]]>
+	</select>
+	
+	<!-- INSERT INTO SY_AFFIRM_RELATION_SPECIAL,added on 2014-07-14 -->
+	<insert id="insertAffirmSpecialInfo" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_AFFIRM_RELATION_special
+			  (AFFIRM_RELATION_NO,
+			   CPNY_ID,
+			   AFFIRMOR_ID,
+			   AFFIRM_TYPE_ID,
+			   AFFIRM_LEVEL,
+			   AFFIRM_OBJECT,
+			   ACTIVITY,
+			   CREATE_DATE,
+			   CREATED_BY)
+			  (SELECT SY_AFFIRM_RELATION_SPECIAL_SEQ.NEXTVAL,
+		         #interCpnyID#,
+		         #AFFIRMOR_ID#,
+		         CODE_NO,
+		         #AFFIRM_LEVEL#,
+		         DEPTNO,
+					   1,
+					   SYSDATE,
+					   #USER_PERSON_ID#
+		  FROM (SELECT DEPTNO
+             FROM HR_DEPARTMENT
+            WHERE DEPTNO IN ($deptNos$)
+              AND CPNY_ID = #interCpnyID:VARCHAR# UNION ALL SELECT E.PERSON_ID AS DEPTNO
+                     FROM HR_EMPLOYEE E
+                    WHERE E.PERSON_ID IN ($deptNos$)
+                      AND E.CPNY_ID = #interCpnyID:VARCHAR#
+		           )A ,
+		       (SELECT CODE_NO FROM SY_CODE WHERE CODE_NO IN ($AFFIRM_TYPE_NO$)) B)
+		]]>
+	</insert>
+	<!-- DELETE FROM SY_AFFIRM_RELATION_SPECIAL added on 2014-07-14 -->
+	<delete id="deleteAffirmSpecialInfo" parameterClass="linkMap">
+		<![CDATA[
+			 DELETE FROM SY_AFFIRM_RELATION_special T 
+			 WHERE T.AFFIRM_OBJECT = #AFFIRM_OBJECT# 
+		]]>
+	</delete> 
+	<select id="getEmployeeByObjectId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT E.LOCAL_NAME,
+					       E.EMPID,
+					       E.PERSON_ID,
+					       D.DEPTNO,
+					       D.DEPTID,
+					       D.CPNY_ID,
+					       N.CONTENT DEPTNAME,
+					       'Y' AS ISFLAG
+					  FROM HR_DEPARTMENT D, HR_DEPARTMENT_NAME N, HR_EMPLOYEE E
+					 WHERE N.DEPTNO(+) = D.DEPTNO
+					   AND N.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND D.DEPTNO = E.DEPTNO(+)
+					   AND  D.DEPTNO = #AFFIRM_OBJECT# 
+					UNION
+					   SELECT E.LOCAL_NAME,
+					       E.EMPID,
+					       E.PERSON_ID,
+					       D.DEPTNO,
+					       D.DEPTID,
+					       D.CPNY_ID,
+					       N.CONTENT DEPTNAME,
+					       'N' AS ISFLAG
+					  FROM HR_DEPARTMENT D, HR_DEPARTMENT_NAME N, HR_EMPLOYEE E
+					 WHERE N.DEPTNO(+) = D.DEPTNO
+					   AND N.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND D.DEPTNO = E.DEPTNO(+)
+					    AND   E.PERSON_ID = #AFFIRM_OBJECT# 
+		]]>
+	</select>
+	<select id="getDeptByObjectIdPersonNotExist" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT D.DEPTID, D.DEPTNO, D.PARENT_DEPT_NO, N.CONTENT AS DEPTNAME
+				  FROM HR_DEPARTMENT D, HR_DEPARTMENT_NAME N
+				 WHERE N.DEPTNO(+) = D.DEPTNO
+				   AND N.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND D.DEPTNO = #AFFIRM_OBJECT#
+		]]>
+	</select>
+	<select id="getPidEidList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT HE.PERSON_ID,
+			   		  HE.EMPID,
+			   		  HE.LOCAL_NAME,
+			   		  HE.EMP_TYPE_CODE,
+			   		  GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME
+				  FROM HR_EMPLOYEE        HE
+				 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				 AND HE.EMP_OFFICE <> '15120'
+				 AND ROWNUM < 3
+   	   	]]>
+   	   	<isNotEmpty prepend="" property="limit">
+   	   		<isEqual prepend="AND" property="limit" compareValue="ar">
+	   	   		(HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR (HE.DEPTNO IN (
+	   	   				SELECT DEPTNO FROM AR_SUPERVISOR_INFO WHERE PERSON_ID = #supervisorPersonId:VARCHAR#
+	   	   			) AND HE.EMP_TYPE_CODE IN (
+			            SELECT EMP_TYPE_CODE FROM AR_SUPERVISOR_EMPTYPE_INFO WHERE PERSON_ID = #supervisorPersonId:VARCHAR#
+	   	   			)
+	   	   		))
+		    </isEqual>
+   	   		<isEqual prepend="AND" property="limit" compareValue="pa">
+	   	   		(HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR (HE.DEPTNO IN (
+		   	   			SELECT DEPTNO FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #supervisorPersonId:VARCHAR#
+		   	   			)AND HE.EMP_TYPE_CODE IN (
+				           SELECT EMP_TYPE_CODE FROM PA_SUPERVISOR_EMPTYPE_INFO WHERE PERSON_ID = #supervisorPersonId:VARCHAR#
+		   	   			)
+	   	   			)
+	   	   		)
+		    </isEqual>
+   	   	</isNotEmpty>
+   	   	<isEmpty prepend="" property="limit">
+	   	   	<isNotEmpty prepend="AND" property="specialParam">
+				<isNotEqual prepend="" property="specialParam" compareValue="general">
+					<![CDATA[
+				   		(HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.DEPTNO IN
+		             ]]>
+		            	<include refid="sys.include.getDataPermission"/>
+		             <![CDATA[
+				   		)
+		             ]]>
+		            </isNotEqual>
+		            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+					<![CDATA[
+				   		( HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.EMP_TYPE_CODE IN
+		             ]]>
+		            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+		             <![CDATA[
+				   		)
+		             ]]>
+		            </isNotEqual>
+		           
+		            <isEqual prepend="" property="specialParam" compareValue="general">
+					    HE.PERSON_ID = #supervisorPersonId:VARCHAR#
+		            </isEqual>
+			</isNotEmpty>
+		</isEmpty>
+   	   	
+   	   		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				 (HE.EMPID LIKE '%' ||UPPER(#EMPID:VARCHAR#)||'%' or HE.LOCAL_NAME LIKE '%' ||#EMPID:VARCHAR#||'%') 
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="LOCAL_NAME">
+			<![CDATA[
+				HE.LOCAL_NAME LIKE '%' ||#LOCAL_NAME:VARCHAR#||'%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="IDCARD_NO">
+			<![CDATA[
+				HPI.IDCARD_NO LIKE '%' ||#IDCARD_NO:VARCHAR#||'%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HDM.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+   	    
+	</select>
+	
+	
+	<select id="getPersonCntByEmpid" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			   SELECT HE.PERSON_ID,
+			   		  HE.EMPID,
+			   		  HE.LOCAL_NAME,
+			   		  GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPTNAME
+				  FROM HR_EMPLOYEE        HE
+				 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				 AND HE.EMP_OFFICE <> '15120'
+				 AND ROWNUM < 3
+   	   	]]>
+   	   	<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				( HE.EMPID LIKE '%' ||UPPER(#EMPID:VARCHAR#)||'%'
+					OR LOCAL_NAME LIKE '%' ||UPPER(#EMPID:VARCHAR#)||'%'
+					OR CHINESE_PINYIN LIKE '%' ||UPPER(#EMPID:VARCHAR#)||'%'
+					)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getPidEidList2" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	     SELECT HE.PERSON_ID,
+       HE.EMPID,
+       HE.LOCAL_NAME,
+       HD.CONTENT DEPTNAME,
+       he.position_no DUTY_NO,  get_city_name(HE.WORK_AREA)   WORK_AREA,
+       get_global_name(HE.EMP_TYPE_CODE, 'zh') EMPTYPENAME
+				  FROM HR_EMPLOYEE        HE,
+				       HR_DEPARTMENT_NAME HD,
+				       HR_DEPARTMENT      HDM,
+				       HR_PERSONAL_INFO   HPI 
+                
+				 WHERE HE.DEPTNO = HD.DEPTNO(+)
+          
+           
+				   AND HD.LANGUAGE = #interLanguage:VARCHAR#
+				   AND HE.DEPTNO = HDM.DEPTNO(+)
+				   AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND HE.PERSON_ID = HPI.PERSON_ID(+)
+   	   	]]>
+   	   		<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				 (HE.EMPID LIKE '%' ||#EMPID:VARCHAR#||'%' or HE.LOCAL_NAME LIKE '%' ||#EMPID:VARCHAR#||'%') 
+			]]>
+		</isNotEmpty>
+		
+		
+		<!-- 权限控制开始 -->
+				<isNotEmpty prepend="AND" property="specialParam">
+			
+			
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+ 
+			   		( HE.PERSON_ID = #supervisorPersonId:VARCHAR# OR HE.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	           
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    HE.PERSON_ID = #supervisorPersonId:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+		<!-- 权限控制结束  -->
+		<isNotEmpty prepend="AND" property="LOCAL_NAME">
+			<![CDATA[
+				HE.LOCAL_NAME LIKE '%' ||#LOCAL_NAME:VARCHAR#||'%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="IDCARD_NO">
+			<![CDATA[
+				HPI.IDCARD_NO LIKE '%' ||#IDCARD_NO:VARCHAR#||'%'
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HDM.DEPTNO = #DEPTNO:VARCHAR#
+			]]>
+		</isNotEmpty>
+   	    
+	</select>
+	 
+	<select id="getEmpIdListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM HR_EMPLOYEE        HE
+			 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND HE.EMP_OFFICE <> '15120'
+		]]>
+   	   	<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE upper('%' ||#EMPID:VARCHAR#||'%') 
+					or HE.LOCAL_NAME LIKE upper('%' ||#EMPID:VARCHAR#||'%')
+					or HE.CHINESE_PINYIN LIKE upper('%' ||#EMPID:VARCHAR#||'%') )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HE.DEPTNO IN ( SELECT DEPTNO
+				  FROM HR_DEPARTMENT
+				 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+				CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+	</select>
+	<select id="getEmpIdList" parameterClass="linkMap"
+		resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+			       HE.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       HE.CHINESE_PINYIN,
+			       GET_DEPT_NAME(HE.DEPTNO,#language#) DEPTNAME
+			  FROM HR_EMPLOYEE        HE
+			 WHERE HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND HE.EMP_OFFICE <> '15120'
+   	   	]]>
+   	   	<isNotEmpty prepend="AND" property="EMPID">
+			<![CDATA[
+				(HE.EMPID LIKE upper('%' ||#EMPID:VARCHAR#||'%') 
+					or HE.LOCAL_NAME LIKE upper('%' ||#EMPID:VARCHAR#||'%')
+					or HE.CHINESE_PINYIN LIKE upper('%' ||#EMPID:VARCHAR#||'%') )
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+				HE.DEPTNO IN ( SELECT DEPTNO
+				  FROM HR_DEPARTMENT
+				 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+				CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<insert id="insertaffirmSpecialAppoint" parameterClass="linkMap"> 
+	     insert into sy_appoint
+               (NO, 
+		        EMPID, 
+		        WAS_APPOINT_EMPID, 
+		        APPOINT_DATE, 
+		        appionit_activity, 
+		        CPNY_ID)
+         values
+               (SY_APPOINT_SEQ.NEXTVAL,
+                #AFFIRMOR_NAME:VARCHAR#,
+                #APPOINT_NAME:VARCHAR#,
+                to_char(SYSDATE,'yyyy/mm/dd'),
+                1,
+               #CPNY_ID:VARCHAR#)
+
+	</insert>
+	
+	<update id="updateaffirmSpecialAppointtb" parameterClass="linkMap">
+     update SY_AFFIRM_RELATION_SPECIAL  set 
+		affirmor_id=#APPOINT_NAME:VARCHAR#,
+		APPOINT=#AFFIRMOR_NAME:VARCHAR#
+		where affirmor_id=#AFFIRMOR_NAME:VARCHAR#  
+		and cpny_id=#CPNY_ID:VARCHAR#
+	</update>
+	
+	<update id="updateaffirmSpecialAppointfn" parameterClass="linkMap">
+    update sy_affirm_relation_special  set 
+		affirmor_id=#APPOINT_NAME:VARCHAR#,
+		APPOINT=#AFFIRMOR_NAME:VARCHAR# where 
+		affirmor_id=#AFFIRMOR_NAME:VARCHAR#  
+	    and cpny_id=#CPNY_ID:VARCHAR#
+	</update>
+	
+	<select id="affirmSpecialAppointList" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+     select no,
+		    empid,
+		    WAS_APPOINT_EMPID,
+		    APPOINT_DATE,
+		    appionit_activity,
+		    CPNY_ID 
+		    from 
+		    sy_appoint
+		where CPNY_ID=#CPNY_ID:VARCHAR#
+		   and appionit_activity='1'
+		<isNotEmpty prepend="AND" property="AFFIRMOR_NAME_BYNAME">
+			empid=#AFFIRMOR_NAME_BYNAME:VARCHAR#
+		</isNotEmpty>
+		<![CDATA[
+				 order by  APPOINT_DATE desc
+			 ]]>
+	</select>
+	
+	<update id="cancleAppoint" parameterClass="linkMap">
+   update sy_appoint
+   set appionit_activity = '2'
+ where EMPID = #AFFIRMOR_NAME:VARCHAR#
+   and WAS_APPOINT_EMPID = #APPOINT_NAME:VARCHAR#
+   and cpny_id = #CPNY_ID:VARCHAR#
+
+	</update>
+	
+	<update id="cancleSyReTb" parameterClass="linkMap">
+    update SY_AFFIRM_RELATION_SPECIAL s
+   set s.affirmor_id = #AFFIRMOR_NAME:VARCHAR#
+ where s.affirmor_id = #APPOINT_NAME:VARCHAR#
+   and s.appoint = #AFFIRMOR_NAME:VARCHAR#
+		and cpny_id=#CPNY_ID:VARCHAR#
+	</update>
+	
+	<update id="cancleSyReFb" parameterClass="linkMap">
+  update sy_affirm_relation_special s
+   set s.affirmor_id = #AFFIRMOR_NAME:VARCHAR#
+ where s.affirmor_id = #APPOINT_NAME:VARCHAR#
+   and s.appoint = #AFFIRMOR_NAME:VARCHAR#
+	</update>
+	
+<!--根据部门信息查找该部门下的所有人员类型-->
+<!-- <select id="getPersonEmpTypeByDeptNos" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> -->
+<!-- 		<![CDATA[ -->
+<!-- 			SELECT DISTINCT E.EMP_TYPE_CODE FROM HR_EMPLOYEE E,SY_GLOBAL_NAME SY WHERE E.DEPTNO IN ($DEPTNOS$) -->
+<!--             AND SY.NO = E.EMP_TYPE_CODE AND SY.LANGUAGE = 'zh' AND E.CPNY_ID = #CPNY_ID:VARCHAR#  -->
+<!-- 		]]> -->
+<!-- 	</select>	 -->
+	
+	
+	<select id="getAffirmSpecialList_specialExcel" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT *
+			  FROM (SELECT '[' || E.EMPID || ']' || E.LOCAL_NAME AFFIRM_OBJECT,
+			  			   GET_CODE_NAME(T.AFFIRM_TYPE_ID,'zh') AFFIRM_TYPE,
+			  			   T.AFFIRM_LEVEL,
+			  			   E2.EMPID,
+			  			   E2.LOCAL_NAME
+			          FROM HR_EMPLOYEE E,
+	                       SY_AFFIRM_RELATION_SPECIAL T,
+	                       HR_EMPLOYEE E2
+	                 WHERE T.AFFIRM_OBJECT = E.PERSON_ID
+	                   AND T.AFFIRMOR_ID = E2.PERSON_ID
+	                   AND T.CPNY_ID = #interCpnyID:VARCHAR# 
+				     UNION ALL
+				    SELECT '[' || D.DEPTNO || ']' || D.ORG_NAME_LOCAL AFFIRM_OBJECT,
+			  			   GET_CODE_NAME(T.AFFIRM_TYPE_ID,'zh') AFFIRM_TYPE,
+			  			   T.AFFIRM_LEVEL,
+			  			   E2.EMPID,
+			  			   E2.LOCAL_NAME
+				      FROM HR_DEPARTMENT D, SY_AFFIRM_RELATION_SPECIAL T,
+	                       HR_EMPLOYEE E2
+				     WHERE T.AFFIRM_OBJECT = D.DEPTNO
+	                   AND T.AFFIRMOR_ID = E2.PERSON_ID
+	                   AND T.CPNY_ID = #interCpnyID:VARCHAR# 
+			 ) C WHERE 1 = 1
+		 ]]>
+		<isNotEmpty prepend="and" property="EMP_ID">
+			C.AFFIRM_OBJECT like '%' || #EMP_ID:VARCHAR#  ||'%'
+		</isNotEmpty> 
+		<![CDATA[
+			ORDER BY AFFIRM_OBJECT,AFFIRM_TYPE,AFFIRM_LEVEL
+		]]>
+	</select>
+</sqlMap>

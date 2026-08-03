@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.annualLeave">
+
+	<sql id="getArAnnualLeaveListCondition" >
+		<isNotEmpty prepend="AND" property="VACATION_NO">
+			<![CDATA[
+		 		  VACATION_NO = #VACATION_NO:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  VAC_ID = #VAC_ID:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_ADMIN_ID">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND PERSON_ID = #AR_ADMIN_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+	</sql>
+
+	<select id="getArAnnualLeaveList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.VACATION_NO,
+			       HR.EMPID,
+			       HR.PERSON_ID,
+			       HR.LOCAL_NAME,
+			       HR.CHINESE_PINYIN,
+			       HR.ENGLISH_NAME,
+			       HD.CONTENT DEPTNAME,
+			       T.VAC_TP,
+			       T.VAC_ID,
+			       TO_CHAR(T.STRT_DATE,'YYYY-MM-DD') STRT_DATE,
+			       TO_CHAR(T.END_DATE,'YYYY-MM-DD') END_DATE,
+			       T.TOT_VAC_CNT,
+			       NVL(T.TOT_VAC_CNT,0)/8 VAC_HOUR,
+			       TO_CHAR(T.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+			       T.CREATED_BY,
+			       TO_CHAR(T.UPDATE_DATE,'YYYY-MM-DD') UPDATE_DATE,
+			       T.UPDATED_BY,
+			       T.ACTIVITY
+			  FROM AR_VAC_EMP T, HR_EMPLOYEE HR, HR_DEPARTMENT_NAME HD
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		 ]]>
+	    
+		<include refid="getArAnnualLeaveListCondition"/>
+		
+		<isEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  VAC_ID = TO_CHAR(SYSDATE,'YYYY')
+		    ]]>
+		</isEmpty>
+		
+		
+	</select>
+	
+	<select id="getArAnnualLeaveCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_VAC_EMP T, HR_EMPLOYEE HR, HR_DEPARTMENT_NAME HD
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		
+		<include refid="getArAnnualLeaveListCondition"/>
+		
+		<isEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  VAC_ID = TO_CHAR(SYSDATE,'YYYY')
+		    ]]>
+		</isEmpty>
+		
+	</select>
+	
+	<delete id="deleteArAnnualLeave" parameterClass="linkMap" >
+		<![CDATA[
+			DELETE AR_VAC_EMP T
+			 WHERE VACATION_NO = #VACATION_NO:NUMERIC#
+		]]>
+	</delete>
+	
+	<update id="updateArAnnualLeave" parameterClass="linkMap" >
+		<![CDATA[
+			UPDATE AR_VAC_EMP T SET
+				   TOT_VAC_CNT = #TOT_VAC_CNT:NUMERIC#,
+				   UPDATE_DATE = SYSDATE,
+				   UPDATED_BY = #UPDATED_BY:VARCHAR#,
+				   LOCK_YN = 'Y'
+			 WHERE VACATION_NO = #VACATION_NO:NUMERIC#
+		]]>
+	</update>
+	
+	<select id="checkAddArAnnualLeaveInfo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_VAC_EMP T
+			 WHERE T.PERSON_ID = #PERSON_ID:VARCHAR#
+			   AND T.VAC_ID = #VAC_ID:VARCHAR#
+		]]>
+	</select>
+	
+	<insert id="addArAnnualLeave" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO AR_VAC_EMP
+				(
+					VACATION_NO,
+					PERSON_ID,
+					VAC_TP,
+					VAC_ID,
+					STRT_DATE,
+					END_DATE,
+					TOT_VAC_CNT,
+					CREATE_DATE,
+					CREATED_BY,
+					ACTIVITY,
+					LOCK_YN
+				)
+			VALUES
+				(
+					AR_VAC_EMP_SEQ.NEXTVAL,
+					#PERSON_ID:VARCHAR#,
+					'26',
+					#VAC_ID:VARCHAR#,
+					TO_DATE(#VAC_ID:VARCHAR# || '-01-01','YYYY-MM-DD'),
+					TO_DATE(#VAC_ID:VARCHAR# || '-12-31','YYYY-MM-DD'),
+					#TOT_VAC_CNT:NUMERIC#,
+					SYSDATE,
+					#CREATED_BY:VARCHAR#,
+					1,
+					'Y'
+				)
+		]]>
+	</insert>
+	
+	<procedure id="createArAnnualLeaveInfo" parameterClass="linkMap">
+		<![CDATA[
+			{call AR_CREATE_VAC_EMP_P(#seach_VAC_ID:VARCHAR#,#interCpnyID:VARCHAR#,#IN_INIT_TYPE:VARCHAR#,#AR_SUPERVISIOR_INFO:VARCHAR#) }
+		]]>
+	</procedure>
+	
+	<procedure id="createArAnnualLeaveAuto" parameterClass="linkMap">
+		<![CDATA[
+			{call AR_CREATE_VAC_EMP_AUTO(#seach_VAC_ID:VARCHAR#,#interCpnyID:VARCHAR#,#IN_INIT_TYPE:VARCHAR#,#AR_SUPERVISIOR_INFO:VARCHAR#) }
+		]]>
+	</procedure>
+	
+	<select id="getEmpForSupervisorList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT HE.EMPID,
+					HE.PERSON_ID,
+					HE.LOCAL_NAME,
+					HDNAME.CONTENT DEPT_NAME
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD,
+				 HR_DEPARTMENT_NAME HDNAME
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		 	 		AND   EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_EMPTYPE_INFO
+					 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HE.EMP_TYPE_CODE
+					   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<select id="getEmpForSupervisorCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			FROM HR_EMPLOYEE HE,
+				 HR_DEPARTMENT HD,
+				 HR_DEPARTMENT_NAME HDNAME
+			WHERE HE.DEPTNO = HD.DEPTNO 
+			  AND HD.DEPTNO = HDNAME.DEPTNO(+)
+			  AND HDNAME.LANGUAGE(+) = #interLanguage:VARCHAR#
+			  AND HE.CPNY_ID = #CPNY_ID:VARCHAR#
+			  
+		]]>
+		<isNotEmpty prepend="AND" property="AR_SUPERVISOR_ID">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO F
+							   WHERE HE.DEPTNO = F.DEPTNO
+		 					     AND F.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 	 		  	 	)
+		 	 		 	AND   EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_EMPTYPE_INFO
+					 WHERE AR_SUPERVISOR_EMPTYPE_INFO.EMP_TYPE_CODE = HE.EMP_TYPE_CODE
+					   AND AR_SUPERVISOR_EMPTYPE_INFO.PERSON_ID = #AR_SUPERVISOR_ID:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpTypeCodeNo">
+			<![CDATA[
+			     HE.EMP_TYPE_CODE = #EmpTypeCodeNo:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EmpOffice">
+			<![CDATA[
+			     HE.emp_office = #EmpOffice:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="JobTypeGroupNo">
+				HE.EMP_TYPE_CODE IN (SELECT JOBTYPE_NO
+			          FROM HR_JOB_TYPE_SETUP P
+			         WHERE JOBTYPE_GROUP_NO = #JobTypeGroupNo#
+			           AND CPNY_ID = #interCpnyID:VARCHAR#
+			           )
+		</isNotEmpty>
+	</select>
+	
+	<insert id="insertAnnualLeaveIp" parameterClass="linkMap">
+		<![CDATA[
+			INSERT INTO SY_IP_ADDRESS
+				  (SEQ,
+				   IPADDRESS,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   CREATE_TYPE,
+				   ACTIVITY)
+				VALUES
+				  (SY_IP_ADDRESS_SEQ.Nextval,
+				   #IPADDRESS:VARCHAR#,
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   #CREATE_TYPE:VARCHAR#,
+				   1)
+		]]>
+	</insert>
+	
+</sqlMap>

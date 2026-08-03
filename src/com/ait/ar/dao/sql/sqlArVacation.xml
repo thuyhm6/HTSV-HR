@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.vacation">
+	
+	<select id="getArVacationUpdateMonthList" parameterClass="linkMap"
+        resultClass="linkMap">
+        <![CDATA[ select K.QUFEN,
+       NVL(K.SHIWURENSHU, 0) SHIWURENSHU,
+       NVL(K.SHIWUTIANSHU, 0) SHIWUTIANSHU,
+       NVL(K.JINENGRENSHU, 0) JINENGRENSHU,
+       NVL(K.JINENGTIANSHU, 0) JINENGTIANSHU,
+       NVL(K.XIAOJIRENSHU, 0) XIAOJIRENSHU,
+       NVL(K.XIAOJITIANSHU, 0) XIAOJITIANSHU,
+       nvl(shiwupaichu,0) shiwupaichu,
+       nvl(jinengpaichu,0) jinengpaichu,
+       nvl(hejipaichu,0) hejipaichu 
+  from (select '上月现状' as qufen,
+       sum(case
+             when t4.post_coef = 'postCoefCode001' then
+              1
+             else
+              0
+           end) shiwurenshu,
+       sum(case
+             when t4.post_coef in ('postCoefCode003','postCoefCode002') then
+              1
+             else
+              0
+           end) jinengrenshu,
+       sum(case
+             when t4.post_coef = 'postCoefCode001' then
+              ar.tot_vac_cnt
+             else
+              0
+           end) shiwutianshu,
+       sum(case
+             when t4.post_coef in ('postCoefCode003','postCoefCode002') then
+              ar.tot_vac_cnt
+             else
+              0
+           end) jinengtianshu,
+       sum(case
+             when t4.post_coef in ('postCoefCode003', 'postCoefCode001', 'postCoefCode002') then
+              1
+             else
+              0
+           end) xiaojirenshu,
+       sum(case
+             when t4.post_coef in ('postCoefCode003', 'postCoefCode001', 'postCoefCode002') then
+              ar.tot_vac_cnt
+             else
+              0
+           end) xiaojitianshu,
+       1 as orders
+  from ar_vac_emp_month ar,
+       hr_employee t4 
+ WHERE ar.PERSON_ID = t4.PERSON_ID 
+  and ar.CPNY_ID = #CPNY_ID#
+   and ar.ar_month =to_char(add_months(to_date(#armonth#,'yyyymm'),-1),'yyyymm')
+        union all
+         select '当月现状' as qufen,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001' then
+                      1
+                     else
+                      0
+                   end) shiwurenshu,
+               sum(case
+                     when t4.post_coef in ('postCoefCode003','postCoefCode002') then
+                      1
+                     else
+                      0
+                   end) jinengrenshu,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001' then
+                      ar.tot_vac_cnt
+                     else
+                      0
+                   end) shiwutianshu,
+               sum(case
+                     when t4.post_coef in ('postCoefCode003','postCoefCode002') then
+                      ar.tot_vac_cnt
+                     else
+                      0
+                   end) jinengtianshu,
+               sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002') then
+                      1
+                     else
+                      0
+                   end) xiaojirenshu,
+                    sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002') then
+                      ar.tot_vac_cnt
+                     else
+                      0
+                   end) xiaojitianshu, 
+               5
+          from ar_vac_emp_month ar,
+               hr_employee t4 
+         WHERE ar.PERSON_ID = t4.PERSON_ID
+         and ar.CPNY_ID = #CPNY_ID#
+           and ar.ar_month =  #armonth#
+        union all
+         select '当月新增' as qufen,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001'  then
+                      1
+                     else
+                      0
+                   end) shiwurenshu,
+               sum(case
+                     when t4.post_coef in ('postCoefCode003','postCoefCode002')  then
+                      1
+                     else
+                      0
+                   end) jinengrenshu,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001'  then
+                      ar.tot_vac_cnt 
+                     else
+                      0
+                   end) shiwutianshu,
+               sum(case
+                     when t4.post_coef in ('postCoefCode003','postCoefCode002')  then
+                      ar.tot_vac_cnt  
+                     else
+                      0
+                   end) jinengtianshu,
+               sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002')   then
+                      1
+                     else
+                      0
+                   end) xiaojirenshu,
+                   sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002')   then
+                      ar.tot_vac_cnt 
+                     else
+                      0
+                   end) xiaojitianshu, 
+               2
+          from ar_vac_emp_month ar, hr_employee t4 
+         WHERE ar.PERSON_ID = t4.PERSON_ID
+         and ar.CPNY_ID = #CPNY_ID#
+           and    not EXISTS (select PERSON_ID from ar_vac_emp_month ep where  ar.PERSON_ID =ep.PERSON_ID and ep.CPNY_ID = #CPNY_ID# and  ep.ar_month =to_char(add_months(to_date(#armonth#,'yyyymm'),-1),'yyyymm'))
+           and ar.ar_month = #armonth# 
+           
+           
+        union all
+        select '当月变化' as qufen,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001' and ar.tot_vac_cnt <> nvl(ep.tot_vac_cnt, 0) then
+                      1
+                     else
+                      0
+                   end) shiwurenshu,
+               sum(case
+                     when t4.post_coef in ( 'postCoefCode003', 'postCoefCode002') and ar.tot_vac_cnt <> nvl(ep.tot_vac_cnt, 0) then
+                      1
+                     else
+                      0
+                   end) jinengrenshu,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001' and ar.tot_vac_cnt <> nvl(ep.tot_vac_cnt, 0) then
+                      ar.tot_vac_cnt - nvl(ep.tot_vac_cnt, 0)
+                     else
+                      0
+                   end) shiwutianshu,
+               sum(case
+                     when t4.post_coef  in ( 'postCoefCode003', 'postCoefCode002') and ar.tot_vac_cnt <> nvl(ep.tot_vac_cnt, 0) then
+                      ar.tot_vac_cnt - nvl(ep.tot_vac_cnt, 0)
+                     else
+                      0
+                   end) jinengtianshu,
+                sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002') and ar.tot_vac_cnt <> nvl(ep.tot_vac_cnt, 0) then
+                    1
+                     else
+                      0
+                   end) xiaojirenshu,
+                   sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002') and ar.tot_vac_cnt <> nvl(ep.tot_vac_cnt, 0) then
+                     ar.tot_vac_cnt - nvl(ep.tot_vac_cnt, 0)
+                     else
+                      0
+                   end) xiaojitianshu, 
+               4
+          from ar_vac_emp_month ar, hr_employee t4, ar_vac_emp_month ep
+         WHERE ar.PERSON_ID = t4.PERSON_ID
+         and ar.CPNY_ID = #CPNY_ID#
+           and ar.PERSON_ID = ep.PERSON_ID  
+           and ar.ar_month = #armonth# 
+           and ep.ar_month =to_char(add_months(to_date(#armonth#,'yyyymm'),-1),'yyyymm')
+           
+        union all
+        select '当月减少' as qufen,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001'   then
+                      1
+                     else
+                      0
+                   end) shiwurenshu,
+               sum(case
+                     when t4.post_coef in ( 'postCoefCode003', 'postCoefCode002')   then
+                      1
+                     else
+                      0
+                   end) jinengrenshu,
+               sum(case
+                     when t4.post_coef = 'postCoefCode001'   then
+                       ar.tot_vac_cnt
+                     else
+                      0
+                   end) shiwutianshu,
+               sum(case
+                     when t4.post_coef in ( 'postCoefCode003', 'postCoefCode002')  then
+                       ar.tot_vac_cnt
+                     else
+                      0
+                   end) jinengtianshu,
+                sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002')   then
+                      1
+                     else
+                      0
+                   end) xiaojirenshu,
+                sum(case
+                     when t4.post_coef in( 'postCoefCode003', 'postCoefCode001', 'postCoefCode002')   then
+                      ar.tot_vac_cnt
+                     else
+                      0
+                   end)  xiaojitianshu,
+               3
+          from ar_vac_emp_month ar, hr_employee t4 
+         WHERE ar.PERSON_ID = t4.PERSON_ID
+         and ar.CPNY_ID = #CPNY_ID#
+            and    not EXISTS (select PERSON_ID from ar_vac_emp_month ep where  ar.PERSON_ID =ep.PERSON_ID and  ep.ar_month = #armonth# and ep.CPNY_ID = #CPNY_ID# )
+          and ar.ar_month =  to_char(add_months(to_date(#armonth#,'yyyymm'),-1),'yyyymm') 
+            
+           ) k , (SELECT  
+          sum(case  when   TT.post_coef = 'postCoefCode001' then
+                      1
+                     else
+                      0
+                   end) shiwupaichu,
+               sum(CASE
+                     WHEN  
+                          tT.post_coef in ( 'postCoefCode003', 'postCoefCode002') then
+                      1
+                     else
+                      0
+                   end) jinengpaichu,
+              COUNT(*) hejipaichu FROM ar_vac_emp T,HR_EMPLOYEE TT  WHERE TT.PERSON_ID =T.PERSON_ID and t.CPNY_ID = #CPNY_ID# AND T.vac_id=#years# AND T.Activity=2 AND  tT.post_coef IN( 'postCoefCode001','postCoefCode002' , 'postCoefCode003')) Q
+ 
+ order by k.orders
+
+
+        ]]>
+ 
+    </select>
+    
+    <select id="getArVacationMonthExcel" parameterClass="linkMap"
+		resultClass="linkMap">
+        <![CDATA[   
+           select ar.*,
+			       CHINESE_PINYIN chinesename,
+			       TO_CHAR(T4.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+			       '职系' POST_COEF,
+			       hdn.deptno,
+			       hdn.content DEPTNAME,
+			       '职系' POST_COEFNAME
+			  from ar_vac_emp_month   ar,
+			       hr_employee        t4,
+			       hr_department_name hdn
+			 WHERE ar.PERSON_ID = t4.PERSON_ID
+			   AND T4.DEPTNO = HDN.DEPTNO(+)
+		   	   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+
+        ]]>
+        <isNotEmpty prepend="AND" property="CPNY_ID">
+            <![CDATA[
+                    ar.CPNY_ID = #CPNY_ID#
+            ]]>
+        </isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="armonth">
+            <![CDATA[
+                    ar.AR_MONTH = #armonth#
+            ]]>
+        </isNotEmpty>
+  
+        <![CDATA[
+            ORDER BY hdn.deptno,t4.PERSON_ID
+            
+        ]]>
+	</select>
+	
+	<procedure id="monthVacCalculate" parameterClass="linkMap">
+        {call ar_create_vacation_month(#year:VARCHAR#,#month:VARCHAR#,#CPNY_ID:VARCHAR#,#msg,jdbcType=VARCHAR,mode=INOUT#)}
+    </procedure>
+    
+    <procedure id="saveVacationEmp" parameterClass="linkMap">
+        {call SAVEMONTHVACATION(#year#,#month#,#adminId#,#CPNY_ID:VARCHAR#) }
+    </procedure>
+    
+    <select id="RetrieveAttStatus" parameterClass="linkMap" resultClass="int">
+		select count(*) from pa_progress t 
+			where t.pa_month_str=#year#||#month#
+				and t.att_mo_lock_flag = #flag#
+				and t.cpny_id = #CPNY_ID:VARCHAR#
+	</select>
+    
+    <select id="monthVacationCnt"  parameterClass="linkMap"  resultClass="int">
+        <![CDATA[   
+           select count(*) cnt from ar_vac_emp_month t 
+           	where t.ar_month=#year#||#month# 
+           		and t.activity=#flag#
+           		and t.cpny_id = #CPNY_ID:VARCHAR#
+        ]]>
+    </select>
+	
+	<select id="RetrieveVacationEmpList" parameterClass="linkMap" resultClass="linkMap">
+		  <![CDATA[   
+           select ar.*,
+       AP.LIQUIDATION_LAST,
+       AR_VACATION_SURPLUS(#arMonth:VARCHAR#,
+                       ar.person_id,'',3,'') AS SHENGYU,
+       AR_USE_VACATION(#arMonth:VARCHAR#,
+                       ar.person_id,
+                       AR.TOT_VAC_CNT - AP.NEXT_VAC - AP.LIQUIDATION,
+                       
+          AP.LAST_YEAR_VAC- AP.LIQUIDATION_LAST
+         ,
+                       1,'') as XIUYINIAN,
+       AR_USE_VACATION(#arMonth:VARCHAR#,
+                       ar.person_id,
+                       AR.TOT_VAC_CNT - AP.NEXT_VAC - AP.LIQUIDATION,
+                       
+          AP.LAST_YEAR_VAC- AP.LIQUIDATION_LAST
+         ,
+                       2,'') AS XIUBENNIAN,
+       t4.local_name,
+       TO_CHAR(T4.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+       AP.LAST_YEAR_VAC,
+       AP.NEXT_VAC,
+       AP.LIQUIDATION,
+       hd.deptid,
+       HD.deptno
+  from ar_vac_emp_month ar, hr_employee t4, hr_department hd, ar_vac_emp ap 
+ 
+ WHERE ar.person_id = t4.person_id
+   and ar.person_id = ap.person_id
+   and substr(ar.AR_MONTH, 1, 4) = ap.VAC_ID 
+   and ar.AR_MONTH= (select max(ar_month) from ar_vac_emp_month where ar_month<=#arMonth:VARCHAR# AND ACTIVITY=1 ) 
+   and t4.deptno = hd.deptno
+   and ar.activity = 1
+        ]]>
+<!-- ,
+       GET_CODE_NAME(POST_COEF) POST_COEFNAME -->
+        <isNotEmpty prepend="AND" property="supervisor">
+            <![CDATA[
+               (  EXISTS ( SELECT *
+                            FROM AR_SUPERVISOR_INFO F
+                           WHERE t4.DEPTID = F.SUPERVISED_DEPTID
+                             AND F.AR_SUPERVISOR_ID = #supervisor#
+                        ) or ar.empid= #supervisor# )
+         
+        ]]>
+        </isNotEmpty>
+
+        <isNotEmpty prepend="AND" property="key">
+            <![CDATA[
+                    t4.empid = #key#
+            ]]>
+        </isNotEmpty>
+      
+
+        <isNotEmpty prepend="AND" property="deptID">
+            <![CDATA[
+                    t4.deptid in (select hd.deptid from hr_department hd start with hd.deptid = #deptID# CONNECT BY PRIOR deptid = parent_dept_id) 
+            ]]>
+        </isNotEmpty>
+  
+        <![CDATA[
+            ORDER BY hd.deptid,t4.empid
+            
+        ]]>
+    </select>
+    
+    <select id="getArVacationUpdateYearList" parameterClass="linkMap"
+		resultClass="linkMap">
+        <![CDATA[   
+         select AP.ACTIVITY,
+		       trunc(HR_GET_WORKAGE_OUTSIDE(ap.PERSON_ID), 1) OUTSIDE, 
+		       trunc(HR_GET_WORKMONTH_NOW(ap.PERSON_ID, To_CHAR(ADD_MONTHS(TO_DATE(#year#,'YYYY'),-12),'YYYY') || '12',#CPNY_ID#), 1) INSIDE,
+		       t4.EMPID,
+		       ap.PERSON_ID,
+		       T4.LOCAL_NAME,
+		       TO_CHAR(T4.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+		       AP.LAST_YEAR_VAC,
+		       AP.NEXT_VAC,
+		       
+		       HDN.DEPTNO,
+		       HDN.CONTENT DEPTNAME,
+		       AP.TOT_VAC_CNT,
+		       AP.VACATION_NO,
+		       '' POST_COEFNAME,
+		       AP.LEAVE_TOTAL
+		  from hr_employee t4, ar_vac_emp ap,HR_DEPARTMENT_NAME HDN
+		 WHERE t4.PERSON_ID = ap.PERSON_ID
+		   AND T4.DEPTNO = HDN.DEPTNO(+)
+		   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   and  ap.vac_id=#year#
+		   and ap.cpny_id = #CPNY_ID#
+        ]]>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = t4.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+
+         <isNotEmpty prepend="AND" property="flag">
+	         <isEqual property="flag" compareValue="no">
+	             ap.ACTIVITY=2 
+	         </isEqual>
+	         <isEqual property="flag" compareValue="yes">
+	               ( ap.ACTIVITY=0 or ap.ACTIVITY=1)
+	         </isEqual>
+         </isNotEmpty>
+         <isEmpty prepend="AND" property="flag">
+            <![CDATA[
+                    ( ap.ACTIVITY=0 or ap.ACTIVITY=1)
+            ]]>
+        </isEmpty>
+      
+        <isNotEmpty prepend="AND" property="key">
+            <![CDATA[
+                    ( t4.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(t4.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(t4.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(t4.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+            ]]>
+        </isNotEmpty> 
+
+        <isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=t4.DEPTNO
+	                 	START WITH B1.DEPTNO = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+		    ]]>
+		</isNotEmpty>
+  
+        <![CDATA[
+            ORDER BY t4.PERSON_ID
+            
+        ]]>
+        
+	</select>
+	
+	<select id="getArVacationUpdateYearCnt" parameterClass="linkMap"
+		resultClass="int">
+        <![CDATA[   
+         select COUNT(1)
+		  from hr_employee t4, ar_vac_emp ap,HR_DEPARTMENT_NAME HDN
+		 WHERE t4.PERSON_ID = ap.PERSON_ID
+		   AND T4.DEPTNO = HDN.DEPTNO(+)
+		   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   and  ap.vac_id=#year#
+		   and ap.cpny_id = #CPNY_ID#
+        ]]>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = t4.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="flag">
+	         <isEqual property="flag" compareValue="no">
+	             ap.ACTIVITY=2 
+	         </isEqual>
+	         <isEqual property="flag" compareValue="yes">
+	               ( ap.ACTIVITY=0 or ap.ACTIVITY=1)
+	         </isEqual>
+         </isNotEmpty>
+         <isEmpty prepend="AND" property="flag">
+            <![CDATA[
+                    ( ap.ACTIVITY=0 or ap.ACTIVITY=1)
+            ]]>
+        </isEmpty> 
+      
+        <isNotEmpty prepend="AND" property="key">
+            <![CDATA[
+                    ( t4.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(t4.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   OR CONVERTTOUNSIGN(UPPER(t4.KOREAN_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+		 		           OR CONVERTTOUNSIGN(UPPER(t4.ENGLISH_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'  )
+            ]]>
+        </isNotEmpty> 
+
+        <isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTNO=t4.DEPTNO
+	                 	START WITH B1.DEPTNO = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+	                )
+		    ]]>
+		</isNotEmpty>
+        
+	</select>
+	
+	<update id="updateArVacationYear" parameterClass="linkMap">
+        <![CDATA[   
+            update ar_vac_emp set  
+            ar_vac_emp.updated_by=#adminId#,
+            ar_vac_emp.update_date=sysdate,
+            ar_vac_emp.tot_vac_cnt=#vacation_num# 
+            where ar_vac_emp.vacation_no=#vacation_no#
+            and ar_vac_emp.cpny_id = #CPNY_ID#
+        ]]>
+    </update>
+    
+    <select id="yearVacationCnt"  parameterClass="linkMap"  resultClass="int">
+        <![CDATA[   
+           select count(*) cnt from ar_vac_emp  t 
+           	where t.vac_id=#vac_id#  
+           	  and t.activity=1
+           	  and t.cpny_id = #CPNY_ID#
+        ]]>
+    </select>
+    
+    <procedure id="yearVacCalculate" parameterClass="linkMap">
+        {call PKG_VAC_MANAGE.AR_CREATE_VAC_HTSV(
+        				#adminIP#,#adminID#) }
+    </procedure>
+    
+    <update id="yearVacCreate" parameterClass="linkMap">
+        <![CDATA[   
+            update ar_vac_emp set ar_vac_emp.activity=1,
+            					  ar_vac_emp.updated_by=#adminId#,
+            					  ar_vac_emp.update_date=sysdate 
+            where ar_vac_emp.activity=0 
+              AND ar_vac_emp.vac_id=#vac_id#
+              AND ar_vac_emp.cpny_id = #CPNY_ID#
+        ]]>
+    </update>
+    
+    <select id="getArVacationNextList" parameterClass="linkMap"
+        resultClass="linkMap">
+          <![CDATA[   
+           select  
+		          Ap.TOT_VAC_CNT - AP.LIQUIDATION - AP.NEXT_VAC-
+		       AR_USE_VACATION(#year# || '12',
+		                       ap.PERSON_ID,
+		                       Ap.TOT_VAC_CNT - AP.NEXT_VAC - AP.LIQUIDATION,
+		                        
+		                          AP.LAST_YEAR_VAC - AP.LIQUIDATION_LAST
+		                        ,
+		                       2,'')    AS BENNIAN,T4.EMPID,
+		       t4.local_name, 
+		       TO_CHAR(T4.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+		       AP.LAST_YEAR_VAC,
+		       AP.NEXT_VAC, 
+		       hd.deptno,
+		       HD.CONTENT DEPTNAME,
+		       ap.VACATION_NO, 
+		       '' POST_COEFNAME
+		  from hr_employee t4, hr_department_name hd, ar_vac_emp ap
+		 WHERE t4.PERSON_ID = ap.PERSON_ID
+		   and t4.deptno = hd.deptno
+		   and ap.cpny_id = #CPNY_ID#
+		   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   and Ap.TOT_VAC_CNT - AP.LIQUIDATION -AP.NEXT_VAC-
+		       AR_USE_VACATION(#year# || '12',
+		                       ap.PERSON_ID,
+		                       Ap.TOT_VAC_CNT - AP.NEXT_VAC - AP.LIQUIDATION,
+		                        
+		                          AP.LAST_YEAR_VAC - AP.LIQUIDATION_LAST
+		                        ,
+		                       2,'') >0
+
+        ]]>
+      
+        <isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = t4.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+ 
+        <isNotEmpty prepend="AND" property="vac_id">
+            <![CDATA[
+                    ap.vac_id = #vac_id#
+            ]]>
+        </isNotEmpty>
+  
+        <![CDATA[
+            ORDER BY hd.deptno,t4.empid
+            
+        ]]>
+    </select>
+    
+    <select id="getArVacationNextCnt" parameterClass="linkMap"
+        resultClass="int">
+          <![CDATA[   
+           select  
+		          count(1)
+		  from hr_employee t4, hr_department_name hd, ar_vac_emp ap
+		 WHERE t4.PERSON_ID = ap.PERSON_ID
+		   and t4.deptno = hd.deptno
+		   and ap.ACTIVITY=1
+		   and ap.cpny_id = #CPNY_ID#
+		   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   and Ap.TOT_VAC_CNT - AP.LIQUIDATION -AP.NEXT_VAC-
+		       AR_USE_VACATION(#year# || '12',
+		                       ap.PERSON_ID,
+		                       Ap.TOT_VAC_CNT - AP.NEXT_VAC - AP.LIQUIDATION,
+		                        
+		                          AP.LAST_YEAR_VAC - AP.LIQUIDATION_LAST
+		                        ,
+		                       2,'') >0
+
+        ]]>
+      
+        <isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = t4.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #supervisor:VARCHAR#
+		 		  )
+		    ]]>
+		</isNotEmpty>
+ 
+        <isNotEmpty prepend="AND" property="vac_id">
+            <![CDATA[
+                    ap.vac_id = #vac_id#
+            ]]>
+        </isNotEmpty>
+  
+    </select>
+    
+    <procedure id="nextVacationMove" parameterClass="linkMap">
+        {call AR_VACATIONEMP_NEXT(#year#,#nextyear#,#adminId#,#CPNY_ID#) }
+    </procedure>
+     
+     <procedure id="getTAWelfare" parameterClass="linkMap">
+        {call AR_CREATE_WELFARE_LGETA(#YEAR#,#ANNUDATE#) }
+    </procedure>
+    
+</sqlMap>

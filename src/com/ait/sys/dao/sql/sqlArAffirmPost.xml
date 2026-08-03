@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sys.arAffirmPost">
+	 
+	 <select id="getArAffirmDutyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT DUTY, 
+					   GET_GLOBAL_NAME(DUTY,#interLanguage:VARCHAR#) DUTY_NAME,
+				       A.CPNY_ID,
+				       AFFIRM_LEVEL,
+				       TO_CHAR(A.UPDATE_DATE,'yyyy-mm-dd') OP_DATE,
+				       B.LOCAL_NAME
+				   FROM SY_AFFIRM_LEVEL_SETUP A,
+				   HR_EMPLOYEE B
+				   WHERE A.UPDATED_BY = B.PERSON_ID(+)
+				   AND A.CPNY_ID = #interCpnyID#
+				   ORDER BY AFFIRM_LEVEL
+		]]>	
+	</select>
+	
+	<select id="getApplyDutyList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+				SELECT S.CODE_NO, GET_GLOBAL_NAME(S.CODE_NO, #interLanguage#) CODE_NAME
+				  FROM SY_CODE S, SY_CODE_PARAM P
+				 WHERE S.CODE_NO = P.CODE_NO
+				   AND S.PARENT_CODE_NO = '14014036'
+				   AND P.CPNY_ID = #interCpnyID#
+		]]>	
+	</select>
+	
+	<insert id="saveArAffirmPost" parameterClass="linkMap">
+		<![CDATA[
+			insert into SY_AFFIRM_LEVEL_SETUP(
+			  CPNY_ID,
+			  DUTY,
+			  AFFIRM_LEVEL,
+			  CREATE_DATE,
+			  CREATED_BY,
+			  UPDATE_DATE,
+			  UPDATED_BY,
+			  ACTIVITY )
+			  VALUES(
+			   #interCpnyID#,
+			   #DUTY#,
+			   #AFFIRM_LEVEL#,
+			   sysdate,
+			   #supervisorPersonId#,
+			   sysdate,
+			   #supervisorPersonId#,
+			   1
+			  )
+   		]]>
+	</insert>
+	<update id="updateArAffirmPost" parameterClass="linkMap">
+				UPDATE SY_AFFIRM_LEVEL_SETUP T
+				   SET AFFIRM_LEVEL = #AFFIRM_LEVEL#,
+				       UPDATE_DATE  = SYSDATE,
+				       UPDATED_BY   = #supervisorPersonId:VARCHAR#
+				 WHERE CPNY_ID = #interCpnyID#
+				 AND DUTY = #DUTY#
+	</update>
+	<delete id="deleteArAffirmPost" parameterClass="linkMap">
+				DELETE FROM SY_AFFIRM_LEVEL_SETUP T
+				 WHERE CPNY_ID = #interCpnyID#
+				 AND DUTY = #DUTY#
+	</delete>
+	
+	 
+	<select id="getSortByParentNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+					SELECT S.CODE_NO,S.PARENT_CODE_NO,S.OPERATION_ID,P.CPNY_ID,SG.CONTENT AS CODENAME
+					  FROM SY_CODE S, SY_CODE_PARAM P, SY_GLOBAL_NAME SG
+					 WHERE S.CODE_NO = P.CODE_NO
+					   AND S.CODE_NO = SG.NO(+)
+					   AND SG.LANGUAGE(+) = #interLanguage:VARCHAR#
+					   AND P.CPNY_ID =  #interCpnyID:VARCHAR#
+					   AND S.PARENT_CODE_NO = 3588
+					   AND S.ACTIVITY = 1
+					   AND P.ACTIVITY = 1
+		]]>	
+	</select>
+	<select id="getDutyInfoByCpnyId" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT DUTY, 
+				       A.CPNY_ID,
+				       AFFIRM_LEVEL
+				   FROM SY_AFFIRM_LEVEL_SETUP A
+				 WHERE CPNY_ID = #interCpnyID#
+				 AND DUTY = #DUTY#
+		]]>	
+	</select>
+	
+	<select id="validateArAffirmPostExistInside" parameterClass="linkMap" resultClass="int">
+			<![CDATA[
+				 select count(*) from sy_affirmor_list where DUTY_NO =#DUTY_NO:VARCHAR# AND cpny_id=#interCpnyID:VARCHAR# AND PERSON_ID IS NULL
+		]]>	
+	</select>
+	 
+</sqlMap>

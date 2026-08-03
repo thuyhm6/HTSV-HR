@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.fsesalarycode">
+	<!-- 人员类型 -->
+	<select id="getFSESalaryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+		  SELECT PT.CPNY_ID,
+                 PT.EMPID,
+                 E.LOCAL_NAME,
+                 PT.PA_MONTH,
+                 PT.EMP_TYPE_CODE,
+                 PT.PA_AREA_CD,
+                 PT.SALARY_ITEM,
+                 PT.SALARY_ITEM_FEE,
+                 PT.ADD_FLAG,
+                 UPLOAD_ERROR_MSG,
+                 LINE_ID,
+                 RESULT_FLAG,
+                 HE.LOCAL_NAME UPLOAD_BY,
+                 to_char(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE
+          FROM PA_SUMMARY_FSE PT,
+               HR_EMPLOYEE HE,
+               HR_EMPLOYEE E
+         WHERE UPLOAD_BY = HE.PERSON_ID
+           AND PT.EMPID  = E.EMPID
+           AND PT.CPNY_ID= E.CPNY_ID
+           AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+			
+		]]>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+				 	PT.CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+		</isNotEmpty>
+	            <![CDATA[   
+				   ORDER BY PT.CPNY_ID
+		]]>
+	</select>
+ 	<select id="getFSESalaryCnt" parameterClass="linkMap" resultClass="int"> 
+ 		<![CDATA[ 
+    			SELECT  
+ 				COUNT(*) 
+ 		   FROM PA_SUMMARY_FSE PT,
+               HR_EMPLOYEE HE,
+               HR_EMPLOYEE E
+         WHERE UPLOAD_BY = HE.PERSON_ID
+           AND PT.EMPID  = E.EMPID
+           AND PT.CPNY_ID= E.CPNY_ID
+           AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+ 		]]>	 
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+				<![CDATA[
+				 	PT.CPNY_ID = #CPNY_ID:VARCHAR#
+				]]>
+		</isNotEmpty>
+		<![CDATA[   
+				   ORDER BY PT.CPNY_ID
+		]]>
+		
+ 	</select> 
+ 
+	<select id="getFSESalaryImportTempList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+	 	  SELECT PT.CPNY_ID,
+                 PT.EMPID,
+                 E.LOCAL_NAME,
+                 PT.PA_MONTH,
+                 PT.EMP_TYPE_CODE,
+                 PT.PA_AREA_CD,
+                 PT.SALARY_ITEM,
+                 PT.SALARY_ITEM_FEE,
+                 PT.ADD_FLAG,
+                 UPLOAD_ERROR_MSG,
+                 LINE_ID,
+                 RESULT_FLAG,
+                 HE.LOCAL_NAME UPLOAD_BY,
+                 to_char(UPLOAD_DATE,'yyyy-mm-dd') UPLOAD_DATE
+          FROM PA_SUMMARY_FSE_TEMP PT,
+               HR_EMPLOYEE HE,
+               HR_EMPLOYEE E
+         WHERE UPLOAD_BY = HE.PERSON_ID
+           AND PT.EMPID  = E.EMPID
+           AND PT.CPNY_ID= E.CPNY_ID
+           AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getFSESalaryImportTempCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  SELECT COUNT(1)
+			 FROM PA_SUMMARY_FSE_TEMP PT,
+               HR_EMPLOYEE HE,
+               HR_EMPLOYEE E
+         WHERE UPLOAD_BY = HE.PERSON_ID
+           AND PT.EMPID  = E.EMPID
+           AND PT.CPNY_ID= E.CPNY_ID
+           AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="RESULT_FLAG">
+			<![CDATA[
+				RESULT_FLAG = #RESULT_FLAG#
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="getFSESalaryImportTempErrorCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+	 	  SELECT COUNT(1)
+			 FROM PA_SUMMARY_FSE_TEMP PT,
+               HR_EMPLOYEE HE,
+               HR_EMPLOYEE E
+         WHERE UPLOAD_BY = HE.PERSON_ID
+           AND PT.EMPID  = E.EMPID
+           AND PT.CPNY_ID= E.CPNY_ID
+           AND UPLOAD_BY = #PERSON_ID:VARCHAR#
+		   AND RESULT_FLAG = 'E'
+		]]>
+	</select>
+	
+	
+	<!-- 写入excel临时表数据验证֤================================ -->
+	<procedure id="importFSESalaryFromExcel" parameterClass="linkMap">
+		<![CDATA[
+			{call $PR_NAME$(
+						 #PERSON_ID:VARCHAR#
+						,#CPNY_ID:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+</sqlMap>

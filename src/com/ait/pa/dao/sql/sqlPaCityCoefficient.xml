@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="pa.cityCoefficient">
+	
+	<sql id="getPaCityCoefficientCondition">
+		
+		<isNotEmpty prepend="AND" property="WORK_AREA">
+			T.S_WORK_AREA = #WORK_AREA:VARCHAR#
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="E_WORK_AREA">
+			T.E_WORK_AREA = #E_WORK_AREA:VARCHAR#
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CITY_COEFFICIENT">
+			T.COEFFICIENT = #CITY_COEFFICIENT:VARCHAR#
+		</isNotEmpty>
+	
+	</sql>
+	
+	<select id="getPaCityCoefficientList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.S_WORK_AREA,
+			       SY0.CONTENT   S_WORK_AREA_NAME,
+			       T.E_WORK_AREA,
+			       SY1.CONTENT   E_WORK_AREA_NAME ,
+			       T.COEFFICIENT
+			  FROM PA_CITYCOEFFICIENT T,
+			       SY_GLOBAL_NAME     SY0,
+			       SY_GLOBAL_NAME     SY1
+			 WHERE T.S_WORK_AREA = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.E_WORK_AREA = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<include refid="getPaCityCoefficientCondition"/>
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY T.S_WORK_AREA
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="paCityCoefficientCnt"   parameterClass="linkMap" resultClass="int" >
+		<![CDATA[
+	 		   SELECT COUNT(*)
+			     FROM PA_CITYCOEFFICIENT T,
+			       SY_GLOBAL_NAME     SY0,
+			       SY_GLOBAL_NAME     SY1
+			 WHERE T.S_WORK_AREA = SY0.NO(+)
+			   AND SY0.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.E_WORK_AREA = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+		]]>
+		<include refid="getPaCityCoefficientCondition"/>
+	</select>
+	
+	<select id="checkAddCityCoefficientInfo" parameterClass="linkMap" resultClass="int" >
+	
+		<![CDATA[
+	 		   SELECT COUNT(*)
+			     FROM PA_CITYCOEFFICIENT T
+			 WHERE T.S_WORK_AREA = #S_WORK_AREA:VARCHAR#
+			   AND T.E_WORK_AREA = #E_WORK_AREA:VARCHAR#
+		]]>
+		
+	</select>
+	
+	<insert id="addCityCoefficientInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		INSERT INTO PA_CITYCOEFFICIENT
+				  (
+				   S_WORK_AREA,
+				   E_WORK_AREA,
+				   COEFFICIENT,
+				   ORDER_NO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   ACTIVITY
+				   )
+				VALUES
+				  (
+				   #S_WORK_AREA:VARCHAR#,
+				   #E_WORK_AREA:VARCHAR#,
+				   #COEFFICIENT:NUMERIC#,
+				   (SELECT NVL(MAX(ORDER_NO),0)+1 FROM PA_CITYCOEFFICIENT),
+				   SYSDATE,
+				   #CREATED_BY:VARCHAR#,
+				   1
+				   )
+		]]>
+	</insert>
+	
+	<update id="updateCityCoefficientInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		UPDATE PA_CITYCOEFFICIENT PC
+			   SET PC.S_WORK_AREA = #S_WORK_AREA:VARCHAR#,
+			       PC.E_WORK_AREA = #E_WORK_AREA:VARCHAR#,
+			       PC.COEFFICIENT = #CITY_COEFFICIENT:NUMERIC#,
+			       PC.UPDATE_DATE = SYSDATE,
+			       PC.UPDATED_BY = #UPDATED_BY:VARCHAR#
+			 WHERE PC.S_WORK_AREA = #SS_WORK_AREA:VARCHAR#
+			 AND   PC.E_WORK_AREA = #EE_WORK_AREA:VARCHAR#
+		]]>
+	</update>
+	
+	<delete id="deleteCityCoefficientInfo" parameterClass="linkMap">
+		<![CDATA[
+	 		DELETE FROM PA_CITYCOEFFICIENT PC
+			    WHERE PC.S_WORK_AREA = #WORK_AREA:VARCHAR#
+			 	AND   PC.E_WORK_AREA = #E_WORK_AREA:VARCHAR#
+		]]>
+	</delete>
+
+</sqlMap>

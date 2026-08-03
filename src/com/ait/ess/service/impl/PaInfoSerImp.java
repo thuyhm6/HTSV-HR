@@ -1,0 +1,72 @@
+package com.ait.ess.service.impl;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.NumberUtils;
+
+import com.ait.ess.service.PaInfoSer;
+import com.ait.sys.bean.AdminBean;
+import com.ait.sys.dao.ViewOptionDao;
+import com.ait.sys.service.CompanySer;
+import com.ait.web.util.ObjectBindUtil;
+import com.ait.web.util.SessionUtil;
+import com.ait.web.util.ViewOptionUtil;
+
+/**
+ * Copyright:   LDCC
+ * Company:     LDCC
+ * @fileName: AttendanceInfoSerImp.java
+ * @Description:
+ * @Create date: 2012-5-23 下午06:18:31
+ * @Create by: jiahc(jiahongchang@ait.net.cn)
+ * @version 5.1
+ */
+@Service
+public class PaInfoSerImp implements PaInfoSer {
+
+	Logger logger = Logger.getLogger(PaInfoSerImp.class);
+	
+	@Autowired
+	private ViewOptionDao viewOptionDao;
+	@Autowired
+	private ViewOptionUtil viewOptionUtil;
+	
+	/**
+	 * 个人考勤(make DataTable)
+	 * @param request
+	 * @return String
+	 * @throws 
+	 */
+	@SuppressWarnings("unchecked")
+	public String makeDataTable(HttpServletRequest request, String menuNo) {
+		
+		String dataTable = "";
+		
+		Map paramMap = ObjectBindUtil.getRequestParamData(request) ;
+		AdminBean admin = SessionUtil.getLoginUserFromSession(request) ;
+		paramMap.put("PERSON_ID", admin.getPersonId());
+		paramMap.put("makeType", "pa");
+		paramMap.put("ess", "1");
+		
+		paramMap.put("MENU_NO", menuNo);
+		
+		if(paramMap.get("essYear") != null && !"".equals(paramMap.get("essYear").toString())
+				&& paramMap.get("essMonth") != null && !"".equals(paramMap.get("essMonth").toString())){
+			
+			paramMap.put("essMonth", paramMap.get("essYear").toString()+paramMap.get("essMonth").toString());
+		}
+		
+		dataTable = viewOptionUtil.makeDataTable(paramMap);
+		
+		return dataTable;
+	}
+}

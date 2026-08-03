@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://service.mail.ss.branch.neo.hanwha" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://service.mail.ss.branch.neo.hanwha" xmlns:intf="http://service.mail.ss.branch.neo.hanwha" xmlns:tns1="http://vo.common.ss.branch.neo.hanwha" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDL created by Apache Axis version: 1.4
+Built on Apr 22, 2006 (06:55:48 PDT)-->
+ <wsdl:types>
+  <schema elementFormDefault="qualified" targetNamespace="http://service.mail.ss.branch.neo.hanwha" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://vo.common.ss.branch.neo.hanwha"/>
+   <import namespace="http://xml.apache.org/xml-soap"/>
+   <element name="getMailStatusCounts">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="mailKey" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getMailStatusCountsResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="getMailStatusCountsReturn" type="impl:WsMailStatus"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="WsMailStatus">
+    <sequence>
+     <element name="delivery" type="xsd:boolean"/>
+     <element name="mailKey" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <element name="fault" type="tns1:WsException"/>
+   <element name="sendMISMail">
+    <complexType>
+     <sequence>
+      <element name="mailBody" type="xsd:string"/>
+      <element name="mailInfo" type="impl:WsMailInfo"/>
+      <element maxOccurs="unbounded" name="receivers" type="impl:WsRecipient"/>
+      <element maxOccurs="unbounded" name="attachFile" type="tns1:WsAttachFile"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="WsMailInfo">
+    <sequence>
+     <element name="attachCount" type="xsd:int"/>
+     <element name="htmlContent" type="xsd:boolean"/>
+     <element name="important" type="xsd:boolean"/>
+     <element name="mhtContent" type="xsd:boolean"/>
+     <element name="senderEmail" nillable="true" type="xsd:string"/>
+     <element name="subject" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="WsRecipient">
+    <sequence>
+     <element name="dept" type="xsd:boolean"/>
+     <element name="recvEmail" nillable="true" type="xsd:string"/>
+     <element name="recvType" nillable="true" type="xsd:string"/>
+     <element name="seqID" type="xsd:int"/>
+    </sequence>
+   </complexType>
+   <element name="sendMISMailResponse">
+    <complexType>
+     <sequence>
+      <element name="sendMISMailReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="cancelMISMailByRecipient">
+    <complexType>
+     <sequence>
+      <element name="mailKey" type="xsd:string"/>
+      <element maxOccurs="unbounded" name="receiverForCancel" type="xsd:string"/>
+      <element name="senderInfo" type="impl:WsResource"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="WsResource">
+    <sequence>
+     <element name="senderEmail" nillable="true" type="xsd:string"/>
+     <element name="senderPw" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <element name="cancelMISMailByRecipientResponse">
+    <complexType>
+     <sequence>
+      <element name="cancelMISMailByRecipientReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+  </schema>
+  <schema elementFormDefault="qualified" targetNamespace="http://vo.common.ss.branch.neo.hanwha" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://service.mail.ss.branch.neo.hanwha"/>
+   <import namespace="http://xml.apache.org/xml-soap"/>
+   <complexType name="WsException">
+    <sequence>
+     <element name="exceptionActor" nillable="true" type="xsd:string"/>
+     <element name="exceptionCode" nillable="true" type="xsd:string"/>
+     <element name="exceptionMessage" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="WsAttachFile">
+    <sequence>
+     <element name="fileId" nillable="true" type="xsd:string"/>
+     <element name="fileInfo" nillable="true" type="xsd:anyURI"/>
+     <element name="fileName" nillable="true" type="xsd:string"/>
+     <element name="fileSize" nillable="true" type="xsd:string"/>
+     <element name="seqID" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="sendMISMailResponse">
+
+      <wsdl:part element="impl:sendMISMailResponse" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="getMailStatusCountsRequest">
+
+      <wsdl:part element="impl:getMailStatusCounts" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="WsException">
+
+      <wsdl:part element="impl:fault" name="fault">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="sendMISMailRequest">
+
+      <wsdl:part element="impl:sendMISMail" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="getMailStatusCountsResponse">
+
+      <wsdl:part element="impl:getMailStatusCountsResponse" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="cancelMISMailByRecipientRequest">
+
+      <wsdl:part element="impl:cancelMISMailByRecipient" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="cancelMISMailByRecipientResponse">
+
+      <wsdl:part element="impl:cancelMISMailByRecipientResponse" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:portType name="MailService">
+
+      <wsdl:operation name="getMailStatusCounts">
+
+         <wsdl:input message="impl:getMailStatusCountsRequest" name="getMailStatusCountsRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:getMailStatusCountsResponse" name="getMailStatusCountsResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:WsException" name="WsException">
+
+       </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="sendMISMail">
+
+         <wsdl:input message="impl:sendMISMailRequest" name="sendMISMailRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:sendMISMailResponse" name="sendMISMailResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:WsException" name="WsException">
+
+       </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="cancelMISMailByRecipient">
+
+         <wsdl:input message="impl:cancelMISMailByRecipientRequest" name="cancelMISMailByRecipientRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:cancelMISMailByRecipientResponse" name="cancelMISMailByRecipientResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:WsException" name="WsException">
+
+       </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="MailServiceSoapBinding" type="impl:MailService">
+
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="getMailStatusCounts">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getMailStatusCountsRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getMailStatusCountsResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="WsException">
+
+            <wsdlsoap:fault name="WsException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="sendMISMail">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="sendMISMailRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="sendMISMailResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="WsException">
+
+            <wsdlsoap:fault name="WsException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="cancelMISMailByRecipient">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="cancelMISMailByRecipientRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="cancelMISMailByRecipientResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="WsException">
+
+            <wsdlsoap:fault name="WsException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="MailServiceService">
+
+      <wsdl:port binding="impl:MailServiceSoapBinding" name="MailService">
+
+         <wsdlsoap:address location="http://ci.eagleoffice.co.kr/api/services/MailService"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

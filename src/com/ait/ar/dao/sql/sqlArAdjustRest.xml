@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ar.adjustRest">
+
+	<select id="getArAdjustRestList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.YEAR,
+			       HR.PERSON_ID,
+			       HR.EMPID,
+			       HR.LOCAL_NAME,
+			       HR.CHINESE_PINYIN,
+			       HR.ENGLISH_NAME,
+			       HR.KOREAN_NAME,
+			       HD.CONTENT DEPTNAME,
+			       T.YEAR_TOTAL,
+			       T.YEAR_USE_TOTAL,
+			       (T.YEAR_TOTAL - T.YEAR_USE_TOTAL) ADJUST_REST
+			  FROM AR_ADJUST_REST T, HR_EMPLOYEE HR, HR_DEPARTMENT_NAME HD
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		 ]]>
+		
+		<isEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  T.YEAR = TO_CHAR(SYSDATE,'YYYY')
+		    ]]>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  T.YEAR = #VAC_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR HR.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HD.DEPTNO, HR.EMPID
+			]]>
+		</isEmpty>
+	</select>
+	
+	<select id="getArAdjustRestCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM AR_ADJUST_REST T, HR_EMPLOYEE HR, HR_DEPARTMENT_NAME HD
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+		]]>
+		
+		<isEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  T.YEAR = TO_CHAR(SYSDATE,'YYYY')
+		    ]]>
+		</isEmpty>
+		
+		<isNotEmpty prepend="AND" property="VAC_ID">
+			<![CDATA[
+		 		  T.YEAR = #VAC_ID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		  EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = HR.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+		    ]]>
+		</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="AR_SUPERVISIOR_INFO">
+			<![CDATA[
+		 		  (EXISTS(
+		 		  	SELECT *
+					  FROM AR_SUPERVISOR_INFO
+					 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+					   AND AR_SUPERVISOR_INFO.PERSON_ID = #AR_SUPERVISIOR_INFO:VARCHAR#
+		 		  )
+		 		  OR HR.PERSON_ID = #PERSON_ID:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<select id="getArAdjustRestInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT T.YEAR,
+			       HR.PERSON_ID,
+			       HR.EMPID,
+			       HR.LOCAL_NAME,
+			       HR.CHINESE_PINYIN,
+			       HR.ENGLISH_NAME,
+			       HR.KOREAN_NAME,
+			       HD.CONTENT DEPTNAME,
+			       T.YEAR_TOTAL,
+			       T.YEAR_USE_TOTAL,
+			       T.JAN_TOTAL,
+			       T.JAN_USE_TOTAL,
+			       T.FEB_TOTAL,
+			       T.FEB_USE_TOTAL,
+			       T.MAR_TOTAL,
+			       T.MAR_USE_TOTAL,
+			       T.APR_TOTAL,
+			       T.APR_USE_TOTAL,
+			       T.MAY_TOTAL,
+			       T.MAY_USE_TOTAL,
+			       T.JUN_TOTAL,
+			       T.JUN_USE_TOTAL,
+			       T.JUL_TOTAL,
+			       T.JUL_USE_TOTAL,
+			       T.AUG_TOTAL,
+			       T.AUG_USE_TOTAL,
+			       T.SEP_TOTAL,
+			       T.SEP_USE_TOTAL,
+			       T.OCT_TOTAL,
+			       T.OCT_USE_TOTAL,
+			       T.NOV_TOTAL,
+			       T.NOV_USE_TOTAL,
+			       T.DEC_TOTAL,
+			       T.DEC_USE_TOTAL
+			  FROM AR_ADJUST_REST T, HR_EMPLOYEE HR, HR_DEPARTMENT_NAME HD
+			 WHERE T.PERSON_ID = HR.PERSON_ID
+			   AND HR.DEPTNO = HD.DEPTNO(+)
+			   AND HD.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HR.CPNY_ID = #interCpnyID:VARCHAR#
+			   AND HR.PERSON_ID = #PERSON_ID:VARCHAR#
+			   AND T.YEAR = #YEAR:VARCHAR#
+		 ]]>
+		
+		
+		
+		<isEmpty prepend="" property="sortname">
+			<![CDATA[
+				ORDER BY HD.DEPTNO, HR.EMPID
+			]]>
+		</isEmpty>
+	</select>
+</sqlMap>

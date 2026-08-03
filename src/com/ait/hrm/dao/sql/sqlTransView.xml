@@ -1,0 +1,2449 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="hrm.transView">
+<sql id="searchTransListCondition">
+	<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			  ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	   ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="ACTIVITY">
+	    <![CDATA[
+	               HEI.ACTIVITY = #ACTIVITY#
+        ]]>   
+	</isNotEmpty>	
+	
+    <isNotEmpty prepend="AND" property="CPNY_ID">
+	    <![CDATA[
+	               HE.CPNY_ID = #CPNY_ID#
+        ]]>   
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="FROM_TIME">
+		<![CDATA[
+			    HEI.START_DATE >= TO_DATE(#FROM_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="TO_TIME">
+		<![CDATA[
+		        HEI.START_DATE <= TO_DATE(#TO_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="Join_Company_Date_FROM_TIME">
+		<![CDATA[
+			    HE.Join_Company_Date >= TO_DATE(#Join_Company_Date_FROM_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="Join_Company_Date_TO_TIME">
+		<![CDATA[
+		        HE.Join_Company_Date <= TO_DATE(#Join_Company_Date_TO_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	
+	<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				  EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HE.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)	       
+        ]]>
+	</isNotEmpty>
+ 		<![CDATA[	
+		AND	EXISTS (    SELECT A.DEPTNO
+				  FROM HR_DEPT_TREE_V A, HR_DEPARTMENT_NAME B
+				 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+				   AND A.DEPTNO = B.DEPTNO(+)
+				   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+				  
+		 ]]>                  	
+	<!-- 过滤权限 start -->
+	<isNotEmpty prepend="AND" property="specialParam">
+		<isNotEqual prepend="" property="specialParam" compareValue="general">
+			<![CDATA[
+		   		HE.DEPTNO IN  
+             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>         
+            
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+	</isNotEmpty>
+	
+    <![CDATA[
+ 		)
+	]]>         
+    <!-- 过滤权限 end -->
+
+    <isNotEmpty prepend="AND" property="TRANS_NO">
+	    <![CDATA[
+	    	     HEI.TRANS_NO = #TRANS_NO#
+        ]]>   
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="TRANS_CODE">
+	    <![CDATA[
+	    	     HEI.TRANS_CODE = #TRANS_CODE#
+        ]]>   
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="PERSON_ID" >
+		<![CDATA[
+   		         HEI.PERSON_ID = #PERSON_ID#
+		]]>
+	</isNotEmpty>	
+		
+    <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+		<![CDATA[
+           	     0 = (SELECT MAX(AFFIRM_FLAG)
+                        FROM HR_AFFIRM HA
+                       WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                         AND HEI.TRANS_NO = #TRANS_NO#)
+ 		]]>
+	</isEqual>
+	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+		<![CDATA[
+           	     0 < (SELECT NVL(MAX(AFFIRM_FLAG),1)
+                        FROM HR_AFFIRM HA
+                       WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                         AND HEI.TRANS_NO = #TRANS_NO#)
+		 ]]>
+	</isEqual>	
+</sql>
+
+<select id="getTransactionTransViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+		       HE.CHINESE_PINYIN,
+		       HE.ENGLISH_NAME,
+		       HE.LOCAL_NAME,
+		       HE.PERSON_ID,
+		       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+		       HE.WORK_AREA,
+		       HEI.EXP_INSIDE_NO,
+		       HEI.TRANS_NO,
+		       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+		       HEI.ACTIVITY ACTIVITY_FLAG,
+		       HEI.WORK_AREA NEW_WORK_AREA,
+		       GET_GLOBAL_NAME(HEI.TRANS_CODE,#interLanguage:VARCHAR#) TRANS_TYPE_NAME,
+		       HEI.CREATED_BY,
+		       GET_EMP_LOCAL_NAME(HEI.CREATED_BY,HEI.CPNY_ID) CREATED_BY_NAME,
+		       GET_GLOBAL_NAME(HEI.OLD_WORK_AREA,#interLanguage:VARCHAR#)  OLD_WORK_AREA_NAME,
+		       GET_GLOBAL_NAME(HEI.WORK_AREA,#interLanguage:VARCHAR#)  WORK_AREA_NAME,       
+		       GET_DEPT_NAME(HEI.OLD_DEPTNO,#interLanguage:VARCHAR#) OLD_DEPT_NAME,
+		       GET_DEPT_NAME(HEI.DEPTNO,#interLanguage:VARCHAR#) DEPT_NAME,
+		       GET_GLOBAL_NAME(HEI.OLD_POSITION_NO,#interLanguage:VARCHAR#) OLD_POSITION_NAME,
+		       GET_GLOBAL_NAME(HEI.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NAME,
+		       GET_GLOBAL_NAME(HEI.OLD_POST_GRADE_NO,#interLanguage:VARCHAR#) OLD_POST_GRADE_NAME,
+		       GET_GLOBAL_NAME(HEI.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+		       GET_GLOBAL_NAME(HEI.OLD_POST_NO,#interLanguage:VARCHAR#) OLD_POST_NAME,
+		       GET_GLOBAL_NAME(HEI.POST_NO,#interLanguage:VARCHAR#) POST_NAME,
+		       GET_GLOBAL_NAME(HEI.OLD_DUTY_NO,#interLanguage:VARCHAR#) OLD_DUTY_NAME,  
+		       GET_GLOBAL_NAME(HEI.DUTY_NO,#interLanguage:VARCHAR#) DUTY_NAME  
+		  FROM HR_EXPERIENCE_INSIDE HEI,
+		       HR_EMPLOYEE HE
+		 WHERE HEI.PERSON_ID=HE.PERSON_ID
+		   AND HEI.CPNY_ID = #CPNY_ID#
+		]]>	
+		 
+  	<isNotEmpty prepend="AND" property="EMPID">
+		<![CDATA[
+			(HE.EMPID LIKE '%'||#EMPID#||'%' 
+				OR HE.CHINESE_PINYIN LIKE '%'||#EMPID#||'%'
+	         	OR HE.LOCAL_NAME LIKE '%'||#EMPID#||'%')  
+	     ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="DEPTMENTNO">
+  		<![CDATA[  
+		    HE.DEPTNO IN(
+                                SELECT DEPTID 
+                                  FROM HR_DEPARTMENT 
+                                 WHERE CPNY_ID = #CPNY_ID#
+                               CONNECT BY PRIOR
+                                      DEPTID    = PARENT_DEPT_NO
+                                 START WITH 
+                                      DEPTID    = #DEPTMENTNO#
+                                )
+		]]>
+	</isNotEmpty>      
+    <isNotEmpty prepend="AND" property="ORDERDATEF">
+	<![CDATA[
+       		HEI.START_DATE >= TO_DATE(#ORDERDATEF#,'YYYY-MM-DD')
+   		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="ORDERDATET">
+ 	<![CDATA[
+         	HEI.START_DATE <= TO_DATE(#ORDERDATET#,'YYYY-MM-DD')
+   	]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="TRANS_NO">
+    <![CDATA[
+           HEI.TRANS_NO = #TRANS_NO#
+    ]]>   
+	</isNotEmpty>
+  	<isNotEmpty prepend="AND" property="TRANS_CODE">
+    <![CDATA[
+           HEI.TRANS_CODE = #TRANS_CODE#
+    ]]>   
+  	</isNotEmpty>
+    <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+   	<![CDATA[
+                 0 =(SELECT MAX(AFFIRM_FLAG)
+                       FROM HR_AFFIRM HA
+                      WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                        AND HEI.TRANS_NO = #TRANS_NO#)
+    ]]>
+  	</isEqual>
+  	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+   	<![CDATA[
+                 0 <(SELECT NVL(MAX(AFFIRM_FLAG),1)
+                       FROM HR_AFFIRM HA
+                      WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                        AND HEI.TRANS_NO = #TRANS_NO#)
+    ]]>
+  	</isEqual>  
+	
+	<isEmpty prepend="" property="orderField">
+		<![CDATA[
+		      ORDER BY HE.DEPTNO,
+		               HE.EMPID
+	    ]]>
+	</isEmpty>
+</select>
+
+<select id="getTransactionTransViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(*)
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+		       HR_EMPLOYEE HE
+		 WHERE HEI.PERSON_ID=HE.PERSON_ID
+		   AND HEI.CPNY_ID = #CPNY_ID#
+		]]>	
+		 
+  	<isNotEmpty prepend="AND" property="EMPID">
+		<![CDATA[
+			(HE.EMPID LIKE '%'||#EMPID#||'%' 
+				OR HE.CHINESE_PINYIN LIKE '%'||#EMPID#||'%'
+	         	OR HE.LOCAL_NAME LIKE '%'||#EMPID#||'%')  
+	     ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="DEPTMENTNO">
+  		<![CDATA[  
+		    HE.DEPTNO IN(
+                                SELECT DEPTID 
+                                  FROM HR_DEPARTMENT 
+                                 WHERE CPNY_ID = #CPNY_ID#
+                               CONNECT BY PRIOR
+                                      DEPTID    = PARENT_DEPT_NO
+                                 START WITH 
+                                      DEPTID    = #DEPTMENTNO#
+                                )
+		]]>
+	</isNotEmpty>      
+    <isNotEmpty prepend="AND" property="ORDERDATEF">
+	<![CDATA[
+       		HEI.START_DATE >= TO_DATE(#ORDERDATEF#,'YYYY-MM-DD')
+   		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="ORDERDATET">
+ 	<![CDATA[
+         	HEI.START_DATE <= TO_DATE(#ORDERDATET#,'YYYY-MM-DD')
+   	]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="TRANS_NO">
+    <![CDATA[
+           HEI.TRANS_NO = #TRANS_NO#
+    ]]>   
+	</isNotEmpty>
+  	<isNotEmpty prepend="AND" property="TRANS_CODE">
+    <![CDATA[
+           HEI.TRANS_CODE = #TRANS_CODE#
+    ]]>   
+  	</isNotEmpty>
+    <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+   	<![CDATA[
+                 0 =(SELECT MAX(AFFIRM_FLAG)
+                       FROM HR_AFFIRM HA
+                      WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                        AND HEI.TRANS_NO = #TRANS_NO#)
+    ]]>
+  	</isEqual>
+  	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+   	<![CDATA[
+                 0 <(SELECT NVL(MAX(AFFIRM_FLAG),1)
+                       FROM HR_AFFIRM HA
+                      WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                        AND HEI.TRANS_NO = #TRANS_NO#)
+    ]]>
+  	</isEqual>  
+	
+	<isEmpty prepend="" property="orderField">
+		<![CDATA[
+		      ORDER BY HE.DEPTNO,
+		               HE.EMPID
+	    ]]>
+	</isEmpty>
+</select>
+
+
+<sql id="searchYListCondition">
+    <isNotEmpty prepend="AND" property="CPNY_ID">
+	    <![CDATA[
+	               HE.CPNY_ID = #CPNY_ID#
+        ]]>   
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="and" property="DEPTMENTNO">
+		<![CDATA[
+		HE.DEPTNO IN ( SELECT A.DEPTNO
+		                FROM   HR_DEPARTMENT A
+		                START WITH A.DEPTNO = #DEPTMENTNO#
+		                CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+		              )
+		]]>
+	</isNotEmpty>
+	
+  	<isNotEmpty prepend="AND" property="EMPID">
+		<![CDATA[
+			(HE.EMPID LIKE '%'||#EMPID#||'%' 
+				OR HE.CHINESE_PINYIN LIKE '%'||#EMPID#||'%'
+	         	OR HE.LOCAL_NAME LIKE '%'||#EMPID#||'%')  
+	     ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="FROM_TIME">
+		<![CDATA[
+			    HE.JOIN_COMPANY_DATE >= TO_DATE(#FROM_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="TO_TIME">
+		<![CDATA[
+		        HE.JOIN_COMPANY_DATE <= TO_DATE(#TO_TIME#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="EMP_TYPE_CODE">
+	    <![CDATA[
+	            HE.EMP_TYPE_CODE = #EMP_TYPE_CODE#
+        ]]>   
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="REQ_IDS">
+	    <![CDATA[
+	            HE.PERSON_ID IN (select regexp_substr(#REQ_IDS#,'[^,]+',1,level) from dual connect by level<=length(#REQ_IDS#)-length(replace(#REQ_IDS#,','))+1)
+        ]]>   
+	</isNotEmpty>
+	
+		<isNotEmpty prepend="AND" property="USER_NO">
+			<![CDATA[
+		     F_CHECK_USER_DEPT_AUTH(HE.DEPTNO, #USER_NO:VARCHAR#, 'hr') > 0
+			]]>
+ 		</isNotEmpty>
+		<isNotEmpty prepend="and" property="DEPTNO">
+			<![CDATA[
+			HE.DEPTNO IN ( SELECT A.DEPTNO
+			                FROM   HR_DEPARTMENT A
+			                START WITH A.DEPTNO = #DEPTNO#
+			                CONNECT BY PRIOR A.DEPTNO = A.PARENT_DEPT_NO
+			              )
+			]]>
+		</isNotEmpty>
+	
+</sql>
+	
+<select id="getEntryTransViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+	   		SELECT HR.EMPID,
+		 		   HE.CHINESE_PINYIN,
+		 		   HE.ENGLISH_NAME,
+		 		   HE.LOCAL_NAME,
+		 		   HE.PERSON_ID,
+		 		   TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+		 		   TO_CHAR(HE.BEFORE_END_PROBATION_DATE, 'yyyy-MM-dd') BEFORE_END_PROBATION_DATE,
+		 		   TO_CHAR(HE.JOIN_COMPANY_DATE, 'yyyy-MM-dd') JOIN_COMPANY_DATE,
+		 		   HE.CREATED_BY,
+		 		   HE.ACTIVITY ACTIVITY_FLAG,
+		 		   HE.DEPTNO,
+		 		   GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) AS DEPT_NAME,
+		 		   HE.POSITION_NO,
+		 		   GET_CODENAME_BY_CODENO(HE.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NAME,
+		 		   HE.POST_NO,
+		 		   GET_CODENAME_BY_CODENO(HE.POST_NO,#interLanguage:VARCHAR#) POST_NAME,
+		 		   HE.POST_GRADE_NO,
+		 		   GET_CODENAME_BY_CODENO(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       GET_EMP_LOCAL_NAME(HE.CREATED_BY, #CPNY_ID#) AS CREATED_BY_NAME,
+			       HE.WORK_AREA WORK_AREA_NO,
+			       (NVL((SELECT R.STATE_NM||' '||R.CITY_NM||' '||R.REGION_NM AREA_NAME FROM inc_city_to_citylevel_mapp R
+                         WHERE  R.REGION_CD = HE.WORK_AREA
+                         AND    ROWNUM = 1),
+                         NVL((SELECT C.STATE_NM||' '||C.CITY_NM AREA_NAME FROM inc_city_to_citylevel_mapp C
+                              WHERE  C.CITY_CD = HE.WORK_AREA
+                              AND    ROWNUM = 1),
+                             (SELECT S.STATE_NM AREA_NAME FROM inc_city_to_citylevel_mapp S
+                              WHERE  S.STATE_CD = HE.WORK_AREA
+                              AND    ROWNUM = 1))
+			       )) WORK_AREA_NAME,
+			       HE.EMP_TYPE_CODE,
+			       nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.code_no  = HE.EMP_TYPE_CODE
+ 			            AND    s.parent_code_no = '1368'
+ 			            AND    n.language = #interLanguage:VARCHAR#
+ 			            AND    ROWNUM = 1),HE.EMP_TYPE_CODE) EMP_TYPE_NM,
+		 		   HA.NATIONALITY_CODE,
+		 		   DECODE(HA.SEXCODE,'F','女','男') SEXCODE,
+		 		   HA.IDCARD_NO,
+		 		   HA.NATION_CODE,
+		 		   HA.FINAL_DEGREE_CODE,
+		 		   TO_CHAR(HA.DOB, 'yyyy-MM-dd')  DOB,
+		 		   HA.CELLPHONE,
+		 		   HP.PAY_GRADE,
+		 		   HP.PAY_STEP,
+		 		   HP.BASE_PAY,
+		 		   HP.CARD_NAME,
+		 		   HP.CARD_NO,
+		 		   HP.PROB_PAY_RAT,
+		 		   HE.INSRAREA_ID,
+			       nvl((SELECT n.content
+			            FROM   sy_code        s
+ 			                  ,sy_global_name n
+ 			            WHERE  s.code_no  = n.no
+ 			            AND    s.code_no  = HE.INSRAREA_ID
+ 			            AND    s.parent_code_no = '216736'
+ 			            AND    n.language = #interLanguage:VARCHAR#
+ 			            AND    ROWNUM = 1),HE.INSRAREA_ID) INSRAREA_NM,
+			       HE.REQ_ID,
+			       TO_CHAR(NVL(HE.REQ_DATE,HE.CREATE_DATE), 'yyyy-MM-dd') REQ_DATE,
+			       SY.LOCAL_NAME REQ_BY,
+			       HE.REMARK,
+			       HE.SUBMIT_STATUS,
+			       HE.CURRENT_AFFIRM_ID,
+			       HE.CURRENT_CHECK_ID,
+			       HE.COMMON_EMPID,
+			       HE.EVENT_CONTENT,
+			       HE.AFFIRM_FLAG
+			  FROM HR_EMPLOYEE_Y        HE,
+		 		   HR_PERSONAL_INFO_Y   HA,
+			       HR_EMP_PA_INFO_Y     HP,
+			       HR_EMPLOYEE          HR,
+			       HR_EMPLOYEE          SY
+			 WHERE HE.PERSON_ID = HA.PERSON_ID
+			 AND   HE.PERSON_ID = HP.PERSON_ID
+			 AND   HE.PERSON_ID = HR.PERSON_ID(+)
+			 AND  NVL(HE.REQ_BY,HE.CREATED_BY)=SY.PERSON_ID
+    ]]>	
+	
+    <include refid="searchYListCondition"/>
+    
+	
+	<isEmpty prepend="" property="orderField">
+		<![CDATA[
+	      	ORDER BY HE.DATE_STARTED DESC
+    	]]>
+	</isEmpty>
+</select>
+
+<select id="getEntryTransViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			FROM   HR_EMPLOYEE_Y        HE,
+			       HR_PERSONAL_INFO_Y   HA,
+			       HR_EMP_PA_INFO_Y     HP
+			WHERE HE.PERSON_ID = HA.PERSON_ID
+			AND   HE.PERSON_ID = HP.PERSON_ID  			   
+    ]]>		    	
+    <include refid="searchYListCondition"/>
+</select>
+
+<!-- 取消发令 入职/调动/晋升/降职 共用  0未生效 1生效 2裁决否定 3发令取消-->
+<update id="cancelHrExperienceInsideByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_EXPERIENCE_INSIDE HEI
+			   SET HEI.ACTIVITY    = 3,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+<select id="getPassHrAffirmCountByExpInsideNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			  SELECT COUNT(0)
+			    FROM HR_AFFIRM HA
+			   WHERE HA.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+			     AND HA.AFFIRM_FLAG != 0  			   
+    ]]>		    	
+</select>
+
+<select id="getHrExperienceInsideActivityByExpInsideNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+	         SELECT COUNT(0)
+	           FROM HR_EXPERIENCE_INSIDE HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0 			   
+    ]]>		    	
+</select>
+
+<select id="getEmployeeTransHistoryList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[  
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HE.WORK_AREA,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HE.JOIN_TYPE_CODE,
+			       JOIN_TYPE.CONTENT JOIN_TYPE_NAME,
+			       HE.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HE.DUTY_NO,
+			       DUTY.CONTENT DUTY_NAME,
+			       HEI.DUTY_NO,
+			       NEW_DUTY.CONTENT NEW_DUTY_NAME,
+			       HEI.DEPTNO NEW_DEPTNO,
+			       NEW_HDN.CONTENT NEW_DEPT_NAME,
+			       HEI.POSITION_NO NEW_POSITION_NO,
+			       NEW_POSITION.CONTENT NEW_POSITION_NAME,
+			       HEI.POST_NO NEW_POST_NO,
+			       NEW_POST.CONTENT NEW_POST_NAME,
+			       HEI.POST_GRADE_NO NEW_POST_GRADE_NO,
+			       NEW_POST_GRADE.CONTENT NEW_POST_GRADE_NAME,
+			       HEI.WORK_AREA NEW_WORK_AREA,
+			       TRANS_N.CONTENT TRANS_TYPE_NAME
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       JOIN_TYPE,
+			       SY_GLOBAL_NAME       POSITION,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POST_GRADE,
+			       SY_GLOBAL_NAME       DUTY,
+			       HR_DEPARTMENT_NAME   NEW_HDN,
+			       SY_GLOBAL_NAME       NEW_POSITION,
+			       SY_GLOBAL_NAME       NEW_POST,
+			       SY_GLOBAL_NAME       NEW_POST_GRADE,
+			       SY_GLOBAL_NAME       NEW_DUTY,
+			       SY_GLOBAL_NAME       TRANS_N
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.JOIN_TYPE_CODE = JOIN_TYPE.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HE.DUTY_NO = DUTY.NO(+)
+			   AND HEI.DUTY_NO = NEW_DUTY.NO(+)			   
+			   AND HEI.DEPTNO = NEW_HDN.DEPTNO(+)
+			   AND HEI.POSITION_NO = NEW_POSITION.NO(+)
+			   AND HEI.POST_NO = NEW_POST.NO(+)
+			   AND HEI.POST_GRADE_NO = NEW_POST_GRADE.NO(+)
+			   AND HEI.TRANS_CODE = TRANS_N.NO(+)
+			   AND TRANS_N.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND JOIN_TYPE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_HDN.LANGUAGE(+) = #interLanguage:VARCHAR#    
+			   AND DUTY.LANGUAGE(+) = #interLanguage:VARCHAR# 
+			   AND NEW_DUTY.LANGUAGE(+) = #interLanguage:VARCHAR# 			        
+	]]>
+	<isNotEmpty prepend="AND" property="PERSON_ID" >
+		<![CDATA[
+   		         HEI.PERSON_ID = #PERSON_ID#
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="TRANS_NO" >
+		<![CDATA[
+   		         HEI.TRANS_NO = #TRANS_NO#
+		]]>
+	</isNotEmpty>
+</select>
+
+<select id="getEmployeeTransHistoryListCnt"  parameterClass="linkMap"
+	resultClass="int">
+	<![CDATA[  
+			SELECT COUNT(A.EMPID) AS CNT
+			  FROM HR_EMPLOYEE                  A,
+			       HR_DEPARTMENT                B,
+			       HR_EXPERIENCE_INSIDE         HEI
+			 WHERE A.DEPTNO = B.DEPTNO
+			   AND A.PERSON_ID = HEI.PERSON_ID         
+	]]>
+	
+	<isNotEmpty prepend="AND" property="PERSON_ID" >
+		<![CDATA[
+   		         HEI.PERSON_ID = #PERSON_ID#
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="TRANS_NO" >
+		<![CDATA[
+   		         HEI.TRANS_NO = #TRANS_NO#
+		]]>
+	</isNotEmpty>
+</select>
+
+<select id="viewEntryTransInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[  
+			SELECT T.CPNY_ID,
+				   T.EMPID,
+			       T.PERSON_ID,
+			       T.LOCAL_NAME,
+			       T.CHINESE_PINYIN,
+			       (select OUTER_WORK_YEAR from hr_employee_temp where hr_employee_temp.person_id =#PERSON_ID:VARCHAR#) OUTER_WORK_YEAR,
+			       (select calc_flag from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) CALC_FLAG,
+			       (select card_no from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) CARD_NO,
+			       (select bank_id from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) BANK_ID,
+			       (select get_global_name(hr_emp_pa_info.bank_id,'zh') bank_name from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) BANK_NAME,
+			       T.KOREAN_NAME,
+			       HPI.IDCARD_NO,
+			       HPI.EMPLOYMENT_PASS_NO,
+			       T.ENGLISH_NAME,
+			       (SELECT GET_FULL_DEPARTMENT(#PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#,1,#interLanguage:VARCHAR#) FROM dual) DEPTNAME,
+			       (SELECT TRUNC(A.OUTER_WORK_YEAR / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#) AS OUTER_WORK_YEAR,
+			       (SELECT MOD(A.OUTER_WORK_YEAR, 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR# ) AS OUTER_WORK_MONTH,  
+			       (SELECT TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#) AS INNER_WORK_YEAR,
+			       (SELECT MOD(MONTHS_BETWEEN(TRUNC(SYSDATE, 'mm'), TRUNC(B.DATE_STARTED, 'mm')), 12) AS INNER_WORK_MONTH
+			          FROM HR_EMPLOYEE B
+			         WHERE B.PERSON_ID = #PERSON_ID:VARCHAR#) AS INNER_WORK_MONTH,
+			       T.OUTER_WORK_YEAR AS OUTER_WORK_YEAR_FOR_UP,
+			       T.STATUS_CODE,
+			       SY.CONTENT STATUS_NAME,
+			       T.EMP_OFFICE,
+			       SY1.CONTENT EMP_OFFICE_NAME,
+			       T.EMP_TYPE_CODE,
+			       SY2.CONTENT EMP_TYPE_NAME,
+			       T.JOIN_TYPE_CODE,
+			       SY3.CONTENT JOIN_TYPE_NAME,
+			       T.WORK_AREA,
+			       SY40.CONTENT WORK_AREA_NAME,
+			       HPY.PLU_DEPTNAME,
+			       HPI.NATIONALITY_CODE,
+			       SY6.CONTENT NATIONALITY_NAME,
+			       HPG.GRADE_LEVEL,
+			       GET_GLOBAL_NAME(HPG.GRADE_LEVEL, #interLanguage:VARCHAR#) AS GRADE_LEVEL_NAME,
+			       T.POST_GRADE_NO,
+			       SY8.CONTENT POST_GRADE_NAME,
+			       T.DUTY_NO,
+			       SY9.CONTENT DUTY_NAME,
+			       T.POSITION_NO,
+			       SY10.CONTENT POSITION_NAME,
+			       HPY.PLU_POSITINO_NAME,
+			       T.OLD_PERSON_ID,
+			       TO_CHAR(T.JOIN_BLOC_DATE, 'yyyy-MM-dd') JOIN_BLOC_DATE,
+			       TO_CHAR(T.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       TO_CHAR(T.JOIN_COMPANY_DATE, 'yyyy-MM-dd') JOIN_COMPANY_DATE,
+			       TO_CHAR(T.DATE_LEFT, 'yyyy-MM-dd') DATE_LEFT,
+			       TO_CHAR(T.LAST_DATE_STARTED, 'yyyy-MM-dd') LAST_DATE_STARTED,
+			       HPY.PLU_DUTY_NAME,
+			       TO_CHAR(HPI.DOB, 'yyyy-MM-dd') DOB,
+			       T.ENTRY_AREA,
+			       SY11.CONTENT ENTRY_AREA_NAME,
+			       T.SERVICES_BELONG,
+			       SY12.CONTENT SERVICES_BELONG_NAME,
+			       HPI.INSURANCE_TYPE_CODE,
+			       SY13.CONTENT INSURANCE_TYPE_NAME,
+			       TO_CHAR(T.END_PROBATION_DATE, 'yyyy-MM-dd') END_PROBATION_DATE,
+			       HPI.BEFORE_DEGREE_CODE,
+			       SY14.CONTENT BEFORE_DEGREE_NAME,
+			       HPI.FINAL_SCHOOL,
+			       SY15.CONTENT FINAL_SCHOOL_NAME,
+			       HPI.SEXCODE,
+			       SY16.CONTENT SEX,
+			       T.SOCIAL_SECURITY_AREA,
+			       SY17.CONTENT SOCIAL_SECURITY_AREA_NAME,
+			       T.JOB_CLASS,
+			       SY18.CONTENT JOB_CLASS_NAME,
+			       HPI.POLITY_CODE,
+			       SY19.CONTENT POLITY_NAME,
+			       TO_CHAR(T.BEFORE_END_PROBATION_DATE, 'yyyy-MM-dd') BEFORE_END_PROBATION_DATE,
+			       HPI.BEFORE_SUBJECT,
+			       SY20.CONTENT BEFORE_SUBJECT_NAME,
+			       HPI.EMAIL,
+			       HPI.NATION_CODE,
+			       SY21.CONTENT NATION_NAME,
+			       T.TAX_AREA,
+			       SY22.CONTENT TAX_AREA_NAME,
+			       T.PRODUCTION_DISTINGUISH,
+			       SY23.CONTENT PRODUCTION_DISTINGUISH_NAME,
+			       T.FIRST_TIME_ATTEND_SOCIETY,
+			       SY24.CONTENT FIRST_TIME_ATTEND_SOCIETY_NAME,
+			       TO_CHAR(T.NOW_DEPARTMENT_DATE, 'yyyy-MM-dd') NOW_DEPARTMENT_DATE,
+			       HPI.BEFORE_SCHOOL,
+			       SY25.CONTENT BEFORE_SCHOOL_NAME,
+			       HPI.PER_EMAIL,
+			       HPI.MARITAL_STATUS_CODE,
+			       SY26.CONTENT MARITAL_STATUS_NAME,
+			       T.MAN_HOUR_SYSTEM,
+			       SY27.CONTENT MAN_HOUR_SYSTEM_NAME,
+			       HPI.REG_TYPE_CODE,
+			       SY28.CONTENT REG_TYPE_NAME,
+			       HPI.HAVE_CHILDREN,
+			       SY29.CONTENT HAVE_CHILDREN_NAME,
+			       TO_CHAR(T.EXP_DATE, 'yyyy-MM-dd') EXP_DATE,
+			       HPI.HOBBY,
+			       HPI.NATIONALITY_CODE,
+			       SY30.CONTENT NATIONALITY_NAME,
+			       HPI.RECRUITMENT_SOURCE_TYPE,
+			       SY31.CONTENT RECRUITMENT_SOURCE_NAME,
+			       HPI.BORNPLACE_CODE,
+			       SY32.CONTENT BORNPLACE_NAME,
+			       HPI.SINGLETON_FEMALE_CARD,
+			       SY33.CONTENT SINGLETON_FEMALE_CARD_NAME,
+			       TO_CHAR(T.POST_GRADE_CHANGE_DATE, 'yyyy-MM-dd') POST_GRADE_CHANGE_DATE,
+			       HPI.FINAL_SUBJECT,
+			       SY34.CONTENT FINAL_SUBJECT_NAME,
+			       HPI.HOUSING_STATE_CODE,
+			       SY35.CONTENT HOUSING_STATE_NAME,
+			       HPI.REG_PLACE,
+			       HPI.HOME_ADDRESS,
+			       HPI.LEGAL_DOCUMENTS_ADDRESS,
+			       T.POST_NO,
+       			   SY36.CONTENT POST_NAME,
+       			   T.PAY_STEP PAY_STEP_NO,
+       			   SY41.CONTENT PAY_STEP,
+       			   SY37.CONTENT OLD_POST_GRADE_NAME,
+       			   HPI.FINAL_DEGREE_CODE,
+       			   SY38.CONTENT FINAL_DEGREE_NAME,
+       			   HPI.FOREIGNER_IDCARD_NO,
+       			   HPI.PASSPORT_NO,
+       			   T.AGENT_POST_GRADE_NO,
+       			   SY39.CONTENT AGENT_POST_GRADE_NAME,
+       			   TO_CHAR(T.STEP_CHANGE_DATE, 'yyyy-MM-dd') STEP_CHANGE_DATE,
+       			   (SELECT COUNT(*) FROM HR_CONTRACT HC WHERE HC.PERSON_ID = #PERSON_ID:VARCHAR#) TOTAL_PERIOD,
+       			   HPI.CELLPHONE,
+       			   HPI.REFERRER,
+       			   HPI.REC_SOURCE_DETAIL_NO,
+       			   SY42.CONTENT REC_SOURCE_DETAIL_NAME,
+       			   HPI.OFFICE_PHONE,
+       			   HPI.HOME_PHONE,
+       			   TO_CHAR(HPI.SOCIAL_SECURITY_START_DATE, 'yyyy-MM-dd') SOCIAL_SECURITY_START_DATE
+			  FROM HR_EMPLOYEE T,
+			       HR_PERSONAL_INFO HPI,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME SY,
+			       SY_GLOBAL_NAME SY1,
+			       SY_GLOBAL_NAME SY2,
+			       SY_GLOBAL_NAME SY3,
+			       (SELECT HP.PERSON_ID,
+			               HP.PLU_DEPTNO,
+			               HDN1.CONTENT PLU_DEPTNAME,
+			               HP.PLU_POSITION_NO,
+			               SY4.CONTENT PLU_POSITINO_NAME,
+			               HP.PLU_DUTY_NO,
+			               SY5.CONTENT PLU_DUTY_NAME
+			          FROM HR_PLURALITY       HP,
+			               HR_DEPARTMENT_NAME HDN1,
+			               SY_GLOBAL_NAME     SY4,
+			               SY_GLOBAL_NAME     SY5
+			         WHERE HP.PLU_DEPTNO = HDN1.DEPTNO(+)
+			           AND HDN1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			           AND HP.PLU_POSITION_NO = SY4.NO(+)
+			           AND SY4.LANGUAGE(+) = #interLanguage:VARCHAR#
+			           AND HP.PLU_DUTY_NO = SY5.NO(+)
+			           AND SY5.LANGUAGE(+) = #interLanguage:VARCHAR#
+			           AND HP.PERSON_ID = #PERSON_ID:VARCHAR#
+			           AND HP.END_DATE IS NULL
+			           AND HP.ACTIVITY = 1 
+			           AND HP.RELATION_EXP_INSIDE_NO IS NULL
+			           ) HPY,
+			       SY_GLOBAL_NAME SY6,
+			       SY_GLOBAL_NAME SY7,
+			       SY_GLOBAL_NAME SY8,
+			       SY_GLOBAL_NAME SY9,
+			       SY_GLOBAL_NAME SY10,
+			       SY_GLOBAL_NAME SY11,
+			       SY_GLOBAL_NAME SY12,
+			       SY_GLOBAL_NAME SY13,
+			       SY_GLOBAL_NAME SY14,
+			       SY_GLOBAL_NAME SY15,
+			       SY_GLOBAL_NAME SY16,
+			       SY_GLOBAL_NAME SY17,
+			       SY_GLOBAL_NAME SY18,
+			       SY_GLOBAL_NAME SY19,
+			       SY_GLOBAL_NAME SY20,
+			       SY_GLOBAL_NAME SY21,
+			       SY_GLOBAL_NAME SY22,
+			       SY_GLOBAL_NAME SY23,
+			       SY_GLOBAL_NAME SY24,
+			       SY_GLOBAL_NAME SY25,
+			       SY_GLOBAL_NAME SY26,
+			       SY_GLOBAL_NAME SY27,
+			       SY_GLOBAL_NAME SY28,
+			       SY_GLOBAL_NAME SY29,
+			       SY_GLOBAL_NAME SY30,
+			       SY_GLOBAL_NAME SY31,
+			       SY_GLOBAL_NAME SY32,
+			       SY_GLOBAL_NAME SY33,
+			       SY_GLOBAL_NAME SY34,
+			       SY_GLOBAL_NAME SY35,
+			       SY_GLOBAL_NAME SY36,
+			       SY_GLOBAL_NAME SY37,
+			       SY_GLOBAL_NAME SY38,
+			       SY_GLOBAL_NAME SY39,
+			       SY_GLOBAL_NAME SY40,
+			       SY_GLOBAL_NAME SY41,
+			       SY_GLOBAL_NAME SY42,
+       			   HR_POST_GRADE  HPG
+			 WHERE T.PERSON_ID = HPI.PERSON_ID(+)
+			   AND T.DEPTNO = HDN.DEPTNO(+)
+			   AND T.PERSON_ID = HPY.PERSON_ID(+)
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.STATUS_CODE = SY.NO(+)
+			   AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.EMP_OFFICE = SY1.NO(+)
+			   AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.EMP_TYPE_CODE = SY2.NO(+)
+			   AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.JOIN_TYPE_CODE = SY3.NO(+)
+			   AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.NATIONALITY_CODE = SY6.NO(+)
+			   AND SY6.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPG.GRADE_LEVEL = SY7.NO(+)
+			   AND SY7.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.POST_GRADE_NO = SY8.NO(+)
+			   AND SY8.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.DUTY_NO = SY9.NO(+)
+			   AND SY9.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.POSITION_NO = SY10.NO(+)
+			   AND SY10.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.ENTRY_AREA = SY11.NO(+)
+			   AND SY11.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.SERVICES_BELONG = SY12.NO(+)
+			   AND SY12.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.INSURANCE_TYPE_CODE = SY13.NO(+)
+			   AND SY13.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.BEFORE_DEGREE_CODE = SY14.NO(+)
+			   AND SY14.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.FINAL_SCHOOL = SY15.NO(+)
+			   AND SY15.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.SEXCODE = SY16.NO(+)
+			   AND SY16.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.SOCIAL_SECURITY_AREA = SY17.NO(+)
+			   AND SY17.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.JOB_CLASS = SY18.NO(+)
+			   AND SY18.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.POLITY_CODE = SY19.NO(+)
+			   AND SY19.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.BEFORE_SUBJECT = SY20.NO(+)
+			   AND SY20.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.NATION_CODE = SY21.NO(+)
+			   AND SY21.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.TAX_AREA = SY22.NO(+)
+			   AND SY22.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PRODUCTION_DISTINGUISH = SY23.NO(+)
+			   AND SY23.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.FIRST_TIME_ATTEND_SOCIETY = SY24.NO(+)
+			   AND SY24.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.BEFORE_SCHOOL = SY25.NO(+)
+			   AND SY25.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.MARITAL_STATUS_CODE = SY26.NO(+)
+			   AND SY26.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.MAN_HOUR_SYSTEM = SY27.NO(+)
+			   AND SY27.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.REG_TYPE_CODE = SY28.NO(+)
+			   AND SY28.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.HAVE_CHILDREN = SY29.NO(+)
+			   AND SY29.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.NATIONALITY_CODE = SY30.NO(+)
+			   AND SY30.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.RECRUITMENT_SOURCE_TYPE = SY31.NO(+)
+			   AND SY31.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.BORNPLACE_CODE = SY32.NO(+)
+			   AND SY32.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.SINGLETON_FEMALE_CARD = SY33.NO(+)
+			   AND SY33.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.FINAL_SUBJECT = SY34.NO(+)
+			   AND SY34.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HPI.HOUSING_STATE_CODE = SY35.NO(+)
+			   AND SY35.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.POST_NO = SY36.NO(+)
+   			   AND SY36.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.OLD_POST_GRADE_NO = SY37.NO(+)
+   			   AND SY37.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND HPI.FINAL_DEGREE_CODE = SY38.NO(+)
+   			   AND SY38.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.AGENT_POST_GRADE_NO = SY39.NO(+)
+   			   AND SY39.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.WORK_AREA = SY40.NO(+)
+   			   AND SY40.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND T.PAY_STEP = SY41.NO(+)
+   			   AND SY41.LANGUAGE(+) = #interLanguage:VARCHAR#
+   			   AND HPI.REC_SOURCE_DETAIL_NO = SY42.NO(+)
+   			   AND SY42.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND T.PERSON_ID = #PERSON_ID:VARCHAR#
+			   AND T.POST_GRADE_NO = HPG.POST_GRADE_NO(+)
+	]]>
+</select>
+
+
+<select id="viewEntryTransTempInfo" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[  
+			SELECT T.CPNY_ID,
+				   T.EMPID,
+			       T.PERSON_ID,
+			       T.LOCAL_NAME,
+			       T.CHINESE_PINYIN,
+			       (select OUTER_WORK_YEAR from hr_employee_temp where hr_employee_temp.person_id =#PERSON_ID:VARCHAR#) OUTER_WORK_YEAR,
+			       (select calc_flag from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) CALC_FLAG,
+			       (select card_no from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) CARD_NO,
+			       (select bank_id from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) BANK_ID,
+			       (select get_global_name(hr_emp_pa_info.bank_id,'zh') bank_name from hr_emp_pa_info where hr_emp_pa_info.person_id =#PERSON_ID:VARCHAR# ) BANK_NAME,
+			       T.KOREAN_NAME,
+			       HPI.IDCARD_NO,
+			       HPI.EMPLOYMENT_PASS_NO,
+			       T.ENGLISH_NAME,
+			       (SELECT GET_FULL_DEPARTMENT(#PERSON_ID:VARCHAR#,#CPNY_ID:VARCHAR#,1,#interLanguage:VARCHAR#) FROM dual) DEPTNAME,
+			       (SELECT TRUNC(A.OUTER_WORK_YEAR / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#) AS OUTER_WORK_YEAR,
+			       (SELECT MOD(A.OUTER_WORK_YEAR, 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR# ) AS OUTER_WORK_MONTH,  
+			       (SELECT TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#) AS INNER_WORK_YEAR,
+			       (SELECT MOD(MONTHS_BETWEEN(TRUNC(SYSDATE, 'mm'), TRUNC(B.DATE_STARTED, 'mm')), 12) AS INNER_WORK_MONTH
+			          FROM HR_EMPLOYEE B
+			         WHERE B.PERSON_ID = #PERSON_ID:VARCHAR#) AS INNER_WORK_MONTH,
+			       T.OUTER_WORK_YEAR AS OUTER_WORK_YEAR_FOR_UP,
+			       T.STATUS_CODE,
+			       SY.CONTENT STATUS_NAME,
+			       T.EMP_OFFICE,
+			       SY1.CONTENT EMP_OFFICE_NAME,
+			       T.EMP_TYPE_CODE,
+			       SY2.CONTENT EMP_TYPE_NAME,
+			       T.JOIN_TYPE_CODE,
+			       SY3.CONTENT JOIN_TYPE_NAME,
+			       T.WORK_AREA,
+			       SY40.CONTENT WORK_AREA_NAME,
+			       HPY.PLU_DEPTNAME,
+			       HPI.NATIONALITY_CODE,
+			       SY6.CONTENT NATIONALITY_NAME,
+			       HPG.GRADE_LEVEL,
+			       GET_GLOBAL_NAME(HPG.GRADE_LEVEL, #interLanguage:VARCHAR#) AS GRADE_LEVEL_NAME,
+			       T.POST_GRADE_NO,
+			       SY8.CONTENT POST_GRADE_NAME,
+			       T.DUTY_NO,
+			       SY9.CONTENT DUTY_NAME,
+			       T.POSITION_NO,
+			       SY10.CONTENT POSITION_NAME,
+			       HPY.PLU_POSITINO_NAME,
+			       T.OLD_PERSON_ID,
+			       TO_CHAR(T.JOIN_BLOC_DATE, 'yyyy-MM-dd') JOIN_BLOC_DATE,
+			       TO_CHAR(T.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       TO_CHAR(T.JOIN_COMPANY_DATE, 'yyyy-MM-dd') JOIN_COMPANY_DATE,
+			       TO_CHAR(T.DATE_LEFT, 'yyyy-MM-dd') DATE_LEFT,
+			       TO_CHAR(T.LAST_DATE_STARTED, 'yyyy-MM-dd') LAST_DATE_STARTED,
+			       HPY.PLU_DUTY_NAME,
+			       TO_CHAR(HPI.DOB, 'yyyy-MM-dd') DOB,
+			       T.ENTRY_AREA,
+			       SY11.CONTENT ENTRY_AREA_NAME,
+			       T.SERVICES_BELONG,
+			       SY12.CONTENT SERVICES_BELONG_NAME,
+			       HPI.INSURANCE_TYPE_CODE,
+			       SY13.CONTENT INSURANCE_TYPE_NAME,
+			       TO_CHAR(T.END_PROBATION_DATE, 'yyyy-MM-dd') END_PROBATION_DATE,
+			       HPI.BEFORE_DEGREE_CODE,
+			       SY14.CONTENT BEFORE_DEGREE_NAME,
+			       HPI.FINAL_SCHOOL,
+			       SY15.CONTENT FINAL_SCHOOL_NAME,
+			       HPI.SEXCODE,
+			       SY16.CONTENT SEX,
+			       T.SOCIAL_SECURITY_AREA,
+			       SY17.CONTENT SOCIAL_SECURITY_AREA_NAME,
+			       T.JOB_CLASS,
+			       SY18.CONTENT JOB_CLASS_NAME,
+			       HPI.POLITY_CODE,
+			       SY19.CONTENT POLITY_NAME,
+			       TO_CHAR(T.BEFORE_END_PROBATION_DATE, 'yyyy-MM-dd') BEFORE_END_PROBATION_DATE,
+			       HPI.BEFORE_SUBJECT,
+			       SY20.CONTENT BEFORE_SUBJECT_NAME,
+			       HPI.EMAIL,
+			       HPI.NATION_CODE,
+			       SY21.CONTENT NATION_NAME,
+			       T.TAX_AREA,
+			       SY22.CONTENT TAX_AREA_NAME,
+			       T.PRODUCTION_DISTINGUISH,
+			       SY23.CONTENT PRODUCTION_DISTINGUISH_NAME,
+			       T.FIRST_TIME_ATTEND_SOCIETY,
+			       SY24.CONTENT FIRST_TIME_ATTEND_SOCIETY_NAME,
+			       TO_CHAR(T.NOW_DEPARTMENT_DATE, 'yyyy-MM-dd') NOW_DEPARTMENT_DATE,
+			       HPI.BEFORE_SCHOOL,
+			       SY25.CONTENT BEFORE_SCHOOL_NAME,
+			       HPI.PER_EMAIL,
+			       HPI.MARITAL_STATUS_CODE,
+			       SY26.CONTENT MARITAL_STATUS_NAME,
+			       T.MAN_HOUR_SYSTEM,
+			       SY27.CONTENT MAN_HOUR_SYSTEM_NAME,
+			       HPI.REG_TYPE_CODE,
+			       SY28.CONTENT REG_TYPE_NAME,
+			       HPI.HAVE_CHILDREN,
+			       SY29.CONTENT HAVE_CHILDREN_NAME,
+			       TO_CHAR(T.EXP_DATE, 'yyyy-MM-dd') EXP_DATE,
+			       HPI.HOBBY,
+			       HPI.NATIONALITY_CODE,
+			       SY30.CONTENT NATIONALITY_NAME,
+			       HPI.RECRUITMENT_SOURCE_TYPE,
+			       SY31.CONTENT RECRUITMENT_SOURCE_NAME,
+			       HPI.BORNPLACE_CODE,
+			       SY32.CONTENT BORNPLACE_NAME,
+			       HPI.SINGLETON_FEMALE_CARD,
+			       SY33.CONTENT SINGLETON_FEMALE_CARD_NAME,
+			       TO_CHAR(T.POST_GRADE_CHANGE_DATE, 'yyyy-MM-dd') POST_GRADE_CHANGE_DATE,
+			       HPI.FINAL_SUBJECT,
+			       SY34.CONTENT FINAL_SUBJECT_NAME,
+			       HPI.HOUSING_STATE_CODE,
+			       SY35.CONTENT HOUSING_STATE_NAME,
+			       HPI.REG_PLACE,
+			       HPI.HOME_ADDRESS,
+			       HPI.LEGAL_DOCUMENTS_ADDRESS,
+			       T.POST_NO,
+       			   SY36.CONTENT POST_NAME,
+       			   T.PAY_STEP PAY_STEP_NO,
+       			   SY41.CONTENT PAY_STEP,
+       			   SY37.CONTENT OLD_POST_GRADE_NAME,
+       			   HPI.FINAL_DEGREE_CODE,
+       			   SY38.CONTENT FINAL_DEGREE_NAME,
+       			   HPI.FOREIGNER_IDCARD_NO,
+       			   HPI.PASSPORT_NO,
+       			   T.AGENT_POST_GRADE_NO,
+       			   SY39.CONTENT AGENT_POST_GRADE_NAME,
+       			   TO_CHAR(T.STEP_CHANGE_DATE, 'yyyy-MM-dd') STEP_CHANGE_DATE,
+       			   (SELECT COUNT(*) FROM HR_CONTRACT HC WHERE HC.PERSON_ID = #PERSON_ID:VARCHAR#) TOTAL_PERIOD,
+       			   HPI.CELLPHONE,
+       			   HPI.REFERRER,
+       			   HPI.REC_SOURCE_DETAIL_NO,
+       			   SY42.CONTENT REC_SOURCE_DETAIL_NAME,
+       			   HPI.OFFICE_PHONE,
+       			   HPI.HOME_PHONE,
+       			   TO_CHAR(HPI.SOCIAL_SECURITY_START_DATE, 'yyyy-MM-dd') SOCIAL_SECURITY_START_DATE
+			  FROM HR_EMPLOYEE_TEMP T,
+			       HR_PERSONAL_INFO_TEMP HPI,
+			       HR_DEPARTMENT_NAME HDN,
+			       SY_GLOBAL_NAME SY,
+			       SY_GLOBAL_NAME SY1,
+			       SY_GLOBAL_NAME SY2,
+             		SY_GLOBAL_NAME SY3,
+             	(SELECT HP.PERSON_ID,
+                     HP.PLU_DEPTNO,
+                     HDN1.CONTENT PLU_DEPTNAME,
+                     HP.PLU_POSITION_NO,
+                     SY4.CONTENT PLU_POSITINO_NAME,
+                     HP.PLU_DUTY_NO,
+                     SY5.CONTENT PLU_DUTY_NAME
+                FROM HR_PLURALITY       HP,
+                     HR_DEPARTMENT_NAME HDN1,
+                     SY_GLOBAL_NAME     SY4,
+                     SY_GLOBAL_NAME     SY5
+               WHERE HP.PLU_DEPTNO = HDN1.DEPTNO(+)
+                 AND HDN1.LANGUAGE(+) = #interLanguage:VARCHAR#
+                 AND HP.PLU_POSITION_NO = SY4.NO(+)
+                 AND SY4.LANGUAGE(+) = #interLanguage:VARCHAR#
+                 AND HP.PLU_DUTY_NO = SY5.NO(+)
+                 AND SY5.LANGUAGE(+) = #interLanguage:VARCHAR#
+                 AND HP.PERSON_ID = #PERSON_ID:VARCHAR#
+                 AND HP.END_DATE IS NULL
+                 AND HP.ACTIVITY = 1 
+                 AND HP.RELATION_EXP_INSIDE_NO IS NULL
+                 ) HPY,
+             	 SY_GLOBAL_NAME SY6,
+             	 SY_GLOBAL_NAME SY7,
+             	 SY_GLOBAL_NAME SY8,
+            	 SY_GLOBAL_NAME SY9,
+            	 SY_GLOBAL_NAME SY10,
+            	 SY_GLOBAL_NAME SY11,
+            	 SY_GLOBAL_NAME SY12,
+            	 SY_GLOBAL_NAME SY13,
+            	 SY_GLOBAL_NAME SY14,
+            	 SY_GLOBAL_NAME SY15,
+            	 SY_GLOBAL_NAME SY16,
+           		  SY_GLOBAL_NAME SY17,
+             	SY_GLOBAL_NAME SY18,
+             	SY_GLOBAL_NAME SY19,
+             	SY_GLOBAL_NAME SY20,
+             	SY_GLOBAL_NAME SY21,
+             	SY_GLOBAL_NAME SY22,
+             	SY_GLOBAL_NAME SY23,
+             	SY_GLOBAL_NAME SY24,
+            	SY_GLOBAL_NAME SY25,
+             	SY_GLOBAL_NAME SY26,
+             	SY_GLOBAL_NAME SY27,
+             	SY_GLOBAL_NAME SY28,
+             	SY_GLOBAL_NAME SY29,
+             	SY_GLOBAL_NAME SY30,
+             	SY_GLOBAL_NAME SY31,
+             	SY_GLOBAL_NAME SY32,
+             	SY_GLOBAL_NAME SY33,
+             	SY_GLOBAL_NAME SY34,
+             	SY_GLOBAL_NAME SY35,
+             	SY_GLOBAL_NAME SY36,
+             	SY_GLOBAL_NAME SY37,
+             	SY_GLOBAL_NAME SY38,
+             	SY_GLOBAL_NAME SY39,
+             	SY_GLOBAL_NAME SY40,
+             	SY_GLOBAL_NAME SY41,
+             	SY_GLOBAL_NAME SY42,
+                HR_POST_GRADE  HPG
+       WHERE T.PERSON_ID = HPI.PERSON_ID(+)
+         AND T.DEPTNO = HDN.DEPTNO(+)
+         AND T.PERSON_ID = HPY.PERSON_ID(+)
+         AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.STATUS_CODE = SY.NO(+)
+         AND SY.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.EMP_OFFICE = SY1.NO(+)
+         AND SY1.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.EMP_TYPE_CODE = SY2.NO(+)
+         AND SY2.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.JOIN_TYPE_CODE = SY3.NO(+)
+         AND SY3.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.NATIONALITY_CODE = SY6.NO(+)
+         AND SY6.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPG.GRADE_LEVEL = SY7.NO(+)
+         AND SY7.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.POST_GRADE_NO = SY8.NO(+)
+         AND SY8.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.DUTY_NO = SY9.NO(+)
+         AND SY9.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.POSITION_NO = SY10.NO(+)
+         AND SY10.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.ENTRY_AREA = SY11.NO(+)
+         AND SY11.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.SERVICES_BELONG = SY12.NO(+)
+         AND SY12.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.INSURANCE_TYPE_CODE = SY13.NO(+)
+         AND SY13.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.BEFORE_DEGREE_CODE = SY14.NO(+)
+         AND SY14.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.FINAL_SCHOOL = SY15.NO(+)
+         AND SY15.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.SEXCODE = SY16.NO(+)
+         AND SY16.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.SOCIAL_SECURITY_AREA = SY17.NO(+)
+         AND SY17.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.JOB_CLASS = SY18.NO(+)
+         AND SY18.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.POLITY_CODE = SY19.NO(+)
+         AND SY19.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.BEFORE_SUBJECT = SY20.NO(+)
+         AND SY20.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.NATION_CODE = SY21.NO(+)
+         AND SY21.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.TAX_AREA = SY22.NO(+)
+         AND SY22.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.PRODUCTION_DISTINGUISH = SY23.NO(+)
+         AND SY23.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.FIRST_TIME_ATTEND_SOCIETY = SY24.NO(+)
+         AND SY24.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.BEFORE_SCHOOL = SY25.NO(+)
+         AND SY25.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.MARITAL_STATUS_CODE = SY26.NO(+)
+         AND SY26.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.MAN_HOUR_SYSTEM = SY27.NO(+)
+         AND SY27.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.REG_TYPE_CODE = SY28.NO(+)
+         AND SY28.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.HAVE_CHILDREN = SY29.NO(+)
+         AND SY29.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.NATIONALITY_CODE = SY30.NO(+)
+         AND SY30.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.RECRUITMENT_SOURCE_TYPE = SY31.NO(+)
+         AND SY31.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.BORNPLACE_CODE = SY32.NO(+)
+         AND SY32.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.SINGLETON_FEMALE_CARD = SY33.NO(+)
+         AND SY33.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.FINAL_SUBJECT = SY34.NO(+)
+         AND SY34.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND HPI.HOUSING_STATE_CODE = SY35.NO(+)
+         AND SY35.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.POST_NO = SY36.NO(+)
+            AND SY36.LANGUAGE(+) = #interLanguage:VARCHAR#
+            AND T.OLD_POST_GRADE_NO = SY37.NO(+)
+            AND SY37.LANGUAGE(+) = #interLanguage:VARCHAR#
+            AND HPI.FINAL_DEGREE_CODE = SY38.NO(+)
+            AND SY38.LANGUAGE(+) = #interLanguage:VARCHAR#
+            AND T.AGENT_POST_GRADE_NO = SY39.NO(+)
+            AND SY39.LANGUAGE(+) = #interLanguage:VARCHAR#
+            AND T.WORK_AREA = SY40.NO(+)
+            AND SY40.LANGUAGE(+) = #interLanguage:VARCHAR#
+            AND T.PAY_STEP = SY41.NO(+)
+            AND SY41.LANGUAGE(+) = #interLanguage:VARCHAR#
+            AND HPI.REC_SOURCE_DETAIL_NO = SY42.NO(+)
+            AND SY42.LANGUAGE(+) = #interLanguage:VARCHAR#
+         AND T.PERSON_ID = #PERSON_ID:VARCHAR#
+         AND T.POST_GRADE_NO = HPG.POST_GRADE_NO(+)
+	]]>
+</select>
+
+
+<sql id="searchTransferNormalViewListCondition">
+ 		<![CDATA[	
+		AND	EXISTS (    SELECT A.DEPTNO
+				  FROM HR_DEPT_TREE_V A, HR_DEPARTMENT_NAME B
+				 WHERE (A.DATE_ENDED IS NULL OR A.DATE_ENDED > SYSDATE)
+				   AND A.DEPTNO = B.DEPTNO(+)
+				   AND B.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND A.CPNY_ID=#interCpnyID:VARCHAR#
+		 ]]>                  	
+	<!-- 过滤权限 start -->
+	<isNotEmpty prepend="AND" property="specialParam">
+		<isNotEqual prepend="" property="specialParam" compareValue="general">
+			<![CDATA[
+		   		HE.DEPTNO IN  
+             ]]>
+            	<include refid="sys.include.getDataPermission"/>
+            </isNotEqual>         
+            
+            <isEqual prepend="" property="specialParam" compareValue="general">
+			    HE.PERSON_ID = #ADMIN_ID:VARCHAR#
+            </isEqual>
+	</isNotEmpty>
+		<![CDATA[
+		)
+		 ]]>
+    <!-- 过滤权限 end -->
+	<isNotEmpty prepend="AND" property="CPNY_ID">
+	    <![CDATA[
+	             HE.CPNY_ID = #CPNY_ID#
+        ]]>   
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="PERSON_ID">
+	    <![CDATA[
+	             HE.PERSON_ID = #PERSON_ID#
+        ]]>   
+	</isNotEmpty>
+
+	<isNotEmpty prepend="AND" property="KEY">
+	   <![CDATA[
+			   ( HE.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HE.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	   ]]>
+	</isNotEmpty>
+	
+	 <isNotEmpty prepend="AND" property="TRANS_CODE">
+	    <![CDATA[
+	             HEI.TRANS_CODE = #TRANS_CODE#
+        ]]>   
+	</isNotEmpty>
+	
+	 <!-- 部门查询条件 start -->
+	<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = HE.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>
+	</isNotEmpty>
+	
+	<!-- 决裁状态 start -->
+	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+		<![CDATA[
+           	     0 < (SELECT COUNT(*)
+                        FROM HR_AFFIRM HA
+                       WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                         AND HA.AFFIRM_FLAG = 0
+                         AND HEI.TRANS_NO = #TRANS_NO#)
+ 		]]>
+	</isEqual>
+	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+		<![CDATA[
+           	     0 = (SELECT COUNT(*)
+                        FROM HR_AFFIRM HA
+                       WHERE HA.EXP_INSIDE_NO = HEI.EXP_INSIDE_NO
+                         AND HA.AFFIRM_FLAG = 0
+                         AND HEI.TRANS_NO = #TRANS_NO#)
+		 ]]>
+	</isEqual>
+	<!-- 决裁状态 end -->
+	
+	<!-- 转正发令 开始时间和结束时间 start -->	
+	<isNotEmpty prepend="AND" property="PROBATION_DATE_FROM">
+		<![CDATA[
+			    HEI.PROBATION_DATE >= TO_DATE(#PROBATION_DATE_FROM#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="PROBATION_DATE_TO">
+		<![CDATA[
+		        HEI.PROBATION_DATE <= TO_DATE(#PROBATION_DATE_TO#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+    <!-- 转正发令 开始时间和结束时间 end -->
+    
+    <!-- 离职发令 离职开始时间和结束时间 start -->	
+	<isNotEmpty prepend="AND" property="RESIGN_DATE_FROM">
+		<![CDATA[
+			    HEI.RESIGN_DATE >= TO_DATE(#RESIGN_DATE_FROM#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="RESIGN_DATE_TO">
+		<![CDATA[
+		        HEI.RESIGN_DATE <= TO_DATE(#RESIGN_DATE_TO#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+    <!-- 转正发令 开始时间和结束时间 end -->
+    
+    <!-- 过滤权限 start -->
+	<isNotEmpty property="specialParam">
+        AND EXISTS
+            <include refid="sys.include.getDataPermission"/>
+    </isNotEmpty>
+    <!-- 过滤权限 end -->
+
+	
+</sql>
+
+<select id="getTransferNormalViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[
+		SELECT HE.EMPID,
+		       HE.CHINESE_PINYIN,
+		       HE.ENGLISH_NAME,
+		       HE.KOREAN_NAME,
+		       HE.LOCAL_NAME,
+		       HE.PERSON_ID,
+		       TO_CHAR(HE.DATE_STARTED,'yyyy-MM-dd') DATE_STARTED,
+		       HEI.EXP_INSIDE_NO,
+		       HEI.TRANS_NO,
+		       HEI.CURRENT_AFFIRM_ID,
+		       TO_CHAR(HEI.SCHEDULE_PROBATION_DATE, 'yyyy-MM-dd') SCHEDULE_PROBATION_DATE,
+		       HEI.PROBATION_MARK,
+		       HE.STATUS_CODE,
+		       STATUS.CONTENT STATUS_NAME,
+		       HE.DEPTNO,
+		       HDN.CONTENT DEPT_NAME,
+		       HE.POSITION_NO,
+		       POSITION.CONTENT POSITION_NAME,
+		       HE.POST_NO,
+		       POST.CONTENT POST_NAME,
+		       HE.POST_GRADE_NO,
+		       POST_GRADE.CONTENT POST_GRADE_NAME,
+		       HEI.TRANS_CODE,
+		       TRANS_CODE.CONTENT TRANS_NAME,
+		       PRO_CODE.CONTENT PRO_TYPE_NAME,
+		       TO_CHAR(HEI.PROBATION_DATE,'yyyy-MM-dd') PROBATION_DATE,
+		       HEI.CONTENT,
+		       HEI.ACTIVITY,
+       		   HEI.CREATED_BY,
+       		   CRETED_BY.LOCAL_NAME CREATED_BY_NAME,
+		       HEI.EMP_TYPE_CODE,
+		       EMP_TYPE_CODE.CONTENT EMP_TYPE_NAME
+		  FROM HR_PROBATION       HEI,
+		       HR_EMPLOYEE        HE,
+		       HR_DEPARTMENT_NAME HDN,
+		       SY_GLOBAL_NAME     STATUS,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     PRO_CODE,
+		       SY_GLOBAL_NAME     TRANS_CODE,
+       		   HR_EMPLOYEE        CRETED_BY,
+       		   SY_GLOBAL_NAME     EMP_TYPE_CODE
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = HDN.DEPTNO(+)
+		   AND HE.STATUS_CODE = STATUS.NO(+)
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND HE.POST_NO = POST.NO(+)
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND HEI.TRANS_CODE = PRO_CODE.NO(+)
+		   AND HEI.EMP_TYPE_CODE = EMP_TYPE_CODE.NO(+)
+   		   AND EMP_TYPE_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND STATUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND PRO_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.TRANS_CODE = TRANS_CODE.NO(+)
+		   AND TRANS_CODE.LANGUAGE(+)= #interLanguage:VARCHAR#
+		   AND HEI.CREATED_BY = CRETED_BY.PERSON_ID(+)
+	]]>
+	
+	<include refid="searchTransferNormalViewListCondition"/>
+	
+	
+	<isEmpty prepend="" property="orderField">
+		<![CDATA[
+		      ORDER BY HE.DEPTNO,
+		               HE.EMPID
+	    ]]>
+	</isEmpty>
+</select>
+
+<select id="getTransferNormalViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+		SELECT COUNT(0)
+	      FROM HR_PROBATION       HEI,
+		       HR_EMPLOYEE        HE,
+		       HR_DEPARTMENT_NAME HDN,
+		       SY_GLOBAL_NAME     STATUS,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     PRO_CODE,
+		       SY_GLOBAL_NAME     TRANS_CODE
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = HDN.DEPTNO(+)
+		   AND HE.STATUS_CODE = STATUS.NO(+)
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND HE.POST_NO = POST.NO(+)
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND HEI.TRANS_CODE = PRO_CODE.NO(+)
+		   AND STATUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND PRO_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.TRANS_CODE = TRANS_CODE.NO(+)
+		   AND TRANS_CODE.LANGUAGE(+)= #interLanguage:VARCHAR#		   
+    ]]>
+    
+    <include refid="searchTransferNormalViewListCondition"/>
+    
+</select>
+
+<!-- 取消发令 转正 -->
+<update id="cancelHrTransferNormalInsideByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_PROBATION HEI
+			   SET HEI.ACTIVITY    = 2,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+<select id="ifEffectByExpInsideNoForTransferNormal" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+	         SELECT COUNT(0)
+	           FROM HR_PROBATION HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0
+    ]]>		    	
+</select>
+
+
+
+
+
+
+<select id="getResignationViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[
+		SELECT HE.EMPID,
+		       HE.CHINESE_PINYIN,
+		       HE.ENGLISH_NAME,
+		       HE.KOREAN_NAME,
+		       HE.LOCAL_NAME,
+		       HE.PERSON_ID,
+		       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+		       HEI.EXP_INSIDE_NO,
+		       HEI.TRANS_NO,
+		       HEI.CURRENT_AFFIRM_ID,
+		       HE.STATUS_CODE,
+		       STATUS.CONTENT STATUS_NAME,
+		       HE.DEPTNO,
+		       HDN.CONTENT DEPT_NAME,
+		       HE.POSITION_NO,
+		       POSITION.CONTENT POSITION_NAME,
+		       HE.POST_NO,
+		       POST.CONTENT POST_NAME,
+		       HE.POST_GRADE_NO,
+		       POST_GRADE.CONTENT POST_GRADE_NAME,
+		       PRO_CODE.CONTENT PRO_TYPE_NAME,
+		       HEI.ACTIVITY,
+		       HEI.CREATED_BY,
+		       CRETED_BY.LOCAL_NAME CREATED_BY_NAME,
+		       HEI.TRANS_CODE,
+		       TRANS_CODE.CONTENT TRANS_NAME,
+		       HEI.REMARK,
+		       TO_CHAR(HEI.RESIGN_DATE, 'yyyy-MM-dd') RESIGN_DATE,
+		       HEI.RESIGN_REASON,
+		       RESIGN_REASON.CONTENT RESIGN_REASON_NAME
+		  FROM HR_RESIGNATION     HEI,
+		       HR_EMPLOYEE        HE,
+		       HR_DEPARTMENT_NAME HDN,
+		       SY_GLOBAL_NAME     STATUS,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     PRO_CODE,
+		       SY_GLOBAL_NAME     TRANS_CODE,
+		       HR_EMPLOYEE        CRETED_BY,
+		       SY_GLOBAL_NAME     RESIGN_REASON
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = HDN.DEPTNO(+)
+		   AND HE.STATUS_CODE = STATUS.NO(+)
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND HE.POST_NO = POST.NO(+)
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND HEI.TRANS_CODE = PRO_CODE.NO(+)
+		   AND STATUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND PRO_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.TRANS_CODE = TRANS_CODE.NO(+)
+		   AND TRANS_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.RESIGN_REASON=RESIGN_REASON.NO(+)
+       	   AND RESIGN_REASON.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.CREATED_BY = CRETED_BY.PERSON_ID(+)
+			
+		   AND HEI.EXP_INSIDE_NO =
+	              (SELECT MAX(H.EXP_INSIDE_NO)
+	                 FROM HR_RESIGNATION H
+	                WHERE H.PERSON_ID = HE.PERSON_ID GROUP BY HE.PERSON_ID)
+			
+	]]>
+	
+	<include refid="searchTransferNormalViewListCondition"/>
+	
+	
+	<isEmpty prepend="" property="orderField">
+		<![CDATA[
+		      ORDER BY HE.DEPTNO,
+		               HE.EMPID
+	    ]]>
+	</isEmpty>
+</select>
+
+<select id="getResignationViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+		SELECT COUNT(0)
+	      FROM HR_RESIGNATION     HEI,
+		       HR_EMPLOYEE        HE,
+		       HR_DEPARTMENT_NAME HDN,
+		       SY_GLOBAL_NAME     STATUS,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     PRO_CODE,
+		       SY_GLOBAL_NAME     TRANS_CODE,
+		       HR_EMPLOYEE        CRETED_BY,
+		       SY_GLOBAL_NAME     RESIGN_REASON
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = HDN.DEPTNO(+)
+		   AND HE.STATUS_CODE = STATUS.NO(+)
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND HE.POST_NO = POST.NO(+)
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND HEI.TRANS_CODE = PRO_CODE.NO(+)
+		   AND STATUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND PRO_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.TRANS_CODE = TRANS_CODE.NO(+)
+		   AND TRANS_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.RESIGN_REASON=RESIGN_REASON.NO(+)
+       	   AND RESIGN_REASON.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.CREATED_BY = CRETED_BY.PERSON_ID(+)  
+		   
+		   AND HEI.EXP_INSIDE_NO =
+	              (SELECT MAX(H.EXP_INSIDE_NO)
+	                 FROM HR_RESIGNATION H
+	                WHERE H.PERSON_ID = HE.PERSON_ID GROUP BY HE.PERSON_ID) 
+    ]]>
+    
+    <include refid="searchTransferNormalViewListCondition"/>
+    
+</select>
+
+
+<select id="ifEffectByExpInsideNoForResignation" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+	         SELECT COUNT(0)
+	           FROM HR_RESIGNATION HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0
+    ]]>		    	
+</select>
+
+
+<!-- 取消发令 离职 -->
+<update id="cancelHrResignationInsideByNo" parameterClass="linkMap">
+	<![CDATA[
+			UPDATE HR_RESIGNATION HEI
+			   SET HEI.ACTIVITY    = 2,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+
+
+<select id="getTransferPromoteForSearch" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HE.EMPID,
+			       HE.CHINESE_PINYIN,
+			       HE.ENGLISH_NAME,
+			       HE.KOREAN_NAME,
+			       HE.LOCAL_NAME,
+			       HE.PERSON_ID,
+			       TO_CHAR(HE.DATE_STARTED, 'yyyy-MM-dd') DATE_STARTED,
+			       HE.WORK_AREA,
+			       HEI.EXP_INSIDE_NO,
+			       HEI.TRANS_NO,
+			       TO_CHAR(HEI.START_DATE, 'yyyy-MM-dd') START_DATE,
+			       HEI.CREATED_BY,
+			       HEI.ACTIVITY ACTIVITY_FLAG,
+			       HE.JOIN_TYPE_CODE,
+			       JOIN_TYPE.CONTENT JOIN_TYPE_NAME,
+			       HE.DEPTNO,
+			       NVL(GET_EMP_DEPT_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), HDN.CONTENT) DEPT_NAME,
+			       NVL(GET_EMP_POST_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), POST.CONTENT) POST_NAME,
+			       NVL(GET_EMP_POST_GRADE_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), POST_GRADE.CONTENT) POST_GRADE_NAME,
+			       NVL(GET_EMP_DUTY_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), DUTY.CONTENT) DUTY_NAME,
+			       NVL(GET_EMP_WORK_AREA_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), WORK_AR.CONTENT) WORK_AREA_NAME,
+			       NVL(GET_EMP_POSITION_NAME(HEI.EXP_INSIDE_NO, #interLanguage:VARCHAR#), POSITION.CONTENT) POSITION_NAME,
+			       HE.POSITION_NO,
+			       HE.POST_NO,
+			       HE.POST_GRADE_NO,
+			       HE.DUTY_NO,
+			       HEI.DUTY_NO NEW_DUTY_NO,
+			       NEW_DUTY.CONTENT NEW_DUTY_NAME,			       
+                   HEI.DEPTNO NEW_DEPTNO,
+                   NEW_HDN.CONTENT NEW_DEPT_NAME,
+                   HEI.POSITION_NO NEW_POSITION_NO,
+                   NEW_POSITION.CONTENT NEW_POSITION_NAME,
+                   HEI.POST_NO NEW_POST_NO,
+                   NEW_POST.CONTENT NEW_POST_NAME,
+                   HEI.POST_GRADE_NO NEW_POST_GRADE_NO,
+                   NEW_POST_GRADE.CONTENT NEW_POST_GRADE_NAME,
+                   HEI.WORK_AREA NEW_WORK_AREA,
+                   TRANS_N.CONTENT TRANS_TYPE_NAME,
+			       OP.LOCAL_NAME CREATED_BY_NAME,
+			       WORK_AR.NO WORK_AREA_NO,
+			       NEW_WORK_AR.NO NEW_WORK_AR_NO,
+			       NEW_WORK_AR.CONTENT NEW_WORK_AR_NAME
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE,
+			       HR_EMPLOYEE          OP,
+			       HR_DEPARTMENT_NAME   HDN,
+			       SY_GLOBAL_NAME       JOIN_TYPE,
+			       SY_GLOBAL_NAME       POSITION,
+			       SY_GLOBAL_NAME       POST,
+			       SY_GLOBAL_NAME       POST_GRADE,
+			       SY_GLOBAL_NAME       DUTY,
+			       HR_DEPARTMENT_NAME   NEW_HDN,
+			       SY_GLOBAL_NAME       NEW_POSITION,
+			       SY_GLOBAL_NAME       NEW_POST,
+			       SY_GLOBAL_NAME       NEW_POST_GRADE,
+			       SY_GLOBAL_NAME       NEW_DUTY,
+			       SY_GLOBAL_NAME       TRANS_N,
+			       SY_GLOBAL_NAME       WORK_AR,
+			       SY_GLOBAL_NAME       NEW_WORK_AR
+			 WHERE HEI.CREATED_BY = OP.PERSON_ID(+)
+			   AND HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = HDN.DEPTNO(+)
+			   AND HE.JOIN_TYPE_CODE = JOIN_TYPE.NO(+)
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND HE.POST_NO = POST.NO(+)
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND HEI.DEPTNO = NEW_HDN.DEPTNO(+)
+			   AND HE.DUTY_NO = DUTY.NO(+)
+               AND HEI.DUTY_NO = NEW_DUTY.NO(+)
+			   AND HEI.POSITION_NO = NEW_POSITION.NO(+)
+			   AND HEI.POST_NO = NEW_POST.NO(+)
+			   AND HEI.POST_GRADE_NO = NEW_POST_GRADE.NO(+)
+			   AND HEI.TRANS_CODE = TRANS_N.NO(+)
+			   AND HE.WORK_AREA = WORK_AR.NO(+)
+			   AND HEI.WORK_AREA = NEW_WORK_AR.NO(+)
+			   AND WORK_AR.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_WORK_AR.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND TRANS_N.LANGUAGE(+)= #interLanguage:VARCHAR#
+			   AND JOIN_TYPE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_HDN.LANGUAGE(+) = #interLanguage:VARCHAR#	
+			   AND DUTY.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND NEW_DUTY.LANGUAGE(+) = #interLanguage:VARCHAR#			   		   			  				   
+    ]]>		
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+
+<select id="getTransferPromoteForSearchCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_EXPERIENCE_INSIDE HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<select id="getPluralityViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HEI.EXP_INSIDE_NO,
+				   HE.EMPID, 
+			       HE.LOCAL_NAME,
+			       DEPT.DEPTNO,
+			       DEPT.CONTENT DEPTNAME,
+			       HE.POSITION_NO,
+			       POSITION.CONTENT POSITIONNAME,
+			       HE.POST_GRADE_NO,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       HE.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       HEI.PLU_TYPE_CODE,
+			       PLU_TYPE.CONTENT PLU_TYPE_NAME,
+			       HEI.PLU_DEPTNO,
+			       PLU_DEPT.CONTENT PLU_DEPT_NAME,
+			       HEI.PLU_POSITION_NO,
+			       PLU_POSITION.CONTENT PLU_POSITION_NAME,
+			       TRANS_CODE_TYPE.CONTENT TRANS_CODE_NAME,
+			       TO_CHAR(HEI.START_DATE, 'YYYY-MM-DD') START_DATE,
+			       HEI.PLU_REASON,
+			       TO_CHAR(HEI.END_DATE, 'YYYY-MM-DD') END_DATE,
+			       REMARK,
+			       CRE_EMP.LOCAL_NAME CREATE_NAME,
+			       HEI.ACTIVITY ACTIVITY_FLAG,
+			       HEI.RELATION_EXP_INSIDE_NO
+			  FROM HR_PLURALITY       HEI,
+			       HR_EMPLOYEE        HE,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     PLU_TYPE,
+			       SY_GLOBAL_NAME     PLU_POSITION,
+			       SY_GLOBAL_NAME     TRANS_CODE_TYPE,
+			       HR_DEPARTMENT_NAME DEPT,
+			       HR_DEPARTMENT_NAME PLU_DEPT,
+			       HR_EMPLOYEE        CRE_EMP
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+			   AND HE.DEPTNO = DEPT.DEPTNO(+)
+			   AND DEPT.LANGUAGE(+) =#interLanguage:VARCHAR#
+			   AND HE.POSITION_NO = POSITION.NO(+)
+			   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+			   AND POST_GRADE.LANGUAGE(+) =  #interLanguage:VARCHAR#
+			   AND HE.POST_NO = POST.NO(+)
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.PLU_TYPE_CODE = PLU_TYPE.NO(+)
+			   AND PLU_TYPE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.PLU_POSITION_NO = PLU_POSITION.NO(+)
+			   AND PLU_POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.TRANS_CODE=TRANS_CODE_TYPE.NO(+)
+			   AND TRANS_CODE_TYPE.LANGUAGE(+)=#interLanguage:VARCHAR#
+			   AND HEI.PLU_DEPTNO = PLU_DEPT.DEPTNO(+)
+			   AND PLU_DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HEI.CREATED_BY = CRE_EMP.PERSON_ID(+)
+    ]]>	
+    <include refid="searchTransListCondition"/>
+    <isNotEmpty prepend="and" property="TRANS_TYPE">
+     	 <isEqual prepend="" property="TRANS_TYPE" compareValue="Y">
+   			<![CDATA[
+   				HEI.RELATION_EXP_INSIDE_NO is null
+   			 ]]>	
+   	  	 </isEqual>
+   	  	 <isEqual prepend="" property="TRANS_TYPE" compareValue="N">
+   			<![CDATA[ 
+   				HEI.RELATION_EXP_INSIDE_NO is not null
+   			]]>	
+   	  	 </isEqual>
+    </isNotEmpty>
+	<![CDATA[
+	      ORDER BY HE.DEPTNO,
+	               HE.EMPID
+    ]]>  
+</select>
+<select id="getPluralityViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_PLURALITY HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 取消兼职 -->
+<update id="cancelHrPluralityByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_PLURALITY HEI
+			   SET HEI.ACTIVITY    = 2,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+<!-- 是否已生效 -->
+<select id="ifEffectByExpInsidePluralityNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+	           FROM HR_PLURALITY HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+
+<select id="getSuspendViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HEI.EXP_INSIDE_NO,
+			       HE.EMPID,
+			       HEI.PERSON_ID,
+			       HE.LOCAL_NAME,
+			       HEI.TRANS_NO,
+            	   HEI.TRANS_CODE,
+			       DEPT.CONTENT DEPTNAME,
+			       POSITION.CONTENT POSITION_NAME,
+			       POST.CONTENT POST_NAME,
+			       STATUS.CONTENT STATUS_NAME,
+			       TO_CHAR(HEI.START_DATE, 'YYYY-MM-DD') START_DATE,
+			       HEI.SUSPEND_REASON,
+			       CRE_EMP.LOCAL_NAME CREATE_NAME,
+			       HEI.ACTIVITY ACTIVITY_FLAG,
+			       POST_GRADE.CONTENT POST_GRADE_NAME,
+			       DUTY.CONTENT DUTYNAME,
+			       TRANS_CODE_TYPE.CONTENT TRANS_CODE_NAME
+			  FROM HR_SUSPENSION      HEI,
+			       HR_EMPLOYEE        HE,
+			       HR_DEPARTMENT_NAME DEPT,
+			       SY_GLOBAL_NAME     POSITION,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     STATUS,
+			       HR_EMPLOYEE        CRE_EMP,
+			       SY_GLOBAL_NAME     POST_GRADE,
+			       SY_GLOBAL_NAME     DUTY,
+			       SY_GLOBAL_NAME     TRANS_CODE_TYPE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID
+				   AND HE.DEPTNO = DEPT.DEPTNO(+)
+				   AND DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND HE.POSITION_NO = POSITION.NO(+)
+				   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND HE.POST_NO = POST.NO(+)
+				   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND HE.STATUS_CODE = STATUS.NO(+)
+				   AND STATUS.LANGUAGE(+) = #interLanguage:VARCHAR#
+				   AND HE.POST_GRADE_NO=POST_GRADE.NO(+)
+ 				   AND POST_GRADE.LANGUAGE(+)= #interLanguage:VARCHAR#
+ 				   AND HE.DUTY_NO=DUTY.NO(+)
+ 				   AND DUTY.LANGUAGE(+)=#interLanguage:VARCHAR#
+ 				   AND HEI.TRANS_CODE=TRANS_CODE_TYPE.NO(+)
+			   	   AND TRANS_CODE_TYPE.LANGUAGE(+)=#interLanguage:VARCHAR#
+				   AND HEI.CREATED_BY = CRE_EMP.PERSON_ID(+)
+    ]]>	
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+<select id="getSuspendViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_SUSPENSION HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 取消兼职 -->
+<update id="cancelHrSuspendByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_SUSPENSION HEI
+			   SET HEI.ACTIVITY    = 2,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+<!-- 是否已生效 -->
+<select id="ifEffectByExpInsideSuspendNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+	           FROM HR_SUSPENSION HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 奖励 -->
+<select id="getHortationViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+		SELECT HEI.EXP_INSIDE_NO,
+		       HE.EMPID,
+		       HE.LOCAL_NAME,
+		       DEPT.DEPTNO,
+		       DEPT.CONTENT DEPTNAME,
+		       HE.POSITION_NO,
+		       POSITION.CONTENT POSITIONNAME,
+		       HE.POST_GRADE_NO,
+		       POST_GRADE.CONTENT POST_GRADE_NAME,
+		       HE.POST_NO,
+		       POST.CONTENT POST_NAME,
+		       CRE_EMP.LOCAL_NAME CREATE_NAME,
+		       HEI.ACTIVITY ACTIVITY_FLAG,
+		       TO_CHAR(HEI.REWARD_DATE,'YYYY-MM-DD') REWARD_DATE,
+		       HEI.TRANS_CODE,
+		       REWARD_TYPE.CONTENT REWARD_TYPE_NAME,
+		       HEI.REWARD_BONUS,
+		       HEI.REWARD_CONTENTS
+		  FROM HR_REWARD          HEI,
+		       HR_EMPLOYEE        HE,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     POST,
+		       HR_DEPARTMENT_NAME DEPT,
+		       HR_EMPLOYEE        CRE_EMP,
+		       SY_GLOBAL_NAME     REWARD_TYPE
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = DEPT.DEPTNO(+)
+		   AND DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POST_NO = POST.NO(+)
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.CREATED_BY = CRE_EMP.PERSON_ID(+)
+		   AND HEI.TRANS_CODE=REWARD_TYPE.NO(+)
+		   AND REWARD_TYPE.LANGUAGE(+)=#interLanguage:VARCHAR#
+    ]]>	
+    <include refid="searchTransListCondition"/>
+    <isNotEmpty prepend="AND" property="FROM_DATE_REWARD">
+		<![CDATA[
+			    HEI.REWARD_DATE >= TO_DATE(#FROM_DATE_REWARD:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="TO_DATE_REWARD">
+		<![CDATA[
+		        HEI.REWARD_DATE <= TO_DATE(#TO_DATE_REWARD:VARCHAR#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[
+	      ORDER BY  HEI.REWARD_DATE DESC,
+	      			HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+<select id="getHortationViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_REWARD HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 取消奖励 -->
+<update id="cancelHrHortationByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_REWARD HEI
+			   SET HEI.ACTIVITY    = 3,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+<!-- 是否已生效 -->
+<select id="ifEffectByExpInsideHortationNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+	           FROM HR_REWARD HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>  
+<!-- 惩戒-->
+<select id="getPunishMentViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+			SELECT HEI.EXP_INSIDE_NO,
+		       HE.EMPID,
+		       HE.LOCAL_NAME,
+		       DEPT.DEPTNO,
+		       DEPT.CONTENT DEPTNAME,
+		       HE.POSITION_NO,
+		       POSITION.CONTENT POSITIONNAME,
+		       HE.POST_GRADE_NO,
+		       POST_GRADE.CONTENT POST_GRADE_NAME,
+		       HE.POST_NO,
+		       POST.CONTENT POST_NAME,
+		       CRE_EMP.LOCAL_NAME CREATE_NAME,
+		       HEI.ACTIVITY ACTIVITY_FLAG, 
+		       TO_CHAR(HEI.DATE_PUNISHED,'YYYY-MM-DD') DATE_PUNISHED,
+		       HEI.PUN_TYPE_ID ,
+		       PUN_TYPE.CONTENT PUN_TYPE_NAME,
+		       HEI.PUN_BONUS,
+		       HEI.PUN_REASON
+		  FROM HR_PUNISHMENT          HEI,
+		       HR_EMPLOYEE        HE,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     POST,
+		       HR_DEPARTMENT_NAME DEPT,
+		       HR_EMPLOYEE        CRE_EMP, 
+		       SY_GLOBAL_NAME     PUN_TYPE
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = DEPT.DEPTNO(+)
+		   AND DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND POSITION.LANGUAGE(+) =#interLanguage:VARCHAR#
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND POST_GRADE.LANGUAGE(+) =#interLanguage:VARCHAR#
+		   AND HE.POST_NO = POST.NO(+)
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.CREATED_BY = CRE_EMP.PERSON_ID(+)
+		   AND HEI.PUN_TYPE_ID=PUN_TYPE.NO(+)
+		   AND PUN_TYPE.LANGUAGE(+)=#interLanguage:VARCHAR#
+    ]]>	
+    <include refid="searchTransListCondition"/>
+    <isNotEmpty prepend="AND" property="FROM_DATE_PUNISHED">
+		<![CDATA[
+			    HEI.DATE_PUNISHED >= TO_DATE(#FROM_DATE_PUNISHED#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="TO_DATE_PUNISHED">
+		<![CDATA[
+		        HEI.DATE_PUNISHED <= TO_DATE(#TO_DATE_PUNISHED#,'YYYY-MM-DD')
+	    ]]>
+	</isNotEmpty>
+	<![CDATA[
+	      ORDER BY HEI.DATE_PUNISHED DESC, 
+	      		   HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+<select id="getPunishMentViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_PUNISHMENT HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 取消奖惩 -->
+<update id="cancelHrPunishMentByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_PUNISHMENT HEI
+			   SET HEI.ACTIVITY    = 3,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+<!-- 是否已生效 -->
+<select id="ifEffectByExpInsidePunishMentNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+	           FROM HR_PUNISHMENT HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+ <!-- 薪资调整 -->
+<select id="getPaAdjustViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+	    SELECT HEI.EXP_INSIDE_NO,
+		       HE.EMPID,
+		       HE.LOCAL_NAME,
+		       DEPT.DEPTNO,
+		       DEPT.CONTENT DEPTNAME,
+		       HE.POSITION_NO,
+		       POSITION.CONTENT POSITIONNAME,
+		       HE.POST_GRADE_NO,
+		       POST_GRADE.CONTENT POST_GRADE_NAME,
+		       HE.POST_NO,
+		       POST.CONTENT POST_NAME,
+		       CRE_EMP.LOCAL_NAME CREATE_NAME,
+		       HEI.ACTIVITY ACTIVITY_FLAG,
+		       HEI.RETURN_VALUE,
+		       (SELECT B.RETURN_VALUE
+		          FROM PA_BASIC_DATA       B,
+		               PA_BASIC_ITEM_PARAM C
+		         WHERE B.PARAM_NO = C.PARAM_NO
+		           AND B.PERSON_ID = HEI.PERSON_ID
+		           AND C.ITEM_NO = HEI.ITEM_NO
+		           AND C.CPNY_ID = #interCpnyID:VARCHAR#
+		           AND B.END_DATE IS NULL
+		           AND B.ACTIVITY = 1
+		           ) PAY_STEP_BEFORE,
+		       HEI.PAYRISE_DATE,
+		       HEI.REMARK,
+		       DUTY.CONTENT DUTYNAME,
+		       ADJUST_REASON.CONTENT ADJUST_REASON,
+		       TO_CHAR(HEI.START_DATE,'YYYY-MM-DD') START_DATE,
+		       TRANS_CODE.CONTENT TRANS_CODE_NAME
+		  FROM HR_PAYRISE         HEI,
+		       HR_EMPLOYEE        HE,
+		       SY_GLOBAL_NAME     POSITION,
+		       SY_GLOBAL_NAME     POST_GRADE,
+		       SY_GLOBAL_NAME     POST,
+		       HR_DEPARTMENT_NAME DEPT,
+		       HR_EMPLOYEE        CRE_EMP,
+		       SY_GLOBAL_NAME     DUTY,
+		       SY_GLOBAL_NAME     ADJUST_REASON,
+		       SY_GLOBAL_NAME     TRANS_CODE
+		 WHERE HEI.PERSON_ID = HE.PERSON_ID
+		   AND HE.DEPTNO = DEPT.DEPTNO(+)
+		   AND DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POSITION_NO = POSITION.NO(+)
+		   AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+		   AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HE.POST_NO = POST.NO(+)
+		   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.CREATED_BY = CRE_EMP.PERSON_ID(+)
+		   AND HE.DUTY_NO = DUTY.NO(+)
+		   AND DUTY.LANGUAGE(+) = #interLanguage:VARCHAR#
+		   AND HEI.ADJUST_REASON = ADJUST_REASON.NO(+)
+		   AND ADJUST_REASON.LANGUAGE = #interLanguage:VARCHAR#
+		   AND HEI.TRANS_CODE = TRANS_CODE.NO(+)
+   		   AND TRANS_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+    ]]>	
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+<select id="getPaAdjustViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_PAYRISE HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 取消兼职 -->
+<update id="cancelHrPaAdjustByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_PAYRISE HEI
+			   SET HEI.ACTIVITY    = 2,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+<!-- 是否已生效 -->
+<select id="ifEffectByExpInsidePaAdjustNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+	           FROM HR_PAYRISE HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 代理 -->
+	<select id="getAgentViewList" parameterClass="linkMap" resultClass="linkMap" remapResults="true" > 
+	<![CDATA[
+				      SELECT HEI.EXP_INSIDE_NO,
+				             HE.EMPID,
+				             HE.LOCAL_NAME,
+				             DEPT.DEPTNO,
+				             DEPT.CONTENT DEPTNAME,
+				             HE.POSITION_NO,
+				             POSITION.CONTENT POSITIONNAME,
+				             HE.POST_GRADE_NO,
+				             POST_GRADE.CONTENT POST_GRADE_NAME,
+				             HE.POST_NO,
+				             POST.CONTENT POST_NAME,
+				             CRE_EMP.LOCAL_NAME CREATE_NAME,
+				             HEI.ACTIVITY ACTIVITY_FLAG ,
+				             HEI.AGENT_DUTY_NO,
+				             HEI.AGENT_POST_GRADE_NO,
+				             HEI.AGENT_POSITION_NO,
+				             AGENT_POST_GRADE.CONTENT  AGENT_POST_GRADE_NAME,
+				             AGENT_POST.CONTENT AGENT_POST_NAME,
+				             AGENT_DUTY.CONTENT  AGENT_DUTY_NAME,
+				             AGENT_POSITION.CONTENT  AGENT_POSITION_NAME,
+				             AGENT_WORK_AREA.CONTENT AGENT_WORK_AREA_NAME,
+				             HEI.AGENT_REASON,
+				             TO_CHAR(HEI.START_DATE,'YYYY-MM-DD') START_DATE
+				        FROM HR_AGENT           HEI,
+				             HR_EMPLOYEE        HE,
+				             SY_GLOBAL_NAME     POSITION,
+				             SY_GLOBAL_NAME     POST_GRADE,
+				             SY_GLOBAL_NAME     POST,
+				             HR_DEPARTMENT_NAME DEPT,
+				             HR_EMPLOYEE        CRE_EMP,
+				             HR_POST_GRADE      AGENT_GRADE,
+				             SY_GLOBAL_NAME AGENT_POST_GRADE,
+				             SY_GLOBAL_NAME AGENT_POST,
+				             SY_GLOBAL_NAME AGENT_DUTY,
+				             SY_GLOBAL_NAME AGENT_POSITION,
+				             HR_DEPARTMENT AGENT_DEPT,
+				             SY_GLOBAL_NAME AGENT_WORK_AREA
+				       WHERE HEI.PERSON_ID = HE.PERSON_ID
+				         AND HE.DEPTNO = DEPT.DEPTNO(+)
+				         AND DEPT.LANGUAGE(+) = #interLanguage:VARCHAR#
+				         AND HE.POSITION_NO = POSITION.NO(+)
+				         AND POSITION.LANGUAGE(+) = #interLanguage:VARCHAR#
+				         AND HE.POST_GRADE_NO = POST_GRADE.NO(+)
+				         AND POST_GRADE.LANGUAGE(+) = #interLanguage:VARCHAR#
+				         AND HE.POST_NO = POST.NO(+)
+				         AND POST.LANGUAGE(+) =#interLanguage:VARCHAR#
+				         AND HEI.CREATED_BY = CRE_EMP.PERSON_ID(+)
+				         AND HEI.AGENT_POST_GRADE_NO=AGENT_GRADE.POST_GRADE_NO(+)
+				         AND HEI.AGENT_POSITION_NO=AGENT_POST_GRADE.NO(+)
+				         AND AGENT_POST_GRADE.LANGUAGE(+)= #interLanguage:VARCHAR#
+				         AND HEI.AGENT_POSITION_NO=AGENT_POSITION.NO(+)
+				         AND AGENT_POSITION.LANGUAGE(+)= #interLanguage:VARCHAR#
+				         AND HEI.AGENT_DUTY_NO=AGENT_DUTY.NO(+)
+				         AND AGENT_DUTY.LANGUAGE(+)=#interLanguage:VARCHAR#
+				         AND AGENT_GRADE.POST_NO=AGENT_POST.NO(+)
+				         AND AGENT_POST.LANGUAGE(+)= #interLanguage:VARCHAR#
+				         AND HEI.AGENT_DEPTNO=AGENT_DEPT.DEPTNO
+				         AND AGENT_DEPT.WORK_AREA=AGENT_WORK_AREA.NO(+)
+				         AND AGENT_WORK_AREA.LANGUAGE(+)=#interLanguage:VARCHAR#			 
+    ]]>	
+    <include refid="searchTransListCondition"/>
+	<![CDATA[
+	      ORDER BY HE.DEPTNO,
+	               HE.EMPID
+    ]]>   
+</select>
+<select id="getAgentViewListCnt" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+			  FROM HR_AGENT HEI,
+			       HR_EMPLOYEE          HE
+			 WHERE HEI.PERSON_ID = HE.PERSON_ID		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+<!-- 取消代理 -->
+<update id="cancelHrAgentByNo" parameterClass="linkMap">
+	<![CDATA[			
+			UPDATE HR_AGENT HEI
+			   SET HEI.ACTIVITY    = 3,
+			       HEI.UPDATE_DATE = SYSDATE,
+			       HEI.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+    ]]>
+</update>
+<!-- 是否已生效 -->
+<select id="ifEffectByExpInsideAgentNo" parameterClass="linkMap" resultClass="int" remapResults="true" > 
+	 <![CDATA[
+			SELECT COUNT(0)
+	           FROM HR_AGENT HEI
+	          WHERE HEI.EXP_INSIDE_NO = #EXP_INSIDE_NO#
+	            AND HEI.ACTIVITY <> 0		  			   
+    ]]>		    	
+    <include refid="searchTransListCondition"/>
+</select>
+
+<!-- 新的基本,个人信息临时表查看 -->
+<select id="viewEntryTransTempInfoNew" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[  
+		SELECT H.EMPID,
+	       H.LOCAL_NAME,
+	       H.CHINESE_PINYIN,
+	       P.IDCARD_NO,
+	        P.SEXCODE SEX_CODE,
+	       GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) SEX_NAME,
+	       TO_CHAR( P.DOB, 'yyyy-MM-dd')  DOB,
+	       HDN.CONTENT DEPTNO_NAME,
+	       GET_GLOBAL_NAME(H.GRADE_LEVEL, #interLanguage:VARCHAR#) GRADE_LEVEL_NAME,
+	       GET_GLOBAL_NAME(H.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+	       GET_GLOBAL_NAME(H.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+	       GET_GLOBAL_NAME(H.POST_NO, #interLanguage:VARCHAR#) POST_NAME ,
+	       TO_CHAR( H.JOIN_COMPANY_DATE, 'yyyy-MM-dd')  JOIN_COMPANY_DATE,
+	       H.IN_THE_DIFFERENCE,
+	       H.NOW_DEPARTMENT_DATE,
+	       TO_CHAR(H.DATE_LEFT, 'yyyy-MM-dd') DATE_LEFT,
+	      (SELECT TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#) AS INNER_WORK_YEAR,
+	       H.EMPLOYMENT_TYPE EMPLOYMENT_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.EMPLOYMENT_TYPE, #interLanguage:VARCHAR#) EMPLOYMENT_NAME,
+	       H.CONTRACT_TYPE CONTRACT_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.CONTRACT_TYPE, #interLanguage:VARCHAR#) CONTRACT_NAME,
+	       H.EMP_TYPE_CODE EMP_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+	       H.EMP_OFFICE EMP_OFFICE_CODE,
+           GET_GLOBAL_NAME(H.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+	       P.FINAL_DEGREE_CODE,
+	       GET_GLOBAL_NAME(P.FINAL_DEGREE_CODE, #interLanguage:VARCHAR#) FINAL_DEGREE_NAME,
+	       P.FINAL_SCHOOL,
+	       P.FINAL_SUBJECT,
+	       GET_GLOBAL_NAME(P.FINAL_SUBJECT, #interLanguage:VARCHAR#) FINAL_SUBJECT_NAME,
+	       H.WHETHER_COMMUNIST WHETHER_COMMUNIST_CODE,
+	       GET_GLOBAL_NAME(H.WHETHER_COMMUNIST, #interLanguage:VARCHAR#) WHETHER_COMMUNIST_NAME,
+	       P.CELLPHONE,
+	       H.PRESENT_ADDRESS_PROVINCE_CODE,
+	       GET_GLOBAL_NAME(H.PRESENT_ADDRESS_PROVINCE_CODE, #interLanguage:VARCHAR#) PRESENT_ADDRESS_PROVINCE_NAME,
+	       P.HOME_ADDRESS,
+	       P.REG_TYPE_CODE,
+	       GET_GLOBAL_NAME(P.REG_TYPE_CODE, #interLanguage:VARCHAR#) REG_TYPE_NAME,
+	       H.ANMELDEN_PROVINCE_CODE,
+	       GET_GLOBAL_NAME(H.ANMELDEN_PROVINCE_CODE, #interLanguage:VARCHAR#) ANMELDEN_PROVINCE_NAME,
+	       P.REG_PLACE,
+	       H.ENGLISH_NAME,
+	       H.WHETHER_FOREIGNERS WHETHER_FOREIGNERS_CODE,
+	       GET_GLOBAL_NAME(H.WHETHER_FOREIGNERS, #interLanguage:VARCHAR#) WHETHER_FOREIGNERS_NAME,
+	       P.NATIONALITY_CODE,
+	       GET_GLOBAL_NAME(P.NATIONALITY_CODE, #interLanguage:VARCHAR#) NATIONALITY_NAME,
+	       P.NATION_CODE,
+	       GET_GLOBAL_NAME(P.NATION_CODE, #interLanguage:VARCHAR#) NATION_NAME,
+	       P.EMAIL,
+	       P.HOME_PHONE,
+	       H.DISABLED_OR_NOT,
+	       H.JOB_TYPE JOB_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.JOB_TYPE, #interLanguage:VARCHAR#) JOB_TYPE_NAME,
+	       H.WHETHER_THE_UNION_MEMBERS WHETHER_THE_UNION_MEMBERS_CODE,
+	       GET_GLOBAL_NAME(H.WHETHER_THE_UNION_MEMBERS, #interLanguage:VARCHAR#) WHETHER_NAME,
+	       H.WORKING_TIME WORKING_TIME_CODE,
+	       GET_GLOBAL_NAME(H.WORKING_TIME, #interLanguage:VARCHAR#) WORKING_TIMET_NAME,
+	       P.REC_SOURCE_DETAIL_NO REC_SOURCE_DETAIL_NO_CODE,
+	       GET_GLOBAL_NAME(P.REC_SOURCE_DETAIL_NO, #interLanguage:VARCHAR#) REC_SOURCE_DETAIL_NO_NAME,
+	       P.RECRUITMENT_SOURCE_TYPE,
+	       H.JOIN_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.JOIN_TYPE_CODE, #interLanguage:VARCHAR#) JOIN_TYPE_CODE_NAME,
+	       (SELECT TRUNC( H.OUTER_WORK_YEAR / 12) FROM DUAL) YEAR_AGE_LIMIT,
+       	   (SELECT MOD( H.OUTER_WORK_YEAR, 12) FROM DUAL) MONTH_AGE_LIMIT,
+	       (SELECT COUNT(*) FROM HR_CONTRACT HC WHERE HC.PERSON_ID =#PERSON_ID:VARCHAR# ) TOTAL_PERIOD,
+	       TO_CHAR( H.BEFORE_END_PROBATION_DATE, 'yyyy-MM-dd')  BEFORE_END_PROBATION_DATE,
+	       H.WORK_AREA WORK_AREA_CODE,
+	       GET_GLOBAL_NAME(H.WORK_AREA, #interLanguage:VARCHAR#) WORK_AREA_NAME,
+	       H.SOCIAL_SECURITY_AREA SOCIAL_SECURITY_AREA_CODE,
+	       GET_GLOBAL_NAME(H.SOCIAL_SECURITY_AREA, #interLanguage:VARCHAR#) SOCIAL_SECURITY_AREA_NAME,
+	       P.INSURANCE_TYPE_CODE,
+	       GET_GLOBAL_NAME(P.INSURANCE_TYPE_CODE, #interLanguage:VARCHAR#) INSURANCE_TYPE_CODE_NAME,
+	       H.PERSON_ID,
+	       H.POSITION_NO POSITION_NO_CODE,
+       	   GET_GLOBAL_NAME( H.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+       	   H.CPNY_ID
+	  	FROM HR_EMPLOYEE_TEMP H, HR_PERSONAL_INFO_TEMP P,
+	 		   HR_DEPARTMENT HD,
+               HR_DEPARTMENT_NAME HDN
+	 	WHERE  H.PERSON_ID = P.PERSON_ID
+	   	AND P.PERSON_ID=#PERSON_ID:VARCHAR#
+	   	AND H.EXP_INSIDE_NO = P.EXP_INSIDE_NO
+	   	AND HD.DEPTNO = HDN.DEPTNO(+)
+        AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+        AND HD.CPNY_ID = #CPNY_ID:VARCHAR#
+        AND HD.DEPTNO =H.DEPTNO
+	]]>
+</select>
+
+<!-- 基本,个人信息查看 -->
+<select id="viewEntryTransInfoNew" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+	<![CDATA[ 
+				SELECT H.EMPID,
+	       H.LOCAL_NAME,
+	       H.CHINESE_PINYIN,
+	       P.IDCARD_NO,
+	        P.SEXCODE SEX_CODE,
+	       GET_GLOBAL_NAME(P.SEXCODE, #interLanguage:VARCHAR#) SEX_NAME,
+	       TO_CHAR( P.DOB, 'yyyy-MM-dd')  DOB,
+	       HDN.CONTENT DEPTNO_NAME,
+	       GET_GLOBAL_NAME(H.GRADE_LEVEL, #interLanguage:VARCHAR#) GRADE_LEVEL_NAME,
+	       GET_GLOBAL_NAME(H.DUTY_NO, #interLanguage:VARCHAR#) DUTY_NAME,
+	       GET_GLOBAL_NAME(H.POST_GRADE_NO, #interLanguage:VARCHAR#) POST_GRADE_NAME,
+	       GET_GLOBAL_NAME(H.POST_NO, #interLanguage:VARCHAR#) POST_NAME ,
+	       TO_CHAR( H.JOIN_COMPANY_DATE, 'yyyy-MM-dd')  JOIN_COMPANY_DATE,
+	       H.IN_THE_DIFFERENCE,
+	       H.NOW_DEPARTMENT_DATE,
+	       TO_CHAR(H.DATE_LEFT, 'yyyy-MM-dd') DATE_LEFT,
+	      (SELECT TRUNC(MONTHS_BETWEEN(SYSDATE, A.DATE_STARTED) / 12) FROM HR_EMPLOYEE A WHERE A.PERSON_ID = #PERSON_ID:VARCHAR#) AS INNER_WORK_YEAR,
+	       H.EMPLOYMENT_TYPE EMPLOYMENT_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.EMPLOYMENT_TYPE, #interLanguage:VARCHAR#) EMPLOYMENT_NAME,
+	       H.CONTRACT_TYPE CONTRACT_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.CONTRACT_TYPE, #interLanguage:VARCHAR#) CONTRACT_NAME,
+	       H.EMP_TYPE_CODE EMP_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #interLanguage:VARCHAR#) EMP_TYPE_NAME,
+	       H.EMP_OFFICE EMP_OFFICE_CODE,
+           GET_GLOBAL_NAME(H.EMP_OFFICE, #interLanguage:VARCHAR#) EMP_OFFICE_NAME,
+	       P.FINAL_DEGREE_CODE,
+	       GET_GLOBAL_NAME(P.FINAL_DEGREE_CODE, #interLanguage:VARCHAR#) FINAL_DEGREE_NAME,
+	       P.FINAL_SCHOOL,
+	       P.FINAL_SUBJECT,
+	       GET_GLOBAL_NAME(P.FINAL_SUBJECT, #interLanguage:VARCHAR#) FINAL_SUBJECT_NAME,
+	       H.WHETHER_COMMUNIST WHETHER_COMMUNIST_CODE,
+	       GET_GLOBAL_NAME(H.WHETHER_COMMUNIST, #interLanguage:VARCHAR#) WHETHER_COMMUNIST_NAME,
+	       P.CELLPHONE,
+	       H.PRESENT_ADDRESS_PROVINCE_CODE,
+	       GET_GLOBAL_NAME(H.PRESENT_ADDRESS_PROVINCE_CODE, #interLanguage:VARCHAR#) PRESENT_ADDRESS_PROVINCE_NAME,
+	       P.HOME_ADDRESS,
+	       P.REG_TYPE_CODE,
+	       GET_GLOBAL_NAME(P.REG_TYPE_CODE, #interLanguage:VARCHAR#) REG_TYPE_NAME,
+	       H.ANMELDEN_PROVINCE_CODE,
+	       GET_GLOBAL_NAME(H.ANMELDEN_PROVINCE_CODE, #interLanguage:VARCHAR#) ANMELDEN_PROVINCE_NAME,
+	       P.REG_PLACE,
+	       H.ENGLISH_NAME,
+	       H.WHETHER_FOREIGNERS WHETHER_FOREIGNERS_CODE,
+	       GET_GLOBAL_NAME(H.WHETHER_FOREIGNERS, #interLanguage:VARCHAR#) WHETHER_FOREIGNERS_NAME,
+	       P.NATIONALITY_CODE,
+	       GET_GLOBAL_NAME(P.NATIONALITY_CODE, #interLanguage:VARCHAR#) NATIONALITY_NAME,
+	       P.NATION_CODE,
+	       GET_GLOBAL_NAME(P.NATION_CODE, #interLanguage:VARCHAR#) NATION_NAME,
+	       P.EMAIL,
+	       P.HOME_PHONE,
+	       H.DISABLED_OR_NOT,
+	       H.JOB_TYPE JOB_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.JOB_TYPE, #interLanguage:VARCHAR#) JOB_TYPE_NAME,
+	       H.WHETHER_THE_UNION_MEMBERS WHETHER_THE_UNION_MEMBERS_CODE,
+	       GET_GLOBAL_NAME(H.WHETHER_THE_UNION_MEMBERS, #interLanguage:VARCHAR#) WHETHER_NAME,
+	       H.WORKING_TIME WORKING_TIME_CODE,
+	       GET_GLOBAL_NAME(H.WORKING_TIME, #interLanguage:VARCHAR#) WORKING_TIMET_NAME,
+	       P.REC_SOURCE_DETAIL_NO REC_SOURCE_DETAIL_NO_CODE,
+	       GET_GLOBAL_NAME(P.REC_SOURCE_DETAIL_NO, #interLanguage:VARCHAR#) REC_SOURCE_DETAIL_NO_NAME,
+	       P.RECRUITMENT_SOURCE_TYPE,
+	       H.JOIN_TYPE_CODE,
+	       GET_GLOBAL_NAME(H.JOIN_TYPE_CODE, #interLanguage:VARCHAR#) JOIN_TYPE_CODE_NAME,
+	       (SELECT TRUNC( H.OUTER_WORK_YEAR / 12) FROM DUAL) YEAR_AGE_LIMIT,
+       	   (SELECT MOD( H.OUTER_WORK_YEAR, 12) FROM DUAL) MONTH_AGE_LIMIT,
+	       (SELECT COUNT(*) FROM HR_CONTRACT HC WHERE HC.PERSON_ID =#PERSON_ID:VARCHAR# ) TOTAL_PERIOD,
+	       TO_CHAR( H.BEFORE_END_PROBATION_DATE, 'yyyy-MM-dd')  BEFORE_END_PROBATION_DATE,
+	       H.WORK_AREA WORK_AREA_CODE,
+	       GET_GLOBAL_NAME(H.WORK_AREA, #interLanguage:VARCHAR#) WORK_AREA_NAME,
+	       H.SOCIAL_SECURITY_AREA SOCIAL_SECURITY_AREA_CODE,
+	       GET_GLOBAL_NAME(H.SOCIAL_SECURITY_AREA, #interLanguage:VARCHAR#) SOCIAL_SECURITY_AREA_NAME,
+	       P.INSURANCE_TYPE_CODE,
+	       GET_GLOBAL_NAME(P.INSURANCE_TYPE_CODE, #interLanguage:VARCHAR#) INSURANCE_TYPE_CODE_NAME,
+	       H.PERSON_ID,
+	       H.POSITION_NO POSITION_NO_CODE,
+       	   GET_GLOBAL_NAME( H.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NO_NAME,
+       	   H.CPNY_ID
+	  	FROM HR_EMPLOYEE H, HR_PERSONAL_INFO P,
+	 		   HR_DEPARTMENT HD,
+               HR_DEPARTMENT_NAME HDN
+	 	WHERE  H.PERSON_ID = P.PERSON_ID
+	   	AND P.PERSON_ID=#PERSON_ID:VARCHAR#
+	   	AND HD.DEPTNO = HDN.DEPTNO(+)
+        AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+        AND HD.CPNY_ID = #CPNY_ID:VARCHAR#
+        AND HD.DEPTNO =H.DEPTNO
+	 ]]>
+</select>
+</sqlMap>

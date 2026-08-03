@@ -1,0 +1,1766 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap 
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="ess.affirmLeaveApply">
+	<!-- 加班申请决裁 -->
+	<sql id="seachOtAffirmCondition">
+		<!-- 决裁状态 start -->
+	    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+	 		]]>
+		</isNotEmpty>
+		<!-- 决裁状态 end -->
+		
+	    <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 部门查询条件 end -->
+	
+			
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+		
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+		    <![CDATA[
+				AP.OT_TYPE_NO = #APPLY_TYPE_NO#
+	        ]]>   
+		</isNotEmpty>	
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+		    <![CDATA[
+				AP.OT_TYPE_CODE = #APPLY_TYPE_CODE#
+	        ]]>   
+		</isNotEmpty>
+	    <isNotEmpty prepend="AND" property="ADMIN_ID">
+		    <![CDATA[
+				EA.AFFIRMOR_ID = #ADMIN_ID#
+	        ]]>   
+		</isNotEmpty>
+		<!-- 加班申请日期 开始时间和结束时间 start -->
+		<isEmpty prepend="AND" property="FROM_TIME">
+			<isNotEmpty property="TO_TIME">
+				<![CDATA[
+					(AP.OT_FROM_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						OR AP.OT_TO_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						OR AP.OT_FROM_TIME < TO_DATE('1900-12-31', 'YYYY-MM-DD') 
+						AND AP.OT_TO_TIME > TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		     ]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isEmpty prepend="AND" property="END_DATE">
+			<isNotEmpty property="FROM_TIME">
+				<![CDATA[
+			    	(AP.OT_FROM_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+		  	  			OR AP.OT_TO_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			  			OR AP.OT_FROM_TIME < TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') 
+			 			AND AP.OT_TO_TIME > TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+				]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty property="FROM_TIME">
+			<isNotEmpty prepend="AND" property="END_DATE">
+				<![CDATA[
+				    (EL.OT_FROM_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  		OR EL.OT_TO_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  		OR EL.OT_FROM_TIME < TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') 
+				 		AND EL.OT_TO_TIME > TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		        ]]>
+			</isNotEmpty>
+			<!-- 加班决裁页面用 -->
+			<isNotEmpty prepend="AND" property="TO_TIME">
+				<![CDATA[
+					(AP.OT_FROM_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  		OR AP.OT_TO_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  		OR AP.OT_FROM_TIME < TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') 
+				 		AND AP.OT_TO_TIME > TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		        ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<!-- 加班申请日期 开始时间和结束时间 end -->  
+	</sql>
+	
+	<sql id="seachLeaveAffirmCondition">
+		<!-- 决裁状态 start -->
+	    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<![CDATA[
+				AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+	 		]]>
+		</isNotEmpty>
+		<!-- 决裁状态 end -->
+		
+	    <!-- 部门查询条件 start -->
+		<isNotEmpty prepend="AND" property="DEPT_NO">
+			<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+	        ]]>   
+		</isNotEmpty>
+		<!-- 部门查询条件 end -->
+	
+			
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+				( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' ) 
+		    ]]>
+		</isNotEmpty>
+		
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+		    <![CDATA[
+				AP.LEAVE_TYPE_NO = #APPLY_TYPE_NO#
+	        ]]>   
+		</isNotEmpty>	
+	    <isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+		    <![CDATA[
+				AP.LEAVE_TYPE_CODE = #APPLY_TYPE_CODE#
+	        ]]>   
+		</isNotEmpty>
+		<!-- 申请日期 开始时间和结束时间 start -->
+		<isNotEmpty prepend="AND" property="FROM_TIME">
+			<![CDATA[
+				AP.LEAVE_TO_TIME >= TO_DATE(#FROM_TIME#, 'YYYY-MM-DD HH24:MI:SS')
+	        ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="TO_TIME">
+			<![CDATA[
+				AP.LEAVE_FROM_TIME <= TO_DATE(#TO_TIME#, 'YYYY-MM-DD HH24:MI:SS')
+	        ]]>
+		</isNotEmpty>
+		<!-- 申请日期 开始时间和结束时间 end -->  
+	</sql>
+	
+	<!--取出当前登录者可以进行决裁的所有加班记录-->
+	<select id="getOtAffirmList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT  SUBSTR(H.CPNY_ID, 4, 2) || '-' ||
+                       to_char(AP.APPLY_OT_DATE, 'YYYYMMDD') || '-O-' ||
+                       AP.APPLY_NO NO,
+		 
+			AP.APPLY_NO,
+			       AP.APPLY_TYPE,
+			       AP.PERSON_ID,
+			       H.EMPID,
+			       H.LOCAL_NAME,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.JOIN_COMPANY_DATE,
+			       H.WORK_AREA,
+			       H.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       H.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       H.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       TO_CHAR(AP.APPLY_OT_DATE, 'yyyy-MM-dd') APPLY_OT_DATE,
+			       
+			       TO_CHAR(AP.OT_FROM_TIME, 'YYYY-MM-DD  HH24:MI') OT_FROM_TIME,
+			       TO_CHAR(AP.OT_TO_TIME, 'YYYY-MM-DD  HH24:MI') OT_TO_TIME,
+			       nvl(AP.OT_DEDUCT_TIME, 0) OT_DEDUCT_TIME,
+			        DECODE(AP.OT_TIME_TYPE,'P',AP.OT_APPLY_HOUR,nvl(AP.OT_APPLY_HOUR, 0)+nvl(AP.OT_APPLY_MINUTE, 0)/60) OT_LENGTH,
+			       
+			       AP.OT_APPLY_HOUR,
+			       AP.OT_APPLY_MINUTE,
+			       AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+			       AP.ADJUST_YN,
+			       AP.OT_TIME_TYPE,
+			       
+			       AP.APPLY_OT_REMARK,
+			       SUBSTR(AP.APPLY_OT_REMARK, 0, 10) || '...' INTRO,
+			       
+			       AP.OT_TYPE_NO,
+			       AP.CURRENT_AFFIRM_ID,
+			       AP.CREATE_DATE,
+			       AP.UPDATE_DATE,
+			       AP.OT_TYPE_CODE,
+			       OT_CODE.CONTENT APPLY_TYPE_NAME,
+			       EA.ESS_AFFIRM_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY
+			  FROM ESS_APPLY_OT       AP,
+			       HR_EMPLOYEE        H,
+			       SY_GLOBAL_NAME     OT_CODE,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     POSITION,
+			       HR_DEPARTMENT_NAME HDN,
+			       ESS_AFFIRM         EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND H.DEPTNO = HDN.DEPTNO(+)
+			   AND AP.APPLY_NO = EA.APPLY_NO
+			   AND AP.OT_TYPE_CODE = OT_CODE.NO(+)
+			   AND H.POST_NO = POST.NO(+)
+			   AND H.POSITION_NO = POSITION.NO(+)
+			   AND OT_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE (+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE (+) = #interLanguage:VARCHAR#
+		]]>
+		 
+			<isNotEmpty prepend="AND" property="specialParam">
+			
+			
+			<isNotEqual prepend="" property="specialParam" compareValue="general">
+				<![CDATA[
+			   		(H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.DEPTNO IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermission"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	            <isNotEqual prepend="AND" property="specialParam" compareValue="general">
+				<![CDATA[
+ 
+			   		( H.PERSON_ID = #supervisorPersonId:VARCHAR# OR H.EMP_TYPE_CODE IN
+	             ]]>
+	            	<include refid="sys.include.getDataPermissionEmpTypeCode"/>
+	             <![CDATA[
+			   		)
+	             ]]>
+	            </isNotEqual>
+	           
+	            <isEqual prepend="" property="specialParam" compareValue="general">
+				    H.PERSON_ID = #supervisorPersonId:VARCHAR#
+	            </isEqual>
+		</isNotEmpty>
+    	<!-- 过滤权限 end -->
+		<include refid="seachOtAffirmCondition"/>
+			<![CDATA[
+				  ORDER BY AP.APPLY_OT_DATE DESC,
+				           H.DEPTNO,
+				           H.EMPID
+		  ]]>   
+	</select>
+	<select id="getOtAffirmListCnt" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_APPLY_OT       AP,
+			       HR_EMPLOYEE        H,
+			       ESS_AFFIRM         EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND AP.APPLY_NO = EA.APPLY_NO
+		]]>
+		<include refid="seachOtAffirmCondition"/>  
+	</select>	
+	
+	<!-- 修改ESS_AFFIRM start -->
+	<update id="updateEssAffirmByAffirmNo" parameterClass="linkMap">
+		<![CDATA[
+			      UPDATE ESS_AFFIRM EA
+			         SET EA.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#,
+			             EA.ACTIVITY    = #ACTIVITY:VARCHAR#,
+			             EA.UPDATE_DATE = SYSDATE,
+			             EA.UPDATED_BY  = #UPDATED_BY:VARCHAR#
+			       WHERE EA.APPLY_NO = #APPLY_NO:VARCHAR#
+	    ]]>
+	</update>
+	<!-- 修改ESS_AFFIRM start -->
+	<update id="updateSyAffirmEmailByAffirmNo" parameterClass="linkMap">
+		<![CDATA[
+			      UPDATE SY_AFFIRM_EMAIL SY
+			         SET SY.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#,
+			             SY.ACTIVITY    = #ACTIVITY:VARCHAR#,
+			             SY.UPDATE_DATE = SYSDATE,
+			             SY.UPDATED_BY  = #UPDATED_BY:VARCHAR#,
+			             SY.AFFIRM_CONTENT = #AFFIRM_CONTENT:VARCHAR#
+			       WHERE SY.APPLY_NO = #PK_NO:VARCHAR#
+	    ]]>
+	</update>
+	
+	<!-- 修改AR_DETAIL_TSTO_APPLY start -->
+	<update id="updateArDetailTstoApplyLeave" parameterClass="linkMap">
+		<![CDATA[
+			       UPDATE AR_DETAIL_TSTO_APPLY AR 
+					 SET AR.AFFIRM_FLAG = #AFFIRM_FLAG#,
+					     AR.ACTIVITY = #ACTIVITY#,
+					     AR.UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					     AR.UPDATE_DATE = SYSDATE,
+					     AR.UPDATED_IP = #UPDATED_IP:VARCHAR#
+					 WHERE AR.PK_NO = #PK_NO#
+	    ]]>
+	</update>
+	<!-- 修改ESS_AFFIRM end -->
+	
+	<select id="getNextAffirmProver" parameterClass="linkMap" resultClass="linkMap">
+		<![CDATA[
+			SELECT EA.ESS_AFFIRM_NO,
+			       EA.APPLY_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY,
+			       EA.APPLY_TYPE,
+			       H.LOCAL_NAME
+			  FROM ESS_AFFIRM EA, HR_EMPLOYEE H
+			 WHERE EA.AFFIRMOR_ID = H.PERSON_ID
+			   AND EA.APPLY_NO = #APPLY_NO:VARCHAR#
+			   AND EA.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+			   AND EA.AFFIRM_FLAG = 0
+			   AND ROWNUM = 1
+		]]>
+	</select>	
+
+	<!-- 修改加班申请 如果不是流程的最后一步,通过后续修改ESS_APPLY_OT.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+	<update id="updateEssApplyOtByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_APPLY_OT  OT
+			   SET OT.ACTIVITY    = #ACTIVITY#,
+			       OT.AFFIRM_FLAG = #AFFIRM_READ_FLAG#,
+		]]>
+		<isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+		    <![CDATA[
+				OT.AFFIRM_CONTENTT = #AFFIRM_CONTENTT:VARCHAR#
+	        ]]>   
+		</isNotEmpty>			   
+		<![CDATA[    
+			       OT.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+			       OT.UPDATE_DATE = SYSDATE,
+			       OT.UPDATED_BY  = #UPDATED_BY#
+			 WHERE OT.APPLY_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	
+	<update id="updateEssAnnuByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_ANNUAL_LEAVE_APPLY_TB  OT
+			   SET  
+			       OT.ACTIVITY    = #ACTIVITY#,
+			       OT.AFFIRM_FLAG = #AFFIRM_READ_FLAG#,
+			       OT.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+			       OT.UPDATE_DATE = SYSDATE,
+			       OT.UPDATED_BY  = #UPDATED_BY#
+			 WHERE OT.APPLY_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	
+	
+	<update id="updateEssAnnuIsACTIVITYByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_ANNUAL_LEAVE_APPLY_TB  OT
+			   SET OT.ACTIVITY = 1, 
+			       OT.UPDATE_DATE = SYSDATE,
+			       OT.UPDATED_BY  = #UPDATED_BY#
+			 WHERE OT.APPLY_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	
+	
+	<update id="updateVacLastYearByAnnuIsACTIVITYApplyNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE AR_VAC_EMP AVP SET AVP.LAST_YEAR_VAC = (
+				SELECT C.APPLY_TANSHU FROM ESS_ANNUAL_LEAVE_APPLY_TB C  WHERE  C.APPLY_NO =#APPLY_NO# and C.ACTIVITY = 1)
+				WHERE AVP.VAC_TP = #APPLY_NO#
+				AND AVP.VAC_ID = #APPLY_NO#
+				AND AVP.PERSON_ID = #APPLY_NO# 
+	    ]]>
+	</update>
+
+	
+	<!-- 修改加班申请 如果不是流程的最后一步,通过后续修改ESS_APPLY_OT.CURRENT_AFFIRM_ID为下一流程的决裁者 end-->
+		
+	<select id="getAffirmorCntByApplyNo" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_AFFIRM ESS
+			 WHERE ESS.APPLY_NO = #APPLY_NO:VARCHAR#
+			   AND ESS.AFFIRMOR_ID = #AFFIRMOR_ID:VARCHAR#
+		]]>
+	</select>	
+	
+	<!-- 插入新的决裁者之前先将其它决裁信息的等级先提高一级 -->
+	<update id="updateAffirmLevelByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_AFFIRM ESS
+			   SET ESS.AFFIRM_LEVEL = ESS.AFFIRM_LEVEL + 1
+			 WHERE ESS.APPLY_NO = #APPLY_NO#
+			   AND ESS.AFFIRM_LEVEL >= #AFFIRM_LEVEL#
+	    ]]>
+	</update>
+	<!-- 插入新的决裁者之前先将其它决裁信息的等级先提高一级 -->
+	
+	<!-- 添加新的决裁者 -->
+	<insert id="insertApplyAffirmor" parameterClass="linkMap" >
+	    <![CDATA[
+		INSERT  INTO ESS_AFFIRM 
+				(ESS_AFFIRM_NO, 
+				APPLY_NO, 
+				AFFIRM_FLAG, 
+				AFFIRM_LEVEL, 
+				AFFIRMOR_ID, 
+				CREATE_DATE, 
+				CREATED_BY, 
+				ACTIVITY,
+				APPLY_TYPE
+                ) 
+		VALUES (ESS_AFFIRM_SEQ.NEXTVAL,
+    		    #APPLY_NO#,
+				0, 
+				#AFFIRM_LEVEL#, 
+				#AFFIRMOR_ID#, 
+				SYSDATE, 
+				#CREATED_BY#, 
+				0,
+				#APPLY_TYPE:VARCHAR#
+				)
+	    ]]>
+	</insert>
+
+	<!--取出当前登录者可以进行决裁的所有加班记录-->
+	<select id="getOtCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT AP.APPLY_NO,
+			       AP.APPLY_TYPE,
+			       AP.PERSON_ID,
+			       H.EMPID,
+			       H.LOCAL_NAME,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.JOIN_COMPANY_DATE,
+			       H.WORK_AREA,
+			       H.POSITION_NO,
+			       get_global_name(H.POSITION_NO, #interLanguage:VARCHAR#) POSITION_NAME,
+			       H.POST_NO,
+			       get_global_name(H.POST_NO, #interLanguage:VARCHAR#) POST_NAME,
+			       H.DEPTNO,
+			       get_dept_name(H.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+			       TO_CHAR(AP.APPLY_OT_DATE, 'yyyy-MM-dd') APPLY_OT_DATE,
+			       
+			       TO_CHAR(AP.OT_FROM_TIME, 'YYYY-MM-DD  HH24:MI') OT_FROM_TIME,
+			       TO_CHAR(AP.OT_TO_TIME, 'YYYY-MM-DD  HH24:MI') OT_TO_TIME,
+			       nvl(AP.OT_DEDUCT_TIME, 0) OT_DEDUCT_TIME,
+			        DECODE(AP.OT_TIME_TYPE,'P',AP.OT_APPLY_HOUR,nvl(AP.OT_APPLY_HOUR, 0)+nvl(AP.OT_APPLY_MINUTE, 0)/60) OT_LENGTH,
+			       
+			       AP.OT_APPLY_HOUR,
+			       AP.OT_APPLY_MINUTE,
+			       AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+			       AP.ADJUST_YN,
+			       AP.OT_TIME_TYPE,
+			       
+			       AP.APPLY_OT_REMARK,
+			       SUBSTR(AP.APPLY_OT_REMARK, 0, 10) || '...' INTRO,
+			       
+			       AP.OT_TYPE_NO,
+			       AP.CURRENT_AFFIRM_ID,
+			       AP.CREATE_DATE,
+			       AP.UPDATE_DATE,
+			       AP.OT_TYPE_CODE,
+			       get_global_name(AP.OT_TYPE_CODE,#interLanguage:VARCHAR#) APPLY_TYPE_NAME,
+			       
+			       EA.ESS_AFFIRM_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY,
+			       EA.CURRENT_CHECKOR_ID,
+			       
+			       EC.ESS_CHECK_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECKOR_ID,
+			       EC.CHECK_FLAG,
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_CONTENT
+			  FROM ESS_APPLY_OT AP, HR_EMPLOYEE H, ESS_AFFIRM EA, ESS_CHECK EC
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND AP.APPLY_NO = EA.APPLY_NO
+			   AND EA.ESS_AFFIRM_NO = EC.ESS_AFFIRM_NO(+)
+		]]>
+		<include refid="seachOtAffirmCondition"/>
+			<![CDATA[
+				  ORDER BY AP.APPLY_OT_DATE DESC,
+				           H.DEPTNO,
+				           H.EMPID
+		  ]]>   
+	</select>
+	<select id="getOtCheckListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_APPLY_OT AP, HR_EMPLOYEE H, ESS_AFFIRM EA, ESS_CHECK EC
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND AP.APPLY_NO = EA.APPLY_NO
+			   AND EA.ESS_AFFIRM_NO = EC.ESS_AFFIRM_NO(+)
+		]]>
+		<include refid="seachOtAffirmCondition"/>  
+	</select>	
+
+	<!-- 按affirmNo获得申请信息 -->
+	<select id="getEssAffirmInfoByAffirmNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+				SELECT EA.ESS_AFFIRM_NO,
+				       EA.APPLY_NO,
+				       EA.AFFIRM_FLAG,
+				       EA.AFFIRM_LEVEL,
+				       EA.APPLY_TYPE,
+				       EA.AFFIRMOR_ID,
+				       EA.AFFIRM_CONTENT,
+				       EA.CURRENT_CHECKOR_ID,
+				       EA.ACTIVITY
+				  FROM ESS_AFFIRM EA
+				 WHERE EA.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#			   
+		]]>		
+	</select>
+	
+	<!-- 按checkNo获得申请信息 -->
+	<select id="getEssCheckInfoByCheckNo" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT EC.ESS_CHECK_NO,
+			       EC.ESS_AFFIRM_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECKOR_ID,
+			       EC.CHECK_FLAG,
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_CONTENT,
+			       EC.ACTIVITY
+			  FROM ESS_CHECK EC
+			 WHERE 1 = 1
+			   AND EC.ESS_CHECK_NO = #ESS_CHECK_NO#
+			]]>
+	</select>
+	
+	<!-- 按checkorId获得申请信息 -->
+	<select id="getEssCheckInfoByCheckorId" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT EC.ESS_CHECK_NO,
+			       EC.ESS_AFFIRM_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECKOR_ID,
+			       EC.CHECK_FLAG,
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_CONTENT,
+			       EC.ACTIVITY
+			  FROM ESS_CHECK EC
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				EC.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="CHECKOR_ID">
+			<![CDATA[
+				EC.CHECKOR_ID = #CHECKOR_ID#
+			]]>
+		</isNotEmpty>	
+	</select>
+	
+	<!-- 按checkorId获得申请信息Cnt -->
+	<select id="getEssCheckCntByCheckorId" parameterClass="linkMap" resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT count(*)
+			  FROM ESS_CHECK EC
+			 WHERE 1 = 1
+		]]>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				EC.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+			]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="CHECKOR_ID">
+			<![CDATA[
+				EC.CHECKOR_ID = #CHECKOR_ID#
+			]]>
+		</isNotEmpty>	
+	</select>
+	
+	<select id="getMaxAffirmLevelByApplyNo" parameterClass="linkMap" resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT NVL(MAX(HA.AFFIRM_LEVEL), 0) FROM ESS_AFFIRM HA WHERE HA.APPLY_NO = #APPLY_NO# AND HA.APPLY_TYPE = #APPLY_TYPE#	  				   
+	    ]]>		
+	</select>
+	
+	<select id="getMaxCheckLevelByApplyNo" parameterClass="linkMap" resultClass="int" remapResults="true"> 
+		<![CDATA[
+			SELECT NVL(MAX(EC.CHECK_LEVEL), 0) FROM ESS_CHECK EC WHERE EC.ESS_CHECK_NO = ESS_CHECK_NO  	  				   
+	    ]]>	
+	    <isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				EC.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+			]]>
+		</isNotEmpty>		
+	</select>
+	
+	<!-- 按affirmNo和level获得申请信息 -->
+	<select id="getEssAffirmInfoByApplyNoAndLevel" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+				SELECT EA.ESS_AFFIRM_NO,
+				       EA.APPLY_NO,
+				       EA.AFFIRM_FLAG,
+				       EA.AFFIRM_LEVEL,
+				       EA.AFFIRMOR_ID,
+				       EA.ACTIVITY,
+				       H.LOCAL_NAME
+				  FROM ESS_AFFIRM  EA,
+				       HR_EMPLOYEE H
+				 WHERE EA.APPLY_NO = #APPLY_NO#
+				 	AND EA.APPLY_TYPE = #APPLY_TYPE#
+				   AND EA.AFFIRMOR_ID = H.PERSON_ID		   
+		]]>
+		<isNotEmpty prepend="AND" property="NEXT_AFFIRM_LEVEL">
+			<![CDATA[
+			           EA.AFFIRM_LEVEL = #NEXT_AFFIRM_LEVEL#
+			]]>
+		</isNotEmpty>			
+	</select>
+	
+	<!-- 按affirmNo和level获得申请信息 -->
+	<select id="getEssCheckInfoByApplyNoAndLevel" parameterClass="linkMap" resultClass="linkMap" remapResults="true"> 
+		<![CDATA[
+			SELECT EC.ESS_CHECK_NO,
+			       EC.ESS_AFFIRM_NO,
+			       EC.CHECK_REASON,
+			       EC.CHECKOR_ID,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       EC.CHECK_FLAG,
+			       EC.CHECK_LEVEL,
+			       EC.CHECK_CONTENT,
+			       EC.CREATED_BY,
+			       EC.UPDATE_DATE
+			  FROM ESS_CHECK EC, HR_EMPLOYEE HE
+			 WHERE HE.PERSON_ID = EC.CHECKOR_ID
+		]]>
+		<isNotEmpty prepend="AND" property="ESS_AFFIRM_NO">
+			<![CDATA[
+				EC.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="NEXT_CHECK_LEVEL">
+			<![CDATA[
+				EC.CHECK_LEVEL = #NEXT_CHECK_LEVEL#
+			]]>
+		</isNotEmpty>			
+	</select>
+
+	<!-- 修改ess_check start -->
+	<update id="updateEssCheckByCheckNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_CHECK EC
+			   SET EC.CHECK_CONTENT = #CHECK_CONTENT:VARCHAR#,
+			       EC.CHECK_FLAG    = 1,
+			       EC.UPDATE_DATE   = SYSDATE,
+			       EC.UPDATED_BY    = #supervisorPersonId#
+			 WHERE EC.ESS_CHECK_NO = #ESS_CHECK_NO#
+	    ]]>
+	</update>
+	<!-- 修改ess_check end -->
+	
+	<!-- 修改ESS_AFFIRM start -->
+	<update id="updateEssNextCheckorByAffirmNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_AFFIRM EA
+			   SET EA.CURRENT_CHECKOR_ID = #NEXT_CHECKOR_ID#
+			 WHERE EA.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+	    ]]>
+	</update>
+	<!-- 修改ESS_AFFIRM end -->
+
+	<!-- 插入新的checkor start -->
+	<insert id="insertCheckorByAffirmNo" parameterClass = "linkMap">
+		<![CDATA[
+			INSERT INTO ESS_CHECK
+		       (   ESS_CHECK_NO,
+			       ESS_AFFIRM_NO,
+			       CHECK_REASON,
+			       
+			       CHECKOR_ID,
+			       CHECK_FLAG,
+			       CHECK_LEVEL,
+			       
+			       CREATED_BY,
+			       CREATED_DATE,
+			       ACTIVITY
+		        )
+		      VALUES
+		       (
+		        ESS_CHECK_SEQ.NEXTVAL,
+		        #ESS_AFFIRM_NO:VARCHAR#,
+		        #CHECK_REASON#,
+		        
+		        #CHECKOR_ID#,
+		        0,
+		        (SELECT NVL(MAX(CHECK_LEVEL),0)+1 FROM ESS_CHECK WHERE ESS_AFFIRM_NO = #ESS_AFFIRM_NO# ),
+		        
+		        #CREATED_BY#,
+		        SYSDATE,
+		        1
+		      )
+		]]>		
+	</insert>
+	<!-- 插入新的checkor end -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 加班申请决裁 -->
+<sql id="seachOvertimeAffirmCondition">
+	<!-- 决裁状态 start -->
+    <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+		<![CDATA[
+				0 = (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = AP.APPLY_NO
+				               AND EA.AFFIRM_FLAG <> 0
+				               AND AP.OT_TYPE_NO = #APPLY_TYPE_NO#)
+ 		]]>
+	</isEqual>
+	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+		<![CDATA[
+           	     0 < (SELECT COUNT(0)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = AP.APPLY_NO
+				               AND EA.AFFIRM_FLAG <> 0
+				               AND AP.OT_TYPE_NO = #APPLY_TYPE_NO#)
+		 ]]>
+	</isEqual>	
+	<!-- 决裁状态 end -->
+	
+    <!-- 部门查询条件 start -->
+	<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>   
+	</isNotEmpty>
+	<!-- 部门查询条件 end -->
+
+		
+	<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	        ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+	    <![CDATA[
+	             AP.OT_TYPE_NO = #APPLY_TYPE_NO#
+        ]]>   
+	</isNotEmpty>	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+	    <![CDATA[
+	             AP.OT_TYPE_CODE = #APPLY_TYPE_CODE#
+        ]]>   
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="ADMIN_ID">
+	    <![CDATA[
+	             EA.AFFIRMOR_ID = #ADMIN_ID#
+        ]]>   
+	</isNotEmpty>
+	<!-- 加班申请日期 开始时间和结束时间 start -->
+		<isEmpty prepend="AND" property="FROM_TIME">
+			<isNotEmpty property="TO_TIME">
+				<![CDATA[
+						   (AP.OT_FROM_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						 OR AP.OT_TO_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						 OR AP.OT_FROM_TIME < TO_DATE('1900-12-31', 'YYYY-MM-DD') 
+						 AND AP.OT_TO_TIME > TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		     ]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isEmpty prepend="AND" property="END_DATE">
+			<isNotEmpty property="FROM_TIME">
+				<![CDATA[
+			    (AP.OT_FROM_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+		  	  OR AP.OT_TO_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			  OR AP.OT_FROM_TIME < TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') 
+			 AND AP.OT_TO_TIME > TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty property="FROM_TIME">
+			<isNotEmpty prepend="AND" property="END_DATE">
+				<![CDATA[
+				    (EL.OT_FROM_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR EL.OT_TO_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR EL.OT_FROM_TIME < TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') 
+				 AND EL.OT_TO_TIME > TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		        ]]>
+			</isNotEmpty>
+			<!-- 加班决裁页面用 -->
+			<isNotEmpty prepend="AND" property="TO_TIME">
+				<![CDATA[
+				    (AP.OT_FROM_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR AP.OT_TO_TIME BETWEEN TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') AND TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR AP.OT_FROM_TIME < TO_DATE(#FROM_TIME#, 'YYYY-MM-DD') 
+				 AND AP.OT_TO_TIME > TO_DATE(#TO_TIME# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		        ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+	<!-- 加班申请日期 开始时间和结束时间 end -->  
+</sql>
+<!--休假/外出/出差申请决裁共用 start -->
+<sql id="seachLeaveApplyAffirmCondision">
+	<!-- 决裁状态 start -->
+    <isEqual prepend="AND" property="STATUS_CODE" compareValue="3530">
+		<![CDATA[
+				0 = (SELECT COUNT(*)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = AP.APPLY_NO
+				               AND EA.AFFIRM_FLAG <> 0
+				               AND AP.LEAVE_TYPE_NO = #APPLY_TYPE_NO#)
+ 		]]>
+	</isEqual>
+	<isEqual prepend="AND" property="STATUS_CODE" compareValue="3531">
+		<![CDATA[
+           	     0 < (SELECT COUNT(*)
+				              FROM ESS_AFFIRM EA
+				             WHERE EA.APPLY_NO = AP.APPLY_NO
+				               AND EA.AFFIRM_FLAG <> 0
+				               AND AP.LEAVE_TYPE_NO = #APPLY_TYPE_NO#)
+		 ]]>
+	</isEqual>	
+	<!-- 决裁状态 end -->
+
+    <!-- 部门查询条件 start -->
+	<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>   
+	</isNotEmpty>
+	<!-- 部门查询条件 end -->	
+		
+	<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	       ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+	    <![CDATA[
+	             AP.LEAVE_TYPE_NO = #APPLY_TYPE_NO#
+        ]]>   
+	</isNotEmpty>	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+	    <![CDATA[
+	             AP.LEAVE_TYPE_CODE = #APPLY_TYPE_CODE#
+        ]]>   
+	</isNotEmpty>
+    <!-- 休假申请日期 开始时间和结束时间 start -->
+		<isEmpty prepend="AND" property="START_DATE">
+			<isNotEmpty property="END_DATE">
+				<![CDATA[
+						 (AP.LEAVE_FROM_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						 OR AP.LEAVE_TO_TIME BETWEEN TO_DATE('1900-12-31', 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+						 OR AP.LEAVE_FROM_TIME < TO_DATE('1900-12-31', 'YYYY-MM-DD') 
+						 AND AP.LEAVE_TO_TIME > TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		     ]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isEmpty prepend="AND" property="END_DATE">
+			<isNotEmpty property="START_DATE">
+				<![CDATA[
+			 (AP.LEAVE_FROM_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			 OR AP.LEAVE_TO_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			 OR AP.LEAVE_FROM_TIME < TO_DATE(#START_DATE#, 'YYYY-MM-DD') 
+			 AND AP.LEAVE_TO_TIME > TO_DATE('2099-12-31' || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		]]>
+			</isNotEmpty>
+		</isEmpty>
+		<isNotEmpty property="START_DATE">
+			<isNotEmpty prepend="AND" property="END_DATE">
+				<![CDATA[
+				 (AP.LEAVE_FROM_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR AP.LEAVE_TO_TIME BETWEEN TO_DATE(#START_DATE#, 'YYYY-MM-DD') AND TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+				  OR AP.LEAVE_FROM_TIME < TO_DATE(#START_DATE#, 'YYYY-MM-DD') 
+				 AND AP.LEAVE_TO_TIME > TO_DATE(#END_DATE# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')) 
+		        ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+	<!-- 休假申请日期 开始时间和结束时间 end -->
+</sql>
+<!-- 休假/外出/出差申请决裁共用 end -->
+	
+<!--取出当前登录者可以进行决裁的所有加班记录-->
+<select id="getOvertimeAffirmList" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+			SELECT H.EMPID,
+			       H.LOCAL_NAME,
+			       H.CHINESE_PINYIN,
+			       H.ENGLISH_NAME,
+			       H.KOREAN_NAME,
+			       H.STATUS_CODE,
+			       H.DATE_STARTED,
+			       H.JOIN_COMPANY_DATE,
+			       H.WORK_AREA,
+			       H.POSITION_NO,
+			       POSITION.CONTENT POSITION_NAME,
+			       H.POST_NO,
+			       POST.CONTENT POST_NAME,
+			       H.DEPTNO,
+			       HDN.CONTENT DEPT_NAME,
+			       nvl(AP.OT_DEDUCT_TIME, 0) OT_DEDUCT_TIME,
+			       DECODE(AP.OT_TIME_TYPE,'P',AP.OT_APPLY_HOUR,nvl(AP.OT_APPLY_HOUR, 0)+nvl(AP.OT_APPLY_MINUTE, 0)/60) OT_LENGTH,
+			       AP.APPLY_NO,
+			       AP.PERSON_ID,
+			       TO_CHAR(AP.APPLY_OT_DATE, 'yyyy-MM-dd HH:mm:ss') APPLY_OT_DATE,
+			       AP.APPLY_OT_REMARK,
+			       SUBSTR(AP.APPLY_OT_REMARK, 0, 10) || '...' INTRO,
+			       TO_CHAR(AP.OT_FROM_TIME, 'YYYY-MM-DD  HH24:MI') OT_FROM_TIME,
+			       TO_CHAR(AP.OT_TO_TIME, 'YYYY-MM-DD  HH24:MI') OT_TO_TIME,
+			       AP.OT_TYPE_NO,
+			       AP.CURRENT_AFFIRM_ID,
+			       AP.CREATE_DATE,
+			       AP.UPDATE_DATE,
+			       AP.OT_TYPE_CODE,
+			       OT_CODE.CONTENT APPLY_TYPE_NAME,
+			       EA.ESS_AFFIRM_NO,
+			       EA.AFFIRM_FLAG,
+			       EA.AFFIRM_LEVEL,
+			       EA.AFFIRMOR_ID,
+			       EA.ACTIVITY
+			  FROM ESS_APPLY_OT       AP,
+			       HR_EMPLOYEE        H,
+			       SY_GLOBAL_NAME     OT_CODE,
+			       SY_GLOBAL_NAME     POST,
+			       SY_GLOBAL_NAME     POSITION,
+			       HR_DEPARTMENT_NAME HDN,
+			       ESS_AFFIRM         EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND H.DEPTNO = HDN.DEPTNO(+)
+			   AND AP.APPLY_NO = EA.APPLY_NO
+			   and ap.current_affirm_id = ea.affirmor_id
+			   AND AP.OT_TYPE_CODE = OT_CODE.NO(+)
+			   AND H.POST_NO = POST.NO(+)
+			   AND H.POSITION_NO = POSITION.NO(+)
+			   AND OT_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND HDN.LANGUAGE (+) = #interLanguage:VARCHAR#
+			   AND POST.LANGUAGE(+) = #interLanguage:VARCHAR#
+			   AND POSITION.LANGUAGE (+) = #interLanguage:VARCHAR#			   
+			   AND AP.ACTIVITY = 0
+	]]>
+	<include refid="seachOvertimeAffirmCondition"/>
+		<![CDATA[
+			  ORDER BY AP.APPLY_OT_DATE DESC,
+			           H.DEPTNO,
+			           H.EMPID
+	  ]]>   
+</select>
+<select id="getOvertimeAffirmListCnt" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+			SELECT COUNT(0)
+			  FROM ESS_APPLY_OT AP,
+			       HR_EMPLOYEE  H,
+			       ESS_AFFIRM   EA
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+			   AND AP.APPLY_NO  = EA.APPLY_NO
+			   and ap.current_affirm_id = ea.affirmor_id
+			   AND AP.ACTIVITY  = 0
+	]]>
+	<include refid="seachOvertimeAffirmCondition"/>  
+</select>
+
+<!--取出当前登录者可以进行决裁的所有休假申请记录(出差和外出共用) -->
+<select id="getLeaveApplyAffirmList" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+			SELECT SUBSTR(H.CPNY_ID, 4, 2) || '-' ||
+                       to_char(APPLY_TIME, 'YYYYMMDD') || '-L-' ||
+                       AP.APPLY_NO NO,
+                       H.EMPID,
+                       H.LOCAL_NAME,
+                       H.DEPTNO,
+                       HDN.CONTENT DEPT_NAME,
+                       AP.APPLY_NO,
+                       AP.PERSON_ID,
+                       TO_CHAR(AP.APPLY_TIME, 'YYYY-MM-DD  HH24:MI:SS') APPLY_TIME,
+                       AP.LEAVE_REASON,
+                       SUBSTR(AP.LEAVE_REASON, 0, 10) || '...' INTRO,
+                       TO_CHAR(AP.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI') LEAVE_FROM_TIME,
+                       TO_CHAR(AP.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI') LEAVE_TO_TIME,
+                       AP.LEAVE_TYPE_NO,
+                       AP.CURRENT_AFFIRM_ID,
+                       AP.CREATE_DATE,
+                       AP.UPDATE_DATE,
+                       AP.LEAVE_TYPE_CODE,
+                       LEAVE_CODE.CONTENT APPLY_TYPE_NAME,
+                       AP.FILE_URL,
+                       AP.FILE_NAME,
+                       AP.OLD_DAY,
+                       AP.APPLY_TYPE,
+                       AP.UNDO_APPLY_NO,
+			       CASE 
+			        	WHEN AP.APPLY_LENGTH >= 8 AND mod(AP.APPLY_LENGTH,8) = 0 THEN
+			        		trunc(AP.APPLY_LENGTH/8) || '天'
+			        	WHEN AP.APPLY_LENGTH > 8 AND mod(AP.APPLY_LENGTH,8) <> 0 THEN
+			       			trunc(AP.APPLY_LENGTH/8) || '天' || mod(AP.APPLY_LENGTH,8) || '小时'
+			        	WHEN AP.APPLY_LENGTH < 8 THEN
+			        		AP.APPLY_LENGTH || '小时'
+			        	ELSE 
+			        		''
+			        	END APPLY_LENGTH,
+                       AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+                       DECODE(AP.CURRENT_AFFIRM_ID, #ADMIN_ID#, 1, 0) AFFIRM_FLAG_PERSON,
+                       F_GET_APPLY_DEPTNAME(AP.APPLY_NO, #interLanguage:VARCHAR#, AP.APPLY_TYPE,AP.UNDO_APPLY_NO) BATCH_APPLY_DEPT_NAME,
+                       (SELECT ESS_AFFIRM_NO FROM ESS_AFFIRM B WHERE B.AFFIRMOR_ID = AP.CURRENT_AFFIRM_ID 
+                       		AND B.APPLY_NO = AP.APPLY_NO AND B.APPLY_TYPE = AP.LEAVE_TYPE_CODE
+                       		AND AFFIRM_FLAG = 0 AND ROWNUM = 1) ESS_AFFIRM_NO
+                  FROM ESS_LEAVE_APPLY_TB AP,
+                       HR_EMPLOYEE        H,
+                       SY_GLOBAL_NAME     LEAVE_CODE,
+                       HR_DEPARTMENT_NAME HDN
+                 WHERE AP.PERSON_ID = H.PERSON_ID
+                   AND H.DEPTNO = HDN.DEPTNO(+)
+                   AND AP.LEAVE_TYPE_CODE = LEAVE_CODE.NO(+)
+                   AND LEAVE_CODE.LANGUAGE(+) = #interLanguage:VARCHAR#
+                   AND HDN.LANGUAGE(+) = #interLanguage:VARCHAR#
+                   AND AP.AFFIRM_FLAG <> -1
+                   AND EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = AP.APPLY_NO
+                       AND   APPLY_TYPE = AP.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                   )
+	]]>
+	<!-- 决裁状态 start -->
+	<!-- 1.30为本人审批条件新加 -->
+	<isEqual prepend="AND" compareValue="10" property="AFFIRM_FLAG">
+		<![CDATA[
+ 			AP.CURRENT_AFFIRM_ID = #ADMIN_ID# 
+		]]>
+ 	</isEqual>
+	<isEqual prepend="AND" compareValue="11" property="AFFIRM_FLAG">
+		<![CDATA[
+                   EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = AP.APPLY_NO
+                       AND   APPLY_TYPE = AP.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 0
+                       AND AP.CURRENT_AFFIRM_ID <> #ADMIN_ID# 
+                   )
+		]]>
+ 	</isEqual>
+    <isEmpty prepend="AND" property="AFFIRM_FLAG">
+		<![CDATA[
+			AP.CURRENT_AFFIRM_ID = #ADMIN_ID#
+ 		]]>
+	</isEmpty>
+    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+		<isNotEqual prepend="" compareValue="-5" property="AFFIRM_FLAG">
+			<isNotEqual prepend="" compareValue="10" property="AFFIRM_FLAG">
+				<isNotEqual prepend="" compareValue="11" property="AFFIRM_FLAG">
+					<![CDATA[
+						AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+			 		]]>
+	 			</isNotEqual>
+ 			</isNotEqual>
+ 		</isNotEqual>
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_FLAG">
+		<![CDATA[
+			AP.APPLY_TYPE = #APPLY_TYPE_FLAG#
+ 		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="LEAVE_TYPE_NO"> 
+	       <![CDATA[
+	        	   AP.LEAVE_TYPE_NO = #LEAVE_TYPE_NO#
+	    	]]>
+	 </isNotEmpty>
+	<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>   
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	        ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+	    <![CDATA[
+	             AP.LEAVE_TYPE_NO = #APPLY_TYPE_NO#
+        ]]>   
+	</isNotEmpty>	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+	    <![CDATA[
+	             AP.LEAVE_TYPE_CODE = #APPLY_TYPE_CODE#
+        ]]>   
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="START_DATE">
+	    <![CDATA[
+	             AP.LEAVE_FROM_TIME >= TO_DATE(#START_DATE#,'YYYY-MM-DD')
+        ]]>   
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="END_DATE">
+	    <![CDATA[
+	             AP.LEAVE_TO_TIME < TO_DATE(#END_DATE#,'YYYY-MM-DD') + 1
+        ]]>
+	</isNotEmpty>
+	<![CDATA[
+			  ORDER BY AP.CREATE_DATE DESC
+	]]>
+</select>
+
+<select id="getAttendanceAffirmList1" parameterClass="linkMap" resultClass="linkMap">
+<![CDATA[
+	SELECT 
+		  ESS.APPLY_NO,
+		  ESS.PERSON_ID,
+		  ESS.APPLY_TIME,
+		  TO_CHAR(ESS.LEAVE_FROM_TIME,'YYYY-MM-DD') FROM_DATE,
+		  TO_CHAR(ESS.LEAVE_FROM_TIME,'HH24:MI:SS') FROM_TIME,
+		  TO_CHAR(ESS.LEAVE_TO_TIME,'YYYY-MM-DD') TO_DATE,
+		  TO_CHAR(ESS.LEAVE_TO_TIME,'HH24:MI:SS') TO_TIME,
+		  ESS.LEAVE_REASON,
+		  ESS.LEAVE_TYPE_NO,
+		  ESS.LEAVE_TYPE_CODE,
+		  get_global_name(ESS.LEAVE_TYPE_CODE,#interLanguage:VARCHAR#) ITEM_NAME,
+     	  get_global_name(ESS.LEAVE_TYPE_CODE,#interLanguage:VARCHAR#) CODE_NAME,
+		  ESS.APPLY_LENGTH,
+		  ESS.AFFIRM_FLAG,
+		  get_global_name(ESS.AFFIRM_FLAG,#interLanguage:VARCHAR#) AFFIRMNAME,
+		  ESS.ACTIVITY,
+		  HR.PERSON_ID,
+		  HR.LOCAL_NAME,
+		  HR.EMPID,
+		  HR.LOCAL_NAME,
+		  HR.DEPTNO
+		FROM ESS_LEAVE_APPLY_TB ESS,HR_EMPLOYEE HR
+		WHERE ESS.PERSON_ID = HR.PERSON_ID
+		AND ESS.AFFIRM_FLAG <> '14014310'
+		]]>
+		<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+			( HR.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR HR.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+		    ]]>
+		</isNotEmpty>
+
+	<isNotEmpty prepend="AND" property="DEPTNO">
+		<![CDATA[
+			HR.DEPTNO = #DEPTNO:VARCHAR#
+ 		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="FROM_TIME">
+		<isNotEmpty property="TO_TIME">
+			<![CDATA[
+				ESS.APPLY_TIME BETWEEN TO_DATE(#FROM_TIME:VARCHAR#,'YYYY-MM-DD')   AND TO_DATE(#TO_TIME:VARCHAR#,'YYYY-MM-DD')
+	 		]]>
+ 		</isNotEmpty>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="ITEM_NO">
+		<![CDATA[
+			ESS.LEAVE_TYPE_CODE = #ITEM_NO:VARCHAR#
+ 		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+		<![CDATA[
+			ESS.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#
+ 		]]>
+	</isNotEmpty>
+	<![CDATA[
+			 ORDER BY ESS.APPLY_TIME DESC
+	]]>
+		
+</select>
+
+<!--取出当前登录者可以进行决裁的所有休假申请记录(出差和外出共用) -->
+<select id="getAttendanceAffirmList" parameterClass="linkMap" resultClass="linkMap">
+	<![CDATA[
+		SELECT 
+			  A.APPLY_NO,
+			  A.PERSON_ID,
+			  A.LEAVE_TYPE_CODE,
+			  A.APPLY_NO_AFFRIM,
+			  A.EMPID,
+			  A.POST_NO,
+			  A.LOCAL_NAME,
+			  A.DEPTNO,
+			  A.DATE_TYPE,
+			  A.TYPENAME,
+			  A.UNIT,
+			  A.STATUS_CODE,
+			  A.STATUS_NAME,
+			  A.POST_GRADE_NAME,
+			  A.IWEEK,
+			  A.POST_GRADE_NO,
+			  A.DEPARTMENT,
+			  A.SHIFT_NO,
+			  A.LOCK_YN,
+			  A.CONFIRM_FLAG,
+			  A.SHIFNAME,
+			  A.AR_DATE_STR,
+			  A.INDOOR_DATE,
+			  A.OUTDOOR_DATE,
+			  A.ITEM_NO,
+			  A.ITEM_NAME,
+			  A.GROUP_ID,
+			  A.GROUPNAME,
+			  A.FROM_DATE,
+			  A.TO_DATE,
+			  A.TOT_VAC_CNT,
+			  A.SHENGYU_VAC_CNT,
+			  A.FROM_TIME,
+			  A.TO_TIME,
+			  A.FROM_TIME_FIRST,
+			  A.TO_TIME_FIRST,
+			  A.APPLY_LENGTH,
+			   A.AFFIRMNAME,
+			  A.APPLY_LENGTH2,
+			  A.LEAVEREASON,
+			  A.AFFIRM_FLAG
+			 
+			 FROM 
+			(
+			     SELECT  
+			       ESS.PK_NO APPLY_NO,
+			       HE.PERSON_ID,
+			       TB.LEAVE_TYPE_CODE,
+			       TB.APPLY_NO APPLY_NO_AFFRIM,
+			       HE.EMPID,
+			       HE.LOCAL_NAME,
+			       HE.DEPTNO  DEPTNO,
+			       ESS.DATE_TYPE,
+			       get_global_name(ESS.DATE_TYPE,#interLanguage:VARCHAR#) TYPENAME,
+			         ESS.UNIT,
+			         ESS.STATUS_CODE,
+			         ESS.STATUS_NAME,
+			         ESS.IWEEK,
+			         HE.POST_GRADE_NO,
+			       get_dept_name(HE.DEPTNO,#interLanguage:VARCHAR#) DEPARTMENT,
+			        get_global_name(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) POST_GRADE_NAME,
+			       ESS.SHIFT_NO,
+			       ESS.LOCK_YN,
+			       HE.POST_NO,
+			       CASE WHEN ESS.CONFIRM_FLAG=1 THEN 'Y'END CONFIRM_FLAG,
+			       get_global_name(   GET_AR_SHIFTNO(HE.PERSON_ID,ESS.AR_DATE_STR,#interCpnyID:VARCHAR#),#interLanguage:VARCHAR#) SHIFNAME,
+			       ESS.AR_DATE_STR,
+			       GET_AR_MAC_TIME(ESS.PERSON_ID,ESS.AR_DATE_STR,'IN') INDOOR_DATE,
+			       GET_AR_MAC_TIME(ESS.PERSON_ID,ESS.AR_DATE_STR,'OUT') OUTDOOR_DATE,
+			       ESS.ITEM_NO,
+			       get_global_name(ESS.ITEM_NO,#interLanguage:VARCHAR#) ITEM_NAME,
+			       ESS.GROUP_ID,
+			       get_global_name(ESS.GROUP_ID,#interLanguage:VARCHAR#) GROUPNAME,
+			       trim(SUBSTR(SUBSTR(TO_CHAR(ESS.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),0,16),0,10 ))  FROM_DATE,
+			       trim(SUBSTR(SUBSTR(TO_CHAR(ESS.TO_TIME,'YYYY-MM-DD HH24:MI:SS'),0,16),0,10)) TO_DATE,
+			       '0' TOT_VAC_CNT,
+			       '0' SHENGYU_VAC_CNT,
+			       trim(SUBSTR(SUBSTR(TO_CHAR(ESS.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),0,16),12,16 )) FROM_TIME,
+			       trim(SUBSTR(SUBSTR(TO_CHAR(ESS.TO_TIME,'YYYY-MM-DD HH24:MI:SS'),0,16),12,16 )) TO_TIME,
+			       trim(SUBSTR(SUBSTR(GET_AR_SHIFT_TIME(ESS.SHIFT_NO,ESS.AR_DATE_STR,#interCpnyID:VARCHAR#,'FIRST'),0,16),12,16 )) FROM_TIME_FIRST,
+			       trim(SUBSTR(SUBSTR(GET_AR_SHIFT_TIME(ESS.SHIFT_NO,ESS.AR_DATE_STR,#interCpnyID:VARCHAR#,'LAST'),0,16),12,16 )) TO_TIME_FIRST,
+			       CASE WHEN TO_CHAR(ESS.FROM_TIME,'YYYY/MM/DD') = TO_CHAR(ESS.TO_TIME,'YYYY/MM/DD') THEN
+			       (CASE WHEN ESS.UNIT = 'HOUR'  THEN
+					(CASE WHEN NVL(ESS.Quantity,0) < 8 THEN
+					     NVL(ESS.Quantity,0) || '小时'
+					 ELSE
+					              ESS.Quantity/8 || '天'
+					 END  )
+					 ELSE         ESS.Quantity || '分' END)
+					 ELSE 
+					 get_ar_leave_length(ESS.PERSON_ID,#interCpnyID#,ESS.FROM_TIME,ESS.TO_TIME,GET_AR_APPLY_TYPE_BY_ITEMNO(ESS.ITEM_NO,#interCpnyID#))/8 || '天'
+					 END APPLY_LENGTH,
+					 CASE WHEN ESS.UNIT = 'HOUR' THEN
+					    NVL(ESS.Quantity,0)
+					 ELSE  NVL(ESS.Quantity,0)
+					 END  APPLY_LENGTH2,
+			       ESS.REASON LEAVEREASON,
+			       get_global_name(GET_ESS_AFFRIM_OF_FLAG(ESS.PK_NO,#ADMIN_ID#),#interLanguage:VARCHAR#) AFFIRMNAME,
+			       GET_ESS_AFFRIM_OF_FLAG(ESS.PK_NO,#ADMIN_ID#)    AFFIRM_FLAG,
+			       ESS.INPUT_FLAG,
+			       ESS.DELETE_FLAG,
+			       ESS.CREATE_DATE
+			      FROM  AR_DETAIL_TSTO_APPLY ESS, HR_EMPLOYEE HE,ESS_LEAVE_APPLY_TB TB
+			      WHERE ESS.PERSON_ID = HE.PERSON_ID(+)
+			      AND   ESS.Apply_No = TB.APPLY_NO(+)
+			      AND   HE.CPNY_ID(+)=#interCpnyID:VARCHAR#
+			      AND   ESS.DELETE_FLAG='1'
+			      AND   ESS.NULL_FLAG = '1'
+			      AND  ESS.ITEM_NO NOT IN ('141444','141445','141446','141452','141439','141440')
+			)  A
+			WHERE A.AFFIRM_FLAG <> 14014306
+	]]>
+    <isEmpty prepend="AND" property="AFFIRM_FLAG">
+		    <![CDATA[
+                  EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG in (14014307,14014311)
+                   )
+			    ]]>
+	</isEmpty>
+    <isNotEmpty prepend="AND" property="partYn">
+		    <![CDATA[
+                 A.POST_NO IS NOT NULL
+			    ]]>
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+			<!-- 部门申请 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="14014307">
+				<![CDATA[
+					 EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 14014307
+                   )
+			    ]]>
+			</isEqual>
+			<!-- 部门长批准 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="14014308">
+				<![CDATA[
+					 EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 14014308
+                   )
+			    ]]>
+			</isEqual>
+			<!-- 部门长返回 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="14014309">
+				<![CDATA[
+				 EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 14014309
+                   )
+			    ]]>
+			</isEqual>
+			<!-- 上申取消 -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="14014310">
+				<![CDATA[
+					 EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 14014310
+                   )
+			    ]]>
+			</isEqual>
+			<!-- 部门申请(后) -->
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="14014311">
+			   <![CDATA[
+			        EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 14014311
+                   )
+			   ]]>
+			</isEqual>
+			<isEqual prepend="" property="AFFIRM_FLAG" compareValue="14014312">
+			  <![CDATA[
+			      EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = A.APPLY_NO_AFFRIM
+                       AND   APPLY_TYPE = A.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 14014312
+                   )
+			  ]]>
+			</isEqual>
+		</isNotEmpty>
+	 
+	<isNotEmpty property="FROM_TIME">
+				<isEmpty prepend="AND" property="TO_TIME">
+						replace(A.AR_DATE_STR,'/','-') >=  #FROM_TIME:VARCHAR#
+				</isEmpty> 
+		</isNotEmpty>
+        <isNotEmpty property="TO_TIME">
+				<isEmpty prepend="AND" property="FROM_TIME">
+						 #TO_TIME:VARCHAR# >= replace(A.AR_DATE_STR,'/','-')
+				</isEmpty> 
+		</isNotEmpty>
+        <isNotEmpty property="FROM_TIME">
+				<isNotEmpty prepend="AND" property="TO_TIME">
+						replace(A.AR_DATE_STR,'/','-') between #FROM_TIME:VARCHAR# and #TO_TIME:VARCHAR#
+				</isNotEmpty> 
+		</isNotEmpty>
+	
+	
+	<isNotEmpty prepend="AND" property="DEPTNO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = A.DEPTNO
+				         START WITH B1.DEPTNO = #DEPTNO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>   
+	</isNotEmpty>
+	<isEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		      EXISTS
+				 (SELECT B1.DEPTID
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = A.DEPTNO
+				         START WITH B1.DEPTNO in
+				                    (SELECT HRD.DEPTID
+				                       FROM HR_DEPARTMENT HRD
+				                      WHERE HRD.MANAGER_EMP_ID = #AR_SUPERVISIOR_INFO:VARCHAR#)
+				        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+				        )    
+			]]>
+	</isEmpty>
+	<![CDATA[
+			  ORDER BY A.AR_DATE_STR ASC,A.CREATE_DATE ,A.DEPTNO,A.EMPID
+	]]>
+</select>
+
+<select id="getLeaveApplyAffirmListCnt" parameterClass="linkMap" resultClass="int">
+	<![CDATA[
+			SELECT COUNT(0)
+			  FROM ESS_LEAVE_APPLY_TB AP,
+			       HR_EMPLOYEE        H
+			 WHERE AP.PERSON_ID = H.PERSON_ID
+                   AND AP.AFFIRM_FLAG <> -1
+                   AND EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = AP.APPLY_NO
+                       AND   APPLY_TYPE = AP.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                   )
+	]]>
+	<!-- 决裁状态 start -->
+	<!-- 1.30为本人审批条件新加 -->
+	<isEqual prepend="AND" compareValue="10" property="AFFIRM_FLAG">
+		<![CDATA[
+ 			AP.CURRENT_AFFIRM_ID = #ADMIN_ID# 
+		]]>
+ 	</isEqual>
+	<isEqual prepend="AND" compareValue="11" property="AFFIRM_FLAG">
+		<![CDATA[
+                   EXISTS (
+                       SELECT 1 FROM ESS_AFFIRM 
+                       WHERE APPLY_NO = AP.APPLY_NO
+                       AND   APPLY_TYPE = AP.LEAVE_TYPE_CODE
+                       AND   AFFIRMOR_ID =#ADMIN_ID# 
+                       AND   AFFIRM_FLAG = 0
+                       AND AP.CURRENT_AFFIRM_ID <> #ADMIN_ID# 
+                   )
+		]]>
+ 	</isEqual>
+    <isEmpty prepend="AND" property="AFFIRM_FLAG">
+		<![CDATA[
+			AP.CURRENT_AFFIRM_ID = #ADMIN_ID#
+ 		]]>
+	</isEmpty>
+    <isNotEmpty prepend="AND" property="AFFIRM_FLAG">
+		<isNotEqual prepend="" compareValue="-5" property="AFFIRM_FLAG">
+			<isNotEqual prepend="" compareValue="10" property="AFFIRM_FLAG">
+				<isNotEqual prepend="" compareValue="11" property="AFFIRM_FLAG">
+					<![CDATA[
+						AP.AFFIRM_FLAG = #AFFIRM_FLAG#
+			 		]]>
+	 			</isNotEqual>
+ 			</isNotEqual>
+ 		</isNotEqual>
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_FLAG">
+		<![CDATA[
+			AP.APPLY_TYPE = #APPLY_TYPE_FLAG#
+ 		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="and" property="LEAVE_TYPE_NO"> 
+	       <![CDATA[
+	        	   AP.LEAVE_TYPE_NO = #LEAVE_TYPE_NO#
+	    	]]>
+	 </isNotEmpty>
+	<isNotEmpty prepend="AND" property="DEPT_NO">
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTNO = H.DEPTNO
+				         START WITH B1.DEPTNO = #DEPT_NO#
+				       CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        ]]>   
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="KEY">
+		<![CDATA[
+	 	        ( H.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR H.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    ]]>
+	</isNotEmpty>
+	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_NO">
+	    <![CDATA[
+	             AP.LEAVE_TYPE_NO = #APPLY_TYPE_NO#
+        ]]>   
+	</isNotEmpty>	
+    <isNotEmpty prepend="AND" property="APPLY_TYPE_CODE">
+	    <![CDATA[
+	             AP.LEAVE_TYPE_CODE = #APPLY_TYPE_CODE#
+        ]]>   
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="START_DATE">
+	    <![CDATA[
+	             AP.LEAVE_FROM_TIME >= TO_DATE(#START_DATE#,'YYYY-MM-DD')
+        ]]>   
+	</isNotEmpty>
+    <isNotEmpty prepend="AND" property="END_DATE">
+	    <![CDATA[
+	             AP.LEAVE_TO_TIME < TO_DATE(#END_DATE#,'YYYY-MM-DD') + 1
+        ]]>
+	</isNotEmpty>
+</select>
+
+<!-- 根据ar_detail_tsto_apply中的PKNO获取申请表ess_apply_ot中的apply_no 加班 -->
+	<select id="getArDetailTstoApplyOfApplyNo" parameterClass="linkMap" resultClass="string">
+		<![CDATA[	
+			SELECT DETAIL.APPLY_NO FROM AR_DETAIL_TSTO_APPLY DETAIL WHERE DETAIL.PK_NO=#PK_NO:VARCHAR#
+		]]>
+	</select>
+<!-- end -->
+
+	<update id="updateApplyForOt" parameterClass="linkMap">
+		<![CDATA[
+		UPDATE ESS_APPLY_OT
+		SET    REMARK = #affirmRemark#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #updateBy#
+		WHERE  APPLY_OT_NO = #APPLY_OT_NO# 
+		]]>
+	</update>
+
+
+	
+<!-- 修改ESS_AFFIRM  -->
+<update id="updateHrAffirm" parameterClass="linkMap">
+	<![CDATA[
+			UPDATE ESS_AFFIRM HA
+			   SET HA.AFFIRM_FLAG = #AFFIRM_FLAG#,
+			       HA.ACTIVITY    = #AFFIRM_FLAG#,            
+			       HA.UPDATE_DATE = SYSDATE,
+			       HA.UPDATED_BY  = #UPDATED_BY#
+			 WHERE HA.ESS_AFFIRM_NO = #ESS_AFFIRM_NO#
+    ]]>
+</update>
+
+<select id="getParamInfoValue" parameterClass="linkMap" resultClass="string">
+	<![CDATA[
+			SELECT T.PARAM_VALUE
+			  FROM SY_PARAM_INFO_PARAM T
+			 WHERE T.CPNY_ID  = #CPNY_ID#
+			   AND T.PARAM_NO = #ESS_PARAM_NO#
+	]]> 
+</select>
+
+<!-- 修改休假/出差/外出申请 如果不是流程的最后一步,通过后续修改ESS_LEAVE_APPLY_TB.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+<update id="updateEssLeaveApplyTbByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+				UPDATE ESS_LEAVE_APPLY_TB TB
+				   SET TB.ACTIVITY    = #ACTIVITY#,
+				       TB.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+				       TB.UPDATE_DATE = SYSDATE,
+				       TB.UPDATED_BY  = #UPDATED_BY#
+				 WHERE TB.APPLY_NO = #APPLY_NO#
+	    ]]>
+</update>
+<!-- 修改休假/出差/外出申请 如果不是流程的最后一步,通过后续修改ESS_LEAVE_APPLY_TB.CURRENT_AFFIRM_ID为下一流程的决裁者 end-->
+
+
+	<!-- 修改加班申请 如果不是流程的最后一步,通过后续修改ESS_LEAVE_APPLY_TB.CURRENT_AFFIRM_ID为下一流程的决裁者 start-->
+	<update id="updateEssApplyLeaveByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_LEAVE_APPLY_TB  tb
+			   SET tb.ACTIVITY    = #ACTIVITY#,
+			       tb.AFFIRM_FLAG = #AFFIRM_FLAG#,
+			       tb.UPDATE_DATE = SYSDATE,
+			       tb.UPDATED_BY  = #UPDATED_BY#,
+			       tb.UPDATED_IP  = #UPDATED_IP#
+			 WHERE tb.APPLY_NO    = #PK_NO#
+	    ]]>
+	</update>
+	
+	
+	<update id="updateEssApplyCwaByApplyNo" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_CARD_APPLY_TB  tb
+			   SET tb.ACTIVITY    = #ACTIVITY#,
+			       tb.AFFIRM_FLAG = #AFFIRM_READ_FLAG#,
+			       tb.CURRENT_AFFIRM_ID = #NEXT_AFFIRM_ID#,
+			       tb.UPDATE_DATE = SYSDATE,
+			       tb.UPDATED_BY  = #UPDATED_BY#
+			 WHERE tb.APPLY_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	
+	<!--取出当前登录者可以进行决裁的所有休假记录-->
+	<select id="getLeaveCheckList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			SELECT AP.APPLY_NO,
+		       SUBSTR(H.CPNY_ID, 4,2) || '-' || to_char(APPLY_TIME,'YYYYMMDD') || '-L-' || AP.APPLY_NO NO,
+		             AP.APPLY_TYPE,
+		             AP.PERSON_ID,
+		             H.EMPID,
+		             H.LOCAL_NAME,
+		             H.DEPTNO,
+		             get_dept_name(H.DEPTNO, #interLanguage:VARCHAR#) DEPT_NAME,
+		             TO_CHAR(AP.APPLY_TIME, 'yyyy-MM-dd') APPLY_TIME,
+		             TO_CHAR(AP.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI') LEAVE_FROM_TIME,
+		             TO_CHAR(AP.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI') LEAVE_TO_TIME,
+		             CASE 
+		                WHEN AP.APPLY_LENGTH >= 8 AND mod(AP.APPLY_LENGTH,8) = 0 THEN
+		                  trunc(AP.APPLY_LENGTH/8) || '天'
+		                WHEN AP.APPLY_LENGTH > 8 AND mod(AP.APPLY_LENGTH,8) <> 0 THEN
+		                   trunc(AP.APPLY_LENGTH/8) || '天' || mod(AP.APPLY_LENGTH,8) || '小时'
+		                WHEN AP.APPLY_LENGTH < 8 THEN
+		                  AP.APPLY_LENGTH || '小时'
+		                ELSE 
+		                  ''
+		                END APPLY_LENGTH,
+		             AP.AFFIRM_FLAG AFFIRM_PROGRESS_FLAG,
+		             AP.LEAVE_TIME_TYPE,
+		             AP.LEAVE_REASON,
+		             AP.LEAVE_TYPE_NO,
+		             AP.CURRENT_AFFIRM_ID,
+		             AP.CREATE_DATE,
+		             AP.UPDATE_DATE,
+		             AP.LEAVE_TYPE_CODE,
+		             AP.UNDO_APPLY_NO,
+		             get_global_name(AP.LEAVE_TYPE_CODE,#interLanguage:VARCHAR#) APPLY_TYPE_NAME,
+		             (SELECT DECODE((SELECT 1
+		                     FROM ESS_AFFIRM a1,
+		                     ess_check b1
+		                     WHERE A1.ESS_AFFIRM_NO = B1.ESS_AFFIRM_NO
+		                     AND A1.APPLY_NO = AP.APPLY_NO
+		                     AND A1.APPLY_TYPE = AP.LEAVE_TYPE_CODE
+		                     AND B1.CHECK_FLAG = 0
+		                     AND B1.CHECKOR_ID = #PERSON_ID#
+		                     GROUP BY A1.APPLY_NO),NULL, 0,1) FROM DUAL
+		                ) AFFIRM_FLAG_PERSON
+		        FROM ESS_LEAVE_APPLY_TB AP, HR_EMPLOYEE H
+		       WHERE AP.PERSON_ID = H.PERSON_ID
+		         AND EXISTS (
+		               SELECT 1 FROM ESS_AFFIRM ESS1,
+		               ESS_CHECK ESS2
+		               WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		               AND   APPLY_NO = AP.APPLY_NO
+		               AND   APPLY_TYPE = AP.LEAVE_TYPE_CODE
+		               AND   ESS2.CHECKOR_ID = #PERSON_ID#
+		           )
+		]]>
+		<include refid="seachLeaveAffirmCondition"/>
+			<![CDATA[
+				  ORDER BY AP.CREATE_DATE DESC
+		  ]]>   
+	</select>
+	<select id="getLeaveCheckListCnt" parameterClass="linkMap" resultClass="int" remapResults="true">
+		<![CDATA[
+			SELECT COUNT(*)
+			  FROM ESS_LEAVE_APPLY_TB AP, HR_EMPLOYEE H
+		       WHERE AP.PERSON_ID = H.PERSON_ID
+		         AND EXISTS (
+		               SELECT 1 FROM ESS_AFFIRM ESS1,
+		               ESS_CHECK ESS2
+		               WHERE ESS1.ESS_AFFIRM_NO = ESS2.ESS_AFFIRM_NO
+		               AND   APPLY_NO = AP.APPLY_NO
+		               AND   APPLY_TYPE = AP.LEAVE_TYPE_CODE
+		               AND   ESS2.CHECKOR_ID = #PERSON_ID#
+		           )
+		]]>
+		<include refid="seachLeaveAffirmCondition"/>  
+	</select>	
+	
+	
+	<select id="getCpnyIdByPersonId" parameterClass="linkMap" resultClass="string" remapResults="true">
+		<![CDATA[
+			SELECT CPNY_ID FROM HR_EMPLOYEE WHERE PERSON_ID = #PERSON_ID#
+		]]>
+	</select>	
+	
+	
+	<update id="updateEssApplyLeaveByApplyNoNoAffirm" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_LEAVE_APPLY_TB  tb
+			   SET tb.ACTIVITY    = 1,
+			       tb.AFFIRM_FLAG = 3,
+			       tb.UPDATE_DATE = SYSDATE,
+			       tb.UPDATED_BY  = #ADMIN_ID#
+			 WHERE tb.APPLY_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	
+	
+	<update id="updateEssApplyLeaveBatchNoAffirm" parameterClass="linkMap">
+		<![CDATA[
+			UPDATE ESS_LEAVE_APPLY_TB_BATCH  tb
+			   SET tb.ACTIVITY    = 3,
+			       tb.UPDATE_DATE = SYSDATE,
+			       tb.UPDATED_BY  = #ADMIN_ID#
+			 WHERE tb.BATCH_APPLY_NO    = #APPLY_NO#
+	    ]]>
+	</update>
+	<update  id="updateArDetailAffrimMoreDay" parameterClass="linkMap">
+		<![CDATA[	
+			UPDATE AR_DETAIL_$CPNY$_APPLY ESS
+        SET ESS.AFFIRM_FLAG = #AFFIRM_FLAG:VARCHAR#,
+            ESS.UPDATE_DATE = SYSDATE,
+            ESS.UPDATED_BY = #UPDATED_BY:VARCHAR#,
+            ESS.ACTIVITY = #ACTIVITY#,
+            ESS.INPUT_FLAG = 1
+      WHERE ESS.AR_DATE_STR BETWEEN replace(#FROM_DATE#,'-','/') AND replace(#TO_DATE#,'-','/')
+       AND  ESS.ITEM_NO = #ITEM_NO:VARCHAR#
+       AND  ESS.DELETE_FLAG=1
+       AND  ESS.NULL_FLAG = 1
+       AND  ESS.PERSON_ID = #PERSON_ID# 
+		]]>
+	</update >
+</sqlMap>
