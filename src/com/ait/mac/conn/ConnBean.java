@@ -27,9 +27,9 @@ public class ConnBean {
 	 */
 	public static Connection getConn(String cpnyId) {
         String driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
-        String userName = "YOUR_DB_USER";
-        String passwrod = "YOUR_DB_PASSWORD";
-        String url = "jdbc:microsoft:sqlserver://YOUR_DB_HOST\\WISENETACS:1433;DatabaseName=WACS";
+        String userName = "hrsystem";
+        String passwrod = "5tkatjd!";
+        String url = "jdbc:microsoft:sqlserver://10.43.7.249\\WISENETACS:1433;DatabaseName=WACS";
         Connection conn = null;
         try{
 			Class.forName(driver);
@@ -52,9 +52,9 @@ public class ConnBean {
 	 */
 	public static Connection getConnMySql() {
         String driver = "com.mysql.jdbc.Driver";
-        String userName = "YOUR_DB_USER";
+        String userName = "root";
         String passwrod = "";
-        String url = "jdbc:mysql://YOUR_DB_HOST:17770/ZKNET?useUnicode=true&characterEncoding=utf8";
+        String url = "jdbc:mysql://118.194.246.100:17770/ZKNET?useUnicode=true&characterEncoding=utf8";
         Connection conn = null;
         try{
 			Class.forName(driver);
@@ -118,9 +118,9 @@ public class ConnBean {
     public static String getIp(String cpnyId){
     	String ip = "";
     	if("SPC_DL".equals(cpnyId)){
-    		ip="YOUR_DB_HOST:1433;DatabaseName=zkteco_database";
+    		ip="218.24.156.167:1433;DatabaseName=zkteco_database";
     	}else{
-    		ip="YOUR_DB_HOST:1433;DatabaseName=zkteco";
+    		ip="58.247.19.126:1433;DatabaseName=zkteco";
     	}
     	return ip;
     }
@@ -133,9 +133,9 @@ public class ConnBean {
     public static String getPwd(String cpnyId){
     	String pwd = "";
     	if("SPC_DL".equals(cpnyId)){
-    		pwd="YOUR_DB_PASSWORD";
+    		pwd="*K#-_@!++~*%HD&";
     	}else{
-    		pwd="YOUR_DB_PASSWORD";
+    		pwd="spc123456";
     	}
     	return pwd;
     }

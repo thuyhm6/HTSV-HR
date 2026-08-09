@@ -155,7 +155,7 @@ function fillItem_ar0701(){
 							id="viewOverTimeLimit_search" selected="${TANCHUDEPTNO}" />
 					</td>
 					</tr><tr>
-					<td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 25 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
+					<td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 40 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
 					<td>
 						<select id="seach_OT_LIMIT" name="seach_OT_LIMIT" >
 							<option value="" ><!-- 全部 --> <spring:message code="pa.salary.canShu.quanBu" /></option>
@@ -163,7 +163,7 @@ function fillItem_ar0701(){
 							<option value="0"  <c:if test="${seach_OT_LIMIT eq '0' }">selected</c:if>><!-- No --> <spring:message code="ar.viewcycle.content.no" /></option>
 						</select>
 					</td>
-					<td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 40 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
+					<td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 300 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
 					<td>
 						<select id="seach_OT_LIMIT_100" name="seach_OT_LIMIT_100" >
 							<option value="" ><!-- 全部 --> <spring:message code="pa.salary.canShu.quanBu" /></option>
@@ -223,7 +223,7 @@ function fillItem_ar0701(){
     <div class="searchBar">
 			<table class="searchContent">
 			    <tr>
-			       <td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 25 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
+			       <td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 40 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
 					<td>
 						<select id="FILL_OT_LIMIT" name="FILL_OT_LIMIT" >
 							<option value="" ><!-- 全部 --> <spring:message code="pa.salary.canShu.quanBu" /></option>
@@ -231,7 +231,7 @@ function fillItem_ar0701(){
 							<option value="0" ><!-- No --> <spring:message code="ar.viewcycle.content.no" /></option>
 						</select>
 					</td>
-					<td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 40 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
+					<td><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" /> 300 <spring:message code="ar.viewitemparameter.title.xiaoshi" />:</td>
 					<td>
 						<select id="FILL_OT_LIMIT_100" name="FILL_OT_LIMIT_100" >
 							<option value="" ><!-- 全部 --> <spring:message code="pa.salary.canShu.quanBu" /></option>
@@ -264,8 +264,8 @@ function fillItem_ar0701(){
 				<th rowspan="2"><!--工号--> <spring:message code="ess.infoApply.EMP_ID" /></th>
 				<th rowspan="2"><!-- 姓名--> <spring:message code="alert.pa.pasalarycanshu.xingming" /></th>
 				<th rowspan="2"><!-- 部门名 --> <spring:message code="ess.infoApply.DEPT_NAME" /></th>
-				<th rowspan="2"><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" />>25 <spring:message code="ar.viewitemparameter.title.xiaoshi" /></th>
 				<th rowspan="2"><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" />>40 <spring:message code="ar.viewitemparameter.title.xiaoshi" /></th>
+				<th rowspan="2"><!-- 加班上限 --> <spring:message code="ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b" />>300 <spring:message code="ar.viewitemparameter.title.xiaoshi" /></th>
 				<th colspan="5"><!--加班累计--><spring:message code="ess.title.JIABANLEIJI" /></th>
 				<th rowspan="2"><!-- 变更者--> <spring:message code="hrm.empinfo.UPDATED_BY" /></th>
 				<th rowspan="2"><!-- 变更时间--> <spring:message code="hrm.empinfo.UPDATE_DATE" /></th>

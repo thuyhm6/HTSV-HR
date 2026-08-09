@@ -673,6 +673,7 @@ function getMultipleBirths(obj,flag){
 										<select id="fromTime_fen" name="fromTime_fen" onchange="composeLeaveTime();">
 											<option value="00" selected="selected">00</option>
 											<option value="02">02</option>
+											<option value="10">10</option>
 											<option value="15">15</option>
 											<option value="17">17</option>
 											<option value="30">30</option>
@@ -719,6 +720,7 @@ function getMultipleBirths(obj,flag){
 										<select id="toTime_fen" name="toTime_fen" onchange="composeLeaveTime();">
 											<option value="00" selected="selected">00</option>
 											<option value="02">02</option>
+											<option value="10">10</option>
 											<option value="15">15</option>
 											<option value="17">17</option>
 											<option value="30">30</option>

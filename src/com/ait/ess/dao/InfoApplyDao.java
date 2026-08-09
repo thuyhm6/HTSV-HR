@@ -1343,6 +1343,8 @@ public interface InfoApplyDao {
 	public List viewPersonOverTimeLimtList(Object object) throws Exception;
 	@SuppressWarnings("unchecked")
 	public List getOverTimeLimtShenPiList(Object object) throws Exception;
+	@SuppressWarnings("unchecked")
+	public List getOverTimeYearTrackList(Object object) throws Exception;
 
 	public int approveOtLimitBatch(List list) throws Exception;
 	public int approveOtLimitBatchHUB(List list) throws Exception;

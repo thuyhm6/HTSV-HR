@@ -897,7 +897,7 @@ function changeURL_ess3401(applyNo){
 				   </td>
 				   <td><!--开始时间--><spring:message code="ess.infoApply.title.startTime" /></td>
 				   <td>
-						<ait:time name="FROM_TIME"  spacing1="02" spacing2="13"   selected=""/>
+						<ait:time name="FROM_TIME"  spacing="10"   selected=""/>
 					</td>
 			    </tr>
 				<tr>
@@ -912,7 +912,7 @@ function changeURL_ess3401(applyNo){
 				   </td>
 					<td><!--结束时间--><spring:message code="ess.infoApply.end_time" /> </td>
 					<td>
-						<ait:time name="TO_TIME"  spacing1="02" spacing2="13"  selected=""/>
+						<ait:time name="TO_TIME"  spacing="10"  selected=""/>
 					</td>
 				</tr>
 			</table>

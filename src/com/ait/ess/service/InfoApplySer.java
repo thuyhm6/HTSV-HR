@@ -929,6 +929,8 @@ public interface InfoApplySer {
 	 */
 	@SuppressWarnings("unchecked")
 	public List getOverTimeLimtShenPiList(HttpServletRequest request) throws Exception;
+	@SuppressWarnings("unchecked")
+	public List getOverTimeYearTrackList(HttpServletRequest request) throws Exception;
 
 	public int approveOtLimitBatch(HttpServletRequest request) throws Exception;
 	public int approveOtLimitBatchHUB(HttpServletRequest request) throws Exception;

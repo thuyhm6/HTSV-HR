@@ -27,10 +27,36 @@
 		destroy-method="close">
 		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver"/>
 		
-		<property name="jdbcUrl" value="jdbc:oracle:thin:@YOUR_DB_HOST:1521:YOUR_SID"/>
-		<property name="user" value="YOUR_DB_USER"/>
-		<property name="password" value="YOUR_DB_PASSWORD"/>
-
+		<!--  <property name="jdbcUrl" value="jdbc:oracle:thin:@115.29.147.177:1521:orcl"/>
+		<property name="user" value="SPC_CHRS"/>
+		<property name="password" value="devdb"/>  -->
+		 
+		
+        <!--<property name="jdbcUrl" value="jdbc:oracle:thin:@118.190.84.204:1521:orcl"/>
+		<property name="user" value="YN_HANWHA"/>
+		<property name="password" value="devdb"/>-->
+		
+		
+		<!-- 54客户服务器开发测试数据库 
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@10.42.200.54:1526:HTSVHRD"/>
+		<property name="user" value="HTSV_HRD"/>
+		<property name="password" value="`1qaz2wsx`"/> -->
+		
+		<!-- 55客户服务器开发测试数据库  
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@10.42.200.55:1525:HTSVHR"/>
+		<property name="user" value="HTSV_HR"/>
+		<property name="password" value="`1q2w3a4s"/>-->
+		
+		<!-- 越南开发数据库-->
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@14.225.17.145:1521:orcl"/>
+		<property name="user" value="HTSV_HR"/>
+		<property name="password" value="htsvhrdb"/>
+		
+		<!-- 越南开发数据库
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@127.0.0.1:1521:orcl"/>
+		<property name="user" value="HTSV_HR"/>
+		<property name="password" value="htsvhrdb"/>-->
+		
 	 	
 		<property name="maxPoolSize" value="100"/>
 		<property name="minPoolSize" value="1"/>
@@ -155,6 +181,12 @@
  	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/view/"/>
 		<property name="suffix" value=".jsp"/>
+	</bean>
+
+	<!-- 记录所有未被处理的异常(Controller/DAO抛出的异常)到log4j，方便排查；不配置exceptionMappings/defaultErrorView，
+	     所以不会改变现有的异常处理/显示行为，只是把异常连同完整堆栈信息记到日志里 -->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="warnLogCategory" value="com.ait.web.exception"/>
 	</bean>
 	
 	<!-- 静态资源 -->

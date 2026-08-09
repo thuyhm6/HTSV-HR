@@ -552,28 +552,24 @@ public class InfoApplyCtroller {
 	@RequestMapping(value = "/viewOverTimeLimtShenPiList")
 	public ModelAndView viewOverTimeLimtShenPiList(HttpServletRequest request,
 			HttpServletResponse response, ModelMap modelMap) throws Exception {
-		AdminBean admin = SessionUtil.getLoginUserFromSession(request);
-		
-		
-		String firstFlag= request.getParameter("firstFlag");
-		modelMap.put("AR_MONTH", new SimpleDateFormat("yyyy-MM").format(new Date()));
-		modelMap.put("DIV_GP", request.getParameter("seach_DIV_GP"));
-	
-		Map paramMap=new LinkedHashMap();
-		paramMap.put("PARENT_CODE_NO","14014304");
-		paramMap.put("interLanguage",admin.getLanguage());
-		paramMap.put("CPNY_ID",admin.getCpnyId());
-		List codeList = basicMaintenanceDao.getParamCodeListByCpnyID(paramMap, -1, -1) ;
-		modelMap.put("codeList", codeList);
-		
-		if (firstFlag != null&& !"".equals(firstFlag)) {
-			modelMap.put("otLimtList", infoApplySer.getOverTimeLimtShenPiList(request));
+		String year = StringUtil.checkNull(request.getParameter("seach_YEAR"));
+		if ("".equals(year)) {
+			year = new SimpleDateFormat("yyyy").format(new Date());
+		}
+		request.setAttribute("YEAR", year);
+		modelMap.put("YEAR", year);
+		modelMap.put("KEY", request.getParameter("seach_KEY"));
+		modelMap.put("DEPTNO", request.getParameter("seach_DEPTNO"));
+
+		String firstFlag = request.getParameter("firstFlag");
+		if (firstFlag != null && !"".equals(firstFlag)) {
+			modelMap.put("otYearTrackList", infoApplySer.getOverTimeYearTrackList(request));
 		}
 		modelMap.put("toolbarInfo",
 				request.getParameter("menuNo") != null ? toolMenuSer.getToolMenu(request) : toolMenuSer.getToolMenuForNo(request, "218096"));
 		return new ModelAndView("/ess/infoApply/viewOverTimeLimtShenPiList", modelMap);
-	}           
-	
+	}
+
 	
 	/**
 	 * 显示加班申请(view overtime apply)
@@ -726,21 +722,12 @@ public class InfoApplyCtroller {
 		tomorrow.add(Calendar.DAY_OF_MONTH, 1);
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
 		String timeStr = "[{";
-		String spacing1 = "02";
-		String spacing2 = "13";
-		String spacingTemp = "02";
-		int i = 2;
+		String spacing = "10";
 		while (today.before(tomorrow) || today.equals(tomorrow)) {
-			
+
 			String time = sdf.format(today.getTime());
 			timeStr = timeStr + "'CODENO':'"+time+"','CODENAME':'"+time+"'},{";
-			if (i % 2 == 0) {
-			    spacingTemp = spacing1;
-			} else {
-			    spacingTemp = spacing2;
-			}
-			today.add(Calendar.MINUTE, Integer.parseInt(spacingTemp));
-			i++;
+			today.add(Calendar.MINUTE, Integer.parseInt(spacing));
 		}
 		timeStr = timeStr +"}]";
 		modelMap.put("TIME_STR", timeStr);

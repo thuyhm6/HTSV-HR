@@ -969,11 +969,11 @@ function changeURL_ar0701(applyNo){
 				   </td>
 				   <td><!-- 开始时间  --><spring:message code="ess.infoApply.title.startTime"/></td>
 				   <td>
-						<ait:time name="OT_FROM_TIME"  spacing1="02" spacing2="13"   selected=""/>
+						<ait:time name="OT_FROM_TIME"  spacing="10"   selected=""/>
 					</td>
 					<td><!-- 结束时间  --><spring:message code="ess.infoApply.title.endTime"/></td>
 					<td>
-						<ait:time name="OT_TO_TIME"  spacing1="02" spacing2="13"  selected=""/>
+						<ait:time name="OT_TO_TIME"  spacing="10"  selected=""/>
 					</td>
 					<td><!-- 原因  --><spring:message code="ess.infoApply.Reason"/></td>
 					<td>

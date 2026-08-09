@@ -6382,6 +6382,22 @@ public class InfoApplySerImpl implements InfoApplySer {
 		returnList = infoApplyDao.getOverTimeLimtShenPiList(paramMap);
 		return returnList;
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List getOverTimeYearTrackList(HttpServletRequest request) throws Exception {
+		AdminBean admin = SessionUtil.getLoginUserFromSession(request);
+		List returnList = new ArrayList();
+
+		LinkedHashMap paramMap = getLinkedMapByRequestForSearch(request,"seach_");
+		paramMap.put("AR_SUPERVISIOR_INFO", admin.getPersonId());
+		String year = StringUtil.checkNull(request.getAttribute("YEAR"));
+		if(!"".equals(year)){
+			paramMap.put("YEAR", year);
+		}
+		returnList = infoApplyDao.getOverTimeYearTrackList(paramMap);
+		return returnList;
+	}
 	
 	public int approveOtLimitBatch(HttpServletRequest request)
 	throws Exception {

@@ -284,7 +284,7 @@ function saveOtApplyAffirm(){
 					alertMsg.error("<spring:message code='ar.viewArOvertimeManaget_fast.Include_apply_closed.b' />");//包含考勤关闭的时间
 					return false;
 				}else if(flag == -3){
-					alertMsg.error("<spring:message code='ar.viewAdjustLeaveTSTOBatchList.OvertimeLimit.b' />");//Bạn đã tăng ca quá thời gian quy định trong tháng (30 hoặc 100 tiếng), xin liên hệ phòng nhân sự!
+					alertMsg.error("<spring:message code='ar.viewAdjustLeaveTSTOBatchList.OvertimeLimit.b' />");//Bạn đã tăng ca quá thời gian quy định trong tháng (40 hoặc 300 tiếng), xin liên hệ phòng nhân sự!
 					return false;
 				} else if(flag == -4){
 					alertMsg.error("<spring:message code='ar.viewAdjustLeaveTSTOBatchList.WomenOvertime.b' />");//Đang trong thời gian mang thai hoặc nuôi con nhỏ. Không thể tăng ca!
@@ -1040,11 +1040,11 @@ function changeURL_ess3403(applyNo){
 				   </td>
 				   <td><!--开始时间--><spring:message code="ess.infoApply.title.startTime" /></td>
 				   <td>
-						<ait:time name="OT_FROM_TIME"  spacing1="02" spacing2="13"   selected=""/>
+						<ait:time name="OT_FROM_TIME"  spacing="10"   selected=""/>
 					</td>
 					<td><!--结束时间--><spring:message code="ess.infoApply.end_time" /></td>
 					<td>
-						<ait:time name="OT_TO_TIME"  spacing1="02" spacing2="13"  selected=""/>
+						<ait:time name="OT_TO_TIME"  spacing="10"  selected=""/>
 					</td>
 					<td><!--原因--><spring:message code="hrm.empinfo.reason" /></td>
 					<td>

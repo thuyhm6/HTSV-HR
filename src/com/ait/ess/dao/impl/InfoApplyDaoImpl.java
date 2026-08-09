@@ -3969,6 +3969,17 @@ public class InfoApplyDaoImpl extends SqlMapClientSupport implements InfoApplyDa
 		}
 		return returnList;
 	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List getOverTimeYearTrackList(Object obj) {
+		List returnList = new ArrayList();
+		try {
+			returnList = this.queryForList("ess.infoApply.getOverTimeYearTrackList",obj);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return returnList;
+	}
 
 	
 	/**

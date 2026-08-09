@@ -89,6 +89,14 @@
 		<appender-ref ref="FileError" />
 	</logger>
 
+	<!-- c3p0 connection pool: chỉ là log dọn dẹp connection idle định kỳ, không phải lỗi.
+	     Hạ xuống WARN để vẫn ghi lại khi pool thực sự có vấn đề, nhưng bỏ hết log debug/info gây nhiễu console. -->
+	<logger name="com.mchange" additivity="false">
+		<level value="warn" />
+		<appender-ref ref="FileWarn" />
+		<appender-ref ref="FileError" />
+	</logger>
+
 	<!-- root logger: console appender output shows in the VSCode DEBUG CONSOLE tab when launched via the "launch" debug configuration -->
 	<root>
 		<priority value="debug" />
@@ -101,84 +109,26 @@
 	
 	
 	
-	<appender name="IBatis" class="org.apache.log4j.ConsoleAppender">  
-  
-<layout class="org.apache.log4j.PatternLayout">  
-  
-<param name="ConversionPattern"  
-  
-value="%-4r [%t] %-5p %c %x - %m%n" />  
-  
-</layout>  
-  
-<filter class="org.apache.log4j.varia.LevelRangeFilter">  
-  
-<param name="LevelMin" value="DEBUG" />  
-  
-<param name="LevelMax" value="DEBUG" />  
-  
-</filter>  
-  
-</appender>
+	<!-- Tắt log chi tiết mặc định của iBatis (Preparing/Parameters/Total, mở/đóng connection...).
+	     SQL đã được log gọn qua logger "com.ait" (xem LimitSqlExecutor): id + file xml + tham số đã gán vào dấu ?. -->
+	<logger name="com.ibatis" additivity="false">
+		<level value="OFF" />
+	</logger>
 	
-	<logger name="com.ibatis" additivity="true">  
-  
-	<level value="DEBUG" />  
-		<!-- <appender-ref ref="FileDebug" />
-		<appender-ref ref="FileInfo" />
-		<appender-ref ref="FileWarn" />
-		<appender-ref ref="FileError" />-->
-		  
-		<appender-ref ref="IBatis" />   
-	  
-	</logger>  
-	
-	<logger name="java.sql.Connection" additivity="true">  
- 
-          <level value="DEBUG" />  
-		<!-- <appender-ref ref="FileDebug" />
-		<appender-ref ref="FileInfo" />
-		<appender-ref ref="FileWarn" />
-		<appender-ref ref="FileError" />-->
-		  
-		<appender-ref ref="IBatis" />   
-  
-    </logger>  
-  
-     <logger name="java.sql.Statement" additivity="true">  
-  
-           <level value="ERROR" />  
-		<appender-ref ref="FileDebug" />
-		<appender-ref ref="FileInfo" />
-		<appender-ref ref="FileWarn" />
-		<appender-ref ref="FileError" />
-		  
-		<appender-ref ref="IBatis" />  
-  
-     </logger> 
-     
-     <logger name="java.sql.PreparedStatement" additivity="true">  
-  
-		<level value="DEBUG" />  
-		<!-- <appender-ref ref="FileDebug" />
-		<appender-ref ref="FileInfo" />
-		<appender-ref ref="FileWarn" />
-		<appender-ref ref="FileError" />-->
-		  
-		<appender-ref ref="IBatis" />   
-		  
-	 </logger>  
-		  
-		<logger name="java.sql.ResultSet" additivity="true">  
-		  
-		<level value="ERROR" />  
-		<appender-ref ref="FileDebug" />
-		<appender-ref ref="FileInfo" />
-		<appender-ref ref="FileWarn" />
-		<appender-ref ref="FileError" />
-		  
-		<appender-ref ref="IBatis" />  
-		  
-	 </logger>
+	<logger name="java.sql.Connection" additivity="false">
+		<level value="OFF" />
+	</logger>
+
+	<logger name="java.sql.Statement" additivity="false">
+		<level value="OFF" />
+	</logger>
+
+	<logger name="java.sql.PreparedStatement" additivity="false">
+		<level value="OFF" />
+	</logger>
+
+	<logger name="java.sql.ResultSet" additivity="false">
+		<level value="OFF" />
+	</logger>
 	
 </log4j:configuration>

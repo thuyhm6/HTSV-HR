@@ -786,21 +786,12 @@ public class ArDetailCtroller {
 		tomorrow.add(Calendar.DAY_OF_MONTH, 1);
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
 		String timeStr = "[{";
-		String spacing1 = "02";
-		String spacing2 = "13";
-		String spacingTemp = "02";
-		int i = 2;
+		String spacing = "10";
 		while (today.before(tomorrow) || today.equals(tomorrow)) {
-			
+
 			String time = sdf.format(today.getTime());
 			timeStr = timeStr + "'CODENO':'"+time+"','CODENAME':'"+time+"'},{";
-			if (i % 2 == 0) {
-			    spacingTemp = spacing1;
-			} else {
-			    spacingTemp = spacing2;
-			}
-			today.add(Calendar.MINUTE, Integer.parseInt(spacingTemp));
-			i++;
+			today.add(Calendar.MINUTE, Integer.parseInt(spacing));
 		}
 		timeStr = timeStr +"}]";
 		modelMap.put("TIME_STR", timeStr);
@@ -1708,21 +1699,12 @@ public class ArDetailCtroller {
 		tomorrow.add(Calendar.DAY_OF_MONTH, 1);
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
 		String timeStr = "[{";
-		String spacing1 = "02";
-		String spacing2 = "13";
-		String spacingTemp = "02";
-		int i = 2;
+		String spacing = "10";
 		while (today.before(tomorrow) || today.equals(tomorrow)) {
-			
+
 			String time = sdf.format(today.getTime());
 			timeStr = timeStr + "'CODENO':'"+time+"','CODENAME':'"+time+"'},{";
-			if (i % 2 == 0) {
-			    spacingTemp = spacing1;
-			} else {
-			    spacingTemp = spacing2;
-			}
-			today.add(Calendar.MINUTE, Integer.parseInt(spacingTemp));
-			i++;
+			today.add(Calendar.MINUTE, Integer.parseInt(spacing));
 		}
 		timeStr = timeStr +"}]";
 		modelMap.put("TIME_STR", timeStr);

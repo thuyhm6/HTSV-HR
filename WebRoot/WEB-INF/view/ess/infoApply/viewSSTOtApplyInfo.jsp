@@ -79,12 +79,12 @@ $(document).ready(function(){
 				}else if(flag == -2){
 					alertMsg.error("<spring:message code='ar.viewArOvertimeManaget_fast.Include_apply_closed.b' />");//包含考勤关闭的时间
 					return false;
-				}else if(flag == -3){
-					alertMsg.error("<spring:message code='ar.viewAdjustLeaveTSTOBatchList.OvertimeLimit.b' />");//Bạn đã tăng ca quá thời gian quy định trong tháng (30 hoặc 100 tiếng), xin liên hệ phòng nhân sự!
-					return false;
 				}
 				else */ if(flag == -4){
 					alertMsg.error("<spring:message code='ar.viewAdjustLeaveTSTOBatchList.WomenOvertime.b' />");//Đang trong thời gian mang thai hoặc nuôi con nhỏ. Không thể tăng ca!
+					return false;
+				}else if(flag == -3){
+					alertMsg.error("<spring:message code='ar.viewAdjustLeaveTSTOBatchList.OvertimeLimit.b' />");//Bạn đã tăng ca quá thời gian quy định trong tháng (400 hoặc 300 tiếng), xin liên hệ phòng nhân sự!
 					return false;
 				}
 			 },
@@ -470,12 +470,12 @@ function submitKeyClick_applyOt(obj,index,event){
 						<td width="30%" class="td_type">
 						    <!--本月累计加班--><spring:message code="ess.viewSSTOtApplyInfo.BENYUELEIJIJIABAN.b"/>:&nbsp;&nbsp;<span id="OT_TOTAIL_MONTH"></span>&nbsp;&nbsp;&nbsp;&nbsp;
 						    <!--平时--><spring:message code="ar.viewitemparameter.title.pingshi" />:&nbsp;&nbsp;<span id="WEEKDAY_OT_TOTAIL"></span>&nbsp;&nbsp;&nbsp;&nbsp;
-						    <!--本月累计加班上限--><spring:message code="ess.viewSSTOtApplyInfo.BENYUELEIJIJIABANSHANXIAN.b"/>:&nbsp;&nbsp;<span id="OT_TOTAIL_MONTH_LIMIT">30&nbsp;h</span>
+						    <!--本月累计加班上限--><spring:message code="ess.viewSSTOtApplyInfo.BENYUELEIJIJIABANSHANXIAN.b"/>:&nbsp;&nbsp;<span id="OT_TOTAIL_MONTH_LIMIT">40&nbsp;h</span>
 						    <!-- Over Time Limit --><input type="hidden" id="OT_LIMIT" name="OT_LIMIT"/>
 						    						<input type="hidden" id="OT_LIMIT_100" name="OT_LIMIT_100"/>
 						    <br>													    					    
 							<!--本年累计加班--><spring:message code="ess.viewSSTOtApplyInfo.BENNIANLEIJIJIABAN.b"/>:&nbsp;&nbsp;<span id="OT_TOTAIL"></span>&nbsp;&nbsp;&nbsp;&nbsp;
-							<!--本年累计加班上限--><spring:message code="ess.viewSSTOtApplyInfo.BENNIANLEIJIJIABANSHANXIAN.b"/>:&nbsp;&nbsp;<span id="OT_TOTAIL_LIMIT">200&nbsp;h</span>							
+							<!--本年累计加班上限--><spring:message code="ess.viewSSTOtApplyInfo.BENNIANLEIJIJIABANSHANXIAN.b"/>:&nbsp;&nbsp;<span id="OT_TOTAIL_LIMIT">300&nbsp;h</span>							
 						</td>
 					</tr>
 					<tr>
@@ -483,9 +483,9 @@ function submitKeyClick_applyOt(obj,index,event){
 					    	<!--时间--><spring:message code="ess.infoApply.title.time"/>
 					    </td>
 					    <td width="30%" class="td_type">
-							<ait:time name="OT_FROM_TIME" spacing1="02" spacing2="13" selected="00:00" onChange="getOtLengthSST(0);"/>
+							<ait:time name="OT_FROM_TIME" spacing="10" selected="00:00" onChange="getOtLengthSST(0);"/>
 							~
-							<ait:time name="OT_TO_TIME" spacing1="02" spacing2="13" selected="00:00" onChange="getOtLengthSST(0);"/>
+							<ait:time name="OT_TO_TIME" spacing="10" selected="00:00" onChange="getOtLengthSST(0);"/>
 						</td>
 						<td width="20%" class="td_title" style="text-align:right"><!--加班类型-->
 							<spring:message code="ess.viewApply.title.overtimeApplyType"/>

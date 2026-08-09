@@ -1,0 +1,7 @@
+Chỉnh sửa lại giao diện viewOverTimeLimtShenPiList, đây sẽ là giao diện để người quản lý Theo dõi tăng ca tháng và năm của nhân viên. Giao diện thao khảo hình ảnh đính kèm để thiết kế giao diện. Giao diện cần hiển thị danh sách nhân viên, số giờ tăng ca theo từng loại. điều kiện tìm kiếm là theo năm, Mã/Tên nhân viên, Phòng ban. Chỉnh sửa lại câu lệnh lấy ra dữ liệu. 
+Dữ liệu OT (Total) lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'100'). 
+Dữ liệu OT (Approval) lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'200'), 
+Dữ liệu Saturday incentive (Request) lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'300'). 
+Dữ liệu OT (Request) lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'400'). 
+Dữ liệu Saturday incentive (Approval) lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'500'). 
+Lưu ý khi làm cần tuân thủ theo format source code hiện tại.
