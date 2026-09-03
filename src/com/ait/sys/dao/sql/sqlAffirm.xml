@@ -590,7 +590,7 @@
 			          GET_CODE_NAME(HE.EMP_OFFICE,#interLanguage:VARCHAR#) EMP_OFFICE_NAME,
 			          HE.CPNY_ID,
 			          HE.DUTY_NO,
-			          PKG_DECRYPT.DECRYPT_DES(P.OFFICE_PHONE) OFFICE_PHONE,
+			          P.OFFICE_PHONE OFFICE_PHONE,
 			          get_global_name(HE.POST_GRADE_NO,#interLanguage:VARCHAR#) PostGradeNo,
 			          GET_DEPT_NAME(HE.DEPTNO,#interLanguage:VARCHAR#) DEPTNONAME,
 			          GET_GLOBAL_NAME(HE.POSITION_NO,#interLanguage:VARCHAR#) POSITION_NAME,

@@ -13,9 +13,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.jxls.exception.ParsePropertyException;
-import net.sf.jxls.transformer.XLSTransformer;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.portlet.ModelAndView;
 
+import com.ait.pa.service.imp.excelUtil.ExcelTemplateUtil;
 import com.ait.pa.service.workManagement.PaArSummaryManageSer;
 import com.ait.pa.service.workManagement.PaPayScheduleSer;
 import com.ait.web.i18n.TipMessage;
@@ -106,20 +104,17 @@ public class PaArSummaryManageCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/report/exl_autoExcel.xls";
-		destFileName += "/resources/template/report/exl_autoExcel_out.xls";
+		destFileName += "/resources/template/report/exl_autoExcel_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
-			transformer.transformXLS(templateFileName, modelMap,
+			ExcelTemplateUtil.transformXLS(templateFileName, modelMap,
 					destFileName);
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=ArSummary.xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=ArSummary.xlsx");
 		try {
 			File file = new File(destFileName);
 			InputStream inputStream = new FileInputStream(file);

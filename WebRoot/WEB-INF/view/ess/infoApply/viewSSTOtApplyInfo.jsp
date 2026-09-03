@@ -483,9 +483,9 @@ function submitKeyClick_applyOt(obj,index,event){
 					    	<!--时间--><spring:message code="ess.infoApply.title.time"/>
 					    </td>
 					    <td width="30%" class="td_type">
-							<ait:time name="OT_FROM_TIME" spacing="10" selected="00:00" onChange="getOtLengthSST(0);"/>
+							<ait:time name="OT_FROM_TIME" spacing="15" extra="12:10,20:05" selected="00:00" onChange="getOtLengthSST(0);"/>
 							~
-							<ait:time name="OT_TO_TIME" spacing="10" selected="00:00" onChange="getOtLengthSST(0);"/>
+							<ait:time name="OT_TO_TIME" spacing="15" extra="12:10,20:05" selected="00:00" onChange="getOtLengthSST(0);"/>
 						</td>
 						<td width="20%" class="td_title" style="text-align:right"><!--加班类型-->
 							<spring:message code="ess.viewApply.title.overtimeApplyType"/>

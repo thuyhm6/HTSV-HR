@@ -371,7 +371,7 @@ public class RecruitManageSerImpl implements RecruitManageSer {
 		String seach_IDCARD_NO = "";
 		if (request.getParameter("seach_IDCARD_NO") != null
 				&& !"".equals(request.getParameter("seach_IDCARD_NO"))) {
-			seach_IDCARD_NO = " and PKG_DECRYPT.DECRYPT_DES(C.IDCARD_NO) ='"
+			seach_IDCARD_NO = " and C.IDCARD_NO ='"
 					+ request.getParameter("seach_IDCARD_NO") + "'";
 		}
 		String seach_TRANS_CODE_NAME = "";

@@ -28,14 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import net.sf.jxls.exception.ParsePropertyException;
-import net.sf.jxls.transformer.XLSTransformer;
-
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +59,7 @@ import com.ait.ess.service.TempEmpSer;
 import com.ait.ess.service.ViewDeptPerSer;
 import com.ait.hrm.service.EmpInfoSer;
 import com.ait.pa.service.excelUtil.ExcelUtilSer;
+import com.ait.pa.service.imp.excelUtil.ExcelTemplateUtil;
 import com.ait.pa.service.workManagement.viewPaParamSer;
 import com.ait.report.pa.service.PaReportSer;
 import com.ait.sys.bean.AdminBean;
@@ -585,7 +584,7 @@ public class RetrieveMasterListCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/report/" + tempName + ".xls";
-		destFileName += "/resources/template/report/" + tempName + "_out.xls";
+		destFileName += "/resources/template/report/" + tempName + "_out.xlsx";
 		List aliasValueList = (List) datamap.get("ValueList");
 		List aliasNameList = (List) datamap.get("NameList");
 
@@ -628,15 +627,14 @@ public class RetrieveMasterListCtroller {
 			datamap.put("viewBidMatter", empInfoSer.viewBidMatter(request));
 			//银行账号
 			datamap.put("accountInfo", empInfoSer.getAccountInfo(request));
-			XLSTransformer transformer = new XLSTransformer();
 			try {
 				InputStream is = new FileInputStream(templateFileName);
-				HSSFWorkbook workBook = (HSSFWorkbook) transformer
-						.transformXLS(is, datamap);
-				HSSFSheet sheet = workBook.getSheetAt(0);
+				Workbook workBook = ExcelTemplateUtil.transformXLS(is, datamap);
+				Sheet sheet = workBook.getSheetAt(0);
 				String path = request.getSession().getServletContext()
 						.getRealPath("/");
-				HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+				Drawing<?> patriarch = sheet.createDrawingPatriarch();
+				CreationHelper anchorHelper = workBook.getCreationHelper();
 				for (int i = 0; i < aliasValueList.size(); i++) {
 					HashMap valueMap = (HashMap) aliasValueList.get(i);
 					// 将图片以字节流的方式输入输出
@@ -648,12 +646,12 @@ public class RetrieveMasterListCtroller {
 							ByteArrayOutputStream bos = new ByteArrayOutputStream();
 							BufferedImage BufferImg = ImageIO.read(picFile);
 							ImageIO.write(BufferImg, "JPEG", bos);
-							HSSFClientAnchor anchor = null;
-							anchor = new HSSFClientAnchor(0, 0, 1023, 255,
-									(short) 9, 3, (short) 11, 9);
+							ClientAnchor anchor = anchorHelper.createClientAnchor();
+							anchor.setDx1(0); anchor.setDy1(0); anchor.setDx2(1023); anchor.setDy2(255);
+							anchor.setCol1(9); anchor.setRow1(3); anchor.setCol2(11); anchor.setRow2(9);
 							patriarch.createPicture(anchor, workBook
 									.addPicture(bos.toByteArray(),
-											workBook.PICTURE_TYPE_JPEG));
+											Workbook.PICTURE_TYPE_JPEG));
 						}
 					}
 				}
@@ -662,7 +660,7 @@ public class RetrieveMasterListCtroller {
 				is.close();
 				os.flush();
 				os.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("232".equals(jspname)) {
@@ -693,15 +691,14 @@ public class RetrieveMasterListCtroller {
 			// 培训事项
 			datamap.put("viewTrain", empInfoSer.viewSingleTrain(request));
 
-			XLSTransformer transformer = new XLSTransformer();
 			try {
 				InputStream is = new FileInputStream(templateFileName);
-				HSSFWorkbook workBook = (HSSFWorkbook) transformer
-						.transformXLS(is, datamap);
-				HSSFSheet sheet = workBook.getSheetAt(0);
+				Workbook workBook = ExcelTemplateUtil.transformXLS(is, datamap);
+				Sheet sheet = workBook.getSheetAt(0);
 				String path = request.getSession().getServletContext()
 						.getRealPath("/");
-				HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+				Drawing<?> patriarch = sheet.createDrawingPatriarch();
+				CreationHelper anchorHelper = workBook.getCreationHelper();
 				for (int i = 0; i < aliasValueList.size(); i++) {
 					HashMap valueMap = (HashMap) aliasValueList.get(i);
 					// 将图片以字节流的方式输入输出
@@ -713,12 +710,12 @@ public class RetrieveMasterListCtroller {
 							ByteArrayOutputStream bos = new ByteArrayOutputStream();
 							BufferedImage BufferImg = ImageIO.read(picFile);
 							ImageIO.write(BufferImg, "JPEG", bos);
-							HSSFClientAnchor anchor = null;
-							anchor = new HSSFClientAnchor(0, 0, 1023, 255,
-									(short) 9, 3, (short) 11, 9);
+							ClientAnchor anchor = anchorHelper.createClientAnchor();
+							anchor.setDx1(0); anchor.setDy1(0); anchor.setDx2(1023); anchor.setDy2(255);
+							anchor.setCol1(9); anchor.setRow1(3); anchor.setCol2(11); anchor.setRow2(9);
 							patriarch.createPicture(anchor, workBook
 									.addPicture(bos.toByteArray(),
-											workBook.PICTURE_TYPE_JPEG));
+											Workbook.PICTURE_TYPE_JPEG));
 						}
 					}
 				}
@@ -727,7 +724,7 @@ public class RetrieveMasterListCtroller {
 				is.close();
 				os.flush();
 				os.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("27".equals(jspname)) {
@@ -758,13 +755,10 @@ public class RetrieveMasterListCtroller {
 			modelMap.put("aliasList", aliasList);
 			modelMap.put("ValueList", sqlResult);
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -772,13 +766,10 @@ public class RetrieveMasterListCtroller {
 			List arShiftGroupList = this.essDeptEmpAttSer.viewArShiftGroupList(request);
 			datamap.put("arShiftGroupList", arShiftGroupList);
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 	    } 
@@ -812,16 +803,13 @@ public class RetrieveMasterListCtroller {
 				datamap.put("count", empInfoSer.getCount(request));
 				datamap.put("wages", empInfoSer.getCountWages(request));
 				// execl导出处理
-				XLSTransformer transformer = new XLSTransformer();
 				try {
-					transformer.transformXLS(templateFileName, datamap,
+					ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 							destFileName);
-				} catch (ParsePropertyException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
-		} else if ("262".equals(jspname)) {
+		}else if ("262".equals(jspname)) {
 			
 			String EMPLOYEE_OWNED = request.getParameter("EMPLOYEE_OWNED");
 			String EMP_OFFICE = request.getParameter("EMP_OFFICE");
@@ -834,13 +822,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("PERSONALINFO1", empInfoSer.getPersonalInfo1(request));
 			
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("244".equals(jspname)) {
@@ -856,13 +841,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("CONTRACTDAOQI", empInfoSer.getCOntractDaoqi(request));
 			
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}  else if ("282".equals(jspname)) {
@@ -921,13 +903,10 @@ public class RetrieveMasterListCtroller {
 			
 			
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 	   }  else if ("283".equals(jspname)) {
@@ -951,25 +930,19 @@ public class RetrieveMasterListCtroller {
 			
 			
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("236".equals(jspname)) {
 			datamap.put("IndividualIncomeTax", empInfoSer.getIndividualIncomeTax(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -987,13 +960,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("BirthdayWelfare", empInfoSer
 					.BirthdayWelfare(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("272".equals(jspname)) {
@@ -1010,13 +980,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("RecruitReport", empInfoSer
 					.RecruitReport(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("276".equals(jspname)) {
@@ -1035,38 +1002,29 @@ public class RetrieveMasterListCtroller {
 			datamap.put("ruzhiStatistic", empInfoSer.RuZhiStatistic(request));
 			datamap.put("lizhiStatistic", empInfoSer.LiZhiStatistic(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("227".equals(jspname)) {
 
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		} else if ("169".equals(jspname)) {
 
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -1075,15 +1033,14 @@ public class RetrieveMasterListCtroller {
 			List list = ViewDeptPer.getPersonManageList(request);
 			datamap.put("FamilyList", ViewDeptPer.getPersonManageList(request));
 
-			XLSTransformer transformer = new XLSTransformer();
 			try {
 				InputStream is = new FileInputStream(templateFileName);
-				HSSFWorkbook workBook = (HSSFWorkbook) transformer
-						.transformXLS(is, datamap);
-				HSSFSheet sheet = workBook.getSheetAt(0);
+				Workbook workBook = ExcelTemplateUtil.transformXLS(is, datamap);
+				Sheet sheet = workBook.getSheetAt(0);
 				String path = request.getSession().getServletContext()
 						.getRealPath("/");
-				HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+				Drawing<?> patriarch = sheet.createDrawingPatriarch();
+				CreationHelper anchorHelper = workBook.getCreationHelper();
 				for (int i = 0; i < list.size(); i++) {
 					HashMap valueMap = (HashMap) list.get(i);
 					// 将图片以字节流的方式输入输出
@@ -1095,12 +1052,12 @@ public class RetrieveMasterListCtroller {
 							ByteArrayOutputStream bos = new ByteArrayOutputStream();
 							BufferedImage BufferImg = ImageIO.read(picFile);
 							ImageIO.write(BufferImg, "JPEG", bos);
-							HSSFClientAnchor anchor = null;
-							anchor = new HSSFClientAnchor(0, 0, 1023, 255,
-									(short) 0, 1 +(i*6), (short) 0, 5 +(i*6));
+							ClientAnchor anchor = anchorHelper.createClientAnchor();
+							anchor.setDx1(0); anchor.setDy1(0); anchor.setDx2(1023); anchor.setDy2(255);
+							anchor.setCol1(0); anchor.setRow1(1 + (i*6)); anchor.setCol2(0); anchor.setRow2(5 + (i*6));
 							patriarch.createPicture(anchor, workBook
 									.addPicture(bos.toByteArray(),
-											workBook.PICTURE_TYPE_JPEG));
+											Workbook.PICTURE_TYPE_JPEG));
 						}
 					}
 				}
@@ -1109,7 +1066,7 @@ public class RetrieveMasterListCtroller {
 				is.close();
 				os.flush();
 				os.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}else if ("224".equals(jspname)) {
@@ -1132,13 +1089,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("item", ViewDeptPer.totalEmpCountLastYear(request));
 			/*datamap.put("item1", ViewDeptPer.getDemissionRateSpcSh(request));*/
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("251".equals(jspname)) {
@@ -1166,13 +1120,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("LeftManTotalEmpCountLastYear", ViewDeptPer
 					.LeftManTotalEmpCountLastYearTJ(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("228".equals(jspname)) {
@@ -1180,13 +1131,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("viewArSummaryList", ViewDeptPer
 					.viewArSummaryList(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("229".equals(jspname)) {
@@ -1194,13 +1142,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("useOfAnnualLeaveList", ViewDeptPer
 					.arForMedicalCountInfoList(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("206".equals(jspname)) {
@@ -1208,13 +1153,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("useOfAnnualLeaveList", ViewDeptPer
 					.viewUseOfAnnualLeaveList(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if ("148".equals(jspname)) {
@@ -1222,13 +1164,10 @@ public class RetrieveMasterListCtroller {
 			datamap.put("viewEntryInfoList", ViewDeptPer
 					.viewEntryInfoList(request));
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}else {
@@ -1748,21 +1687,18 @@ public class RetrieveMasterListCtroller {
 				name = name+" "+monthStr;
 			}
 			// execl导出处理
-			XLSTransformer transformer = new XLSTransformer();
 			try {
-				transformer.transformXLS(templateFileName, datamap,
+				ExcelTemplateUtil.transformXLS(templateFileName, datamap,
 						destFileName);
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		response.setHeader("Content-Disposition", "attachment;fileName="
-				+ new String(name.getBytes("gbk"), "ISO8859-1") + ".xls");
+				+ new String(name.getBytes("gbk"), "ISO8859-1") + ".xlsx");
 		try {
 			File file = new File(destFileName);
 			InputStream inputStream = new FileInputStream(file);
@@ -1932,21 +1868,18 @@ public class RetrieveMasterListCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/report/" + tempName + ".xls";
-		destFileName += "/resources/template/report/" + tempName + "_out.xls";
+		destFileName += "/resources/template/report/" + tempName + "_out.xlsx";
 
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
-			transformer.transformXLS(templateFileName, datamap, destFileName);
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+			ExcelTemplateUtil.transformXLS(templateFileName, datamap, destFileName);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		response.setHeader("Content-Disposition", "attachment;fileName="
-				+ new String(name.getBytes("gbk"), "ISO8859-1") + ".xls");
+				+ new String(name.getBytes("gbk"), "ISO8859-1") + ".xlsx");
 		try {
 			File file = new File(destFileName);
 			InputStream inputStream = new FileInputStream(file);
@@ -2338,7 +2271,7 @@ public class RetrieveMasterListCtroller {
 			String templateFileName = webPath;
 			String destFileName = request.getSession().getServletContext().getRealPath(
 										filePath + "/" + empMap.get("EMPID") + "_"
-												+ empMap.get("LOCAL_NAME") + ".xls");
+												+ empMap.get("LOCAL_NAME") + ".xlsx");
 			templateFileName += "/resources/template/report/" + tempName+ ".xls";
 			List aliasValueList = (List) datamap.get("ValueList");
 			List aliasNameList = (List) datamap.get("NameList");
@@ -2363,15 +2296,14 @@ public class RetrieveMasterListCtroller {
 				// 资格事项viewBidMatter
 				datamap.put("viewBidMatter", empInfoSer.viewBidMatter(request));
 
-				XLSTransformer transformer = new XLSTransformer();
 				try {
 					InputStream is = new FileInputStream(templateFileName);
-					HSSFWorkbook workBook = (HSSFWorkbook) transformer.transformXLS(is,
-								datamap);
-					HSSFSheet sheet = workBook.getSheetAt(0);
+					Workbook workBook = ExcelTemplateUtil.transformXLS(is, datamap);
+					Sheet sheet = workBook.getSheetAt(0);
 					String path = request.getSession().getServletContext()
 							.getRealPath("/");
-					HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+					Drawing<?> patriarch = sheet.createDrawingPatriarch();
+					CreationHelper anchorHelper = workBook.getCreationHelper();
 					for (int i = 0; i < aliasValueList.size(); i++) {
 						HashMap valueMap = (HashMap) aliasValueList.get(i);
 						// 将图片以字节流的方式输入输出
@@ -2383,12 +2315,12 @@ public class RetrieveMasterListCtroller {
 								ByteArrayOutputStream bos = new ByteArrayOutputStream();
 								BufferedImage BufferImg = ImageIO.read(picFile);
 								ImageIO.write(BufferImg, "JPEG", bos);
-								HSSFClientAnchor anchor = null;
-								anchor = new HSSFClientAnchor(0, 0, 1023, 255,
-										(short) 9, 3, (short) 11, 9);
+								ClientAnchor anchor = anchorHelper.createClientAnchor();
+								anchor.setDx1(0); anchor.setDy1(0); anchor.setDx2(1023); anchor.setDy2(255);
+								anchor.setCol1(9); anchor.setRow1(3); anchor.setCol2(11); anchor.setRow2(9);
 								patriarch.createPicture(anchor, workBook
 										.addPicture(bos.toByteArray(),
-												workBook.PICTURE_TYPE_JPEG));
+												Workbook.PICTURE_TYPE_JPEG));
 							}
 						}
 					}
@@ -2397,7 +2329,7 @@ public class RetrieveMasterListCtroller {
 					is.close();
 					os.flush();
 					os.close();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			} else if ("232".equals(jspname)) {
@@ -2432,15 +2364,14 @@ public class RetrieveMasterListCtroller {
 				// 培训事项
 				datamap.put("viewTrain", empInfoSer.viewSingleTrain(request));
 
-				XLSTransformer transformer = new XLSTransformer();
 				try {
 					InputStream is = new FileInputStream(templateFileName);
-					HSSFWorkbook workBook = (HSSFWorkbook) transformer.transformXLS(is,
-								datamap);
-					HSSFSheet sheet = workBook.getSheetAt(0);
+					Workbook workBook = ExcelTemplateUtil.transformXLS(is, datamap);
+					Sheet sheet = workBook.getSheetAt(0);
 					String path = request.getSession().getServletContext()
 							.getRealPath("/");
-					HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+					Drawing<?> patriarch = sheet.createDrawingPatriarch();
+					CreationHelper anchorHelper = workBook.getCreationHelper();
 					for (int i = 0; i < aliasValueList.size(); i++) {
 						HashMap valueMap = (HashMap) aliasValueList.get(i);
 						// 将图片以字节流的方式输入输出
@@ -2452,12 +2383,12 @@ public class RetrieveMasterListCtroller {
 								ByteArrayOutputStream bos = new ByteArrayOutputStream();
 								BufferedImage BufferImg = ImageIO.read(picFile);
 								ImageIO.write(BufferImg, "JPEG", bos);
-								HSSFClientAnchor anchor = null;
-								anchor = new HSSFClientAnchor(0, 0, 1023, 255,
-										(short) 9, 3, (short) 11, 9);
+								ClientAnchor anchor = anchorHelper.createClientAnchor();
+								anchor.setDx1(0); anchor.setDy1(0); anchor.setDx2(1023); anchor.setDy2(255);
+								anchor.setCol1(9); anchor.setRow1(3); anchor.setCol2(11); anchor.setRow2(9);
 								patriarch.createPicture(anchor, workBook
 										.addPicture(bos.toByteArray(),
-												workBook.PICTURE_TYPE_JPEG));
+												Workbook.PICTURE_TYPE_JPEG));
 							}
 						}
 					}
@@ -2466,7 +2397,7 @@ public class RetrieveMasterListCtroller {
 					is.close();
 					os.flush();
 					os.close();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}

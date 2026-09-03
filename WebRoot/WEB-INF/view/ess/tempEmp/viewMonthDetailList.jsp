@@ -127,6 +127,9 @@ $(document).ready(function(){
 						    <th colspan='2'><!--带薪假加班--><spring:message code="ess.viewMonthDetailList.OT_ON_SATURDAY.b" /></th>
 						    <th colspan='2'><!--周末加班--><spring:message code="ess.viewMonthDetailList.OT_ON_WEEKEND.b" /></th>
 						    <th colspan='2'><!--节假日加班--><spring:message code="ess.viewMonthDetailList.OT_ON_HOLIDAY.b" /></th>
+							<th colspan='5'><!--Hỗ trợ ăn ca--><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+							<th colspan='3'><!--Hỗ trợ làm đêm--><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+							<th colspan='2'><!--Hỗ trợ làm thứ 7--><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						    <th colspan='3'><!--工作天数--><spring:message code="ess.viewMonthDetailList.WORK_DAYS.b" /></th>
 						    <th rowspan='2' width="60px"><!--应出勤天数--><spring:message code="ess.infoApply.yingchuqintianshu" /></th>
 						    <th rowspan='2' width="60px"><!--实际工作天数--><spring:message code="ess.viewMonthDetailList.REAL_WORK_DAYS.b" /></th>
@@ -165,6 +168,16 @@ $(document).ready(function(){
 							<th width="60px"><!--夜加班--><spring:message code="ess.viewMonthDetailList.NIGHT_OT.b" /></th>
 							<th width="60px"><!--日加班--><spring:message code="ess.viewMonthDetailList.DAY_OT.b" /></th>
 							<th width="60px"><!--夜加班--><spring:message code="ess.viewMonthDetailList.NIGHT_OT.b" /></th>
+							<th width="60px">150%</th>
+							<th width="60px">200%</th>
+							<th width="60px">270%</th>
+							<th width="60px">300%</th>
+							<th width="60px">390%</th>
+							<th width="60px">200%</th>
+							<th width="60px">270%</th>
+							<th width="60px">390%</th>
+							<th width="60px">200%</th>
+							<th width="60px">270%</th>
 							<th width="60px"><!--正常班--><spring:message code="ar.viewArShiftMonthCheckList.ZHENGCHANGBAN.b" /></th>
 							<th width="60px"><!--夜班--><spring:message code="ess.viewMonthDetailList.NIGHT_SHIFT.b" /></th>
 							<th width="60px"><!--夜班--><spring:message code="ess.viewMonthDetailList.NIGHT_SHIFT.b" /> (<spring:message code="ar.viewitemparameter.title.xiaoshi" />) </th>
@@ -210,6 +223,16 @@ $(document).ready(function(){
 								<td class='td_center'>${item.REG_NIGHT_OT_WEEKEND + item.PROB_NIGHT_OT_WEEKEND}</td>
 								<td class='td_center'>${item.REG_DAY_OT_HOLIDAY + item.PROB_DAY_OT_HOLIDAY}</td>
 								<td class='td_center'>${item.REG_NIGHT_OT_HOLIDAY + item.PROB_NIGHT_OT_HOLIDAY}</td>
+								<td class='td_center'>${item.REG_OT_INCENTIVE + item.PROB_OT_INCENTIVE}</td>
+								<td class='td_center'>${item.REG_OT_INCENTIVE_200 + item.PROB_OT_INCENTIVE_200}</td>
+								<td class='td_center'>${item.REG_OT_INCENTIVE_270 + item.PROB_OT_INCENTIVE_270}</td>
+								<td class='td_center'>${item.REG_OT_INCENTIVE_300 + item.PROB_OT_INCENTIVE_300}</td>
+								<td class='td_center'>${item.REG_OT_INCENTIVE_390 + item.PROB_OT_INCENTIVE_390}</td>
+								<td class='td_center'>${item.REG_NIGHT_INCENTIVE_200 + item.PROB_NIGHT_INCENTIVE_200}</td>
+								<td class='td_center'>${item.REG_NIGHT_INCENTIVE_270 + item.PROB_NIGHT_INCENTIVE_270}</td>
+								<td class='td_center'>${item.REG_NIGHT_INCENTIVE_390 + item.PROB_NIGHT_INCENTIVE_390}</td>
+								<td class='td_center'>${item.REG_DAY_SATURDAY + item.PROB_DAY_SATURDAY}</td>
+								<td class='td_center'>${item.REG_NIGHT_SATURDAY + item.PROB_NIGHT_SATURDAY}</td>
 								<td class='td_center'>
 								${item.REG_WORK_DAYS + item.REG_REST_PAY_DAYS + item.PROB_WORK_DAYS + item.PROB_REST_PAY_DAYS - item.PROB_LEAVE_NOT_PAY_DAYS - item.PROB_LEAVE_PAY_DAYS - item.REG_LEAVE_NOT_PAY_DAYS  - item.REG_LEAVE_PAY_DAYS}
 								</td>

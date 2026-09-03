@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -721,13 +722,19 @@ public class InfoApplyCtroller {
 		tomorrow.setTimeInMillis(today.getTimeInMillis());
 		tomorrow.add(Calendar.DAY_OF_MONTH, 1);
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-		String timeStr = "[{";
-		String spacing = "10";
+		String spacing = "15";
+		String extra = "12:10,20:05";
+		TreeSet<String> timeSet = new TreeSet<String>();
 		while (today.before(tomorrow) || today.equals(tomorrow)) {
-
-			String time = sdf.format(today.getTime());
-			timeStr = timeStr + "'CODENO':'"+time+"','CODENAME':'"+time+"'},{";
+			timeSet.add(sdf.format(today.getTime()));
 			today.add(Calendar.MINUTE, Integer.parseInt(spacing));
+		}
+		for (String extraTime : extra.split(",")) {
+			timeSet.add(extraTime);
+		}
+		String timeStr = "[{";
+		for (String time : timeSet) {
+			timeStr = timeStr + "'CODENO':'"+time+"','CODENAME':'"+time+"'},{";
 		}
 		timeStr = timeStr +"}]";
 		modelMap.put("TIME_STR", timeStr);

@@ -515,8 +515,8 @@ function addOtApplyAffirmNoRefresh(){
                                           htm += '<td style="text-align: center" id="WEEKDAY_OT_TOTAIL_'+(tb2.rows.length)+'">'+data.nullOTTSTOAffirmList[i].WEEKDAY_OT_TOTAIL+'</td>';
                                           htm += '<td style="text-align: center" id="WEEKEND_OT_TOTAIL_'+(tb2.rows.length)+'">'+data.nullOTTSTOAffirmList[i].WEEKEND_OT_TOTAIL+'</td>';
                                           htm += '<td style="text-align: center" id="HOILDAY_OT_TOTAIL_'+(tb2.rows.length)+'">'+data.nullOTTSTOAffirmList[i].HOILDAY_OT_TOTAIL+'</td>';
-                                          htm += '<td style="text-align: center" id="OT_TOTAIL_LIMIT_'+(tb2.rows.length)+'">200</td>';
-                                          htm += '<td style="text-align: center" id="OT_TOTAIL_MONTH_LIMIT_'+(tb2.rows.length)+'">30</td>';
+                                          htm += '<td style="text-align: center" id="OT_TOTAIL_LIMIT_'+(tb2.rows.length)+'">300</td>';
+                                          htm += '<td style="text-align: center" id="OT_TOTAIL_MONTH_LIMIT_'+(tb2.rows.length)+'">40</td>';
                                           htm += '<input type="hidden" id="OT_LIMIT_'+(tb2.rows.length)+'" value="'+data.nullOTTSTOAffirmList[i].OT_LIMIT+'"/>';
                                           htm += '<td style="text-align: center" id="OT_AFFIRMOR_'+(tb2.rows.length)+'"></td>';
                                           htm += '<td style="text-align: center"></td>';
@@ -1040,11 +1040,11 @@ function changeURL_ess3403(applyNo){
 				   </td>
 				   <td><!--开始时间--><spring:message code="ess.infoApply.title.startTime" /></td>
 				   <td>
-						<ait:time name="OT_FROM_TIME"  spacing="10"   selected=""/>
+						<ait:time name="OT_FROM_TIME"  spacing="15" extra="12:10,20:05"   selected=""/>
 					</td>
 					<td><!--结束时间--><spring:message code="ess.infoApply.end_time" /></td>
 					<td>
-						<ait:time name="OT_TO_TIME"  spacing="10"  selected=""/>
+						<ait:time name="OT_TO_TIME"  spacing="15" extra="12:10,20:05"  selected=""/>
 					</td>
 					<td><!--原因--><spring:message code="hrm.empinfo.reason" /></td>
 					<td>
@@ -1261,10 +1261,10 @@ function changeURL_ess3403(applyNo){
 					      ${otApply.HOILDAY_OT_TOTAIL}
 					    </td>
 					    <td  style="text-align: center" id="OT_TOTAIL_LIMIT_${i.index}">
-					      200
+					      300
 					    </td>
 					    <td  style="text-align: center" id="OT_TOTAIL_MONTH_LIMIT_${i.index}">
-					      30
+					      40
 					    </td>
 					    <input type="hidden" id="OT_LIMIT_${i.index}" value="${otApply.OT_LIMIT}" />
 					    <td  style="text-align: center" id="OT_AFFIRMOR_${i.index}"></td>

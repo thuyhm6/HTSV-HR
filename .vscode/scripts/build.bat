@@ -21,7 +21,7 @@ if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
 dir /s /b "%SRC_DIR%\*.java" > "%SOURCES_FILE%"
 
 echo Compiling Java sources...
-"%JDK_HOME%\bin\javac.exe" -encoding UTF-8 -source 1.6 -target 1.6 -g -nowarn ^
+"%JDK_HOME%\bin\javac.exe" -encoding UTF-8 -source 1.7 -target 1.7 -g -nowarn ^
   -d "%OUT_DIR%" ^
   -cp "%LIB_DIR%\*;%TOMCAT_LIB%\*" ^
   -sourcepath "%SRC_DIR%" ^

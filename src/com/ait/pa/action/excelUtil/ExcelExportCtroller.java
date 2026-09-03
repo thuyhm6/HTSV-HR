@@ -21,8 +21,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.jxls.exception.ParsePropertyException;
-import net.sf.jxls.transformer.XLSTransformer;
 
 import org.apache.axis.utils.Admin;
 import org.apache.commons.lang.ObjectUtils;
@@ -31,8 +29,6 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataValidation;
 import org.apache.poi.hssf.usermodel.HSSFName;
 import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
@@ -41,9 +37,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidation;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -61,6 +54,7 @@ import com.ait.pa.dao.InsuranceInputItemDao;
 import com.ait.pa.dao.PaBasicItemDao;
 import com.ait.pa.dao.PaInputItemParamDao;
 import com.ait.pa.service.excelUtil.ExcelUtilSer;
+import com.ait.pa.service.imp.excelUtil.ExcelTemplateUtil;
 import com.ait.pa.service.insurance.InsuranceInputItemSer;
 import com.ait.paEcc.service.PaEccService;
 import com.ait.report.hr.service.HrReportC01Ser;
@@ -7645,9 +7639,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List rs = empInfoSer.getCodeList("1359", request); //入社区分
@@ -7667,7 +7660,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,rs,0);
 				this.composeTemplateCodeInfo(wb,rsxj,4);
 				this.composeTemplateCodeInfo(wb,dept,8);
@@ -7701,18 +7694,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -7755,9 +7746,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List rs = empInfoSer.getCodeList("1359", request); //入社区分
@@ -7780,7 +7770,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,rs,0);
 				this.composeTemplateCodeInfo(wb,rsxj,4);
 				this.composeTemplateCodeInfo(wb,dept,8);
@@ -7820,18 +7810,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -7865,9 +7853,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		if (admin.getCpnyId() == "HAE" || "HAE".equals(admin.getCpnyId())) {
 			try {
 				LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
@@ -7880,7 +7867,7 @@ public class ExcelExportCtroller {
 				
 				InputStream is = new FileInputStream(templateFileName ); 
 				try {
-					Workbook wb = transformer.transformXLS(is, datamap);
+					Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 					this.composeTemplateCodeInfo(wb,xb,0);
 					this.composeTemplateCodeInfo(wb,gj,4);
 					this.composeTemplateCodeInfo(wb,jhqf,8);
@@ -7899,11 +7886,9 @@ public class ExcelExportCtroller {
 			        is.close();
 			        os.flush();
 			        os.close();
-				} catch (InvalidFormatException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -7921,7 +7906,7 @@ public class ExcelExportCtroller {
 				
 				InputStream is = new FileInputStream(templateFileName ); 
 				try {
-					Workbook wb = transformer.transformXLS(is, datamap);
+					Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 					this.composeTemplateCodeInfo(wb,xb,0);
 					this.composeTemplateCodeInfo(wb,gj,4);
 					this.composeTemplateCodeInfo(wb,gwqf,8);
@@ -7940,19 +7925,17 @@ public class ExcelExportCtroller {
 			        is.close();
 			        os.flush();
 			        os.close();
-				} catch (InvalidFormatException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			} catch (ParsePropertyException e) {
-				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -7980,32 +7963,29 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/SPC_SH/" + fileName + ".xls";
-		destFileName +=  "/resources/template/SPC_SH/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/SPC_SH/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				OutputStream os = new FileOutputStream(destFileName);
 				wb.write(os);
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		
 		try {
 			File file=new File(destFileName);
@@ -8092,9 +8072,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List rs = empInfoSer.getCodeList("14013956", request); //发令区分
@@ -8109,7 +8088,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,rs,0);
 				this.composeTemplateCodeInfo(wb,rsxj,4);
 				this.composeTemplateCodeInfo(wb,dept,8);
@@ -8134,18 +8113,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8190,9 +8167,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List rs = empInfoSer.getCodeList("14013956", request); //发令区分
@@ -8208,7 +8184,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,rs,0);
 				this.composeTemplateCodeInfo(wb,rsxj,4);
 				this.composeTemplateCodeInfo(wb,dept,8);
@@ -8235,18 +8211,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8324,9 +8298,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + fileName + "_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			
@@ -8336,7 +8309,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				
 				this.composeTemplateCodeInfo(wb,paItem,0);
 				
@@ -8348,18 +8321,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8396,9 +8367,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
@@ -8407,7 +8377,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.composeTemplateCodeInfo(wb,xb,4);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dept == null ? 2 : dept.size() + 1));
@@ -8417,18 +8387,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8465,9 +8433,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
@@ -8475,7 +8442,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.composeTemplateCodeInfo(wb,xb,4);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dept == null ? 2 : dept.size() + 1));
@@ -8485,18 +8452,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8532,9 +8497,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
@@ -8542,7 +8506,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.composeTemplateCodeInfo(wb,bankType,4);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dept == null ? 2 : dept.size() + 1));
@@ -8552,18 +8516,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8600,9 +8562,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			
@@ -8612,7 +8573,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.composeTemplateCodeInfo(wb,bankType,4);
 				this.composeTemplateCodeInfo(wb,trainType,8);
@@ -8625,18 +8586,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8672,16 +8631,15 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dept == null ? 2 : dept.size() + 1));
 				OutputStream os = new FileOutputStream(destFileName);
@@ -8689,18 +8647,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8737,9 +8693,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
@@ -8748,7 +8703,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.composeTemplateCodeInfo(wb,gzd,4);
 				this.composeTemplateCodeInfo(wb,zzlx,8);
@@ -8762,18 +8717,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8809,16 +8762,15 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dept == null ? 2 : dept.size() + 1));
 				OutputStream os = new FileOutputStream(destFileName);
@@ -8826,18 +8778,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8873,16 +8823,15 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dept = empInfoSer.getCodeListBySql(DEPT_NO_SQL); //部门
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dept,0);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dept == null ? 2 : dept.size() + 1));
 				OutputStream os = new FileOutputStream(destFileName);
@@ -8890,18 +8839,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8935,16 +8882,15 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List item = this.tempEmpSer.viewTempEmpList(request,"getShiftItemList"); //性别
 
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,item,0);
 				this.createName(wb, "item", "TemplateCode!$A$2:$A$" + (item == null ? 2 : item.size() + 1));
 				OutputStream os = new FileOutputStream(destFileName);
@@ -8952,18 +8898,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -8997,32 +8941,29 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				OutputStream os = new FileOutputStream(destFileName);
 				wb.write(os);
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -9058,9 +8999,8 @@ public class ExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + admin.getCpnyId() + "/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + admin.getCpnyId() + "/" + fileName + "_out.xlsx";
 		// execl导出处理C:\Users\Administrator\AppData\Local\Temp
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List dt = empInfoSer.getCodeList("1439", request); //Date type
@@ -9069,7 +9009,7 @@ public class ExcelExportCtroller {
 			
 			InputStream is = new FileInputStream(templateFileName ); 
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,dt,0);
 				this.composeTemplateCodeInfo(wb,sc,4);
 				this.createName(wb, "dept", "TemplateCode!$A$2:$A$" + (dt == null ? 2 : dt.size() + 1));
@@ -9079,18 +9019,16 @@ public class ExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);

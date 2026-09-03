@@ -19,14 +19,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.Region;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -124,105 +126,105 @@ public class HrReportC01Ctroller {
 		AdminBean admin = SessionUtil.getLoginUserFromSession(request);
 		modelMap.put("COMPANY_NAME", admin.getCpnyName());
 		modelMap.put("empPaRiseList",this.hrReportSer.getEmpPaRiseExcelList(request));
-		try{    
-	        HSSFWorkbook wb = new HSSFWorkbook();    
-	        HSSFSheet sheet = wb.createSheet("paRiseInfo");    
-	        HSSFCellStyle style = wb.createCellStyle(); // 样式对象    
-	   
-	            style.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);// 垂直    
-	        style.setAlignment(HSSFCellStyle.ALIGN_CENTER);// 水平    
-	        HSSFRow row = sheet.createRow((short) 0);    
-	        HSSFRow row2 = sheet.createRow((short) 1);  
+		try{
+	        XSSFWorkbook wb = new XSSFWorkbook();
+	        XSSFSheet sheet = wb.createSheet("paRiseInfo");
+	        XSSFCellStyle style = wb.createCellStyle(); // 样式对象
+
+	            style.setVerticalAlignment(VerticalAlignment.CENTER);// 垂直
+	        style.setAlignment(HorizontalAlignment.CENTER);// 水平
+	        XSSFRow row = sheet.createRow((short) 0);
+	        XSSFRow row2 = sheet.createRow((short) 1);
 	        //照片后的“”不可删除
 	        String[] columns = {"No.","现职地","社保地","入职地","照片","","姓名","部门","职级","性别","出生年月",
 	        		            "年龄","入职日期","最高学历","合同到期日","学校名称","专业","月工资 ","联系方式" };
-	        
-	        int num = 0; 
-	        for(int i = 0; i < 4; i++) { // 循环18次，每一次都要跨单元格显示 
+
+	        int num = 0;
+	        for(int i = 0; i < 4; i++) { // 循环18次，每一次都要跨单元格显示
 	        	String colName = columns[i]!=null?columns[i]:"";
-	        	sheet.addMergedRegion(new Region(0, (short) i, 1, (short) i));
-	            HSSFCell ce = row.createCell((short) i);    
-	            ce.setCellValue(colName); //表格的第一行第一列显示的名称  
-	            ce.setCellStyle(style); //样式，居中    
+	        	sheet.addMergedRegion(new CellRangeAddress(0, 1, i, i));
+	            XSSFCell ce = row.createCell((short) i);
+	            ce.setCellValue(colName); //表格的第一行第一列显示的名称
+	            ce.setCellStyle(style); //样式，居中
 	        }
 	        //照片
 	        String photoName = columns[4]!=null?columns[4]:"";
-        	sheet.addMergedRegion(new Region(0, (short) 4, 1, (short) 5));
-            HSSFCell cePhoto = row.createCell((short) 4);
-            cePhoto.setCellValue(photoName);  
-            cePhoto.setCellStyle(style);  
-            
-	        for(int i = 6; i < 19; i++) { // 循环18次，每一次都要跨单元格显示 
+        	sheet.addMergedRegion(new CellRangeAddress(0, 1, 4, 5));
+            XSSFCell cePhoto = row.createCell((short) 4);
+            cePhoto.setCellValue(photoName);
+            cePhoto.setCellStyle(style);
+
+	        for(int i = 6; i < 19; i++) { // 循环18次，每一次都要跨单元格显示
 	        	String colName = columns[i]!=null?columns[i]:"";
-	        	sheet.addMergedRegion(new Region(0, (short) i, 1, (short) i));
-	            HSSFCell ce = row.createCell((short) i);    
-	            ce.setCellValue(colName); //表格的第一行第一列显示的名称  
-	            ce.setCellStyle(style); //样式，居中    
+	        	sheet.addMergedRegion(new CellRangeAddress(0, 1, i, i));
+	            XSSFCell ce = row.createCell((short) i);
+	            ce.setCellValue(colName); //表格的第一行第一列显示的名称
+	            ce.setCellStyle(style); //样式，居中
 	        }
-	        // 社外经历单元格合并    
-	        // 四个参数分别是：起始行，起始列，结束行，结束列    
-	        sheet.addMergedRegion(new Region(0, (short) 19, 0,(short) 21));    
-	        HSSFCell cellOut = row.createCell((short) 19);    
-	        cellOut.setCellValue("社外经历"); // 跨单元格显示的数据    
-	        cellOut.setCellStyle(style); // 样式    
-	        // 不跨单元格显示的数据，如：分两行，上一行分别两格为一格，下一行就为两格，“数量”，“金额”     
-	        HSSFCell cellOut1 = row2.createCell((short) 19);    
-	        HSSFCell cellOut2 = row2.createCell((short) 20);
-	        HSSFCell cellOut3 = row2.createCell((short) 21);
-	        cellOut1.setCellValue("时间");    
-	        cellOut1.setCellStyle(style);        
-	        cellOut2.setCellValue("单位");    
-	        cellOut2.setCellStyle(style); 
-	        cellOut3.setCellValue("职务");    
+	        // 社外经历单元格合并
+	        // 四个参数分别是：起始行，结束行，起始列，结束列
+	        sheet.addMergedRegion(new CellRangeAddress(0, 0, 19, 21));
+	        XSSFCell cellOut = row.createCell((short) 19);
+	        cellOut.setCellValue("社外经历"); // 跨单元格显示的数据
+	        cellOut.setCellStyle(style); // 样式
+	        // 不跨单元格显示的数据，如：分两行，上一行分别两格为一格，下一行就为两格，“数量”，“金额”
+	        XSSFCell cellOut1 = row2.createCell((short) 19);
+	        XSSFCell cellOut2 = row2.createCell((short) 20);
+	        XSSFCell cellOut3 = row2.createCell((short) 21);
+	        cellOut1.setCellValue("时间");
+	        cellOut1.setCellStyle(style);
+	        cellOut2.setCellValue("单位");
+	        cellOut2.setCellStyle(style);
+	        cellOut3.setCellValue("职务");
 	        cellOut3.setCellStyle(style);
-	        
-	        // 社内经历单元格合并    
-	        // 四个参数分别是：起始行，起始列，结束行，结束列    
-	        sheet.addMergedRegion(new Region(0, (short) 22, 0,(short) 25));    
-	        HSSFCell cellIn = row.createCell((short) 22);    
-	        cellIn.setCellValue("社外经历"); // 跨单元格显示的数据    
-	        cellIn.setCellStyle(style); // 样式    
-	        // 不跨单元格显示的数据，如：分两行，上一行分别两格为一格，下一行就为两格，“数量”，“金额”     
-	        HSSFCell cellIn1 = row2.createCell((short) 22);    
-	        HSSFCell cellIn2 = row2.createCell((short) 23);
-	        HSSFCell cellIn3 = row2.createCell((short) 24);
-	        HSSFCell cellIn4 = row2.createCell((short) 25);
-	        cellIn1.setCellValue("时间");    
-	        cellIn1.setCellStyle(style);        
-	        cellIn2.setCellValue("单位");    
-	        cellIn2.setCellStyle(style); 
-	        cellIn3.setCellValue("职务");    
+
+	        // 社内经历单元格合并
+	        // 四个参数分别是：起始行，结束行，起始列，结束列
+	        sheet.addMergedRegion(new CellRangeAddress(0, 0, 22, 25));
+	        XSSFCell cellIn = row.createCell((short) 22);
+	        cellIn.setCellValue("社外经历"); // 跨单元格显示的数据
+	        cellIn.setCellStyle(style); // 样式
+	        // 不跨单元格显示的数据，如：分两行，上一行分别两格为一格，下一行就为两格，“数量”，“金额”
+	        XSSFCell cellIn1 = row2.createCell((short) 22);
+	        XSSFCell cellIn2 = row2.createCell((short) 23);
+	        XSSFCell cellIn3 = row2.createCell((short) 24);
+	        XSSFCell cellIn4 = row2.createCell((short) 25);
+	        cellIn1.setCellValue("时间");
+	        cellIn1.setCellStyle(style);
+	        cellIn2.setCellValue("单位");
+	        cellIn2.setCellStyle(style);
+	        cellIn3.setCellValue("职务");
 	        cellIn3.setCellStyle(style);
-	        cellIn4.setCellValue("薪资");    
+	        cellIn4.setCellValue("薪资");
 	        cellIn4.setCellStyle(style);
 	        BufferedInputStream bis = new BufferedInputStream(new FileInputStream("E://pander.jpg"));
 			byte[] buf = new byte[bis.available()];
 			while ((bis.read(buf)) != -1){}
-			FileOutputStream fileOut = null; 
-	        BufferedImage bufferImg =null; 
-	        BufferedImage bufferImg1 = null; 
-		    //先把读进来的图片放到一个ByteArrayOutputStream中，以便产生ByteArray 
-            ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream(); 
-            ByteArrayOutputStream byteArrayOut1 = new ByteArrayOutputStream(); 
-            bufferImg = ImageIO.read(new File("E:/pander.jpg")); 
-            bufferImg1 = ImageIO.read(new File("E:/pander.jpg")); 
-            ImageIO.write(bufferImg,"jpg",byteArrayOut); 
-            ImageIO.write(bufferImg1,"jpg",byteArrayOut1); 
-	         
-	        HSSFPatriarch patriarch = sheet.createDrawingPatriarch(); 
-	        HSSFClientAnchor anchor = new HSSFClientAnchor(0,0,455,255,(short) 26,0,(short)27,5);
-            HSSFCell cell = row.createCell((short) 26);
+			FileOutputStream fileOut = null;
+	        BufferedImage bufferImg =null;
+	        BufferedImage bufferImg1 = null;
+		    //先把读进来的图片放到一个ByteArrayOutputStream中，以便产生ByteArray
+            ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+            ByteArrayOutputStream byteArrayOut1 = new ByteArrayOutputStream();
+            bufferImg = ImageIO.read(new File("E:/pander.jpg"));
+            bufferImg1 = ImageIO.read(new File("E:/pander.jpg"));
+            ImageIO.write(bufferImg,"jpg",byteArrayOut);
+            ImageIO.write(bufferImg1,"jpg",byteArrayOut1);
+
+	        XSSFDrawing patriarch = sheet.createDrawingPatriarch();
+	        XSSFClientAnchor anchor = new XSSFClientAnchor(0,0,455,255,(short) 26,0,(short)27,5);
+            XSSFCell cell = row.createCell((short) 26);
             //插入图片
-            patriarch.createPicture(anchor , wb.addPicture(byteArrayOut.toByteArray(),HSSFWorkbook.PICTURE_TYPE_JPEG));
-            cellIn.setCellStyle(style); // 样式    
-            
-            fileOut = new FileOutputStream("E://paRiseInfo.xls");    
-            wb.write(fileOut);    
-            fileOut.close();    
-            System.out.print("OK");    
-        } catch (Exception ex) {    
-            ex.printStackTrace();    
-        }    
+            patriarch.createPicture(anchor , wb.addPicture(byteArrayOut.toByteArray(),XSSFWorkbook.PICTURE_TYPE_JPEG));
+            cellIn.setCellStyle(style); // 样式
+
+            fileOut = new FileOutputStream("E://paRiseInfo.xlsx");
+            wb.write(fileOut);
+            fileOut.close();
+            System.out.print("OK");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 	}
 
 	/**

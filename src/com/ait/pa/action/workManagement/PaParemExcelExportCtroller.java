@@ -22,29 +22,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.jxls.exception.ParsePropertyException;
-import net.sf.jxls.transformer.XLSTransformer;
-
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.DVConstraint;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFDataValidation;
-import org.apache.poi.hssf.usermodel.HSSFName;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.Name;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidation;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -64,6 +48,7 @@ import com.ait.pa.dao.InsuranceInputItemDao;
 import com.ait.pa.dao.PaBasicItemDao;
 import com.ait.pa.dao.PaInputItemParamDao;
 import com.ait.pa.service.excelUtil.ExcelUtilSer;
+import com.ait.pa.service.imp.excelUtil.ExcelTemplateUtil;
 import com.ait.pa.service.insurance.InsuranceInputItemSer;
 import com.ait.pa.service.salary.PaCalculateSer;
 import com.ait.pa.service.salary.PaInputItemParamSer;
@@ -217,18 +202,17 @@ public class PaParemExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + fileName + "_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 		
 			List rsxj = empInfoSer.getCodeListBySql(PARENT_CODE_NO_SQL ); //输入项目代码
 			
 			
-			InputStream is = new FileInputStream(templateFileName ); 
+			InputStream is = new FileInputStream(templateFileName );
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,rsxj,0);
 				this.createName(wb, "rs", "TemplateCode!$A$2:$A$" + (rsxj == null ? 2 : rsxj.size() + 1));
 				OutputStream os = new FileOutputStream(destFileName);
@@ -236,18 +220,16 @@ public class PaParemExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);
@@ -333,9 +315,8 @@ public class PaParemExcelExportCtroller {
 		String templateFileName = webPath;
 		String destFileName = webPath;
 		templateFileName += "/resources/template/" + fileName + ".xls";
-		destFileName +=  "/resources/template/" + fileName + "_out.xls";
+		destFileName +=  "/resources/template/" + fileName + "_out.xlsx";
 		// execl导出处理
-		XLSTransformer transformer = new XLSTransformer();
 		try {
 			LinkedHashMap datamap = ObjectBindUtil.getRequestParamData(request);
 			List rs = empInfoSer.getCodeList("123313", request); //入社区分
@@ -346,9 +327,9 @@ public class PaParemExcelExportCtroller {
 			List gzd = empInfoSer.getCodeListBySql(WORK_AREA_SQL); //工作地
 			List cbzx = empInfoSer.getCodeListBySql(COST_CENTER_SQL); //成本中心
 			
-			InputStream is = new FileInputStream(templateFileName ); 
+			InputStream is = new FileInputStream(templateFileName );
 			try {
-				Workbook wb = transformer.transformXLS(is, datamap);
+				Workbook wb = ExcelTemplateUtil.transformXLS(is, datamap);
 				this.composeTemplateCodeInfo(wb,rs,0);
 				this.composeTemplateCodeInfo(wb,rsxj,4);
 				this.composeTemplateCodeInfo(wb,dept,8);
@@ -370,18 +351,16 @@ public class PaParemExcelExportCtroller {
 		        is.close();
 		        os.flush();
 		        os.close();
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		} catch (ParsePropertyException e) {
-			e.printStackTrace();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/vnd.ms-excel");
-		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xlsx");
 		try {
 			File file=new File(destFileName);
 			InputStream inputStream=new FileInputStream(file);

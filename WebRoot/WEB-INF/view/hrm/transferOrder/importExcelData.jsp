@@ -12,7 +12,7 @@
 		  var imgpath=document.getElementById("filename").value;
 		  var imgPostfix=imgpath.split(".");
 		  if(imgpath != ""){
-		     if(imgPostfix[imgPostfix.length-1] == "xls"  ){
+		     if(imgPostfix[imgPostfix.length-1].toLowerCase() == "xls" || imgPostfix[imgPostfix.length-1].toLowerCase() == "xlsx"  ){
 		         // window.document.addimgform.action= "/pa/excelImport/importExcel";
 			      //window.document.addimgform.fireSubmit();
 			     

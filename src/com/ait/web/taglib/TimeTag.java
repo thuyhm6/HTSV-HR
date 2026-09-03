@@ -12,6 +12,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
@@ -57,8 +58,14 @@ public class TimeTag extends TagSupport {
 
 	protected String special = null;// 特殊值 e.g 08:00,09:00...
 
+	protected String extra = null;// 在按spacing生成的列表基础上，额外插入的选项 e.g 12:10
+
 	public void setSpecial(String special) {
 		this.special = special;
+	}
+
+	public void setExtra(String extra) {
+		this.extra = extra;
 	}
 
 	public void setName(String name) {
@@ -153,6 +160,12 @@ public class TimeTag extends TagSupport {
 			special = eval("special", special, Object.class).toString();
 		} else {
 			special = "";
+		}
+
+		if (extra != null) {
+			extra = eval("extra", extra, Object.class).toString();
+		} else {
+			extra = "";
 		}
 
 		HttpServletRequest request = (HttpServletRequest) pageContext
@@ -328,8 +341,19 @@ public class TimeTag extends TagSupport {
 					}
 				} else {
 
+					TreeSet<String> timeSet = new TreeSet<String>();
 					while (today.before(tomorrow) || today.equals(tomorrow)) {
-						String time = sdf.format(today.getTime());
+						timeSet.add(sdf.format(today.getTime()));
+						today.add(Calendar.MINUTE, Integer.parseInt(spacing));
+					}
+
+					if (!"".equals(extra)) {
+						for (String extraTime : extra.split(",")) {
+							timeSet.add(extraTime);
+						}
+					}
+
+					for (String time : timeSet) {
 						writer.print("<option value=\"" + time + "\"");
 						if (time.equals(selected)) {
 							writer.print(" selected ");
@@ -338,9 +362,6 @@ public class TimeTag extends TagSupport {
 						writer.print(">");
 						writer.print(time);
 						writer.print("</option>");
-
-						today.add(Calendar.MINUTE, Integer.parseInt(spacing));
-
 					}
 				}
 			}

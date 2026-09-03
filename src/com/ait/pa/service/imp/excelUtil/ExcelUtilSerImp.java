@@ -27,24 +27,27 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import jxl.Cell;
-import jxl.CellType;
-import jxl.DateCell;
-import jxl.Sheet;
-import jxl.Workbook;
+import com.ait.pa.service.imp.excelUtil.jxlcompat.Cell;
+import com.ait.pa.service.imp.excelUtil.jxlcompat.CellType;
+import com.ait.pa.service.imp.excelUtil.jxlcompat.DateCell;
+import com.ait.pa.service.imp.excelUtil.jxlcompat.Sheet;
+import com.ait.pa.service.imp.excelUtil.jxlcompat.Workbook;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
-import org.apache.poi.hssf.usermodel.HSSFComment;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.Region;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFComment;
+import org.apache.poi.xssf.usermodel.XSSFDataFormat;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.BuiltinFormats;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
@@ -82,6 +85,12 @@ import com.ait.web.util.uploadpicture.uploadExcel;
 public class ExcelUtilSerImp implements ExcelUtilSer {
 
 	Logger logger = Logger.getLogger(ExcelUtilSerImp.class);
+
+	/** Compat shim for the old org.apache.poi.hssf.util.Region(rowFrom, colFrom, rowTo, colTo) constructor,
+	 * whose argument order differs from CellRangeAddress(firstRow, lastRow, firstCol, lastCol). */
+	private static CellRangeAddress region(int rowFrom, int colFrom, int rowTo, int colTo) {
+		return new CellRangeAddress(rowFrom, rowTo, colFrom, colTo);
+	}
 
 	private static final String CONTENT_TYPE = "text/html; charset=UTF-8";
 
@@ -4902,10 +4911,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -4924,7 +4933,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -4968,18 +4977,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "temp.xls");
+				+ "temp.xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -5025,10 +5034,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -5047,7 +5056,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -5091,22 +5100,22 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		if (fileName == null || "".equals(fileName)) {
 			response.setHeader("Content-Disposition", "attachment;filename="
-					+ "temp.xls");
+					+ "temp.xlsx");
 		} else {
 			response.setHeader("Content-Disposition",
-					"attachment;filename=temp_" + fileName + ".xls");
+					"attachment;filename=temp_" + fileName + ".xlsx");
 		}
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
@@ -5153,14 +5162,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -5179,7 +5188,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -5220,14 +5229,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 			}
 			for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-				HSSFRow row2 = sheet2.createRow(i + 1);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(i + 1);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				if (sheet2List.get(i) != null
 						&& ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 					cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -5241,18 +5250,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "temp.xls");
+				+ "temp.xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -5297,15 +5306,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		String fileName = modelMap.get("FileName") == null ? "temp" : modelMap
 				.get("FileName").toString();
-		fileName = fileName + ".xls";
+		fileName = fileName + ".xlsx";
 		try {
 			/**
 			 * 根据导出报表的类型，定义列名，并且从相应的表中查询数据
@@ -5367,19 +5376,19 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				// HSSFSheet sheet2 = wb.createSheet("sheet"+(r+2));
-				HSSFSheet sheet2 = wb.createSheet(String.valueOf(mapNameList
+				// XSSFSheet sheet2 = wb.createSheet("sheet"+(r+2));
+				XSSFSheet sheet2 = wb.createSheet(String.valueOf(mapNameList
 						.get(r)));
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 				}
 				// for (int i = 0; i < sheet2List.size() - 1; i++) {//
 				// 设定sheet2里头的内容
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if (sheet2List.get(i) != null) {
 						cell2.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("CONTENT")));
@@ -5457,10 +5466,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -5477,7 +5486,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -5524,17 +5533,17 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell1 = row2.createCell((short) 0);
-					HSSFCell cell2 = row2.createCell((short) 1);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell1 = row2.createCell((short) 0);
+					XSSFCell cell2 = row2.createCell((short) 1);
 					if (sheet2List.get(i) != null) {
 						cell1.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("NO")) == "null" ? "" : String
@@ -5552,7 +5561,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -5560,11 +5569,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType(CONTENT_TYPE);
 
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			response.setHeader("Content-Disposition", "attachment;filename="
-					+ "temp_" + excelName + ".xls");
+					+ "temp_" + excelName + ".xlsx");
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -5616,10 +5625,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -5636,7 +5645,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -5685,18 +5694,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
-					HSSFCell cell3 = row2.createCell((short) 1);
-					HSSFCell cell4 = row2.createCell((short) 2);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
+					XSSFCell cell3 = row2.createCell((short) 1);
+					XSSFCell cell4 = row2.createCell((short) 2);
 					if (sheet2List.get(i) != null) {
 						cell2.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("CONTENT")));
@@ -5722,7 +5731,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -5730,11 +5739,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType(CONTENT_TYPE);
 
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			response.setHeader("Content-Disposition", "attachment;filename="
-					+ "temp_" + excelName + ".xls");
+					+ "temp_" + excelName + ".xlsx");
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -5786,10 +5795,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -5806,7 +5815,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -5853,29 +5862,29 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				String sheetName = mapNameList.get(r).toString();
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if ("城市列表".equals(sheetName)) {
 						cell2.setCellValue("城市列表");
-						HSSFCell cell3 = row2.createCell((short) 1);
+						XSSFCell cell3 = row2.createCell((short) 1);
 						cell3.setCellValue("所属省份");
 					} else if ("地区列表".equals(sheetName)) {
 						cell2.setCellValue("地区列表");
-						HSSFCell cell3 = row2.createCell((short) 1);
+						XSSFCell cell3 = row2.createCell((short) 1);
 						cell3.setCellValue("所属城市");
 					} else {
 						cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 					}
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if ("城市列表".equals(sheetName) || "地区列表".equals(sheetName)) {
-						HSSFCell cell3 = row2.createCell((short) 1);
+						XSSFCell cell3 = row2.createCell((short) 1);
 						if (sheet2List.get(i) != null) {
 							cell2.setCellValue(String.valueOf(((Map) sheet2List
 									.get(i)).get("CONTENT")));
@@ -5900,7 +5909,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -5908,15 +5917,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType(CONTENT_TYPE);
 
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			if (excelName != null && !"".equals(excelName)) {
 				response.setHeader("Content-Disposition",
-						"attachment;filename=temp_" + excelName + ".xls");
+						"attachment;filename=temp_" + excelName + ".xlsx");
 			} else {
 				response.setHeader("Content-Disposition",
-						"attachment;filename=temp.xls");
+						"attachment;filename=temp.xlsx");
 			}
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream buff = new BufferedInputStream(fis);
@@ -5969,10 +5978,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -5989,7 +5998,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -6036,33 +6045,33 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				String sheetName = mapNameList.get(r).toString();
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if ("项目类型".equals(sheetName)) {
 						cell2.setCellValue("类型ID");
-						HSSFCell cell3 = row2.createCell((short) 1);
+						XSSFCell cell3 = row2.createCell((short) 1);
 						cell3.setCellValue("类型名称");
 						// }else if("详细项目信息".equals(sheetName)){
 						// cell2.setCellValue("项目编号");
-						// HSSFCell cell3 = row2.createCell((short) 1);
+						// XSSFCell cell3 = row2.createCell((short) 1);
 						// cell3.setCellValue("项目ID");
-						// HSSFCell cell4 = row2.createCell((short) 2);
+						// XSSFCell cell4 = row2.createCell((short) 2);
 						// cell4.setCellValue("项目名称");
-						// HSSFCell cell5 = row2.createCell((short) 3);
+						// XSSFCell cell5 = row2.createCell((short) 3);
 						// cell5.setCellValue("项目所属类型");
 					} else {
 						cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 					}
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if ("项目类型".equals(sheetName)) {
-						HSSFCell cell3 = row2.createCell((short) 1);
+						XSSFCell cell3 = row2.createCell((short) 1);
 						if (sheet2List.get(i) != null) {
 							cell2.setCellValue(String.valueOf(((Map) sheet2List
 									.get(i)).get("ITEM_NO")));
@@ -6073,9 +6082,9 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 							cell3.setCellValue("");
 						}
 						// }else if("详细项目信息".equals(sheetName)){
-						// HSSFCell cell3 = row2.createCell((short) 1);
-						// HSSFCell cell4 = row2.createCell((short) 2);
-						// HSSFCell cell5 = row2.createCell((short) 3);
+						// XSSFCell cell3 = row2.createCell((short) 1);
+						// XSSFCell cell4 = row2.createCell((short) 2);
+						// XSSFCell cell5 = row2.createCell((short) 3);
 						// if (sheet2List.get(i) != null) {
 						// cell2.setCellValue(String.valueOf(((Map)sheet2List.get(i)).get("ITEM_NO")));
 						// cell3.setCellValue(String.valueOf(((Map)sheet2List.get(i)).get("ITEM_ID")));
@@ -6102,7 +6111,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -6110,15 +6119,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType(CONTENT_TYPE);
 
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			if (excelName != null && !"".equals(excelName)) {
 				response.setHeader("Content-Disposition",
-						"attachment;filename=temp_" + excelName + ".xls");
+						"attachment;filename=temp_" + excelName + ".xlsx");
 			} else {
 				response.setHeader("Content-Disposition",
-						"attachment;filename=temp.xls");
+						"attachment;filename=temp.xlsx");
 			}
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream buff = new BufferedInputStream(fis);
@@ -6170,14 +6179,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -6196,7 +6205,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -6237,11 +6246,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row = sheet2.createRow(0);
 
-			HSSFRow row2 = sheet2.createRow(0);
+			XSSFRow row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
 				for (int i = 0; i < sheet2List.size(); i++) {
 
-					HSSFCell cell2 = row2.createCell((short) i);
+					XSSFCell cell2 = row2.createCell((short) i);
 					cell2.setCellValue(((Map) (sheet2List.get(i))).get(
 							"CONTENT").toString());
 				}
@@ -6251,7 +6260,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				row2 = sheet2.createRow(n + 1);
 			}
 			for (int i = 0; i < sheet2List.size(); i++) {
-				HSSFCell cell2 = row2.createCell((short) i);
+				XSSFCell cell2 = row2.createCell((short) i);
 				Map map = (Map) sheet2List.get(i);
 				if (map.get("OUTPUT_TYPE").equals("2")
 						|| map.get("OUTPUT_TYPE").equals("4")) {
@@ -6267,8 +6276,8 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 								.getParamCodeListByCpnyID(paramMap, -1, -1);
 						for (int k = 0; k < codeList.size(); k++) {
 							Map m = (Map) codeList.get(k);
-							HSSFRow r = sheet2.getRow(k + 1);
-							HSSFCell ce = r.getCell(i + 1);
+							XSSFRow r = sheet2.getRow(k + 1);
+							XSSFCell ce = r.getCell(i + 1);
 							if (ce == null)
 								ce = r.createCell(k);
 							// cell.setCellType(Cell.CELL_TYPE_STRING);
@@ -6281,7 +6290,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 
 			/*
 			 * for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-			 * row2 = sheet2.createRow(i + 1); HSSFCell cell2 =
+			 * row2 = sheet2.createRow(i + 1); XSSFCell cell2 =
 			 * row2.createCell((short) 0); if (sheet2List.get(i) != null &&
 			 * ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 			 * cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -6292,18 +6301,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "temp.xls");
+				+ "temp.xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -6870,10 +6879,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		// try{
@@ -6889,7 +6898,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			result = this.getExcelExportDataList(sqlContentmap);
 		}
 		// }
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		if (result != null && result.size() > 0) {// 导出数据
@@ -6967,7 +6976,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
 
 		// 删除登录者之前选中的所有项目
@@ -7008,7 +7017,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		}
 		this.excelUtilDao.insertSelectedOptionsByExprotExcel(object);
 
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -7042,10 +7051,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		// try{
@@ -7061,7 +7070,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			result = this.getExcelExportDataList(sqlContentmap);
 		}
 		// }
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		if (result != null && result.size() > 0) {// 导出数据
@@ -7097,8 +7106,8 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 								String db = df.format(str1);
 								str1 = Double.parseDouble(db);
 								cell.setCellValue(str1);
-								HSSFCellStyle cellStyle = wb.createCellStyle();
-								cellStyle.setDataFormat(HSSFDataFormat
+								XSSFCellStyle cellStyle = wb.createCellStyle();
+								cellStyle.setDataFormat((short) BuiltinFormats
 										.getBuiltinFormat("0.00000"));
 								cell.setCellStyle(cellStyle);
 							} else {
@@ -7158,7 +7167,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
 
 		// 删除登录者之前选中的所有项目
@@ -7222,7 +7231,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		if ("Y".equals(saveYn)) {
 			this.excelUtilDao.insertSelectedOptionsByExprotExcel(object);
 		}
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -7256,10 +7265,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		// try{
@@ -7275,7 +7284,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			result = this.getExcelExportDataList(sqlContentmap);
 		}
 		// }
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		// if (result != null && result.size() > 0) {// 导出数据
@@ -7358,8 +7367,8 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 						String db = df.format(str1);
 						str1 = Double.parseDouble(db);
 						cell.setCellValue(str1);
-						HSSFCellStyle cellStyle = wb.createCellStyle();
-						cellStyle.setDataFormat(HSSFDataFormat
+						XSSFCellStyle cellStyle = wb.createCellStyle();
+						cellStyle.setDataFormat((short) BuiltinFormats
 								.getBuiltinFormat("0.00"));
 						cell.setCellStyle(cellStyle);
 					} catch (Exception e) {
@@ -7375,7 +7384,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
 
 		/*
@@ -7405,7 +7414,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		 * this.excelUtilDao.insertSelectedOptionsByExprotExcel(object);
 		 */
 
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -7439,10 +7448,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		// try{
@@ -7458,7 +7467,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			result = this.getExcelExportDataList(sqlContentmap);
 		}
 		// }
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		// if (result != null && result.size() > 0) {// 导出数据
@@ -7562,7 +7571,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
 
 		/*
@@ -7592,7 +7601,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		 * this.excelUtilDao.insertSelectedOptionsByExprotExcel(object);
 		 */
 
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -7626,10 +7635,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		row = sheet1.createRow(0);
@@ -7641,7 +7650,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				&& !sqlContentmap.get("sqlContent").equals("")) {
 			result = this.getPaHistoryDataList(sqlContentmap);
 		}
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		if (result != null && result.size() > 0) {// 导出数据
@@ -7694,7 +7703,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
 
 		// 删除登录者之前选中的所有项目
@@ -7735,7 +7744,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		}
 		this.excelUtilDao.insertSelectedOptionsByExprotExcel(object);
 
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -7769,10 +7778,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		row = sheet1.createRow(0);
@@ -7784,7 +7793,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				&& !sqlContentmap.get("sqlContent").equals("")) {
 			result = this.getPaHistoryDataList(sqlContentmap);
 		}
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		if (result != null && result.size() > 0) {// 导出数据
@@ -7814,8 +7823,8 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 								String db = df.format(str1);
 								str1 = Double.parseDouble(db);
 								cell.setCellValue(str1);
-								HSSFCellStyle cellStyle = wb.createCellStyle();
-								cellStyle.setDataFormat(HSSFDataFormat
+								XSSFCellStyle cellStyle = wb.createCellStyle();
+								cellStyle.setDataFormat((short) BuiltinFormats
 										.getBuiltinFormat("0.00"));
 								cell.setCellStyle(cellStyle);
 							} else {
@@ -7850,7 +7859,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
 
 		// 删除登录者之前选中的所有项目
@@ -7891,7 +7900,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		}
 		this.excelUtilDao.insertSelectedOptionsByExprotExcel(object);
 
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -7955,48 +7964,48 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
 		// 构建报表结构
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet = wb.createSheet("paRiseInfo");
-		HSSFCellStyle style = wb.createCellStyle(); // 样式对象
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet = wb.createSheet("paRiseInfo");
+		XSSFCellStyle style = wb.createCellStyle(); // 样式对象
 
-		style.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);// 垂直
-		style.setAlignment(HSSFCellStyle.ALIGN_CENTER);// 水平
-		HSSFRow row = sheet.createRow((short) 0);
-		HSSFRow row2 = sheet.createRow((short) 1);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);// 垂直
+		style.setAlignment(HorizontalAlignment.CENTER);// 水平
+		XSSFRow row = sheet.createRow((short) 0);
+		XSSFRow row2 = sheet.createRow((short) 1);
 		// 照片后的“”不可删除
 		String[] columns = { "No.", "现职地", "社保地", "入职地", "照片", "", "工号", "姓名",
 				"部门", "职级", "性别", "出生年月", "年龄", "入职日期", "最高学历", "合同到期日",
 				"学校名称", "专业", "月工资 ", "联系方式" };
 		for (int i = 0; i < 4; i++) { // 循环18次，每一次都要跨单元格显示
 			String colName = columns[i] != null ? columns[i] : "";
-			sheet.addMergedRegion(new Region(0, (short) i, 1, (short) i));
-			HSSFCell ce = row.createCell((short) i);
+			sheet.addMergedRegion(region(0, (short) i, 1, (short) i));
+			XSSFCell ce = row.createCell((short) i);
 			ce.setCellValue(colName); // 表格的第一行第一列显示的名称
 			ce.setCellStyle(style); // 样式，居中
 		}
 		// 照片
-		sheet.addMergedRegion(new Region(0, (short) 4, 1, (short) 5));
-		HSSFCell cePhoto = row.createCell((short) 4);
+		sheet.addMergedRegion(region(0, (short) 4, 1, (short) 5));
+		XSSFCell cePhoto = row.createCell((short) 4);
 		cePhoto.setCellValue("照片");
 		cePhoto.setCellStyle(style);
 
 		for (int i = 6; i < 20; i++) { // 循环18次，每一次都要跨单元格显示
 			String colName = columns[i] != null ? columns[i] : "";
-			sheet.addMergedRegion(new Region(0, (short) i, 1, (short) i));
-			HSSFCell ce = row.createCell((short) i);
+			sheet.addMergedRegion(region(0, (short) i, 1, (short) i));
+			XSSFCell ce = row.createCell((short) i);
 			ce.setCellValue(colName); // 表格的第一行第一列显示的名称
 			ce.setCellStyle(style); // 样式，居中
 		}
 		// 社外经历单元格合并
 		// 四个参数分别是：起始行，起始列，结束行，结束列
-		sheet.addMergedRegion(new Region(0, (short) 20, 0, (short) 22));
-		HSSFCell cellOut = row.createCell((short) 20);
+		sheet.addMergedRegion(region(0, (short) 20, 0, (short) 22));
+		XSSFCell cellOut = row.createCell((short) 20);
 		cellOut.setCellValue("社外经历"); // 跨单元格显示的数据
 		cellOut.setCellStyle(style); // 样式
 		// 社外经历： 时间 -单位-职务-薪资
-		HSSFCell cellOut1 = row2.createCell((short) 20);
-		HSSFCell cellOut2 = row2.createCell((short) 21);
-		HSSFCell cellOut3 = row2.createCell((short) 22);
+		XSSFCell cellOut1 = row2.createCell((short) 20);
+		XSSFCell cellOut2 = row2.createCell((short) 21);
+		XSSFCell cellOut3 = row2.createCell((short) 22);
 		cellOut1.setCellValue("时间");
 		cellOut1.setCellStyle(style);
 		cellOut2.setCellValue("单位");
@@ -8005,15 +8014,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		cellOut3.setCellStyle(style);
 		// 社内经历单元格合并
 		// 四个参数分别是：起始行，起始列，结束行，结束列
-		sheet.addMergedRegion(new Region(0, (short) 23, 0, (short) 26));
-		HSSFCell cellIn = row.createCell((short) 23);
+		sheet.addMergedRegion(region(0, (short) 23, 0, (short) 26));
+		XSSFCell cellIn = row.createCell((short) 23);
 		cellIn.setCellValue("社外经历"); // 跨单元格显示的数据
 		cellIn.setCellStyle(style); // 样式
 		// 社内经历： 时间 -单位-职务-薪资
-		HSSFCell cellIn1 = row2.createCell((short) 23);
-		HSSFCell cellIn2 = row2.createCell((short) 24);
-		HSSFCell cellIn3 = row2.createCell((short) 25);
-		HSSFCell cellIn4 = row2.createCell((short) 26);
+		XSSFCell cellIn1 = row2.createCell((short) 23);
+		XSSFCell cellIn2 = row2.createCell((short) 24);
+		XSSFCell cellIn3 = row2.createCell((short) 25);
+		XSSFCell cellIn4 = row2.createCell((short) 26);
 		cellIn1.setCellValue("时间");
 		cellIn1.setCellStyle(style);
 		cellIn2.setCellValue("单位");
@@ -8023,7 +8032,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		cellIn4.setCellValue("薪资");
 		cellIn4.setCellStyle(style);
 
-		File file = new File(this.path + "\\temp.xls");
+		File file = new File(this.path + "\\temp.xlsx");
 		file.delete();
 
 		int sizeNum = 0;// 多少条数据
@@ -8037,7 +8046,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		}
 		String CPNY_ID = admin.getCpnyId() != null ? admin.getCpnyId()
 				.toString() : "C01";
-		HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
+		XSSFDrawing patriarch = sheet.createDrawingPatriarch();
 		int num = 0;
 		for (int i = 0; i < sizeNum; i++) {
 			LinkedHashMap dataMap = (LinkedHashMap) empPaRiseList.get(i);
@@ -8050,35 +8059,35 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 
 			// 开始循环数据
-			HSSFRow rowNo = sheet.createRow((short) (2 + i + num));
+			XSSFRow rowNo = sheet.createRow((short) (2 + i + num));
 			// NO
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 0, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 0, 2 + i
 					+ num + experNum, (short) 0));
-			HSSFCell ceNo0 = rowNo.createCell((short) 0);
+			XSSFCell ceNo0 = rowNo.createCell((short) 0);
 			ceNo0.setCellValue(i + 1);
 			ceNo0.setCellStyle(style);
 			// 现职地
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 1, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 1, 2 + i
 					+ num + experNum, (short) 1));
-			HSSFCell ceNo1 = rowNo.createCell((short) 1);
+			XSSFCell ceNo1 = rowNo.createCell((short) 1);
 			ceNo1
 					.setCellValue(dataMap.get("DEPT_DISTINGUISH_NAME") != null ? dataMap
 							.get("DEPT_DISTINGUISH_NAME").toString()
 							: "");
 			ceNo1.setCellStyle(style);
 			// 社保地
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 2, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 2, 2 + i
 					+ num + experNum, (short) 2));
-			HSSFCell ceNo2 = rowNo.createCell((short) 2);
+			XSSFCell ceNo2 = rowNo.createCell((short) 2);
 			ceNo2
 					.setCellValue(dataMap.get("SOCIAL_SECURITY_AREA") != null ? dataMap
 							.get("SOCIAL_SECURITY_AREA").toString()
 							: "");
 			ceNo2.setCellStyle(style);
 			// 入职地
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 3, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 3, 2 + i
 					+ num + experNum, (short) 3));
-			HSSFCell ceNo3 = rowNo.createCell((short) 3);
+			XSSFCell ceNo3 = rowNo.createCell((short) 3);
 			ceNo3.setCellValue(dataMap.get("ENTRY_AREA") != null ? dataMap.get(
 					"ENTRY_AREA").toString() : "");
 			ceNo3.setCellStyle(style);
@@ -8102,119 +8111,119 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			sheet.setColumnWidth(2 + i + num, (short) (35.7 * 65));
 			// sheet.autoSizeColumn(i);
 			byte[] bsValue = (byte[]) buf;
-			HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 455, 255,
+			XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 455, 255,
 					(short) 4, 2 + i + num, (short) 5, 2 + i + num + experNum);
-			anchor.setAnchorType(2);
+			anchor.setAnchorType(org.apache.poi.ss.usermodel.ClientAnchor.AnchorType.byId(2));
 			patriarch.createPicture(anchor, wb.addPicture(bsValue,
-					HSSFWorkbook.PICTURE_TYPE_JPEG));
+					XSSFWorkbook.PICTURE_TYPE_JPEG));
 
 			// 工号
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 6, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 6, 2 + i
 					+ num + experNum, (short) 6));
-			HSSFCell ceNo5 = rowNo.createCell((short) 6);
+			XSSFCell ceNo5 = rowNo.createCell((short) 6);
 			ceNo5.setCellValue(dataMap.get("EMPID") != null ? dataMap.get(
 					"EMPID").toString() : "");
 			ceNo5.setCellStyle(style);
 			// 姓名
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 7, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 7, 2 + i
 					+ num + experNum, (short) 7));
-			HSSFCell ceNo6 = rowNo.createCell((short) 7);
+			XSSFCell ceNo6 = rowNo.createCell((short) 7);
 			ceNo6.setCellValue(dataMap.get("LOCAL_NAME") != null ? dataMap.get(
 					"LOCAL_NAME").toString() : "");
 			ceNo6.setCellStyle(style);
 			// 部门
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 8, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 8, 2 + i
 					+ num + experNum, (short) 8));
-			HSSFCell ceNo7 = rowNo.createCell((short) 8);
+			XSSFCell ceNo7 = rowNo.createCell((short) 8);
 			ceNo7.setCellValue(dataMap.get("DEPARTMENT") != null ? dataMap.get(
 					"DEPARTMENT").toString() : "");
 			ceNo7.setCellStyle(style);
 			// 职级
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 9, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 9, 2 + i
 					+ num + experNum, (short) 9));
-			HSSFCell ceNo8 = rowNo.createCell((short) 9);
+			XSSFCell ceNo8 = rowNo.createCell((short) 9);
 			ceNo8.setCellValue(dataMap.get("POST_GRADE_NAME") != null ? dataMap
 					.get("POST_GRADE_NAME").toString() : "");
 			ceNo8.setCellStyle(style);
 			// 性别
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 10, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 10, 2 + i
 					+ num + experNum, (short) 10));
-			HSSFCell ceNo9 = rowNo.createCell((short) 10);
+			XSSFCell ceNo9 = rowNo.createCell((short) 10);
 			ceNo9.setCellValue(dataMap.get("SEX") != null ? dataMap.get("SEX")
 					.toString() : "");
 			ceNo9.setCellStyle(style);
 			// 出生年月
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 11, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 11, 2 + i
 					+ num + experNum, (short) 11));
-			HSSFCell ceNo10 = rowNo.createCell((short) 11);
+			XSSFCell ceNo10 = rowNo.createCell((short) 11);
 			ceNo10.setCellValue(dataMap.get("DOB") != null ? dataMap.get("DOB")
 					.toString() : "");
 			ceNo10.setCellStyle(style);
 			// 年龄
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 12, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 12, 2 + i
 					+ num + experNum, (short) 12));
-			HSSFCell ceNo11 = rowNo.createCell((short) 12);
+			XSSFCell ceNo11 = rowNo.createCell((short) 12);
 			ceNo11.setCellValue(dataMap.get("AGE") != null ? dataMap.get("AGE")
 					.toString() : "");
 			ceNo11.setCellStyle(style);
 			// 入职日期
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 13, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 13, 2 + i
 					+ num + experNum, (short) 13));
-			HSSFCell ceNo12 = rowNo.createCell((short) 13);
+			XSSFCell ceNo12 = rowNo.createCell((short) 13);
 			ceNo12.setCellValue(dataMap.get("DATE_STARTED") != null ? dataMap
 					.get("DATE_STARTED").toString() : "");
 			ceNo12.setCellStyle(style);
 			// 最高学历
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 14, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 14, 2 + i
 					+ num + experNum, (short) 14));
-			HSSFCell ceNo13 = rowNo.createCell((short) 14);
+			XSSFCell ceNo13 = rowNo.createCell((short) 14);
 			ceNo13
 					.setCellValue(dataMap.get("FINAL_DEGREE_NAME") != null ? dataMap
 							.get("FINAL_DEGREE_NAME").toString()
 							: "");
 			ceNo13.setCellStyle(style);
 			// 合同到期日
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 15, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 15, 2 + i
 					+ num + experNum, (short) 15));
-			HSSFCell ceNo14 = rowNo.createCell((short) 15);
+			XSSFCell ceNo14 = rowNo.createCell((short) 15);
 			ceNo14
 					.setCellValue(dataMap.get("END_CONTRACT_DATE") != null ? dataMap
 							.get("END_CONTRACT_DATE").toString()
 							: "");
 			ceNo14.setCellStyle(style);
 			// 学校名称
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 16, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 16, 2 + i
 					+ num + experNum, (short) 16));
-			HSSFCell ceNo15 = rowNo.createCell((short) 16);
+			XSSFCell ceNo15 = rowNo.createCell((short) 16);
 			ceNo15.setCellValue(dataMap.get("FINAL_SCHOOL") != null ? dataMap
 					.get("FINAL_SCHOOL").toString() : "");
 			ceNo15.setCellStyle(style);
 			// 专业
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 17, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 17, 2 + i
 					+ num + experNum, (short) 17));
-			HSSFCell ceNo16 = rowNo.createCell((short) 17);
+			XSSFCell ceNo16 = rowNo.createCell((short) 17);
 			ceNo16.setCellValue(dataMap.get("FINAL_SUBJECT") != null ? dataMap
 					.get("FINAL_SUBJECT").toString() : "");
 			ceNo16.setCellStyle(style);
 			// 月工资
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 18, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 18, 2 + i
 					+ num + experNum, (short) 18));
-			HSSFCell ceNo17 = rowNo.createCell((short) 18);
+			XSSFCell ceNo17 = rowNo.createCell((short) 18);
 			ceNo17.setCellValue(dataMap.get("PA_BASIC_DATA") != null ? dataMap
 					.get("PA_BASIC_DATA").toString() : "");
 			ceNo17.setCellStyle(style);
 			// 联系方式
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 19, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 19, 2 + i
 					+ num + experNum, (short) 19));
-			HSSFCell ceNo18 = rowNo.createCell((short) 19);
+			XSSFCell ceNo18 = rowNo.createCell((short) 19);
 			ceNo18.setCellValue(dataMap.get("EMPID") != null ? dataMap.get(
 					"EMPID").toString() : "");
 			ceNo18.setCellStyle(style);
 			// 社外工作经历
 			// 时间
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 20, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 20, 2 + i
 					+ num, (short) 20));
-			HSSFCell ceNo19 = rowNo.createCell((short) 20);
+			XSSFCell ceNo19 = rowNo.createCell((short) 20);
 			String outDate = "";
 			String outStartDate = dataMap.get("OUT_START_DATE") != null ? dataMap
 					.get("OUT_START_DATE").toString()
@@ -8229,24 +8238,24 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			ceNo19.setCellValue(outDate);
 			ceNo19.setCellStyle(style);
 			// 单位
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 21, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 21, 2 + i
 					+ num, (short) 21));
-			HSSFCell ceNo20 = rowNo.createCell((short) 21);
+			XSSFCell ceNo20 = rowNo.createCell((short) 21);
 			ceNo20.setCellValue(dataMap.get("OUT_CPNY_NAME") != null ? dataMap
 					.get("OUT_CPNY_NAME").toString() : "");
 			ceNo20.setCellStyle(style);
 			// 职务
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 22, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 22, 2 + i
 					+ num, (short) 22));
-			HSSFCell ceNo21 = rowNo.createCell((short) 22);
+			XSSFCell ceNo21 = rowNo.createCell((short) 22);
 			ceNo21.setCellValue(dataMap.get("OUT_POST_NAME") != null ? dataMap
 					.get("OUT_POST_NAME").toString() : "");
 			ceNo21.setCellStyle(style);
 			// 社内工作经历
 			// 时间
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 23, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 23, 2 + i
 					+ num, (short) 23));
-			HSSFCell ceNo22 = rowNo.createCell((short) 23);
+			XSSFCell ceNo22 = rowNo.createCell((short) 23);
 			String inDate = "";
 			String inStartDate = dataMap.get("IN_START_DATE") != null ? dataMap
 					.get("IN_START_DATE").toString() : "";
@@ -8260,9 +8269,9 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			ceNo22.setCellValue(inDate);
 			ceNo22.setCellStyle(style);
 			// 单位
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 24, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 24, 2 + i
 					+ num, (short) 24));
-			HSSFCell ceNo23 = rowNo.createCell((short) 24);
+			XSSFCell ceNo23 = rowNo.createCell((short) 24);
 			String cpnyName = "";
 			String inCpan = dataMap.get("IN_CPNY_NAME") != null ? dataMap.get(
 					"IN_CPNY_NAME").toString() : "";
@@ -8276,16 +8285,16 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			ceNo23.setCellValue(cpnyName);
 			ceNo23.setCellStyle(style);
 			// 职务
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 25, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 25, 2 + i
 					+ num, (short) 25));
-			HSSFCell ceNo24 = rowNo.createCell((short) 25);
+			XSSFCell ceNo24 = rowNo.createCell((short) 25);
 			ceNo24.setCellValue(dataMap.get("IN_POST_NAME") != null ? dataMap
 					.get("IN_POST_NAME").toString() : "");
 			ceNo24.setCellStyle(style);
 			// 薪资
-			sheet.addMergedRegion(new Region(2 + i + num, (short) 26, 2 + i
+			sheet.addMergedRegion(region(2 + i + num, (short) 26, 2 + i
 					+ num, (short) 26));
-			HSSFCell ceNo25 = rowNo.createCell((short) 26);
+			XSSFCell ceNo25 = rowNo.createCell((short) 26);
 			ceNo25
 					.setCellValue(dataMap.get("IN_PA_BASIC_DATA") != null ? dataMap
 							.get("IN_PA_BASIC_DATA").toString()
@@ -8302,16 +8311,16 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			if (expCount > 0) {
 				for (int j = 0; j < expCount; j++) {
-					HSSFRow rowNoExp = sheet
+					XSSFRow rowNoExp = sheet
 							.createRow((short) (2 + i + num + 1 + j));
 					LinkedHashMap experMap = new LinkedHashMap();
 					if (experienceList != null && experienceList.get(j) != null) {
 						experMap = (LinkedHashMap) experienceList.get(j);
 						// 社外工作经历
 						// 时间
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 20, 2 + i + num + 1 + j, (short) 20));
-						HSSFCell ceNos19 = rowNoExp.createCell((short) 20);
+						XSSFCell ceNos19 = rowNoExp.createCell((short) 20);
 						String outDates = "";
 						String outStartDates = experMap.get("OUT_START_DATE") != null ? experMap
 								.get("OUT_START_DATE").toString()
@@ -8327,18 +8336,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 						ceNos19.setCellValue(outDates);
 						ceNos19.setCellStyle(style);
 						// 单位
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 21, 2 + i + num + 1 + j, (short) 21));
-						HSSFCell ceNos20 = rowNoExp.createCell((short) 21);
+						XSSFCell ceNos20 = rowNoExp.createCell((short) 21);
 						ceNos20
 								.setCellValue(experMap.get("OUT_CPNY_NAME") != null ? experMap
 										.get("OUT_CPNY_NAME").toString()
 										: "");
 						ceNos20.setCellStyle(style);
 						// 职务
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 22, 2 + i + num + 1 + j, (short) 22));
-						HSSFCell ceNos21 = rowNoExp.createCell((short) 22);
+						XSSFCell ceNos21 = rowNoExp.createCell((short) 22);
 						ceNos21
 								.setCellValue(experMap.get("OUT_POST_NAME") != null ? experMap
 										.get("OUT_POST_NAME").toString()
@@ -8346,9 +8355,9 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 						ceNos21.setCellStyle(style);
 						// 社内工作经历
 						// 时间
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 23, 2 + i + num + 1 + j, (short) 23));
-						HSSFCell ceNos22 = rowNoExp.createCell((short) 23);
+						XSSFCell ceNos22 = rowNoExp.createCell((short) 23);
 						String inDates = "";
 						String inStartDates = experMap.get("IN_START_DATE") != null ? experMap
 								.get("IN_START_DATE").toString()
@@ -8364,9 +8373,9 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 						ceNos22.setCellValue(inDates);
 						ceNos22.setCellStyle(style);
 						// 单位
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 24, 2 + i + num + 1 + j, (short) 24));
-						HSSFCell ceNos23 = rowNoExp.createCell((short) 24);
+						XSSFCell ceNos23 = rowNoExp.createCell((short) 24);
 						String cpnyNames = "";
 						String inCpans = experMap.get("IN_CPNY_NAME") != null ? experMap
 								.get("IN_CPNY_NAME").toString()
@@ -8382,18 +8391,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 						ceNos23.setCellValue(cpnyNames);
 						ceNos23.setCellStyle(style);
 						// 职务
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 25, 2 + i + num + 1 + j, (short) 25));
-						HSSFCell ceNos24 = rowNoExp.createCell((short) 25);
+						XSSFCell ceNos24 = rowNoExp.createCell((short) 25);
 						ceNos24
 								.setCellValue(experMap.get("IN_POST_NAME") != null ? experMap
 										.get("IN_POST_NAME").toString()
 										: "");
 						ceNos24.setCellStyle(style);
 						// 薪资
-						sheet.addMergedRegion(new Region(2 + i + num + 1 + j,
+						sheet.addMergedRegion(region(2 + i + num + 1 + j,
 								(short) 26, 2 + i + num + 1 + j, (short) 26));
-						HSSFCell ceNos25 = rowNoExp.createCell((short) 26);
+						XSSFCell ceNos25 = rowNoExp.createCell((short) 26);
 						ceNos25
 								.setCellValue(experMap.get("IN_PA_BASIC_DATA") != null ? experMap
 										.get("IN_PA_BASIC_DATA").toString()
@@ -8410,9 +8419,9 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			f.mkdirs();
 		}
 		FileOutputStream fos = new FileOutputStream(new File(this.path
-				+ "\\temp.xls"));
+				+ "\\temp.xlsx"));
 		wb.write(fos);
-		return this.path + "\\temp.xls";
+		return this.path + "\\temp.xlsx";
 	}
 
 	/**
@@ -8460,7 +8469,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "temp.xls");
+				+ "temp.xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -13854,13 +13863,13 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
 		for (int i = 0; i < 35; i++) {
 			sheet1.setColumnWidth(i, 3800);
 		}
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -13879,7 +13888,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 			if (result != null && result.size() > 0) {// 导出数据
 				for (int i = 0; i < result.size(); i++) {
@@ -13922,7 +13931,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 			fos.close();
 		} catch (Exception e) {
@@ -13930,11 +13939,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fin = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fin);
 		OutputStream myout = response.getOutputStream();
@@ -13997,14 +14006,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(name);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(name);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -14021,7 +14030,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -14062,15 +14071,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 			}
 			if (sheet2List != null) {
 				for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if (sheet2List.get(i) != null
 							&& ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 						cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -14085,18 +14094,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -14142,14 +14151,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(name);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(name);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -14168,7 +14177,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -14209,15 +14218,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 			}
 			if (sheet2List != null) {
 				for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if (sheet2List.get(i) != null
 							&& ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 						cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -14232,18 +14241,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -14289,14 +14298,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(name);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(name);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -14315,7 +14324,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -14356,15 +14365,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 			}
 			if (sheet2List != null) {
 				for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if (sheet2List.get(i) != null
 							&& ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 						cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -14379,18 +14388,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -14436,15 +14445,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
 
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -14463,7 +14472,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -14504,14 +14513,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 			}
 			for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-				HSSFRow row2 = sheet2.createRow(i + 1);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(i + 1);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				if (sheet2List.get(i) != null
 						&& ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 					cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -14522,16 +14531,16 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 
 			if (sheet2List1 != null && sheet2List1.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2_1 = sheet2.getRow(0) != null ? sheet2.getRow(0)
+				XSSFRow row2_1 = sheet2.getRow(0) != null ? sheet2.getRow(0)
 						: sheet2.createRow(0);
-				HSSFCell cell2_1 = row2_1.createCell((short) 3);
+				XSSFCell cell2_1 = row2_1.createCell((short) 3);
 				cell2_1.setCellValue((sheet2List1.get(sheet2List1.size() - 1))
 						.toString());
 			}
 			for (int i = 0; i < sheet2List1.size() - 1; i++) {// 设定sheet2里头的内容
-				HSSFRow row2_1 = sheet2.getRow(i + 1) != null ? sheet2
+				XSSFRow row2_1 = sheet2.getRow(i + 1) != null ? sheet2
 						.getRow(i + 1) : sheet2.createRow(i + 1);
-				HSSFCell cell2_1 = row2_1.createCell((short) 3);
+				XSSFCell cell2_1 = row2_1.createCell((short) 3);
 				if (sheet2List1.get(i) != null
 						&& ((Map) (sheet2List1.get(i))).get("CONTENT") != null) {
 					cell2_1.setCellValue(((Map) (sheet2List1.get(i))).get(
@@ -14546,18 +14555,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -14603,14 +14612,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -14622,9 +14631,9 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			for (int i = 0; i < aliasNameList.size(); i++) {
 				cell = row.createCell((short) i);
 				cell.setCellValue(aliasNameList.get(i).toString());
-				HSSFCellStyle cellStyle = wb.createCellStyle();
+				XSSFCellStyle cellStyle = wb.createCellStyle();
 				// 指定单元格居右对齐
-				cellStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+				cellStyle.setAlignment(HorizontalAlignment.RIGHT);
 				cell.setCellStyle(cellStyle);
 				if (i > 2) {
 					sheet1.setColumnWidth(i, 700);
@@ -14636,7 +14645,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 			// --------------------------------------------------
 			// boolean res = file.createNewFile();
@@ -14678,22 +14687,22 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					}
 				}
 			}
-			HSSFRow rowAl = sheet2.createRow(1);
-			HSSFCell cellAl = rowAl.createCell((short) 0);
-			HSSFCell cellAl2 = rowAl.createCell((short) 1);
+			XSSFRow rowAl = sheet2.createRow(1);
+			XSSFCell cellAl = rowAl.createCell((short) 0);
+			XSSFCell cellAl2 = rowAl.createCell((short) 1);
 			cellAl.setCellValue("班次ID");
 			cellAl2.setCellValue("班次名称");
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 
 			}
 			for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-				HSSFRow row2 = sheet2.createRow(i + 2);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(i + 2);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				if (sheet2List.get(i) != null
 						&& ((Map) (sheet2List.get(i))).get("SHIFT_ID") != null) {
 					cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -14701,7 +14710,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				} else {
 					cell2.setCellValue("");
 				}
-				HSSFCell cell3 = row2.createCell((short) 1);
+				XSSFCell cell3 = row2.createCell((short) 1);
 				if (sheet2List.get(i) != null
 						&& ((Map) (sheet2List.get(i))).get("SHIFT_NAME") != null) {
 					cell3.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -14715,18 +14724,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -21110,15 +21119,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
 		for (int i = 0; i < 35; i++) {
 			sheet1.setColumnWidth(i, 3800);
 		}
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 		// 创建绘图对象
-		HSSFPatriarch p = sheet1.createDrawingPatriarch();
+		XSSFDrawing p = sheet1.createDrawingPatriarch();
 
 		List result = null;
 		try {
@@ -21136,11 +21145,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 							"TIP_COLUMN").toString();
 					if (tipColumnName.equals(columnName)) {
 						// 前四个参数是坐标点,后四个参数是编辑和显示批注时的大小.
-						HSSFComment comment = p
-								.createComment(new HSSFClientAnchor(0, 0, 0, 0,
+						XSSFComment comment = p
+								.createCellComment(new XSSFClientAnchor(0, 0, 0, 0,
 										(short) 4, 4, (short) 6, 26));
 						// 输入批注信息
-						comment.setString(new HSSFRichTextString(((Map) tipList
+						comment.setString(new XSSFRichTextString(((Map) tipList
 								.get(j)).get("TIP_CONTENT").toString()));
 						cell.setCellComment(comment);
 					}
@@ -21152,7 +21161,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 			if (result != null && result.size() > 0) {// 导出数据
 				for (int i = 0; i < result.size(); i++) {
@@ -21195,18 +21204,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -21541,14 +21550,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
-		HSSFSheet sheet2 = wb.createSheet("sheet2");
-		// HSSFRow row2 = sheet1.createRow(0);
-		// HSSFCell cell2;
+		XSSFSheet sheet2 = wb.createSheet("sheet2");
+		// XSSFRow row2 = sheet1.createRow(0);
+		// XSSFCell cell2;
 
 		List result = null;
 		try {
@@ -21567,7 +21576,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
 			// }
-			File file = new File(this.path + "\\temp_" + name + ".xls");
+			File file = new File(this.path + "\\temp_" + name + ".xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -21608,15 +21617,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			// row2 = sheet2.createRow(0);
 			if (sheet2List != null && sheet2List.size() > 0) {// 设定sheet2的列头
-				HSSFRow row2 = sheet2.createRow(0);
-				HSSFCell cell2 = row2.createCell((short) 0);
+				XSSFRow row2 = sheet2.createRow(0);
+				XSSFCell cell2 = row2.createCell((short) 0);
 				cell2.setCellValue((sheet2List.get(sheet2List.size() - 1))
 						.toString());
 			}
 			if (sheet2List != null) {
 				for (int i = 0; i < sheet2List.size() - 1; i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					if (sheet2List.get(i) != null
 							&& ((Map) (sheet2List.get(i))).get("CONTENT") != null) {
 						cell2.setCellValue(((Map) (sheet2List.get(i))).get(
@@ -21631,18 +21640,18 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp_" + name + ".xls"));
+					+ "\\temp_" + name + ".xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 
-		File file = new File(this.path + "\\temp_" + name + ".xls");
+		File file = new File(this.path + "\\temp_" + name + ".xlsx");
 		response.setContentType("application/x-msdownload");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment;filename="
-				+ "\\temp_" + name + ".xls");
+				+ "\\temp_" + name + ".xlsx");
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -21711,13 +21720,13 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			exportFile.delete();
 		}
 
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
 		for (int i = 0; i < 35; i++) {
 			sheet1.setColumnWidth(i, 3800);
 		}
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -21854,13 +21863,13 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			exportFile.delete();
 		}
 
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet("sheet1");
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet("sheet1");
 		// for (int i = 0; i < 35; i++) {
 		// sheet1.setColumnWidth(i, 3800);
 		// }
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -21981,15 +21990,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
 		for (int i = 0; i < 35; i++) {
 			sheet1.setColumnWidth(i, 3800);
 		}
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 		// 创建绘图对象
-		HSSFPatriarch p = sheet1.createDrawingPatriarch();
+		XSSFDrawing p = sheet1.createDrawingPatriarch();
 
 		List result = null;
 		try {
@@ -22006,11 +22015,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 							"TIP_COLUMN").toString();
 					if (tipColumnName.equals(aliasNameList.get(i).toString())) {
 						// 前四个参数是坐标点,后四个参数是编辑和显示批注时的大小.
-						HSSFComment comment = p
-								.createComment(new HSSFClientAnchor(0, 0, 0, 0,
+						XSSFComment comment = p
+								.createCellComment(new XSSFClientAnchor(0, 0, 0, 0,
 										(short) 4, 4, (short) 6, 26));
 						// 输入批注信息
-						comment.setString(new HSSFRichTextString(((Map) tipList
+						comment.setString(new XSSFRichTextString(((Map) tipList
 								.get(j)).get("TIP_CONTENT").toString()));
 						cell.setCellComment(comment);
 					}
@@ -22021,7 +22030,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -22068,20 +22077,20 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				for (int i = 0; i < 35; i++) {
 					sheet2.setColumnWidth(i, 7000);
 				}
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
-					HSSFCell cell3 = row2.createCell((short) 1);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
+					XSSFCell cell3 = row2.createCell((short) 1);
 					if (sheet2List.get(i) != null) {
 						cell2.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("CONTENT")));
@@ -22098,7 +22107,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -22106,11 +22115,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType(CONTENT_TYPE);
 
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			response.setHeader("Content-Disposition", "attachment;filename="
-					+ "temp_" + excelName + ".xls");
+					+ "temp_" + excelName + ".xlsx");
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -22162,10 +22171,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -22182,7 +22191,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -22229,25 +22238,25 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell1 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell1 = row2.createCell((short) 0);
 					cell1.setCellValue("编号");
-					HSSFCell cell2 = row2.createCell((short) 1);
+					XSSFCell cell2 = row2.createCell((short) 1);
 					cell2.setCellValue("名称");
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell1 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell1 = row2.createCell((short) 0);
 					if (sheet2List.get(i) != null) {
 						cell1.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("CODE_NO")));
 					} else {
 						cell1.setCellValue("");
 					}
-					HSSFCell cell2 = row2.createCell((short) 1);
+					XSSFCell cell2 = row2.createCell((short) 1);
 					if (sheet2List.get(i) != null) {
 						cell2.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("CODE_NAME")));
@@ -22261,14 +22270,14 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		response.setContentType(CONTENT_TYPE);
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			response.setHeader("Content-Disposition", "attachment;filename="
@@ -22892,10 +22901,10 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		} else {
 			path = path + "/resources/temp/download/" + CpnyId + "/" + adminID;
 		}
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet1 = wb.createSheet(excelName);
-		HSSFRow row = sheet1.createRow(0);
-		HSSFCell cell;
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet1 = wb.createSheet(excelName);
+		XSSFRow row = sheet1.createRow(0);
+		XSSFCell cell;
 
 		List result = null;
 		try {
@@ -22912,7 +22921,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					&& !sqlContentmap.get("sqlContent").equals("")) {
 				result = this.getExcelExportDataList(sqlContentmap);
 			}
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			file.delete();
 
 			if (result != null && result.size() > 0) {// 导出数据
@@ -22959,17 +22968,17 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 					map.put("sqlContent", mapList.get(r));
 					sheet2List = this.getExcelExportDataList(map);
 				}
-				HSSFSheet sheet2 = wb
+				XSSFSheet sheet2 = wb
 						.createSheet(mapNameList.get(r).toString());
 				if (mapNameList != null && mapNameList.size() > 0) {// 设定sheet2的列头
-					HSSFRow row2 = sheet2.createRow(0);
-					HSSFCell cell2 = row2.createCell((short) 0);
+					XSSFRow row2 = sheet2.createRow(0);
+					XSSFCell cell2 = row2.createCell((short) 0);
 					cell2.setCellValue(String.valueOf(mapNameList.get(r)));
 				}
 				for (int i = 0; i < sheet2List.size(); i++) {// 设定sheet2里头的内容
-					HSSFRow row2 = sheet2.createRow(i + 1);
-					HSSFCell cell2 = row2.createCell((short) 0);
-					HSSFCell cell3 = row2.createCell((short) 1);
+					XSSFRow row2 = sheet2.createRow(i + 1);
+					XSSFCell cell2 = row2.createCell((short) 0);
+					XSSFCell cell3 = row2.createCell((short) 1);
 					if (sheet2List.get(i) != null) {
 						cell2.setCellValue(String.valueOf(((Map) sheet2List
 								.get(i)).get("CONTENT")));
@@ -22986,7 +22995,7 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				f.mkdirs();
 			}
 			FileOutputStream fos = new FileOutputStream(new File(this.path
-					+ "\\temp.xls"));
+					+ "\\temp.xlsx"));
 			wb.write(fos);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -22994,11 +23003,11 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 		response.setContentType(CONTENT_TYPE);
 
 		try {
-			File file = new File(this.path + "\\temp.xls");
+			File file = new File(this.path + "\\temp.xlsx");
 			response.setContentType("application/x-msdownload");
 			response.setContentLength((int) file.length());
 			response.setHeader("Content-Disposition", "attachment;filename="
-					+ "temp_" + excelName + ".xls");
+					+ "temp_" + excelName + ".xlsx");
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream buff = new BufferedInputStream(fis);
 
@@ -23143,12 +23152,12 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			exportFile.delete();
 		}
 
-		HSSFWorkbook wb = new HSSFWorkbook();
+		XSSFWorkbook wb = new XSSFWorkbook();
 		for (int idx = 0; idx < sheets.length; idx++) {
-			HSSFSheet sheet1 = wb.createSheet(sheets[idx]);
+			XSSFSheet sheet1 = wb.createSheet(sheets[idx]);
 			sheet1.setColumnWidth(idx, 3800);
-			HSSFRow row = sheet1.createRow(0);
-			HSSFCell cell;
+			XSSFRow row = sheet1.createRow(0);
+			XSSFCell cell;
 
 			List result = null;
 			try {
@@ -23873,12 +23882,15 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 			}
 			/** 页面控件的文件流 **/
 			MultipartFile multipartFile = multipartRequest.getFile("filename");
-			/** 获取文件的后缀 **/
-			String suffix = multipartFile.getOriginalFilename().substring(
-					multipartFile.getOriginalFilename().lastIndexOf("."));
-			/**拼成完整的文件保存路径加文件**/    
-			String fileName = logoRealPathDir + File.separator + admin.getAdminID() + suffix;                
-			File file = new File(fileName);         
+			/**拼成完整的文件保存路径加文件**/
+			/* Always save as ".xls": every reader of this temp file (prepareForImportExcel,
+			 * impDataBase, etc.) hardcodes filename + ".xls" when locating it, while
+			 * Workbook.getWorkbook() detects the real .xls/.xlsx format from the file's
+			 * content, not its extension - so keeping the saved name in sync with what
+			 * those readers look for (regardless of the extension the user actually
+			 * uploaded) is what lets .xlsx uploads be found and parsed at all. */
+			String fileName = logoRealPathDir + File.separator + admin.getAdminID() + ".xls";
+			File file = new File(fileName);
 			multipartFile.transferTo(file);
 		} catch (Exception e) {
 			e.printStackTrace();

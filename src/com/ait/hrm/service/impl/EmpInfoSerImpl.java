@@ -1158,9 +1158,9 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 					"to_char(h.DATE_LEFT,'dd/MM/yyyy') LEAVE_DATE");
 		}
 		
-		if (str.indexOf("PKG_DECRYPT.DECRYPT_DES(p.IDCARD_NO)") > -1) {
-			str = str.replace("PKG_DECRYPT.DECRYPT_DES(p.IDCARD_NO) IDCARD_NO", 
-					"PKG_DECRYPT.DECRYPT_DES(p.IDCARD_NO) ID_NUMBER");
+		if (str.indexOf("p.IDCARD_NO") > -1) {
+			str = str.replace("p.IDCARD_NO IDCARD_NO", 
+					"p.IDCARD_NO ID_NUMBER");
 		}
 
 		if (str.indexOf("p.IDCARD_START_DATE") > -1) {
@@ -1211,14 +1211,14 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 					"GET_GLOBAL_NAME(p.POLITICAL_OUTLOOK, 'vi') POLITICAL_OUTLOOK");
 		}
 		
-		if (str.indexOf("PKG_DECRYPT.DECRYPT_DES(p.HOME_PHONE)") > -1) {
-			str = str.replace("PKG_DECRYPT.DECRYPT_DES(p.HOME_PHONE) HOME_PHONE", 
-					"PKG_DECRYPT.DECRYPT_DES(p.HOME_PHONE) HOME_PHONE");
+		if (str.indexOf("p.HOME_PHONE") > -1) {
+			str = str.replace("p.HOME_PHONE HOME_PHONE", 
+					"p.HOME_PHONE HOME_PHONE");
 		}
 		
-		if (str.indexOf("PKG_DECRYPT.DECRYPT_DES(p.CELLPHONE)") > -1) {
-			str = str.replace("PKG_DECRYPT.DECRYPT_DES(p.CELLPHONE) CELLPHONE", 
-					"PKG_DECRYPT.DECRYPT_DES(p.CELLPHONE) PHONE_NUMBER");
+		if (str.indexOf("p.CELLPHONE") > -1) {
+			str = str.replace("p.CELLPHONE CELLPHONE", 
+					"p.CELLPHONE PHONE_NUMBER");
 		}
 		
 		if (str.indexOf("GET_GLOBAL_NAME(p.EXIST_SINGLE, 'vi') EXIST_SINGLE") > -1) {
@@ -3005,7 +3005,7 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 			}
 			paramMap.put("deptContent", str);
 		}
-		String sql = " select h.local_name EMPLOYEE_NAME,h.empid EMPID,get_dept_name(h.deptno,'vi') DEPARTMENT,get_global_name(h.POST_GRADE_NO, 'vi') RANK,get_global_name(a.EMER_TYPE_CODE, 'vi') RELATIONS,a.emer_name EMERGENCY_NAME,PKG_DECRYPT.DECRYPT_DES(a.EMER_PHONE) CONTACT_NUMBER,a.emer_email EMail,a.EMER_ADDRESS ADDRESS  from hr_emergency_address a, hr_employee h where h.person_id=a.person_id and h.empid not like '111111%' and h.cpny_id ='"
+		String sql = " select h.local_name EMPLOYEE_NAME,h.empid EMPID,get_dept_name(h.deptno,'vi') DEPARTMENT,get_global_name(h.POST_GRADE_NO, 'vi') RANK,get_global_name(a.EMER_TYPE_CODE, 'vi') RELATIONS,a.emer_name EMERGENCY_NAME,a.EMER_PHONE CONTACT_NUMBER,a.emer_email EMail,a.EMER_ADDRESS ADDRESS  from hr_emergency_address a, hr_employee h where h.person_id=a.person_id and h.empid not like '111111%' and h.cpny_id ='"
 				+ admin.getCpnyId()
 				+ "' and a.activity='1' ";
 		String personid = "";
@@ -3117,7 +3117,7 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 			}
 			paramMap.put("deptContent", str);
 		}
-		String sql = "select h.local_name NAME,h.empid EMPID,GET_DEPT_NAME(h.deptno,'vi') DEPARTMENT,GET_GLOBAL_NAME(h.post_grade_no,'vi') RANK,GET_GLOBAL_NAME(h.emp_type_code,'vi') EMPLOYEE_TYPE,to_char(h.date_started,'DD/MM/YYYY') ENTRY_DATE,get_global_name(f.FAM_TYPE_CODE,'vi') RELATIONS,f.FAM_NAME FAMILY_NAME,get_global_name(f.NATIONALITY,'vi') COUNTRY,f.AGE AGE,to_char(f.FAM_BORNDATE,'DD/MM/YYYY') BIRTHDAY,PKG_DECRYPT.DECRYPT_DES(f.FAM_FAMILY_PHONE) HOME_PHONE,get_global_name(f.FAM_EDUCATION,'vi') EDUCATION,f.FAM_COMPANY_NAME WORK_UNIT from hr_employee h,hr_personal_info p,hr_family f where h.person_id=f.person_id and h.person_id=p.person_id and f.activity='1' and h.empid not like '111111%' and h.cpny_id='"
+		String sql = "select h.local_name NAME,h.empid EMPID,GET_DEPT_NAME(h.deptno,'vi') DEPARTMENT,GET_GLOBAL_NAME(h.post_grade_no,'vi') RANK,GET_GLOBAL_NAME(h.emp_type_code,'vi') EMPLOYEE_TYPE,to_char(h.date_started,'DD/MM/YYYY') ENTRY_DATE,get_global_name(f.FAM_TYPE_CODE,'vi') RELATIONS,f.FAM_NAME FAMILY_NAME,get_global_name(f.NATIONALITY,'vi') COUNTRY,f.AGE AGE,to_char(f.FAM_BORNDATE,'DD/MM/YYYY') BIRTHDAY,f.FAM_FAMILY_PHONE HOME_PHONE,get_global_name(f.FAM_EDUCATION,'vi') EDUCATION,f.FAM_COMPANY_NAME WORK_UNIT from hr_employee h,hr_personal_info p,hr_family f where h.person_id=f.person_id and h.person_id=p.person_id and f.activity='1' and h.empid not like '111111%' and h.cpny_id='"
 				+ admin.getCpnyId() + "'  ";
 		String personid = "";
 		if (request.getParameter("PERSON_ID") != null
@@ -4045,7 +4045,7 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 			}
 			paramMap.put("deptContent", str);
 		}
-		String sql = "select rownum NO,h.local_name NAME,h.empid EMPID,get_dept_name(h.deptno,'vi') DEPARTMENT,get_global_name(h.post_grade_no,'vi') RANK,to_char(h.DATE_STARTED,'dd/MM/yyyy') ENTRY_DATE,to_char(h.DATE_LEFT,'dd/MM/yyyy') LEAVE_DATE,PKG_DECRYPT.DECRYPT_DES(p.cellphone) CONTACT_NUMBER,get_global_name(h.main_business,'vi') MAJOR_BUSINESS,get_global_name(h.LIZHIREASON,'vi') REMARKS from hr_employee h,hr_personal_info p where h.person_id=p.person_id(+) and h.emp_office = '15120' and h.empid not like '111111%' and h.cpny_id='"
+		String sql = "select rownum NO,h.local_name NAME,h.empid EMPID,get_dept_name(h.deptno,'vi') DEPARTMENT,get_global_name(h.post_grade_no,'vi') RANK,to_char(h.DATE_STARTED,'dd/MM/yyyy') ENTRY_DATE,to_char(h.DATE_LEFT,'dd/MM/yyyy') LEAVE_DATE,p.cellphone CONTACT_NUMBER,get_global_name(h.main_business,'vi') MAJOR_BUSINESS,get_global_name(h.LIZHIREASON,'vi') REMARKS from hr_employee h,hr_personal_info p where h.person_id=p.person_id(+) and h.emp_office = '15120' and h.empid not like '111111%' and h.cpny_id='"
 				+ admin.getCpnyId() + "'  ";
 		String personid = "";
 		if (request.getParameter("PERSON_ID") != null
@@ -5698,7 +5698,7 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 						} else if (s1.equals("DOB")) {
 							strno = strno + "to_char(p.DOB,'dd/MM/yyyy') DOB,";
 						} else if (s1.equals("IDCARD_NO")) {
-							strno = strno + "PKG_DECRYPT.DECRYPT_DES(p.IDCARD_NO) IDCARD_NO,";
+							strno = strno + "p.IDCARD_NO IDCARD_NO,";
 						} else if (s1.equals("IDCARD_START_DATE")) {
 							strno = strno + "p.IDCARD_START_DATE,";
 						} else if (s1.equals("ISSUING_AUTHORITY")) {
@@ -5718,9 +5718,9 @@ public class EmpInfoSerImpl implements EmpInfoSer {
 						} else if(s1.equals("POLITICAL_OUTLOOK")) {
 							strno = strno + "GET_GLOBAL_NAME(p.POLITICAL_OUTLOOK, 'vi') POLITICAL_OUTLOOK,";
 						} else if(s1.equals("HOME_PHONE")) {
-							strno = strno + "PKG_DECRYPT.DECRYPT_DES(p.HOME_PHONE) HOME_PHONE,";
+							strno = strno + "p.HOME_PHONE HOME_PHONE,";
 						} else if(s1.equals("CELLPHONE")) {
-							strno = strno + "PKG_DECRYPT.DECRYPT_DES(p.CELLPHONE) CELLPHONE,";
+							strno = strno + "p.CELLPHONE CELLPHONE,";
 						} else if(s1.equals("EXIST_SINGLE")) {
 							strno = strno + "GET_GLOBAL_NAME(p.EXIST_SINGLE, 'vi') EXIST_SINGLE,";
 						} else if(s1.equals("SING_ID")) {
