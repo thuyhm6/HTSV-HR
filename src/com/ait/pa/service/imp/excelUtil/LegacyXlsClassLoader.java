@@ -19,7 +19,18 @@ public class LegacyXlsClassLoader extends URLClassLoader {
 
     private static final String[] CHILD_FIRST_PREFIXES = {
             "org.apache.poi.",
-            "net.sf.jxls."
+            "net.sf.jxls.",
+            // Support libraries the legacy JXLS engine needs at matching versions.
+            // WEB-INF/lib also ships commons-digester (and friends), so without
+            // forcing these child-first too, parent-first delegation would let
+            // the webapp's copy of Digester load first; Digester then resolves
+            // net.sf.jxls.tag.* tag classes via its own defining classloader
+            // (the webapp one), which cannot see the isolated jxls-core classes.
+            "org.apache.commons.digester.",
+            "org.apache.commons.beanutils.",
+            "org.apache.commons.jexl2.",
+            "org.apache.commons.collections.",
+            "org.apache.commons.logging."
     };
 
     private static volatile LegacyXlsClassLoader instance;

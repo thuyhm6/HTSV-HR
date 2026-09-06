@@ -2,16 +2,21 @@ package com.ait.pa.service.imp.excelUtil;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Rebuilds an HSSFWorkbook (.xls, produced by the legacy JXLS1 template engine)
  * as an equivalent XSSFWorkbook (.xlsx): cell values, styles/fonts, merged
- * regions, column widths, embedded pictures and cell comments are copied.
+ * regions, column widths, embedded pictures, cell comments and data
+ * validations (dropdown lists etc.) are copied.
  * Minor legacy drawing artifacts (form controls, OLE objects, free shapes)
  * carry no report content and are intentionally skipped.
  */
@@ -52,23 +57,104 @@ public class HssfToXssf {
             }
 
             copyDrawingShapes(dst, srcSheet, dstSheet);
+            copyDataValidations(srcSheet, dstSheet);
         }
 
         copyDefinedNames(src, dst);
         return dst;
     }
 
+    private static void copyDataValidations(Sheet srcSheet, Sheet dstSheet) {
+        List<? extends DataValidation> validations = srcSheet.getDataValidations();
+        if (validations.isEmpty()) return;
+        DataValidationHelper helper = dstSheet.getDataValidationHelper();
+        for (DataValidation srcValidation : validations) {
+            try {
+                DataValidationConstraint srcConstraint = srcValidation.getValidationConstraint();
+                DataValidationConstraint dstConstraint = copyConstraint(helper, srcConstraint);
+                if (dstConstraint == null) continue; // ANY / unsupported or unreadable constraint
+
+                DataValidation dstValidation = helper.createValidation(dstConstraint, srcValidation.getRegions());
+                dstValidation.setEmptyCellAllowed(srcValidation.getEmptyCellAllowed());
+                dstValidation.setShowErrorBox(srcValidation.getShowErrorBox());
+                dstValidation.setShowPromptBox(srcValidation.getShowPromptBox());
+                // XSSFDataValidation's suppressDropDownArrow setter writes the OOXML
+                // showDropDown attribute inverted from HSSF's semantics (verified: on
+                // POI 5.2.2, setSuppressDropDownArrow(false) - i.e. "don't suppress" -
+                // actually emits showDropDown="true", which the OOXML spec defines as
+                // suppressed/hidden). Negate when carrying the flag over so a visible
+                // in-cell dropdown in the .xls source stays visible in the .xlsx output.
+                dstValidation.setSuppressDropDownArrow(!srcValidation.getSuppressDropDownArrow());
+                if (srcValidation.getErrorBoxText() != null) {
+                    dstValidation.createErrorBox(srcValidation.getErrorBoxTitle(), srcValidation.getErrorBoxText());
+                }
+                if (srcValidation.getPromptBoxText() != null) {
+                    dstValidation.createPromptBox(srcValidation.getPromptBoxTitle(), srcValidation.getPromptBoxText());
+                }
+                dstSheet.addValidationData(dstValidation);
+            } catch (RuntimeException e) {
+                // the legacy HSSF round-trip can leave a validation whose formula
+                // POI can no longer reconstruct (e.g. a literal-value text-length
+                // constraint) - skip just that one rather than losing the whole sheet
+            }
+        }
+    }
+
+    private static DataValidationConstraint copyConstraint(DataValidationHelper helper, DataValidationConstraint c) {
+        String[] explicitValues = c.getExplicitListValues();
+        if (explicitValues != null) {
+            return helper.createExplicitListConstraint(explicitValues);
+        }
+        String formula1 = c.getFormula1();
+        if (formula1 == null || formula1.trim().isEmpty()) {
+            return null; // nothing usable to enforce
+        }
+        switch (c.getValidationType()) {
+            case ValidationType.LIST:
+                // formula1 here is the named range / sheet formula (e.g. "dept"),
+                // which ExcelExportCtroller.createName() repoints to TemplateCode.
+                return helper.createFormulaListConstraint(formula1);
+            case ValidationType.INTEGER:
+                return helper.createIntegerConstraint(c.getOperator(), formula1, c.getFormula2());
+            case ValidationType.DECIMAL:
+                return helper.createDecimalConstraint(c.getOperator(), formula1, c.getFormula2());
+            case ValidationType.TEXT_LENGTH:
+                return helper.createTextLengthConstraint(c.getOperator(), formula1, c.getFormula2());
+            case ValidationType.DATE:
+                return helper.createDateConstraint(c.getOperator(), formula1, c.getFormula2(), null);
+            case ValidationType.TIME:
+                return helper.createTimeConstraint(c.getOperator(), formula1, c.getFormula2());
+            case ValidationType.FORMULA:
+                return helper.createCustomConstraint(formula1);
+            default:
+                return null;
+        }
+    }
+
     private static void copyDefinedNames(Workbook src, Workbook dst) {
+        Set<String> created = new HashSet<>();
         for (Name srcName : src.getAllNames()) {
+            String formula = srcName.getRefersToFormula();
+            if (formula == null || formula.trim().isEmpty()) {
+                // Legacy JXLS output leaves behind orphaned sheet-scoped duplicates
+                // (same name, no formula) alongside the real global name. Writing
+                // these through corrupts the .xlsx (Excel then strips ALL named
+                // ranges on open: "Removed Records: Named range").
+                continue;
+            }
+            String key = srcName.getNameName().toLowerCase() + "@" + srcName.getSheetIndex();
+            if (!created.add(key)) {
+                continue; // duplicate name at the same scope - keep the first
+            }
             try {
                 Name dstName = dst.createName();
                 dstName.setNameName(srcName.getNameName());
-                dstName.setRefersToFormula(srcName.getRefersToFormula());
                 if (srcName.getSheetIndex() >= 0) {
                     dstName.setSheetIndex(srcName.getSheetIndex());
                 }
+                dstName.setRefersToFormula(formula);
             } catch (RuntimeException e) {
-                // skip names the source workbook itself could not resolve/duplicate names
+                // still invalid in the destination workbook - skip it
             }
         }
     }

@@ -21,12 +21,25 @@ import org.apache.poi.ss.usermodel.Workbook;
 public class LegacyXlsTransformWorker {
 
     public static byte[] transform(byte[] templateBytes, Map<String, Object> beans) throws Exception {
-        XLSTransformer transformer = new XLSTransformer();
-        try (InputStream is = new ByteArrayInputStream(templateBytes)) {
-            Workbook wb = transformer.transformXLS(is, beans);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            wb.write(bos);
-            return bos.toByteArray();
+        // commons-digester (used internally by XLSTransformer to parse jx:forEach /
+        // jx:if tags) loads tag classes via the thread's context classloader by
+        // default, not via this class's own (isolated) classloader. Left alone,
+        // that context classloader is the webapp's normal classloader, which does
+        // not have net.sf.jxls.* on it (those classes only live in isolated-lib),
+        // causing ClassNotFoundException. Swap it for the duration of the call.
+        Thread currentThread = Thread.currentThread();
+        ClassLoader originalClassLoader = currentThread.getContextClassLoader();
+        currentThread.setContextClassLoader(LegacyXlsTransformWorker.class.getClassLoader());
+        try {
+            XLSTransformer transformer = new XLSTransformer();
+            try (InputStream is = new ByteArrayInputStream(templateBytes)) {
+                Workbook wb = transformer.transformXLS(is, beans);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                wb.write(bos);
+                return bos.toByteArray();
+            }
+        } finally {
+            currentThread.setContextClassLoader(originalClassLoader);
         }
     }
 }

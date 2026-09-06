@@ -6835,8 +6835,19 @@ public class ExcelUtilSerImp implements ExcelUtilSer {
 				restr = formatter.format(mydate);
 
 			} else {
-				restr = formatecell.getContents() == null ? "" : formatecell
-						.getContents();
+				// 未指定专用日期类型（如VARCHAR）时，用已解析出的真实日期值(mydate)格式化为
+				// yyyy-MM-dd，不再取getContents()——其底层依赖POI对内置日期格式(如14号
+				// "m/d/yy")的硬编码猜测，会与Excel实际显示的值不一致（如2000-01-25被读成
+				// 1/25/00）。这里不设置时区（保持JVM默认时区），因为mydate本身就是POI按
+				// 默认时区解析出来的，再转GMT格式化反而会把日期往前推一天。
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(mydate);
+				boolean hasTime = cal.get(Calendar.HOUR_OF_DAY) != 0
+						|| cal.get(Calendar.MINUTE) != 0
+						|| cal.get(Calendar.SECOND) != 0;
+				formatter = new SimpleDateFormat(hasTime ? "yyyy-MM-dd HH:mm:ss"
+						: "yyyy-MM-dd", Locale.getDefault());
+				restr = formatter.format(mydate);
 			}
 
 		} catch (Exception e) {
