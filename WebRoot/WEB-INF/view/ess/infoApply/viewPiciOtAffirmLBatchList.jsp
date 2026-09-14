@@ -311,10 +311,10 @@ function saveOtApplyAffirm(){
             	alertMsg.info("<spring:message code='ess.infoApply.ApplyReasonNotull' />");
     			return false;
             }
-			if($("#AFFIRM_FLAG_"+index,navTab.getCurrentPanel()).val()!='14014308' && $("#AFFIRM_FLAG_"+index,navTab.getCurrentPanel()).val()!='14014309' && $("#AFFIRM_FLAG_"+index,navTab.getCurrentPanel()).val()!=''){
-				alertMsg.error("<spring:message code='ar.viewArOvertimeManagentFast.QINGXUANZEZHENGQUEXUANXIANG.b' />");//请选择正确选项
-				return false;
-			}
+			// if($("#AFFIRM_FLAG_"+index,navTab.getCurrentPanel()).val()!='14014308' && $("#AFFIRM_FLAG_"+index,navTab.getCurrentPanel()).val()!='14014309' && $("#AFFIRM_FLAG_"+index,navTab.getCurrentPanel()).val()!=''){
+			// 	alertMsg.error("<spring:message code='ar.viewArOvertimeManagentFast.QINGXUANZEZHENGQUEXUANXIANG.b' />");//请选择正确选项
+			// 	return false;
+			// }
 			if(oTApplyHour == '0' || oTApplyHour ==''){
 				alertMsg.error("<spring:message code='ar.viewArOvertimeManagentFast.JIABANSHIJIANBUNENGLING.b' />");//加班时长不能等于0
 				return false;

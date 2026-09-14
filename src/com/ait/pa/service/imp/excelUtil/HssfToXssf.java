@@ -1,9 +1,13 @@
 package com.ait.pa.service.imp.excelUtil;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.HashMap;
@@ -65,7 +69,16 @@ public class HssfToXssf {
     }
 
     private static void copyDataValidations(Sheet srcSheet, Sheet dstSheet) {
-        List<? extends DataValidation> validations = srcSheet.getDataValidations();
+        List<? extends DataValidation> validations;
+        try {
+            validations = srcSheet.getDataValidations();
+        } catch (RuntimeException e) {
+            // the legacy .xls sheet can contain a record POI no longer recognizes
+            // (UnknownRecord) at a position where RecordOrderer can't place/find the
+            // DV table (IllegalStateException) - skip validations for this sheet
+            // rather than failing the whole export
+            return;
+        }
         if (validations.isEmpty()) return;
         DataValidationHelper helper = dstSheet.getDataValidationHelper();
         for (DataValidation srcValidation : validations) {
@@ -134,7 +147,14 @@ public class HssfToXssf {
     private static void copyDefinedNames(Workbook src, Workbook dst) {
         Set<String> created = new HashSet<>();
         for (Name srcName : src.getAllNames()) {
-            String formula = srcName.getRefersToFormula();
+            String formula;
+            try {
+                formula = srcName.getRefersToFormula();
+            } catch (RuntimeException e) {
+                // some legacy HSSFName entries are function/command names rather than
+                // plain named ranges - getRefersToFormula() rejects those outright
+                continue;
+            }
             if (formula == null || formula.trim().isEmpty()) {
                 // Legacy JXLS output leaves behind orphaned sheet-scoped duplicates
                 // (same name, no formula) alongside the real global name. Writing
@@ -232,10 +252,34 @@ public class HssfToXssf {
             dstStyle.setBottomBorderColor(srcStyle.getBottomBorderColor());
             dstStyle.setLeftBorderColor(srcStyle.getLeftBorderColor());
             dstStyle.setRightBorderColor(srcStyle.getRightBorderColor());
+            if (dstStyle instanceof XSSFCellStyle) {
+                final XSSFCellStyle dstXStyle = (XSSFCellStyle) dstStyle;
+                setIfResolved(srcWb, srcStyle.getTopBorderColor(), new java.util.function.Consumer<XSSFColor>() {
+                    public void accept(XSSFColor c) { dstXStyle.setTopBorderColor(c); }
+                });
+                setIfResolved(srcWb, srcStyle.getBottomBorderColor(), new java.util.function.Consumer<XSSFColor>() {
+                    public void accept(XSSFColor c) { dstXStyle.setBottomBorderColor(c); }
+                });
+                setIfResolved(srcWb, srcStyle.getLeftBorderColor(), new java.util.function.Consumer<XSSFColor>() {
+                    public void accept(XSSFColor c) { dstXStyle.setLeftBorderColor(c); }
+                });
+                setIfResolved(srcWb, srcStyle.getRightBorderColor(), new java.util.function.Consumer<XSSFColor>() {
+                    public void accept(XSSFColor c) { dstXStyle.setRightBorderColor(c); }
+                });
+            }
 
             dstStyle.setFillPattern(srcStyle.getFillPattern());
             dstStyle.setFillForegroundColor(srcStyle.getFillForegroundColor());
             dstStyle.setFillBackgroundColor(srcStyle.getFillBackgroundColor());
+            if (dstStyle instanceof XSSFCellStyle) {
+                final XSSFCellStyle dstXStyle2 = (XSSFCellStyle) dstStyle;
+                setIfResolved(srcWb, srcStyle.getFillForegroundColor(), new java.util.function.Consumer<XSSFColor>() {
+                    public void accept(XSSFColor c) { dstXStyle2.setFillForegroundColor(c); }
+                });
+                setIfResolved(srcWb, srcStyle.getFillBackgroundColor(), new java.util.function.Consumer<XSSFColor>() {
+                    public void accept(XSSFColor c) { dstXStyle2.setFillBackgroundColor(c); }
+                });
+            }
 
             dstStyle.setLocked(srcStyle.getLocked());
             dstStyle.setHidden(srcStyle.getHidden());
@@ -253,6 +297,12 @@ public class HssfToXssf {
                 dstFont.setUnderline(srcFont.getUnderline());
                 dstFont.setTypeOffset(srcFont.getTypeOffset());
                 dstFont.setColor(srcFont.getColor());
+                if (dstFont instanceof XSSFFont) {
+                    XSSFColor resolved = resolveXssfColor(srcWb, srcFont.getColor());
+                    if (resolved != null) {
+                        ((XSSFFont) dstFont).setColor(resolved);
+                    }
+                }
                 fontCache.put(fontKey, dstFont);
             }
             dstStyle.setFont(dstFont);
@@ -260,6 +310,41 @@ public class HssfToXssf {
             styleCache.put(key, dstStyle);
         }
         dstCell.setCellStyle(dstStyle);
+    }
+
+    /**
+     * The plain index-based border/fill setters (called above) place the
+     * source's HSSFPalette slot number into the XSSF style verbatim. That
+     * slot number is only meaningful together with the specific HSSFWorkbook
+     * that defined it (custom palette slots don't carry a fixed universal
+     * RGB); reading it back later resolves the index against XSSF's own
+     * default indexed-color table instead, giving the wrong color for any
+     * slot that was redefined to a custom RGB. Overlaying the actual
+     * resolved RGB (fetched from srcWb's own palette right here, while it's
+     * still available) fixes that; when the index is a standard, unmodified
+     * palette color the RGB matches anyway, so this is a no-op for ordinary
+     * legacy .xls templates.
+     */
+    private static void setIfResolved(Workbook srcWb, short colorIndex, java.util.function.Consumer<XSSFColor> setter) {
+        XSSFColor resolved = resolveXssfColor(srcWb, colorIndex);
+        if (resolved != null) {
+            setter.accept(resolved);
+        }
+    }
+
+    private static XSSFColor resolveXssfColor(Workbook srcWb, short colorIndex) {
+        if (!(srcWb instanceof HSSFWorkbook) || colorIndex < 0) {
+            return null;
+        }
+        HSSFColor legacyColor = ((HSSFWorkbook) srcWb).getCustomPalette().getColor(colorIndex);
+        if (legacyColor == null) {
+            return null;
+        }
+        short[] triplet = legacyColor.getTriplet();
+        if (triplet == null) {
+            return null;
+        }
+        return new XSSFColor(new byte[] { (byte) triplet[0], (byte) triplet[1], (byte) triplet[2] }, null);
     }
 
     private static void copyCellValue(Cell srcCell, Cell dstCell) {

@@ -1867,7 +1867,8 @@ public class RetrieveMasterListCtroller {
 		String webPath = request.getRealPath("/").replace("\\", "/");
 		String templateFileName = webPath;
 		String destFileName = webPath;
-		templateFileName += "/resources/template/report/" + tempName + ".xls";
+		// resolveTemplatePath (called by transformXLS) picks .xlsx over .xls when both exist
+		templateFileName += "/resources/template/report/" + tempName;
 		destFileName += "/resources/template/report/" + tempName + "_out.xlsx";
 
 		// execl导出处理

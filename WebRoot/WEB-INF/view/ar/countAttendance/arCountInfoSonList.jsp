@@ -507,18 +507,18 @@ $(document).ready(function() {
 						<th rowspan='2'><!-- 职级 --><spring:message code="ess.trans.title.postGradeName" /></th>
 						<th rowspan='2'><!-- 员工类型 --><spring:message code="ess.infoApply.employee_type"/></th>
 						<th rowspan='2'><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
-						<th colspan='5'><!--一月 --><spring:message code="hrm.empinfo.January" /></th>
-						<th colspan='5'><!--二月 --><spring:message code="hrm.empinfo.February" /></th>
-						<th colspan='5'><!--三月 --><spring:message code="hrm.empinfo.March" /></th>
-						<th colspan='5'><!--四月 --><spring:message code="hrm.empinfo.April" /></th>
-						<th colspan='5'><!--五月 --><spring:message code="hrm.empinfo.May" /></th>
-						<th colspan='5'><!--六月 --><spring:message code="hrm.empinfo.June" /></th>
-						<th colspan='5'><!--七月 --><spring:message code="hrm.empinfo.July" /></th>
-						<th colspan='5'><!--八月 --><spring:message code="hrm.empinfo.August" /></th>
-						<th colspan='5'><!--九月 --><spring:message code="hrm.empinfo.September" /></th>
-						<th colspan='5'><!--十月 --><spring:message code="hrm.empinfo.October" /></th>
-						<th colspan='5'><!--十一月 --><spring:message code="hrm.empinfo.November" /></th>
-						<th colspan='5'><!--十二月 --><spring:message code="hrm.empinfo.December" /></th>
+						<th colspan='8'><!--一月 --><spring:message code="hrm.empinfo.January" /></th>
+						<th colspan='8'><!--二月 --><spring:message code="hrm.empinfo.February" /></th>
+						<th colspan='8'><!--三月 --><spring:message code="hrm.empinfo.March" /></th>
+						<th colspan='8'><!--四月 --><spring:message code="hrm.empinfo.April" /></th>
+						<th colspan='8'><!--五月 --><spring:message code="hrm.empinfo.May" /></th>
+						<th colspan='8'><!--六月 --><spring:message code="hrm.empinfo.June" /></th>
+						<th colspan='8'><!--七月 --><spring:message code="hrm.empinfo.July" /></th>
+						<th colspan='8'><!--八月 --><spring:message code="hrm.empinfo.August" /></th>
+						<th colspan='8'><!--九月 --><spring:message code="hrm.empinfo.September" /></th>
+						<th colspan='8'><!--十月 --><spring:message code="hrm.empinfo.October" /></th>
+						<th colspan='8'><!--十一月 --><spring:message code="hrm.empinfo.November" /></th>
+						<th colspan='8'><!--十二月 --><spring:message code="hrm.empinfo.December" /></th>
 					</tr>
 					<tr>
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
@@ -526,72 +526,108 @@ $(document).ready(function() {
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 						
 						<th><!-- 合计 --><spring:message code="ess.viewpersonalpainfo.heji" /></th>
 						<th><!-- 平日 --><spring:message code="ar.viewitemparameter.title.pingshi" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewComanyCalendar.DAIXINJIA.b" /></th>
 						<th><!-- 周末 --><spring:message code="ar.viewitemparameter.title.zhoumo" /></th>
 						<th><!-- 法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" /></th>
+						<th><!-- 加班餐补奖励 --><spring:message code="ess.viewMonthDetailList.OT_INCENTIVE.b" /></th>
+						<th><!-- 夜间激励 --><spring:message code="ess.viewMonthDetailList.NIGHT_INCENTIVE.b" /></th>
+						<th><!-- 周六加班激励 --><spring:message code="ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b" /></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -605,65 +641,101 @@ $(document).ready(function() {
 							<td style="text-align: center">${personList.EMP_TYPE_NAME}</td>
 							<td style="text-align: center">${personList.OT_TOTAIL}</td>
 							<td style="text-align: center">${personList.JANUARY}</td>
-							<td style="text-align: center">${personList.JANUARY_1}</td>
-							<td style="text-align: center">${personList.JANUARY_2}</td>
-							<td style="text-align: center">${personList.JANUARY_3}</td>
-							<td style="text-align: center">${personList.JANUARY_4}</td>
+							<td style="text-align: center">${personList.JANUARY_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.JANUARY_SATURDAY}</td>
+							<td style="text-align: center">${personList.JANUARY_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.JANUARY_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.JANUARY_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.JANUARY_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.JANUARY_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.FEBRUARY}</td>
-							<td style="text-align: center">${personList.FEBRUARY_1}</td>
-							<td style="text-align: center">${personList.FEBRUARY_2}</td>
-							<td style="text-align: center">${personList.FEBRUARY_3}</td>
-							<td style="text-align: center">${personList.FEBRUARY_4}</td>
+							<td style="text-align: center">${personList.FEBRUARY_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.FEBRUARY_SATURDAY}</td>
+							<td style="text-align: center">${personList.FEBRUARY_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.FEBRUARY_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.FEBRUARY_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.FEBRUARY_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.FEBRUARY_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.MARCH}</td>
-							<td style="text-align: center">${personList.MARCH_1}</td>
-							<td style="text-align: center">${personList.MARCH_2}</td>
-							<td style="text-align: center">${personList.MARCH_3}</td>
-							<td style="text-align: center">${personList.MARCH_4}</td>
+							<td style="text-align: center">${personList.MARCH_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.MARCH_SATURDAY}</td>
+							<td style="text-align: center">${personList.MARCH_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.MARCH_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.MARCH_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.MARCH_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.MARCH_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.APRIL}</td>
-							<td style="text-align: center">${personList.APRIL_1}</td>
-							<td style="text-align: center">${personList.APRIL_2}</td>
-							<td style="text-align: center">${personList.APRIL_3}</td>
-							<td style="text-align: center">${personList.APRIL_4}</td>
+							<td style="text-align: center">${personList.APRIL_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.APRIL_SATURDAY}</td>
+							<td style="text-align: center">${personList.APRIL_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.APRIL_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.APRIL_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.APRIL_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.APRIL_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.MAY}</td>
-							<td style="text-align: center">${personList.MAY_1}</td>
-							<td style="text-align: center">${personList.MAY_2}</td>
-							<td style="text-align: center">${personList.MAY_3}</td>
-							<td style="text-align: center">${personList.MAY_4}</td>
+							<td style="text-align: center">${personList.MAY_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.MAY_SATURDAY}</td>
+							<td style="text-align: center">${personList.MAY_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.MAY_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.MAY_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.MAY_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.MAY_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.JUNE}</td>
-							<td style="text-align: center">${personList.JUNE_1}</td>
-							<td style="text-align: center">${personList.JUNE_2}</td>
-							<td style="text-align: center">${personList.JUNE_3}</td>
-							<td style="text-align: center">${personList.JUNE_4}</td>
+							<td style="text-align: center">${personList.JUNE_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.JUNE_SATURDAY}</td>
+							<td style="text-align: center">${personList.JUNE_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.JUNE_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.JUNE_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.JUNE_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.JUNE_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.JULY}</td>
-							<td style="text-align: center">${personList.JULY_1}</td>
-							<td style="text-align: center">${personList.JULY_2}</td>
-							<td style="text-align: center">${personList.JULY_3}</td>
-							<td style="text-align: center">${personList.JULY_4}</td>
+							<td style="text-align: center">${personList.JULY_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.JULY_SATURDAY}</td>
+							<td style="text-align: center">${personList.JULY_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.JULY_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.JULY_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.JULY_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.JULY_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.AUGUST}</td>
-							<td style="text-align: center">${personList.AUGUST_1}</td>
-							<td style="text-align: center">${personList.AUGUST_2}</td>
-							<td style="text-align: center">${personList.AUGUST_3}</td>
-							<td style="text-align: center">${personList.AUGUST_4}</td>
+							<td style="text-align: center">${personList.AUGUST_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.AUGUST_SATURDAY}</td>
+							<td style="text-align: center">${personList.AUGUST_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.AUGUST_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.AUGUST_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.AUGUST_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.AUGUST_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.SEPTEMBER}</td>
-							<td style="text-align: center">${personList.SEPTEMBER_1}</td>
-							<td style="text-align: center">${personList.SEPTEMBER_2}</td>
-							<td style="text-align: center">${personList.SEPTEMBER_3}</td>
-							<td style="text-align: center">${personList.SEPTEMBER_4}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_SATURDAY}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.SEPTEMBER_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.OCTOBER}</td>
-							<td style="text-align: center">${personList.OCTOBER_1}</td>
-							<td style="text-align: center">${personList.OCTOBER_2}</td>
-							<td style="text-align: center">${personList.OCTOBER_3}</td>
-							<td style="text-align: center">${personList.OCTOBER_4}</td>
+							<td style="text-align: center">${personList.OCTOBER_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.OCTOBER_SATURDAY}</td>
+							<td style="text-align: center">${personList.OCTOBER_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.OCTOBER_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.OCTOBER_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.OCTOBER_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.OCTOBER_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.NOVEMBER}</td>
-							<td style="text-align: center">${personList.NOVEMBER_1}</td>
-							<td style="text-align: center">${personList.NOVEMBER_2}</td>
-							<td style="text-align: center">${personList.NOVEMBER_3}</td>
-							<td style="text-align: center">${personList.NOVEMBER_4}</td>
+							<td style="text-align: center">${personList.NOVEMBER_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.NOVEMBER_SATURDAY}</td>
+							<td style="text-align: center">${personList.NOVEMBER_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.NOVEMBER_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.NOVEMBER_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.NOVEMBER_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.NOVEMBER_SATURDAY_INCEN}</td>
 							<td style="text-align: center">${personList.DECEMBER}</td>
-							<td style="text-align: center">${personList.DECEMBER_1}</td>
-							<td style="text-align: center">${personList.DECEMBER_2}</td>
-							<td style="text-align: center">${personList.DECEMBER_3}</td>
-							<td style="text-align: center">${personList.DECEMBER_4}</td>
+							<td style="text-align: center">${personList.DECEMBER_NORMAL_WORK}</td>
+							<td style="text-align: center">${personList.DECEMBER_SATURDAY}</td>
+							<td style="text-align: center">${personList.DECEMBER_WEEKLY_HOLIDAY}</td>
+							<td style="text-align: center">${personList.DECEMBER_PUBLIC_HOLIDAY}</td>
+							<td style="text-align: center">${personList.DECEMBER_MEAL_OT_INCEN}</td>
+							<td style="text-align: center">${personList.DECEMBER_NIGHT_INCEN}</td>
+							<td style="text-align: center">${personList.DECEMBER_SATURDAY_INCEN}</td>
 						</tr>
 					</c:forEach>
 				</tbody>
