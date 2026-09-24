@@ -18,6 +18,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -26,7 +27,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -103,6 +115,9 @@ public class InfoApplyCtroller {
 	
 	@Autowired
 	private ExcelUtilSer excelUtilSer;
+
+	@Autowired
+	private MessageSource messageSource;
 	@Autowired
 	private InfoApplyLeaveSer infoApplyLeaveSer;
 	
@@ -571,7 +586,178 @@ public class InfoApplyCtroller {
 		return new ModelAndView("/ess/infoApply/viewOverTimeLimtShenPiList", modelMap);
 	}
 
-	
+	/**
+	 * 导出加班上限审批年度追踪表(export overtime year track list)
+	 *
+	 * @param request
+	 * @param response
+	 * @param modelMap
+	 * @throws Exception
+	 */
+	@SuppressWarnings({ "unchecked", "deprecation" })
+	@RequestMapping(value = "/exportOverTimeLimtShenPiExcel")
+	public void exportOverTimeLimtShenPiExcel(HttpServletRequest request,
+			HttpServletResponse response, ModelMap modelMap) throws Exception {
+		String year = StringUtil.checkNull(request.getParameter("seach_YEAR"));
+		if ("".equals(year)) {
+			year = new SimpleDateFormat("yyyy").format(new Date());
+		}
+		request.setAttribute("YEAR", year);
+
+		String[] monthKeys = new String[] { "YEAR", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
+		String[] fieldPrefixes = new String[] { "TOTAL_", "APPROVAL_", "SATAPV_", "REQUEST_", "SATREQ_" };
+		String[] monthLabels = new String[] {
+				year,
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month01"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month02"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month03"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month04"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month05"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month06"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month07"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month08"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month09"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month10"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month11"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.month12") };
+		String[] subLabels = new String[] {
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.totalOt"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.otApproval"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.satIncentiveApproval"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.otRequest"),
+				getExcelMessage(request, "ess.infoApply.title.overTimeTrack.satIncentiveRequest") };
+
+		List otYearTrackList = this.infoApplySer.getOverTimeYearTrackList(request);
+
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet = wb.createSheet("OverTimeYearTrack");
+
+		XSSFFont headerFont = wb.createFont();
+		headerFont.setBold(true);
+
+		XSSFCellStyle headerStyle = wb.createCellStyle();
+		headerStyle.setAlignment(HorizontalAlignment.CENTER);
+		headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+		headerStyle.setWrapText(true);
+		headerStyle.setFont(headerFont);
+		headerStyle.setBorderTop(BorderStyle.THIN);
+		headerStyle.setBorderBottom(BorderStyle.THIN);
+		headerStyle.setBorderLeft(BorderStyle.THIN);
+		headerStyle.setBorderRight(BorderStyle.THIN);
+
+		XSSFCellStyle dataStyle = wb.createCellStyle();
+		dataStyle.setAlignment(HorizontalAlignment.CENTER);
+		dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+		dataStyle.setBorderTop(BorderStyle.THIN);
+		dataStyle.setBorderBottom(BorderStyle.THIN);
+		dataStyle.setBorderLeft(BorderStyle.THIN);
+		dataStyle.setBorderRight(BorderStyle.THIN);
+
+		XSSFRow headerRow1 = sheet.createRow(0);
+		XSSFRow headerRow2 = sheet.createRow(1);
+
+		int colIndex = 0;
+		colIndex = addMergedHeaderCell(sheet, headerRow1, headerRow2, headerStyle, colIndex,
+				getExcelMessage(request, "public.title.empId"));
+		colIndex = addMergedHeaderCell(sheet, headerRow1, headerRow2, headerStyle, colIndex,
+				getExcelMessage(request, "public.title.name"));
+
+		for (String monthLabel : monthLabels) {
+			int startCol = colIndex;
+			int endCol = colIndex + subLabels.length - 1;
+			sheet.addMergedRegion(new CellRangeAddress(0, 0, startCol, endCol));
+			XSSFCell groupCell = headerRow1.createCell(startCol);
+			groupCell.setCellValue(monthLabel);
+			groupCell.setCellStyle(headerStyle);
+			for (int i = 1; i <= endCol - startCol; i++) {
+				headerRow1.createCell(startCol + i).setCellStyle(headerStyle);
+			}
+			for (String subLabel : subLabels) {
+				XSSFCell subCell = headerRow2.createCell(colIndex);
+				subCell.setCellValue(subLabel);
+				subCell.setCellStyle(headerStyle);
+				colIndex++;
+			}
+		}
+
+		int rowIndex = 2;
+		for (int i = 0; i < otYearTrackList.size(); i++) {
+			LinkedHashMap item = (LinkedHashMap) otYearTrackList.get(i);
+			XSSFRow dataRow = sheet.createRow(rowIndex++);
+			int cellIndex = 0;
+			XSSFCell empCell = dataRow.createCell(cellIndex++);
+			empCell.setCellValue(item.get("EMPID") != null ? item.get("EMPID").toString() : "");
+			empCell.setCellStyle(dataStyle);
+			XSSFCell nameCell = dataRow.createCell(cellIndex++);
+			nameCell.setCellValue(item.get("LOCAL_NAME") != null ? item.get("LOCAL_NAME").toString() : "");
+			nameCell.setCellStyle(dataStyle);
+			for (String monthKey : monthKeys) {
+				for (String fieldPrefix : fieldPrefixes) {
+					Object value = item.get(fieldPrefix + monthKey);
+					XSSFCell cell = dataRow.createCell(cellIndex++);
+					cell.setCellValue(value != null ? value.toString() : "");
+					cell.setCellStyle(dataStyle);
+				}
+			}
+		}
+
+		sheet.createFreezePane(2, 2);
+		sheet.setColumnWidth(0, 3000);
+		sheet.setColumnWidth(1, 6000);
+		for (int i = 2; i < colIndex; i++) {
+			sheet.setColumnWidth(i, 3200);
+		}
+
+		String fileName = "OverTimeYearTrack_" + year + ".xlsx";
+		response.setContentType("application/x-msdownload");
+		response.setHeader("Content-Disposition",
+				"attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+		OutputStream out = response.getOutputStream();
+		try {
+			wb.write(out);
+		} finally {
+			out.flush();
+			wb.close();
+		}
+	}
+
+	/**
+	 * 添加需要跨表头两行合并的单元格(如"工号"、"姓名")
+	 */
+	private int addMergedHeaderCell(XSSFSheet sheet, XSSFRow headerRow1, XSSFRow headerRow2,
+			XSSFCellStyle headerStyle, int colIndex, String label) {
+		sheet.addMergedRegion(new CellRangeAddress(0, 1, colIndex, colIndex));
+		XSSFCell cell = headerRow1.createCell(colIndex);
+		cell.setCellValue(label);
+		cell.setCellStyle(headerStyle);
+		headerRow2.createCell(colIndex).setCellStyle(headerStyle);
+		return colIndex + 1;
+	}
+
+	/**
+	 * 取多语言文本, 用于Excel导出(通过Spring的messageSource按UTF-8正确读取properties文件,
+	 * 避免TipMessage底层使用ResourceBundle默认ISO-8859-1解码导致越南语等非ASCII文字乱码)
+	 */
+	private String getExcelMessage(HttpServletRequest request, String code) {
+		AdminBean admin = SessionUtil.getLoginUserFromSession(request);
+		Locale locale;
+		if ("zh".equals(admin.getLanguage())) {
+			locale = new Locale("zh", "CN");
+		} else if ("ko".equals(admin.getLanguage())) {
+			locale = new Locale("ko", "KR");
+		} else if ("en".equals(admin.getLanguage())) {
+			locale = new Locale("en", "US");
+		} else {
+			locale = new Locale("vi", "VN");
+		}
+		try {
+			return this.messageSource.getMessage(code, null, locale);
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
+
 	/**
 	 * 显示加班申请(view overtime apply)
 	 * 

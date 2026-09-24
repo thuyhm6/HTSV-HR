@@ -79,7 +79,7 @@ $(document).ready(function(){
 		if(applyTypeCode == '27' || applyTypeCode == '482' || applyTypeCode == '15821' || applyTypeCode == '14013816' || applyTypeCode == '25' || 
 				applyTypeCode == '14015956' || applyTypeCode == '14015957' ){
 			
-			if(APPLY_LENGTH % DAY_HOUR != 0 && DAY_HOUR != 7 && DAY_HOUR != 7.53){
+			if(APPLY_LENGTH % DAY_HOUR != 0 && DAY_HOUR != 7 && DAY_HOUR != 7.67){
 				alertMsg.error('<spring:message code="alert.message.ess.infoApply.applyTimeCanNotLessThanMinValue" />');//休假最小指是半天
 		   		return false;
 			}
@@ -93,7 +93,7 @@ $(document).ready(function(){
 		}
         
 		if(applyTypeCode == '26'){
-			if(APPLY_LENGTH % (DAY_HOUR / 2) != 0 && DAY_HOUR != 7 && DAY_HOUR != 7.53){
+			if(APPLY_LENGTH % (DAY_HOUR / 2) != 0 && DAY_HOUR != 7 && DAY_HOUR != 7.67){
 				alertMsg.error('<spring:message code="alert.message.ess.infoApply.applyTimeCanNotLessThanMinValue" />');//休假最小指是半天
 		   		return false;
 			}

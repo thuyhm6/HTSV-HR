@@ -13,6 +13,18 @@
             }
         },
         {
+            "label": "Build: Clean Rebuild",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/scripts/build.bat",
+            "args": ["clean"],
+            "problemMatcher": ["$javac"],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
             "label": "Tomcat: Start (JPDA debug)",
             "type": "shell",
             "command": "D:/Java/apache-tomcat/bin/catalina.bat",

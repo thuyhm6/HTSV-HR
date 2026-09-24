@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java"  errorPage=""%>
 <%@ include file="/WEB-INF/view/inc/initTaglibs.jsp"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<script type="text/javascript" src="/resources/js/togglebar.js"></script>
 <script type="text/javascript">
 
 //加载样式
@@ -20,13 +21,13 @@ $(document).ready(function(){
 });
 </script>
 
-<div id="viewOverTimeLimtShenPiList"  class="pageHeader" >
+<div id="viewOverTimeLimtShenPiListPage"  class="pageHeader" >
 	<form onsubmit="return navTabSearch(this);" action="/ess/infoApply/viewOverTimeLimtShenPiList?firstFlag=N"  method="post"
 		id="viewOverTimeLimtShenPiList" name="viewOverTimeLimtShenPiList">
 		<div class="searchBar">
 			<table class="searchContent">
 				<tr>
-					<td><!-- 年 -->Year</td>
+					<td><!-- 年 --><spring:message code="rp.report.title.year"/></td>
 					<td>
 						<input type="text" id="seach_YEAR" name="seach_YEAR" class="Wdate" style="width: 80px" onClick="WdatePicker({dateFmt:'yyyy',lang:'en'})" value="${YEAR}" />
 					</td>
@@ -62,33 +63,36 @@ $(document).ready(function(){
 <div class="pageContent" >
 <div class="formBar">
        <div style="font: 12px/ 20px arial, sans-serif; float: left; height: 10px; line-height: 30px;">Total:${fn:length(otYearTrackList)}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+       <ul class="toolBar">
+			<li><a class="buttonActive" onclick="downloadExcel('viewOverTimeLimtShenPiList','/ess/infoApply/exportOverTimeLimtShenPiExcel?firstFlag=N','/ess/infoApply/viewOverTimeLimtShenPiList?firstFlag=N')"><span><!-- 导出到Excel --><spring:message code="org.title.exportLOtImportExcel"/></span></a></li>
+       </ul>
 </div>
 	<table class="orderList" width="4800px"  >
 		<thead>
 				<tr>
-					<th rowspan="2" width="80px">ID</th>
-					<th rowspan="2" width="140px">Name</th>
+					<th rowspan="2" width="80px"><spring:message code="public.title.empId"/></th>
+					<th rowspan="2" width="140px"><spring:message code="public.title.name"/></th>
 					<th colspan="5">${YEAR}</th>
-					<th colspan="5">Tháng 1</th>
-					<th colspan="5">Tháng 2</th>
-					<th colspan="5">Tháng 3</th>
-					<th colspan="5">Tháng 4</th>
-					<th colspan="5">Tháng 5</th>
-					<th colspan="5">Tháng 6</th>
-					<th colspan="5">Tháng 7</th>
-					<th colspan="5">Tháng 8</th>
-					<th colspan="5">Tháng 9</th>
-					<th colspan="5">Tháng 10</th>
-					<th colspan="5">Tháng 11</th>
-					<th colspan="5">Tháng 12</th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month01"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month02"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month03"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month04"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month05"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month06"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month07"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month08"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month09"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month10"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month11"/></th>
+					<th colspan="5"><spring:message code="ess.infoApply.title.overTimeTrack.month12"/></th>
 				</tr>
 				<tr>
 					<c:forEach begin="1" end="13">
-						<th width="70px">Tổng (Total)</th>
-						<th width="70px">OT (Approval)</th>
-						<th width="70px">Saturday incentive (Approval)</th>
-						<th width="70px">OT (Request)</th>
-						<th width="70px">Saturday incentive (Request)</th>
+						<th width="70px"><spring:message code="ess.infoApply.title.overTimeTrack.totalOt"/></th>
+						<th width="70px"><spring:message code="ess.infoApply.title.overTimeTrack.otApproval"/></th>
+						<th width="70px"><spring:message code="ess.infoApply.title.overTimeTrack.satIncentiveApproval"/></th>
+						<th width="70px"><spring:message code="ess.infoApply.title.overTimeTrack.otRequest"/></th>
+						<th width="70px"><spring:message code="ess.infoApply.title.overTimeTrack.satIncentiveRequest"/></th>
 					</c:forEach>
 				</tr>
 			</thead>
