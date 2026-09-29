@@ -250,7 +250,6 @@ function saveApplyAttenanceBatchInfo(){
 						 error:DWZ.ajaxError
 					});
 					if(parseFloat($("#APPLY_LENGTH_"+index,navTab.getCurrentPanel()).val()) % (parseFloat($("#DAY_HOURS_"+index,navTab.getCurrentPanel()).val()) / 2) != 0 
-							&& (parseFloat($("#DAY_HOURS_"+index,navTab.getCurrentPanel()).val())) != 7
 							&& (parseFloat($("#DAY_HOURS_"+index,navTab.getCurrentPanel()).val())) != 7.67){
 						alertMsg.error("<spring:message code='alert.message.ess.infoApply.applyTimeCanNotLessThanMinValue' />");//休假最小指是半天
 						return false;
@@ -262,7 +261,6 @@ function saveApplyAttenanceBatchInfo(){
 						applyTypeCode == '14015956' || applyTypeCode == '14015957' ){
 					
 					if(parseFloat($("#APPLY_LENGTH_"+index,navTab.getCurrentPanel()).val()) % (parseFloat($("#DAY_HOURS_"+index,navTab.getCurrentPanel()).val())) != 0 
-							&& (parseFloat($("#DAY_HOURS_"+index,navTab.getCurrentPanel()).val())) != 7
 							&& (parseFloat($("#DAY_HOURS_"+index,navTab.getCurrentPanel()).val())) != 7.67){
 						alertMsg.error('<spring:message code="alert.message.ess.infoApply.applyTimeCanNotLessThanMinValue" />');//休假最小指是半天
 				   		return false;

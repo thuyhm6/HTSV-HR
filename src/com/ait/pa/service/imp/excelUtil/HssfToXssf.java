@@ -268,10 +268,17 @@ public class HssfToXssf {
                 });
             }
 
-            dstStyle.setFillPattern(srcStyle.getFillPattern());
-            dstStyle.setFillForegroundColor(srcStyle.getFillForegroundColor());
-            dstStyle.setFillBackgroundColor(srcStyle.getFillBackgroundColor());
-            if (dstStyle instanceof XSSFCellStyle) {
+            // Chỉ copy màu fill khi ô thực sự có fill: với NO_FILL, màu mặc định của
+            // HSSF là AUTOMATIC (64) -> resolve ra RGB 000000, Excel sẽ hiển thị nền đen
+            // khi chọn ô.
+            FillPatternType fillPattern = srcStyle.getFillPattern();
+            dstStyle.setFillPattern(fillPattern);
+            if (fillPattern != null && fillPattern != FillPatternType.NO_FILL) {
+                dstStyle.setFillForegroundColor(srcStyle.getFillForegroundColor());
+                dstStyle.setFillBackgroundColor(srcStyle.getFillBackgroundColor());
+            }
+            if (fillPattern != null && fillPattern != FillPatternType.NO_FILL
+                    && dstStyle instanceof XSSFCellStyle) {
                 final XSSFCellStyle dstXStyle2 = (XSSFCellStyle) dstStyle;
                 setIfResolved(srcWb, srcStyle.getFillForegroundColor(), new java.util.function.Consumer<XSSFColor>() {
                     public void accept(XSSFColor c) { dstXStyle2.setFillForegroundColor(c); }
@@ -334,6 +341,10 @@ public class HssfToXssf {
 
     private static XSSFColor resolveXssfColor(Workbook srcWb, short colorIndex) {
         if (!(srcWb instanceof HSSFWorkbook) || colorIndex < 0) {
+            return null;
+        }
+        // AUTOMATIC (64) không phải màu thật - giữ index gốc, không ép thành RGB đen
+        if (colorIndex == IndexedColors.AUTOMATIC.getIndex()) {
             return null;
         }
         HSSFColor legacyColor = ((HSSFWorkbook) srcWb).getCustomPalette().getColor(colorIndex);
