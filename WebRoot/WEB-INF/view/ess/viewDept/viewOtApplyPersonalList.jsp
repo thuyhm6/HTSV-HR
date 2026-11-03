@@ -229,6 +229,15 @@ function exportExcle(a) {
 					<th>
 						<!--法定节假日 --><spring:message code="ar.arForDeptCountInfoList.FADINGJIEJIARI.b" />
 					</th>
+					<th>
+						<!--Hỗ trợ ăn ca -->Hỗ trợ ăn ca
+					</th>
+					<th>
+						<!--Hỗ trợ làm đêm -->Hỗ trợ làm đêm
+					</th>
+					<th>
+						<!--Hỗ trợ làm thứ 7 -->Hỗ trợ làm thứ 7
+					</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -272,6 +281,24 @@ function exportExcle(a) {
 								id="codeChange" onclick='javascript:changeURL(this);'
 								name="90000300,90000301" type="${personList.PERSON_ID}">
 								<span> ${personList.HOILDAY_OT_TOTAIL} <!--小时 --><spring:message code="ar.viewitemparameter.title.xiaoshi" /></span> </a>
+						</td>
+						<td style="text-align: center">
+							<a style="cursor: pointer;" title="Hỗ trợ ăn ca"
+								id="codeChange" onclick='javascript:changeURL(this);'
+								name="80000237,14013804,218126,14013805,14013803" type="${personList.PERSON_ID}">
+								<span>${personList.MEAL_OT_INCEN}</span> </a>
+						</td>
+						<td style="text-align: center">
+							<a style="cursor: pointer;" title="Hỗ trợ làm đêm"
+								id="codeChange" onclick='javascript:changeURL(this);'
+								name="14013783,14015953,218253" type="${personList.PERSON_ID}">
+								<span>${personList.NIGHT_INCEN}</span> </a>
+						</td>
+						<td style="text-align: center">
+							<a style="cursor: pointer;" title="Hỗ trợ làm thứ 7"
+								id="codeChange" onclick='javascript:changeURL(this);'
+								name="278599,278598" type="${personList.PERSON_ID}">
+								<span>${personList.SATURDAY_INCEN}</span> </a>
 						</td>
 					</tr>
 				</c:forEach>

@@ -4363,7 +4363,22 @@ AND ACTIVITY=1
 		                        TO_CHAR(TO_DATE(#ETIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
 		                        HR.CPNY_ID,
 		                        HR.PERSON_ID,
-		                        '141446') HOILDAY_OT_TOTAIL               
+		                        '141446') HOILDAY_OT_TOTAIL,
+		      GET_AR_OT_TOTAIL_INTERVAL(TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
+		                        TO_CHAR(TO_DATE(#ETIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
+		                        HR.CPNY_ID,
+		                        HR.PERSON_ID,
+								'315') MEAL_OT_INCEN,
+		      GET_AR_OT_TOTAIL_INTERVAL(TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
+		                        TO_CHAR(TO_DATE(#ETIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
+		                        HR.CPNY_ID,
+		                        HR.PERSON_ID,
+								'316') NIGHT_INCEN,
+		      GET_AR_OT_TOTAIL_INTERVAL(TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
+		                        TO_CHAR(TO_DATE(#ETIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD'),
+		                        HR.CPNY_ID,
+		                        HR.PERSON_ID,
+								'317') SATURDAY_INCEN
 		  FROM HR_EMPLOYEE HR,HR_DEPARTMENT HD
 		 WHERE HR.DEPTNO = HD.DEPTNO
 		   AND HR.EMPID NOT LIKE '%11111%'
