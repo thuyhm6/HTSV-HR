@@ -612,6 +612,9 @@ function getTipsAfter(data){
 		if(typeof (data['ar0909']) != "undefined"){
             $("#tab4 #showUL4 #tab4_viewInfo_4 a b").html(data.ar0909);
         }
+		if(typeof (data['arCardRecordApprove']) != "undefined"){
+            $("#tab4 #showUL4 #tab4_viewInfo_arCardRecordApprove a b").html(data.arCardRecordApprove);
+        }
 		/*if(typeof (data['ar0906']) != "undefined"){
             $("#tab4 #showUL4 #tab4_viewInfo_5 a b").html(data.ar0906);
         }
@@ -959,6 +962,11 @@ function logoutConfirm(url){
 	                                                    <a href="/ess/arConfirm/viewSickLeaveProofConfirmList?seach_PROOF_YN=0&pageNum=1&menuNo=90000352&navTabId=ar0909" target="navTab" rel="ar0909" title='<spring:message code="sys.main.sickLeaveProofConfirm.b" />'><spring:message code="sys.main.sickLeaveProofConfirm.b" /><!--病假证明提交确认-->(<b>${tipsMap.ar0909}</b>)</a><!-- 待提交病假证明 -->
 	                                                </li>
 	                                        </c:if>
+                                        </c:if>
+                                        <c:if test="${LoginUser.empID eq '43170001' and !empty tipsMap.arCardRecordApprove}">
+                                                <li id="tab4_viewInfo_arCardRecordApprove">
+                                                    <a href="/ar/attendanceMintenance/viewArCardRecordApprove?seach_APPROVE_STATUS=PENDING&navTabId=arCardRecordApprove" target="navTab" rel="arCardRecordApprove" title='<spring:message code="ar.viewArCardRecordApprove.title.menu" />'><!-- Chấm công nhập tay chờ phê duyệt --><spring:message code="ar.viewArCardRecordApprove.title.menu" />(<b>${tipsMap.arCardRecordApprove}</b>)</a>
+                                                </li>
                                         </c:if>
                                     	<%--<c:if test="${!empty tipsMap.ar0902}">
                                                 <li id="tab4_viewInfo_3">

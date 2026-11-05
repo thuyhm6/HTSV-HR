@@ -114,6 +114,7 @@ public class ArCardRecordSerImp implements ArCardRecordSer {
 		paramMap.put("UPDATED_BY", admin.getPersonId());
 		paramMap.put("CPNY_ID", admin.getCpnyId());
 		paramMap.put("R_TIME", R_TIME);
+		paramMap.put("INSERT_BY_PENDING", INSERT_BY_PENDING);
 		paramMap.put("PERSON_ID", request.getParameter("PERSON_ID"));
 		try {
 			
@@ -203,6 +204,7 @@ public class ArCardRecordSerImp implements ArCardRecordSer {
 		paramMap.put("CREATED_BY", admin.getPersonId());
 		paramMap.put("R_TIME", R_TIME);
 		paramMap.put("CPNY_ID", admin.getCpnyId());
+		paramMap.put("INSERT_BY_PENDING", INSERT_BY_PENDING);
 
 		try {
 			
@@ -300,5 +302,52 @@ public class ArCardRecordSerImp implements ArCardRecordSer {
 		paramMap.put("supervisor", admin.getPersonId());
 			retrunList = arCardRecordDao.getArCardRecordMealList(paramMap);
 		return retrunList;
+	}
+	
+	/**
+	 * Danh sách dữ liệu quẹt thẻ nhập tay chờ phê duyệt / đã phê duyệt
+	 * (seach_APPROVE_STATUS: rỗng/PENDING = chờ duyệt, APPROVED = đã duyệt)
+	 * 
+	 * @param request
+	 * @return List
+	 */
+	@SuppressWarnings("unchecked")
+	public List getArCardRecordApproveList(HttpServletRequest request) {
+		Map paramMap = ObjectBindUtil.getRequestParamData(request, "seach_");
+		AdminBean admin = SessionUtil.getLoginUserFromSession(request);
+		paramMap.put("CPNY_ID", admin.getCpnyId());
+		paramMap.put("LANGUAGE", admin.getLanguage());
+		paramMap.put("supervisor", admin.getPersonId());
+		paramMap.put("INSERT_BY_PENDING", INSERT_BY_PENDING);
+		return arCardRecordDao.getArCardRecordApproveList(paramMap);
+	}
+	
+	/**
+	 * Phê duyệt dữ liệu quẹt thẻ nhập tay: INSERT_BY 'P' (Nhập tay - chưa phê duyệt) -> 'H'
+	 * 
+	 * @param request (jsonData: [{"RECORD_NO": "..."}])
+	 * @return 1: thành công, 0: thất bại
+	 */
+	@SuppressWarnings("unchecked")
+	public int updateArCardRecordApprove(HttpServletRequest request) {
+		String jsonString = request.getParameter("jsonData");
+		List<LinkedHashMap<String, Object>> recordList = ObjectBindUtil.getRequestJsonData(jsonString);
+		if (recordList == null || recordList.size() == 0) {
+			return 0;
+		}
+		AdminBean admin = SessionUtil.getLoginUserFromSession(request);
+		for (LinkedHashMap<String, Object> record : recordList) {
+			record.put("CPNY_ID", admin.getCpnyId());
+			record.put("UPDATED_BY", admin.getPersonId());
+			record.put("UPDATED_IP", request.getRemoteAddr());
+			record.put("INSERT_BY_PENDING", INSERT_BY_PENDING);
+		}
+		try {
+			this.arCardRecordDao.updateArCardRecordApprove(recordList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
 	}
 }

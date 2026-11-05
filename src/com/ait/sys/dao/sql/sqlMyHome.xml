@@ -1230,6 +1230,22 @@
         ]]>
 	</select>
 
+	<!-- Số dữ liệu quẹt thẻ nhập tay chờ phê duyệt (INSERT_BY = 'P'), cùng phạm vi màn hình viewArCardRecordApprove -->
+	<select id="getArCardRecordApproveCount" parameterClass="linkMap" resultClass="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			  FROM AR_MAC_RECORDS_HTSV A, HR_EMPLOYEE B
+			 WHERE A.PERSON_ID = B.PERSON_ID
+			   AND B.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND A.INSERT_BY = 'P'
+			   AND EXISTS ( SELECT *
+			                  FROM AR_SUPERVISOR_INFO F
+			                 WHERE B.DEPTNO = F.DEPTNO
+			                   AND F.PERSON_ID = #PERSON_ID:VARCHAR#
+			              )
+		]]>
+	</select>
+	
 	<select id="getChangShopConfirmCount" parameterClass="linkMap" resultClass="int">
 		<![CDATA[
 			SELECT COUNT(1)

@@ -57,4 +57,12 @@ public interface ArCardRecordDao {
 	
 	@SuppressWarnings("unchecked")
 	public List getArCardRecordMealList(Object object);
+	
+	/** Danh sách dữ liệu quẹt thẻ nhập tay chờ phê duyệt / đã phê duyệt */
+	@SuppressWarnings("unchecked")
+	public List getArCardRecordApproveList(Object object);
+	
+	/** Phê duyệt (INSERT_BY 'P' -> 'H') + ghi AR_SHIFT_CHANGE để tính lại công */
+	@SuppressWarnings("unchecked")
+	public void updateArCardRecordApprove(List list) throws Exception;
 }

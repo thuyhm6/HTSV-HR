@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServletRequest;
  * @version 5.1
  */
 public interface ArCardRecordSer {
+	/** INSERT_BY = 'P' (Nhập tay - chưa phê duyệt): dữ liệu nhập tay (thêm/sửa/import Excel) chưa được quản lý phê duyệt */
+	public static final String INSERT_BY_PENDING = "P";
+
 	@SuppressWarnings("unchecked")
 	public List getArCardRecordList(HttpServletRequest request);
 
@@ -59,4 +62,9 @@ public interface ArCardRecordSer {
 	public List getArCardRecordCommon(Map map, String target);
 	
 	public String valImportExcelArCardData(HttpServletRequest request);
+	
+	@SuppressWarnings("unchecked")
+	public List getArCardRecordApproveList(HttpServletRequest request);
+	
+	public int updateArCardRecordApprove(HttpServletRequest request);
 }

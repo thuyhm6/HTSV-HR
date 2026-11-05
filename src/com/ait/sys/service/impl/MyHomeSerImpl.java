@@ -653,6 +653,13 @@ public class MyHomeSerImpl implements MyHomeSer {
 				}
 			}
 		}
+		// Chấm công nhập tay chờ phê duyệt (viewArCardRecordApprove): chỉ hiển thị cho NV 43170001
+		if ("43170001".equals(admin.getEmpID())) {
+			int arCardRecordApproveCnt = myHomeDao.getTipsCnt("getArCardRecordApproveCount", paramMap);
+			rMap.put("arCardRecordApprove", arCardRecordApproveCnt);
+			rMap.put("pview", "true");
+			total_count_viewInfo = (total_count_viewInfo < 0 ? 0 : total_count_viewInfo) + arCardRecordApproveCnt;
+		}
 		rMap.put("total_count_viewInfo", total_count_viewInfo);
 		
 		return rMap;
@@ -769,6 +776,13 @@ public class MyHomeSerImpl implements MyHomeSer {
 					total_count_viewInfo += num;
 				}
 			}
+		}
+		// Chấm công nhập tay chờ phê duyệt (viewArCardRecordApprove): chỉ hiển thị cho NV 43170001
+		if ("43170001".equals(admin.getEmpID())) {
+			int arCardRecordApproveCnt = myHomeDao.getTipsCnt("getArCardRecordApproveCount", paramMap);
+			rMap.put("arCardRecordApprove", arCardRecordApproveCnt);
+			rMap.put("pview", "true");
+			total_count_viewInfo = (total_count_viewInfo < 0 ? 0 : total_count_viewInfo) + arCardRecordApproveCnt;
 		}
 		rMap.put("total_count_viewInfo", total_count_viewInfo);
 		

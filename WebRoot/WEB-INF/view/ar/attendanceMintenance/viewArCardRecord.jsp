@@ -201,7 +201,7 @@ function insertMacRecordList(form,callback,flag){
 			<li>	            
 				<a class="buttonActive" id="insertMacRecordList_search" href="#"><span><!-- 查询 --><spring:message code="hrm.empinfo.QUERY"/></span></a> 
 			</li>
-			<c:if test="${LoginUser.adminID eq '35448253' || LoginUser.adminID eq '11111111' || LoginUser.adminID eq '35451298'  || LoginUser.adminID eq '35464320' }">
+			<c:if test="${LoginUser.adminID eq '35448253' || LoginUser.adminID eq '11111111' || LoginUser.adminID eq '35451298'  || LoginUser.adminID eq '35464320'   || LoginUser.adminID eq '35464613' }">
 			<li>
 				<a href="/ess/infoApplyLeave/downloadFile?fileName=/resources/template/cardTemplate.xls&file=cardTemplate.xls"><span><!-- 下载导入模板 --><spring:message code="ar.addempshift.title.downloadmodule"/></span></a>
 			</li>
@@ -248,7 +248,7 @@ function insertMacRecordList(form,callback,flag){
 				<tr target="RECORD_NO" rel="${list.RECORD_NO}">
 					<td>${i.count}</td>
 					<td>
-						<c:if test="${list.INSERT_BY eq 'H'}">
+						<c:if test="${list.INSERT_BY eq 'H' || list.INSERT_BY eq 'P'}">
 						  <input type="checkbox" name="c1" value="${list.RECORD_NO }">
 						</c:if>
 					</td>
@@ -265,6 +265,7 @@ function insertMacRecordList(form,callback,flag){
 						<c:if test="${list.INSERT_BY eq 'M'}"><!-- 自动 --><spring:message code="ar.viewarcardrecord.title.zidong"/></c:if>
 						<c:if test="${list.INSERT_BY eq 'H'}"><!-- 手动 --><spring:message code="ar.viewarcardrecord.title.shoudong"/></c:if>
 						<c:if test="${list.INSERT_BY eq 'A'}"><!-- 申请 --><spring:message code="ess.infoApply.title.apply"/></c:if>
+						<c:if test="${list.INSERT_BY eq 'P'}"><!-- Nhập tay - chưa phê duyệt --><spring:message code="ar.viewArCardRecordApprove.title.pending"/></c:if>
 					</td>
 				</tr>
 			</c:forEach>			

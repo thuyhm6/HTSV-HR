@@ -554,7 +554,7 @@
 			     SET R_TIME    = DECODE(#R_TIME:VARCHAR#,'',SYSDATE,TO_DATE(#R_TIME:VARCHAR#,'DD-MM-YYYY HH24:MI')),
 				 	 DOOR_TYPE = #DOOR_TYPE:VARCHAR#,
 				 	 AR_DATE_STR = #AR_DATE_STR:VARCHAR#,
-					 INSERT_BY = 'H',
+					 INSERT_BY = #INSERT_BY_PENDING:VARCHAR#,
 					 UPDATED_BY = #UPDATED_BY:VARCHAR#,
 					 UPDATE_DATE = SYSDATE,
 					 REMARK = #REMARK:VARCHAR#
@@ -633,7 +633,7 @@
 					  #DoorType:VARCHAR#,
 					  #AR_DATE_STR:VARCHAR#,
 					  1,
-					  'H',
+					  #INSERT_BY_PENDING:VARCHAR#,
 					  #CREATED_BY:VARCHAR#,
 					  #adminIP:VARCHAR#,
 					  SYSDATE,
@@ -809,4 +809,109 @@
 			 ORDER BY A.R_TIME ASC
 		]]>
 	</select>
+	
+	<!-- Danh sách dữ liệu quẹt thẻ nhập tay chờ phê duyệt / đã phê duyệt (màn hình phê duyệt của quản lý) -->
+	<select id="getArCardRecordApproveList" parameterClass="linkMap" resultClass="linkMap" remapResults="true">
+		<![CDATA[
+			  SELECT  A.RECORD_NO,
+			          A.PERSON_ID,
+					  B.EMPID,
+					  B.LOCAL_NAME,
+					  GET_DEPT_NAME(B.DEPTNO,#LANGUAGE:VARCHAR#) DEPTNAME,
+					  GET_CODE_NAME(B.POST_GRADE_NO,#LANGUAGE:VARCHAR#) POST_GRADE_NAME,
+					  GET_GLOBAL_NAME(GET_AR_SHIFTNO(A.PERSON_ID, A.AR_DATE_STR, B.CPNY_ID),#LANGUAGE:VARCHAR#) SHIFT_NAME,
+                      GET_AR_SHIFTNO_WORKTIME(GET_AR_SHIFTNO(A.PERSON_ID, A.AR_DATE_STR, B.CPNY_ID)) SHIFT_TIME,
+					  TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,
+					  TO_CHAR(A.R_TIME,'DD-MM-YYYY HH24:MI:SS') R_TIME,
+					  A.DOOR_TYPE,
+					  A.REMARK,
+					  A.INSERT_BY,
+					  GET_EMP_LOCAL_NAME(A.CREATED_BY, B.CPNY_ID) CREATED_BY_NAME,
+					  TO_CHAR(A.CREATE_DATE,'DD/MM/YYYY HH24:MI') CREATE_DATE,
+					  GET_EMP_LOCAL_NAME(A.UPDATED_BY, B.CPNY_ID) UPDATED_BY_NAME,
+					  TO_CHAR(A.UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE
+				 FROM AR_MAC_RECORDS_HTSV A, HR_EMPLOYEE B
+				WHERE A.PERSON_ID = B.PERSON_ID
+				  AND B.CPNY_ID = #CPNY_ID:VARCHAR#
+	  	]]>
+		<isEqual prepend="AND" property="APPROVE_STATUS" compareValue="APPROVED">
+			<![CDATA[
+				A.INSERT_BY = 'H'
+		    ]]>
+		</isEqual>
+		<isNotEqual prepend="AND" property="APPROVE_STATUS" compareValue="APPROVED">
+			<![CDATA[
+				A.INSERT_BY = #INSERT_BY_PENDING:VARCHAR#
+		    ]]>
+		</isNotEqual>
+	   	<isNotEmpty prepend="AND" property="KEY">
+			<![CDATA[
+		 		  ( B.EMPID LIKE '%' || #KEY:VARCHAR# || '%'
+						   OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#KEY:VARCHAR#)) || '%'
+						   	OR B.ENGLISH_NAME LIKE '%' || #KEY:VARCHAR# || '%' )
+	    	]]>
+		</isNotEmpty>
+       	<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE B.DEPTNO = F.DEPTNO
+	 					     AND F.PERSON_ID = #supervisor:VARCHAR#
+	 	 		  	 	)
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DEPTNO">
+			<![CDATA[
+		 		EXISTS(
+		 		  	SELECT *
+					  FROM HR_DEPARTMENT
+				     WHERE HR_DEPARTMENT.DEPTNO = B.DEPTNO
+					 START WITH HR_DEPARTMENT.DEPTNO = #DEPTNO:VARCHAR#
+					CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO
+		 		  )
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STIME">
+			<![CDATA[
+				A.AR_DATE_STR >= TO_CHAR(TO_DATE(#STIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+	    	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="RTIME">
+			<![CDATA[
+				A.AR_DATE_STR <= TO_CHAR(TO_DATE(#RTIME:VARCHAR#,'DD/MM/YYYY'),'YYYY/MM/DD')
+	    	]]>
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.AR_DATE_STR DESC, B.DEPTNO, B.EMPID, A.R_TIME
+		]]>
+	</select>
+	
+	<!-- Phê duyệt: chỉ chuyển các dòng đang chờ phê duyệt ('P') sang 'H' -->
+	<update id="updateArCardRecordApprove" parameterClass="linkMap" >
+		<![CDATA[
+			  UPDATE AR_MAC_RECORDS_HTSV A
+			     SET INSERT_BY = 'H',
+					 UPDATED_BY = #UPDATED_BY:VARCHAR#,
+					 UPDATED_IP = #UPDATED_IP:VARCHAR#,
+					 UPDATE_DATE = SYSDATE
+			   WHERE A.RECORD_NO = #RECORD_NO:NUMERIC#
+			     AND A.INSERT_BY = #INSERT_BY_PENDING:VARCHAR#
+	 	]]>
+	</update>
+	
+	<!-- Ghi nhận cần tính lại công cho ngày có dữ liệu được phê duyệt -->
+	<insert id="addArShiftChangeForApproveInfo" parameterClass="linkMap" >
+		<![CDATA[	
+				 	insert into ar_shift_change
+					  (no, person_id, cpny_id, date_str,  create_date, end_date_str,CHANGE_TYPE)
+				    SELECT ar_shift_change_seq.nextval,A.PERSON_ID,
+						#CPNY_ID:VARCHAR#,  TO_CHAR(A.R_TIME -1,'YYYY/MM/DD'),
+					    sysdate,
+					    TO_CHAR(A.R_TIME,'YYYY/MM/DD'),
+					    'Phê duyệt chấm công tay'
+					   FROM AR_MAC_RECORDS_HTSV A 
+					  WHERE A.RECORD_NO = #RECORD_NO:NUMERIC# 
+					    AND A.INSERT_BY = #INSERT_BY_PENDING:VARCHAR#
+		  ]]>
+	 </insert>
 </sqlMap>

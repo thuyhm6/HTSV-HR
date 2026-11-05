@@ -249,4 +249,31 @@ public class ArCardRecordDaoImpl extends SqlMapClientSupport implements
 
 		return returnList;
 	}
+	
+	/**
+	 * Danh sách dữ liệu quẹt thẻ nhập tay chờ phê duyệt / đã phê duyệt
+	 */
+	@SuppressWarnings("unchecked")
+	public List getArCardRecordApproveList(Object object) {
+		List returnList = new ArrayList();
+		try {
+			returnList = this.queryForList(
+					"ar.arCardRecord.getArCardRecordApproveList", object);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return returnList;
+	}
+	
+	/**
+	 * Phê duyệt dữ liệu quẹt thẻ nhập tay (cùng 1 transaction):
+	 * ghi AR_SHIFT_CHANGE trước (chỉ dòng còn chờ duyệt), sau đó chuyển INSERT_BY 'P' -> 'H'
+	 */
+	@SuppressWarnings("unchecked")
+	public void updateArCardRecordApprove(List list) throws Exception {
+
+		this.insertForList("ar.arCardRecord.addArShiftChangeForApproveInfo", list);
+		this.updateForList("ar.arCardRecord.updateArCardRecordApprove", list);
+	}
 }

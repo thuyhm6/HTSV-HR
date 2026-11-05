@@ -534,4 +534,55 @@ public class ArCardRecordCtroller {
 		return new ModelAndView("/ar/attendanceMintenance/viewArCardRecordMeal",modelMap);
 	}
 	
+	
+	/**
+	 * Màn hình quản lý phê duyệt dữ liệu quẹt thẻ nhập tay
+	 * (thêm / sửa / import Excel ở màn hình viewArCardRecord -> INSERT_BY = 'P' - Nhập tay - chưa phê duyệt)
+	 * 
+	 * @param request
+	 * @param response
+	 * @param modelMap
+	 * @return ModelAndView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/viewArCardRecordApprove")
+	public ModelAndView viewArCardRecordApproveList(HttpServletRequest request,
+			HttpServletResponse response, ModelMap modelMap) throws Exception {
+		List approveList = this.arCardRecordSer.getArCardRecordApproveList(request);
+		modelMap.put("approveList", approveList);
+		modelMap.put(UiUtil.TOTAL_COUNT_NAME, approveList.size());
+		modelMap.put("KEY", request.getParameter("seach_KEY"));
+		modelMap.put("STIME", request.getParameter("seach_STIME"));
+		modelMap.put("RTIME", request.getParameter("seach_RTIME"));
+		modelMap.put("DEPTNO", request.getParameter("seach_DEPTNO"));
+		modelMap.put("APPROVE_STATUS", request.getParameter("seach_APPROVE_STATUS"));
+		modelMap.put("INSERT_BY_PENDING", ArCardRecordSer.INSERT_BY_PENDING);
+		modelMap.put("toolbarInfo",
+				request.getParameter("menuNo") != null ? toolMenuSer.getToolMenu(request) : toolMenuSer.getToolMenuForNo(request, "2386"));
+
+		return new ModelAndView("/ar/attendanceMintenance/viewArCardRecordApprove", modelMap);
+	}
+	
+	/**
+	 * Phê duyệt dữ liệu quẹt thẻ nhập tay: INSERT_BY 'P' -> 'H'
+	 * 
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/approveArCardRecordInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> approveArCardRecordInfo(HttpServletRequest request) throws Exception {
+		Map<String, Object> map = new HashMap<String, Object>();
+		int result = this.arCardRecordSer.updateArCardRecordApprove(request);
+		if (result == 1) {
+			map.put("statusCode", "200");
+			map.put("message", TipMessage.getTipMessage("ar.viewArCardRecordApprove.message.success", request));// Phê duyệt thành công
+			map.put("formId", "viewArCardRecordApproveForm");
+		} else {
+			map.put("statusCode", "300");
+			map.put("message", TipMessage.getTipMessage("ar.viewArCardRecordApprove.message.fail", request));// Phê duyệt thất bại
+		}
+		return map;
+	}
 }
