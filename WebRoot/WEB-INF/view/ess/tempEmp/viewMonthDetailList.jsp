@@ -83,6 +83,17 @@ $(document).ready(function(){
 		<td>
 			<input type="text" id="AR_MONTH" name="seach_AR_MONTH" class="Wdate" onClick="WdatePicker({dateFmt:'MMyyyy',lang:'en'})" value="${AR_MONTH}"/>
 		</td>
+		<td><!-- Kỳ dữ liệu --><spring:message code="ess.viewMonthDetailList.PERIOD_TYPE.b" /></td>
+		<td>
+			<select id="seach_PERIOD_TYPE" name="seach_PERIOD_TYPE">
+				<!-- 25 tháng trước -> 24 tháng này (mặc định) -->
+				<option value="" <c:if test="${empty PERIOD_TYPE}">selected="selected"</c:if>><spring:message code="ess.viewMonthDetailList.PERIOD_STD.b" /></option>
+				<!-- 25 tháng này -> cuối tháng này -->
+				<option value="25_31" <c:if test="${PERIOD_TYPE eq '25_31'}">selected="selected"</c:if>><spring:message code="ess.viewMonthDetailList.PERIOD_25_END.b" /></option>
+				<!-- 01 tháng này -> cuối tháng này -->
+				<option value="01_31" <c:if test="${PERIOD_TYPE eq '01_31'}">selected="selected"</c:if>><spring:message code="ess.viewMonthDetailList.PERIOD_01_END.b" /></option>
+			</select>
+		</td>
 		<td><!-- 社号/姓名 --><spring:message code="hrm.empinfo.nameAndEmpid" /></td>
 		<td>
 			<input type="text" id="seach_KEY" name="seach_KEY" value="${KEY }">

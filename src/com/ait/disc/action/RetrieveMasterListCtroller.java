@@ -1407,7 +1407,15 @@ public class RetrieveMasterListCtroller {
 				if(param.get("AR_MONTH")!=null && param.get("AR_MONTH")!=""){
 					datamap.put("month", param.get("AR_MONTH").toString().substring(0, 2));
 					datamap.put("year", param.get("AR_MONTH").toString().substring(2, 6));
-					datamap.put("viewMonthDetailList", this.tempEmpSer.viewTempEmpList(request,"getMonthDetailRealTimeList"));
+					List monthDetailList = this.tempEmpSer.viewTempEmpList(request,"getMonthDetailRealTimeList");
+					datamap.put("viewMonthDetailList", monthDetailList);
+					// Kỳ dữ liệu: 25_31 (25 -> cuối tháng), 01_31 (01 -> cuối tháng), rỗng = 25 tháng trước -> 24 tháng này
+					// Template 305/306: cột ngày theo vị trí P_DATE_1..31 / P_DAY_OT_1..31 / P_NIGHT_OT_1..31, header H_1..31, tiêu đề periodStr
+					this.tempEmpSer.putArPeriodParam(param);
+					this.putArPeriodExcelData(datamap, monthDetailList, param);
+					if(param.get("PERIOD_TYPE")!=null && !"".equals(param.get("PERIOD_TYPE").toString())){
+						name = name + "_" + param.get("PERIOD_TYPE").toString();
+					}
 				}else{
 					datamap.put("viewMonthDetailList", null);
 				}
@@ -1417,7 +1425,15 @@ public class RetrieveMasterListCtroller {
 				if(param.get("AR_MONTH")!=null && param.get("AR_MONTH")!=""){
 					datamap.put("month", param.get("AR_MONTH").toString().substring(0, 2));
 					datamap.put("year", param.get("AR_MONTH").toString().substring(2, 6));
-					datamap.put("viewMonthDetailList", this.tempEmpSer.viewTempEmpList(request,"getMonthDetailRealTimeList"));
+					List monthDetailList = this.tempEmpSer.viewTempEmpList(request,"getMonthDetailRealTimeList");
+					datamap.put("viewMonthDetailList", monthDetailList);
+					// Kỳ dữ liệu: 25_31 (25 -> cuối tháng), 01_31 (01 -> cuối tháng), rỗng = 25 tháng trước -> 24 tháng này
+					// Template 305/306: cột ngày theo vị trí P_DATE_1..31 / P_DAY_OT_1..31 / P_NIGHT_OT_1..31, header H_1..31, tiêu đề periodStr
+					this.tempEmpSer.putArPeriodParam(param);
+					this.putArPeriodExcelData(datamap, monthDetailList, param);
+					if(param.get("PERIOD_TYPE")!=null && !"".equals(param.get("PERIOD_TYPE").toString())){
+						name = name + "_" + param.get("PERIOD_TYPE").toString();
+					}
 				}else{
 					datamap.put("viewMonthDetailList", null);
 				}
@@ -1713,6 +1729,51 @@ public class RetrieveMasterListCtroller {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Excel 305/306 (viewMonthDetailList): sắp xếp cột ngày theo thứ tự thực của kỳ dữ liệu.
+	 * Dữ liệu SQL có key theo số ngày (DATE_25, DAY_OT_1...), template dùng key theo vị trí cột:
+	 *   P_DATE_k / P_DAY_OT_k / P_NIGHT_OT_k (k = 1..31) = ngày thứ k của kỳ,
+	 *   H_k = nhãn ngày (dd) cho header, periodStr = "dd/MM/yyyy - dd/MM/yyyy".
+	 * Vị trí vượt quá số ngày của kỳ để trống.
+	 */
+	@SuppressWarnings("unchecked")
+	private void putArPeriodExcelData(ModelMap datamap, List list, Map param) throws Exception {
+		String from = StringUtil.checkNull(param.get("AR_PERIOD_FROM"));
+		String to = StringUtil.checkNull(param.get("AR_PERIOD_TO"));
+		if ("".equals(from) || "".equals(to)) {
+			return;
+		}
+		SimpleDateFormat dayFmt = new SimpleDateFormat("yyyy/MM/dd");
+		SimpleDateFormat showFmt = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat ddFmt = new SimpleDateFormat("dd");
+		java.util.Date endDate = dayFmt.parse(to);
+		Calendar c = Calendar.getInstance();
+		c.setTime(dayFmt.parse(from));
+		datamap.put("periodStr", showFmt.format(c.getTime()) + " - " + showFmt.format(endDate));
+		int[] days = new int[31];
+		int n = 0;
+		while (n < 31 && !c.getTime().after(endDate)) {
+			days[n] = c.get(Calendar.DAY_OF_MONTH);
+			datamap.put("H_" + (n + 1), ddFmt.format(c.getTime()));
+			n++;
+			c.add(Calendar.DATE, 1);
+		}
+		for (int k = n; k < 31; k++) {
+			datamap.put("H_" + (k + 1), "");
+		}
+		if (list == null) {
+			return;
+		}
+		for (Iterator it = list.iterator(); it.hasNext();) {
+			Map row = (Map) it.next();
+			for (int k = 0; k < 31; k++) {
+				row.put("P_DATE_" + (k + 1), k < n ? row.get("DATE_" + days[k]) : null);
+				row.put("P_DAY_OT_" + (k + 1), k < n ? row.get("DAY_OT_" + days[k]) : null);
+				row.put("P_NIGHT_OT_" + (k + 1), k < n ? row.get("NIGHT_OT_" + days[k]) : null);
+			}
 		}
 	}
 

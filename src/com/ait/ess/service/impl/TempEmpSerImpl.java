@@ -65,9 +65,68 @@ public class TempEmpSerImpl implements TempEmpSer {
 		if(!"".equals(arMonth)){
 			param.put("AR_MONTH", arMonth);
 		}
+		putArPeriodParam(param);
 		return tempEmpDao.viewTempEmpList(param,target);
 	}
-	
+
+	/**
+	 * Tính kỳ dữ liệu theo AR_MONTH (MMyyyy) + PERIOD_TYPE, dùng cho viewFixedDateList / getMonthDetailRealTimeList
+	 * (màn hình viewMonthDetailList và Excel SQL_SEQMEAN 305/306).
+	 *  PERIOD_TYPE rỗng : 25 tháng trước -> 24 tháng này (mặc định, như cũ)
+	 *  PERIOD_TYPE 25_31: 25 tháng này   -> ngày cuối tháng này
+	 *  PERIOD_TYPE 01_31: 01 tháng này   -> ngày cuối tháng này
+	 * Kết quả: AR_PERIOD_FROM / AR_PERIOD_TO (YYYY/MM/DD),
+	 *          AR_HI_YM (YYYYMM của các cột ngày 25..31), AR_LO_YM (YYYYMM của các cột ngày 1..24)
+	 */
+	@SuppressWarnings("unchecked")
+	public void putArPeriodParam(Map param) {
+		String arMonth = StringUtil.checkNull(param.get("AR_MONTH"));
+		if ("".equals(arMonth)) {
+			return;
+		}
+		String periodType = StringUtil.checkNull(param.get("PERIOD_TYPE"));
+		if (!"25_31".equals(periodType) && !"01_31".equals(periodType)) {
+			periodType = "";
+		}
+		param.put("PERIOD_TYPE", periodType);
+		try {
+			SimpleDateFormat monthFmt = new SimpleDateFormat("MMyyyy");
+			monthFmt.setLenient(false);
+			SimpleDateFormat dayFmt = new SimpleDateFormat("yyyy/MM/dd");
+			SimpleDateFormat ymFmt = new SimpleDateFormat("yyyyMM");
+
+			Calendar cur = Calendar.getInstance();
+			cur.setTime(monthFmt.parse(arMonth));
+			cur.set(Calendar.DAY_OF_MONTH, 1);
+			Calendar prev = (Calendar) cur.clone();
+			prev.add(Calendar.MONTH, -1);
+
+			Calendar from = (Calendar) cur.clone();
+			Calendar to = (Calendar) cur.clone();
+			String hiYm;
+			if ("25_31".equals(periodType)) {
+				from.set(Calendar.DAY_OF_MONTH, 25);
+				to.set(Calendar.DAY_OF_MONTH, to.getActualMaximum(Calendar.DAY_OF_MONTH));
+				hiYm = ymFmt.format(cur.getTime());
+			} else if ("01_31".equals(periodType)) {
+				from.set(Calendar.DAY_OF_MONTH, 1);
+				to.set(Calendar.DAY_OF_MONTH, to.getActualMaximum(Calendar.DAY_OF_MONTH));
+				hiYm = ymFmt.format(cur.getTime());
+			} else {
+				from = prev;
+				from.set(Calendar.DAY_OF_MONTH, 25);
+				to.set(Calendar.DAY_OF_MONTH, 24);
+				hiYm = ymFmt.format(prev.getTime());
+			}
+			param.put("AR_PERIOD_FROM", dayFmt.format(from.getTime()));
+			param.put("AR_PERIOD_TO", dayFmt.format(to.getTime()));
+			param.put("AR_HI_YM", hiYm);
+			param.put("AR_LO_YM", ymFmt.format(cur.getTime()));
+		} catch (ParseException e) {
+			logger.error("AR_MONTH khong hop le (MMyyyy): " + arMonth);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public List viewTempEmpListWithparam(HttpServletRequest request,String target, String params) {
 		Map param = ObjectBindUtil.getRequestParamData(request,"seach_");

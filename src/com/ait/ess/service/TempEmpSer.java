@@ -10,6 +10,12 @@ public interface TempEmpSer {
 	public List viewTempEmpList(HttpServletRequest request,String target);
 	
 	public List viewTempEmpListWithparam(HttpServletRequest request,String target, String params);
+
+	/**
+	 * Tính kỳ dữ liệu (AR_PERIOD_FROM/AR_PERIOD_TO/AR_HI_YM/AR_LO_YM) theo AR_MONTH + PERIOD_TYPE
+	 */
+	@SuppressWarnings("unchecked")
+	public void putArPeriodParam(Map param);
 	
 	@SuppressWarnings("unchecked")
 	public int addFixOtInfo(HttpServletRequest request);
